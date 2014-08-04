@@ -1,0 +1,9 @@
+Alias /phpPgAdmin /usr/share/phpPgAdmin
+
+<Location /phpPgAdmin>
+    Order deny,allow
+    Deny from all
+    Allow from 127.0.0.1
+    Allow from ::1
+    Allow from 172.20.0.10
+</Location>
