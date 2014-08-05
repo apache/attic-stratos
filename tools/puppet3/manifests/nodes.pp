@@ -65,6 +65,34 @@ node 'base' {
   $extensions_dir = '${script_path}/../extensions'
 }
 
+# postgresql cartridge node
+node /postgresql/ inherits base {
+  require java
+  class {'agent':}
+
+  class { 'postgresql::server':
+    ip_mask_deny_postgres_user => '0.0.0.0/32',
+    ip_mask_allow_all_users    => '0.0.0.0/0',
+    listen_addresses           => '*',
+    manage_firewall            => true,
+    postgres_password          => 'postgres'
+  }
+
+  postgresql::server::db { 'stratos-postgres-sample':
+    user     => 'root',
+    password => postgresql_password('root', 'root'),
+  }
+
+  class {'phppgadmin':
+    db_host	   => 'localhost',
+    db_port        => '5432',
+    owned_only 	   => false,
+    extra_login_security => false
+  }
+
+  Class['postgresql::server']->Class['phppgadmin']~> Class['agent']
+}
+
 # Jboss cartridge node
 node /jboss/ inherits base {
   $product = 'jboss-as'
