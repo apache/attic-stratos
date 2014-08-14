@@ -31,9 +31,15 @@
     <artifactId>stratos-parent</artifactId>
     <packaging>pom</packaging>
     <version>4.0.0</version>
+<<<<<<< HEAD
     <name>Apache Stratos</name>
     <description>Apache Stratos is an open source polyglot Platform as a Service (PaaS) framework</description>
     <url>http://stratos.apache.org</url>
+=======
+    <name>Apache Stratos (incubating) Project</name>
+    <description>Apache Stratos (Incubating) is an open source polyglot Platform as a Service (PaaS) framework</description>
+    <url>http://stratos.incubator.apache.org</url>
+>>>>>>> ae58fb91107a55b0a56a94ab4a2a1aa5cd2f8fb8
     <inceptionYear>2012</inceptionYear>
 
     <licenses>
@@ -71,9 +77,15 @@
     </mailingLists>
 
     <scm>
+<<<<<<< HEAD
         <connection>scm:git:https://git-wip-us.apache.org/repos/asf/stratos.git</connection>
         <developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/stratos.git</developerConnection>
         <url>https://git-wip-us.apache.org/repos/asf?p=stratos.git</url>
+=======
+        <connection>scm:git:https://git-wip-us.apache.org/repos/asf/incubator-stratos.git</connection>
+        <developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/incubator-stratos.git</developerConnection>
+        <url>https://git-wip-us.apache.org/repos/asf?p=incubator-stratos.git</url>
+>>>>>>> ae58fb91107a55b0a56a94ab4a2a1aa5cd2f8fb8
         <tag>4.0.0-rc4</tag>
     </scm>
 

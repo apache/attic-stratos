@@ -1,0 +1,34 @@
+From 11e6affdfae4ef68282d9fc98980353fa9c94f1c Mon Sep 17 00:00:00 2001
+From: gayan <gayan@puppet.gayan.org>
+Date: Fri, 1 Aug 2014 18:05:01 +0530
+Subject: [PATCH 03/30] updates
+
+---
+ .../apache/stratos/metadataservice/definition/CartridgeMetaData.java  | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/definition/CartridgeMetaData.java b/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/definition/CartridgeMetaData.java
+index ed73b6f..dfecee4 100644
+--- a/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/definition/CartridgeMetaData.java
++++ b/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/definition/CartridgeMetaData.java
+@@ -27,7 +27,7 @@ public class CartridgeMetaData {
+ 
+ 		return "applicationName: " + applicationName + ", displayName: " + displayName +
+ 		       ", description: " + description + ", type: " + type + ", provider: " + provider +
+-		       ", host: " + host + ", Version: " + version + ", property " + getProperties();
++		       ", host: " + host + ", Version: " + version + ", property: " + getProperties();
+ 	}
+ 
+ 	private String getProperties() {
+@@ -35,7 +35,7 @@ public class CartridgeMetaData {
+ 		StringBuilder propertyBuilder = new StringBuilder();
+ 		if (property != null) {
+ 			for (PropertyBean propertyBean : property) {
+-				propertyBuilder.append(propertyBean.name + " : " + propertyBean.value + " | ");
++				propertyBuilder.append(propertyBean.toString());
+ 			}
+ 		}
+ 		return propertyBuilder.toString();
+-- 
+1.9.1
+

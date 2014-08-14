@@ -1,0 +1,20 @@
+From 8da8ad3bfd21472555bdacfc8d1a420e6b5d9563 Mon Sep 17 00:00:00 2001
+From: gayan <gayan@puppet.gayan.org>
+Date: Fri, 8 Aug 2014 16:49:50 +0530
+Subject: [PATCH 27/30] updates
+
+---
+ bin | 1 -
+ 1 file changed, 1 deletion(-)
+ delete mode 160000 bin
+
+diff --git a/bin b/bin
+deleted file mode 160000
+index a7b3867..0000000
+--- a/bin
++++ /dev/null
+@@ -1 +0,0 @@
+-Subproject commit a7b386736d8ce0988949d197bfafc3aa322c3860
+-- 
+1.9.1
+

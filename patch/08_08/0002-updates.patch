@@ -1,0 +1,1164 @@
+From 9745f1a7489aa7aefdc1f5afe8d780040e3cd849 Mon Sep 17 00:00:00 2001
+From: gayan <gayan@puppet.gayan.org>
+Date: Fri, 1 Aug 2014 17:18:14 +0530
+Subject: [PATCH 02/30] updates
+
+---
+ .../cloud/controller/iaases/DockerIaas.java        | 234 +++++++++++----------
+ .../org.apache.stratos.metadataservice/pom.xml     |  27 ++-
+ .../apache/stratos/metadataservice/Constants.java  |   1 +
+ .../definition/CartridgeMetaData.java              |  18 +-
+ .../metadataservice/listener/TopologyAgent.java    | 196 +++++++++++++++++
+ .../metadataservice/listener/TopologyListener.java | 167 +++++++++++++++
+ .../metadataservice/services/MetaDataAdmin.java    |  47 +++--
+ .../stratos/metadataservice/util/ConfUtil.java     |  74 +++++++
+ .../webapp/stratosmetadataservice/WEB-INF/web.xml  |   4 +-
+ .../pom.xml                                        |  16 +-
+ .../pom.xml                                        |  10 +
+ .../modules/distribution/src/assembly/bin.xml      |   6 +
+ .../distribution/src/main/conf/metadataservice.xml |  49 +++++
+ products/stratos/modules/p2-profile-gen/pom.xml    |  18 +-
+ 14 files changed, 722 insertions(+), 145 deletions(-)
+ create mode 100644 components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/listener/TopologyAgent.java
+ create mode 100644 components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/listener/TopologyListener.java
+ create mode 100644 components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/util/ConfUtil.java
+ create mode 100644 products/stratos/modules/distribution/src/main/conf/metadataservice.xml
+
+diff --git a/components/org.apache.stratos.cloud.controller/src/main/java/org/apache/stratos/cloud/controller/iaases/DockerIaas.java b/components/org.apache.stratos.cloud.controller/src/main/java/org/apache/stratos/cloud/controller/iaases/DockerIaas.java
+index 742aed2..2b114da 100644
+--- a/components/org.apache.stratos.cloud.controller/src/main/java/org/apache/stratos/cloud/controller/iaases/DockerIaas.java
++++ b/components/org.apache.stratos.cloud.controller/src/main/java/org/apache/stratos/cloud/controller/iaases/DockerIaas.java
+@@ -1,24 +1,26 @@
+ /*
+  * Licensed to the Apache Software Foundation (ASF) under one
+- * or more contributor license agreements.  See the NOTICE file
++ * or more contributor license agreements. See the NOTICE file
+  * distributed with this work for additional information
+- * regarding copyright ownership.  The ASF licenses this file
++ * regarding copyright ownership. The ASF licenses this file
+  * to you under the Apache License, Version 2.0 (the
+  * "License"); you may not use this file except in compliance
+- * with the License.  You may obtain a copy of the License at
+- *
+- *  http://www.apache.org/licenses/LICENSE-2.0
+- *
++ * with the License. You may obtain a copy of the License at
++ * 
++ * http://www.apache.org/licenses/LICENSE-2.0
++ * 
+  * Unless required by applicable law or agreed to in writing,
+  * software distributed under the License is distributed on an
+  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+- * KIND, either express or implied.  See the License for the
++ * KIND, either express or implied. See the License for the
+  * specific language governing permissions and limitations
+  * under the License.
+  */
+ 
+ package org.apache.stratos.cloud.controller.iaases;
+ 
++import java.util.Set;
++
+ import org.apache.commons.logging.Log;
+ import org.apache.commons.logging.LogFactory;
+ import org.apache.stratos.cloud.controller.exception.CloudControllerException;
+@@ -35,118 +37,118 @@ import org.jclouds.compute.domain.Image;
+ import org.jclouds.compute.domain.NodeMetadata;
+ import org.jclouds.compute.domain.Template;
+ 
+-import java.util.Set;
+-
+ /**
+  * Docker iaas provider definition.
+  */
+ public class DockerIaas extends Iaas {
+ 
+-    private static final Log log = LogFactory.getLog(AWSEC2Iaas.class);
+-
+-    public DockerIaas(IaasProvider iaasProvider) {
+-        super(iaasProvider);
+-    }
+-
+-    @Override
+-    public void buildComputeServiceAndTemplate() {
+-        // builds and sets Compute Service
+-        ComputeServiceBuilderUtil.buildDefaultComputeService(getIaasProvider());
+-
+-        // builds and sets Template
+-        buildTemplate();
+-    }
+-
+-    @Override
+-    public void setDynamicPayload() {
+-        log.warn("Not implemented: DockerIaas.setDynamicPayload()");
+-    }
+-
+-    @Override
+-    public String associateAddress(NodeMetadata node) {
+-        log.warn("Not implemented: DockerIaas.associateAddress()");
+-        return null;
+-    }
+-
+-    @Override
+-    public String associatePredefinedAddress(NodeMetadata node, String ip) {
+-        log.warn("Not implemented: DockerIaas.associatePredefinedAddress()");
+-        return null;
+-    }
+-
+-    @Override
+-    public void releaseAddress(String ip) {
+-        log.warn("Not implemented: DockerIaas.releaseAddress()");
+-    }
+-
+-    @Override
+-    public boolean createKeyPairFromPublicKey(String region, String keyPairName, String publicKey) {
+-        return false;
+-    }
+-
+-    @Override
+-    public boolean isValidRegion(String region) throws InvalidRegionException {
+-        return true;
+-    }
+-
+-    @Override
+-    public boolean isValidZone(String region, String zone) throws InvalidZoneException {
+-        return true;
+-    }
+-
+-    @Override
+-    public boolean isValidHost(String zone, String host) throws InvalidHostException {
+-        return true;
+-    }
+-
+-    @Override
+-    public PartitionValidator getPartitionValidator() {
+-        return new DockerPartitionValidator();
+-    }
+-
+-    @Override
+-    public void buildTemplate() {
+-        IaasProvider iaasProvider = getIaasProvider();
+-        ComputeService computeService = iaasProvider.getComputeService();
+-        Set<? extends Image> images = computeService.listImages();
+-        Image image = findImage(images, iaasProvider.getImage());
+-        if(image == null) {
+-            throw new CloudControllerException(String.format("Docker image not found: %s", iaasProvider.getImage()));
+-        }
+-        Template template = computeService.templateBuilder().fromImage(image).build();
+-        iaasProvider.setTemplate(template);
+-    }
+-
+-    private Image findImage(Set<? extends Image> images, String name) {
+-        for(Image image : images) {
+-            if(image.getDescription().contains(name))
+-                return image;
+-        }
+-        return null;
+-    }
+-
+-    @Override
+-    public String createVolume(int sizeGB, String snapshotId) {
+-        return null;
+-    }
+-
+-    @Override
+-    public String attachVolume(String instanceId, String volumeId, String deviceName) {
+-        return null;
+-    }
+-
+-    @Override
+-    public void detachVolume(String instanceId, String volumeId) {
+-
+-    }
+-
+-    @Override
+-    public void deleteVolume(String volumeId) {
+-
+-    }
+-
+-    @Override
+-    public String getIaasDevice(String device) {
+-        return null;
+-    }
++	private static final Log log = LogFactory.getLog(AWSEC2Iaas.class);
++
++	public DockerIaas(IaasProvider iaasProvider) {
++		super(iaasProvider);
++	}
++
++	@Override
++	public void buildComputeServiceAndTemplate() {
++		// builds and sets Compute Service
++		ComputeServiceBuilderUtil.buildDefaultComputeService(getIaasProvider());
++
++		// builds and sets Template
++		buildTemplate();
++	}
++
++	@Override
++	public void setDynamicPayload() {
++		log.warn("Not implemented: DockerIaas.setDynamicPayload()");
++	}
++
++	@Override
++	public String associateAddress(NodeMetadata node) {
++		log.warn("Not implemented: DockerIaas.associateAddress()");
++		return null;
++	}
++
++	@Override
++	public String associatePredefinedAddress(NodeMetadata node, String ip) {
++		log.warn("Not implemented: DockerIaas.associatePredefinedAddress()");
++		return null;
++	}
++
++	@Override
++	public void releaseAddress(String ip) {
++		log.warn("Not implemented: DockerIaas.releaseAddress()");
++	}
++
++	@Override
++	public boolean createKeyPairFromPublicKey(String region, String keyPairName, String publicKey) {
++		return false;
++	}
++
++	@Override
++	public boolean isValidRegion(String region) throws InvalidRegionException {
++		return true;
++	}
++
++	@Override
++	public boolean isValidZone(String region, String zone) throws InvalidZoneException {
++		return true;
++	}
++
++	@Override
++	public boolean isValidHost(String zone, String host) throws InvalidHostException {
++		return true;
++	}
++
++	@Override
++	public PartitionValidator getPartitionValidator() {
++		return new DockerPartitionValidator();
++	}
++
++	@Override
++	public void buildTemplate() {
++		IaasProvider iaasProvider = getIaasProvider();
++		ComputeService computeService = iaasProvider.getComputeService();
++		Set<? extends Image> images = computeService.listImages();
++		Image image = findImage(images, iaasProvider.getImage());
++		if (image == null) {
++			throw new CloudControllerException(String.format("Docker image not found: %s",
++			                                                 iaasProvider.getImage()));
++		}
++		Template template = computeService.templateBuilder().fromImage(image).build();
++		iaasProvider.setTemplate(template);
++	}
++
++	private Image findImage(Set<? extends Image> images, String name) {
++		for (Image image : images) {
++			if (image.getDescription().contains(name))
++				return image;
++		}
++		return null;
++	}
++
++	@Override
++	public String createVolume(int sizeGB) {
++		return null;
++	}
++
++	@Override
++	public String attachVolume(String instanceId, String volumeId, String deviceName) {
++		return null;
++	}
++
++	@Override
++	public void detachVolume(String instanceId, String volumeId) {
++
++	}
++
++	@Override
++	public void deleteVolume(String volumeId) {
++
++	}
++
++	@Override
++	public String getIaasDevice(String device) {
++		return null;
++	}
++
+ }
+diff --git a/components/org.apache.stratos.metadataservice/pom.xml b/components/org.apache.stratos.metadataservice/pom.xml
+index 1ecad08..9b05574 100644
+--- a/components/org.apache.stratos.metadataservice/pom.xml
++++ b/components/org.apache.stratos.metadataservice/pom.xml
+@@ -72,10 +72,14 @@
+                             <!-- this is relative to the pom.xml directory -->
+                             <directory>src/main/webapp/${appName}</directory>
+                         </resource>
+-                    </webResources>
++                      </webResources>
+                     <warName>stratosmetadataservice</warName>
++                            
++        			        
++                    
+                 </configuration>
+             </plugin>
++           
+         </plugins>
+     </build>
+ 
+@@ -135,8 +139,25 @@
+             <version>${project.version}</version>
+             <scope>provided</scope>
+       </dependency>
+-      
+-      
++       <dependency>
++            <groupId>org.apache.stratos</groupId>
++            <artifactId>org.apache.stratos.messaging</artifactId>
++            <version>${project.version}</version>
++            <scope>provided</scope>
++        </dependency>
++      	<dependency>
++			<groupId>org.wso2.carbon</groupId>
++			<artifactId>org.wso2.carbon.registry.ws.client</artifactId>
++			 <version>4.2.0</version>
++			  <scope>provided</scope>
++		</dependency>
++		
++		  <dependency>
++            <groupId>org.wso2.carbon</groupId>
++            <artifactId>org.wso2.carbon.registry.ws.stub</artifactId>
++            <version>4.2.0</version>
++             <scope>provided</scope>
++        </dependency>
+        
+         
+     </dependencies>
+diff --git a/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/Constants.java b/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/Constants.java
+index 710ad1b..bd84c5f 100644
+--- a/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/Constants.java
++++ b/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/Constants.java
+@@ -24,5 +24,6 @@ package org.apache.stratos.metadataservice;
+ public class Constants {
+ 
+ 	public static final String SUPER_TENANT_SERVICE = "super.tenant.service";
++	public static final String METADATASERVICE_CONFIG_FILE_NAME = "metadataservice.xml";
+ 
+ }
+diff --git a/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/definition/CartridgeMetaData.java b/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/definition/CartridgeMetaData.java
+index 0f47b96..ed73b6f 100644
+--- a/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/definition/CartridgeMetaData.java
++++ b/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/definition/CartridgeMetaData.java
+@@ -6,16 +6,18 @@ import javax.xml.bind.annotation.XmlRootElement;
+ 
+ @XmlRootElement(name = "cartridgeMetaData")
+ public class CartridgeMetaData {
+-	public String type;
+-
+-	public String host;
+-
+-	public String provider;
++	public String applicationName;
+ 
+ 	public String displayName;
+ 
+ 	public String description;
+ 
++	public String type;
++
++	public String provider;
++
++	public String host;
++
+ 	public String version;
+ 
+ 	public List<PropertyBean> property;
+@@ -23,9 +25,9 @@ public class CartridgeMetaData {
+ 	@Override
+ 	public String toString() {
+ 
+-		return "Type: " + type + ", Provider: " + provider + ", Host: " + host +
+-		       ", Display Name: " + displayName + ", Description: " + description + ", Version: " +
+-		       version + ", Multitenant " + getProperties();
++		return "applicationName: " + applicationName + ", displayName: " + displayName +
++		       ", description: " + description + ", type: " + type + ", provider: " + provider +
++		       ", host: " + host + ", Version: " + version + ", property " + getProperties();
+ 	}
+ 
+ 	private String getProperties() {
+diff --git a/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/listener/TopologyAgent.java b/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/listener/TopologyAgent.java
+new file mode 100644
+index 0000000..0a30bbd
+--- /dev/null
++++ b/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/listener/TopologyAgent.java
+@@ -0,0 +1,196 @@
++package org.apache.stratos.metadataservice.listener;
++
++/*
++ * 
++ * Licensed to the Apache Software Foundation (ASF) under one
++ * or more contributor license agreements. See the NOTICE file
++ * distributed with this work for additional information
++ * regarding copyright ownership. The ASF licenses this file
++ * to you under the Apache License, Version 2.0 (the
++ * "License"); you may not use this file except in compliance
++ * with the License. You may obtain a copy of the License at
++ * 
++ * http://www.apache.org/licenses/LICENSE-2.0
++ * 
++ * Unless required by applicable law or agreed to in writing,
++ * software distributed under the License is distributed on an
++ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
++ * KIND, either express or implied. See the License for the
++ * specific language governing permissions and limitations
++ * under the License.
++ */
++
++import org.apache.commons.logging.Log;
++import org.apache.commons.logging.LogFactory;
++import org.apache.stratos.messaging.event.Event;
++import org.apache.stratos.messaging.event.topology.CompleteTopologyEvent;
++import org.apache.stratos.messaging.event.topology.MemberActivatedEvent;
++import org.apache.stratos.messaging.event.topology.MemberStartedEvent;
++import org.apache.stratos.messaging.event.topology.MemberSuspendedEvent;
++import org.apache.stratos.messaging.event.topology.MemberTerminatedEvent;
++import org.apache.stratos.messaging.listener.topology.ClusterCreatedEventListener;
++import org.apache.stratos.messaging.listener.topology.CompleteTopologyEventListener;
++import org.apache.stratos.messaging.listener.topology.MemberActivatedEventListener;
++import org.apache.stratos.messaging.listener.topology.MemberStartedEventListener;
++import org.apache.stratos.messaging.listener.topology.MemberSuspendedEventListener;
++import org.apache.stratos.messaging.listener.topology.MemberTerminatedEventListener;
++import org.apache.stratos.messaging.message.receiver.topology.TopologyEventReceiver;
++import org.apache.stratos.messaging.message.receiver.topology.TopologyManager;
++
++/**
++ * Cartridge agent runnable.
++ */
++public class TopologyAgent implements Runnable {
++
++	private static final Log log = LogFactory.getLog(TopologyAgent.class);
++
++	private boolean terminated;
++
++	@Override
++	public void run() {
++		if (log.isInfoEnabled()) {
++			log.info("Topology agent started");
++		}
++
++		// Start topology event receiver thread
++		registerTopologyEventListeners();
++
++	}
++
++	protected void registerTopologyEventListeners() {
++		if (log.isDebugEnabled()) {
++			log.debug("Starting topology event message receiver thread");
++		}
++		TopologyEventReceiver topologyEventReceiver = new TopologyEventReceiver();
++		topologyEventReceiver.addEventListener(new MemberActivatedEventListener() {
++			@Override
++			protected void onEvent(Event event) {
++				try {
++					log.info("Member activated event received");
++					TopologyManager.acquireReadLock();
++					if (log.isDebugEnabled()) {
++						log.debug("Member activated event received");
++					}
++					MemberActivatedEvent memberActivatedEvent = (MemberActivatedEvent) event;
++					// extensionHandler.onMemberActivatedEvent(memberActivatedEvent);
++				} catch (Exception e) {
++					if (log.isErrorEnabled()) {
++						log.error("Error processing member activated event", e);
++					}
++				} finally {
++					TopologyManager.releaseReadLock();
++				}
++			}
++		});
++		topologyEventReceiver.addEventListener(new ClusterCreatedEventListener() {
++			@Override
++			protected void onEvent(Event event) {
++				try {
++					log.info("Event received: " + event);
++
++				} catch (Exception e) {
++					log.error("Error processing event", e);
++				} finally {
++					TopologyManager.releaseReadLock();
++				}
++			}
++
++		});
++
++		topologyEventReceiver.addEventListener(new MemberTerminatedEventListener() {
++			@Override
++			protected void onEvent(Event event) {
++				try {
++					log.info("Member terminated event received");
++					TopologyManager.acquireReadLock();
++					if (log.isDebugEnabled()) {
++						log.debug("Member terminated event received");
++					}
++					MemberTerminatedEvent memberTerminatedEvent = (MemberTerminatedEvent) event;
++					// extensionHandler.onMemberTerminatedEvent(memberTerminatedEvent);
++				} catch (Exception e) {
++					if (log.isErrorEnabled()) {
++						log.error("Error processing member terminated event", e);
++					}
++				} finally {
++					TopologyManager.releaseReadLock();
++				}
++			}
++		});
++
++		topologyEventReceiver.addEventListener(new MemberSuspendedEventListener() {
++			@Override
++			protected void onEvent(Event event) {
++				try {
++					log.info("Member suspended event received");
++					TopologyManager.acquireReadLock();
++					if (log.isDebugEnabled()) {
++						log.debug("Member suspended event received");
++					}
++					MemberSuspendedEvent memberSuspendedEvent = (MemberSuspendedEvent) event;
++					// extensionHandler.onMemberSuspendedEvent(memberSuspendedEvent);
++				} catch (Exception e) {
++					if (log.isErrorEnabled()) {
++						log.error("Error processing member suspended event", e);
++					}
++				} finally {
++					TopologyManager.releaseReadLock();
++				}
++			}
++		});
++
++		topologyEventReceiver.addEventListener(new CompleteTopologyEventListener() {
++			private boolean initialized;
++
++			@Override
++			protected void onEvent(Event event) {
++				if (!initialized) {
++					try {
++						log.info("Complete topology event received");
++						TopologyManager.acquireReadLock();
++						if (log.isDebugEnabled()) {
++							log.debug("Complete topology event received");
++						}
++						CompleteTopologyEvent completeTopologyEvent = (CompleteTopologyEvent) event;
++						// extensionHandler.onCompleteTopologyEvent(completeTopologyEvent);
++						initialized = true;
++					} catch (Exception e) {
++						if (log.isErrorEnabled()) {
++							log.error("Error processing complete topology event", e);
++						}
++					} finally {
++						TopologyManager.releaseReadLock();
++					}
++				}
++			}
++		});
++
++		topologyEventReceiver.addEventListener(new MemberStartedEventListener() {
++			@Override
++			protected void onEvent(Event event) {
++				try {
++					log.info("Member started event received");
++					TopologyManager.acquireReadLock();
++					if (log.isDebugEnabled()) {
++						log.debug("Member started event received");
++					}
++					MemberStartedEvent memberStartedEvent = (MemberStartedEvent) event;
++					// extensionHandler.onMemberStartedEvent(memberStartedEvent);
++				} catch (Exception e) {
++					if (log.isErrorEnabled()) {
++						log.error("Error processing member started event", e);
++					}
++				} finally {
++					TopologyManager.releaseReadLock();
++				}
++			}
++		});
++
++		Thread thread = new Thread(topologyEventReceiver);
++		thread.start();
++		if (log.isDebugEnabled()) {
++			log.info("Cartridge Agent topology receiver thread started");
++		}
++	}
++
++}
+diff --git a/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/listener/TopologyListener.java b/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/listener/TopologyListener.java
+new file mode 100644
+index 0000000..14faf65
+--- /dev/null
++++ b/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/listener/TopologyListener.java
+@@ -0,0 +1,167 @@
++package org.apache.stratos.metadataservice.listener;
++
++import javax.servlet.ServletContextEvent;
++import javax.servlet.ServletContextListener;
++
++import org.apache.commons.logging.Log;
++import org.apache.commons.logging.LogFactory;
++import org.apache.stratos.messaging.event.Event;
++import org.apache.stratos.messaging.event.topology.CompleteTopologyEvent;
++import org.apache.stratos.messaging.event.topology.MemberActivatedEvent;
++import org.apache.stratos.messaging.event.topology.MemberStartedEvent;
++import org.apache.stratos.messaging.event.topology.MemberSuspendedEvent;
++import org.apache.stratos.messaging.event.topology.MemberTerminatedEvent;
++import org.apache.stratos.messaging.listener.topology.CompleteTopologyEventListener;
++import org.apache.stratos.messaging.listener.topology.MemberActivatedEventListener;
++import org.apache.stratos.messaging.listener.topology.MemberStartedEventListener;
++import org.apache.stratos.messaging.listener.topology.MemberSuspendedEventListener;
++import org.apache.stratos.messaging.listener.topology.MemberTerminatedEventListener;
++import org.apache.stratos.messaging.message.receiver.topology.TopologyEventReceiver;
++import org.apache.stratos.messaging.message.receiver.topology.TopologyManager;
++
++public class TopologyListener implements ServletContextListener {
++
++	private static final Log log = LogFactory.getLog(TopologyListener.class);
++
++	private TopologyAgent topologyThread = null;
++	private Thread thread = null;
++
++	@Override
++	public void contextInitialized(ServletContextEvent arg0) {
++		log.info("Topology literner started....");
++		if (topologyThread == null) {
++			// load default agent
++			topologyThread = new TopologyAgent();
++			if (log.isDebugEnabled()) {
++				log.debug("Loading default Cartridge Agent.");
++			}
++		}
++		// start agent
++		thread = new Thread(topologyThread);
++		thread.start();
++
++	}
++
++	@Override
++	public void contextDestroyed(ServletContextEvent arg0) {
++		thread.stop();
++	}
++
++	protected void registerTopologyEventListeners() {
++		if (log.isDebugEnabled()) {
++			log.debug("Starting topology event message receiver thread");
++		}
++		TopologyEventReceiver topologyEventReceiver = new TopologyEventReceiver();
++		topologyEventReceiver.addEventListener(new MemberActivatedEventListener() {
++			@Override
++			protected void onEvent(Event event) {
++				try {
++					TopologyManager.acquireReadLock();
++					if (log.isDebugEnabled()) {
++						log.debug("Member activated event received");
++					}
++					MemberActivatedEvent memberActivatedEvent = (MemberActivatedEvent) event;
++					// extensionHandler.onMemberActivatedEvent(memberActivatedEvent);
++				} catch (Exception e) {
++					if (log.isErrorEnabled()) {
++						log.error("Error processing member activated event", e);
++					}
++				} finally {
++					TopologyManager.releaseReadLock();
++				}
++			}
++		});
++
++		topologyEventReceiver.addEventListener(new MemberTerminatedEventListener() {
++			@Override
++			protected void onEvent(Event event) {
++				try {
++					TopologyManager.acquireReadLock();
++					if (log.isDebugEnabled()) {
++						log.debug("Member terminated event received");
++					}
++					MemberTerminatedEvent memberTerminatedEvent = (MemberTerminatedEvent) event;
++					// extensionHandler.onMemberTerminatedEvent(memberTerminatedEvent);
++				} catch (Exception e) {
++					if (log.isErrorEnabled()) {
++						log.error("Error processing member terminated event", e);
++					}
++				} finally {
++					TopologyManager.releaseReadLock();
++				}
++			}
++		});
++
++		topologyEventReceiver.addEventListener(new MemberSuspendedEventListener() {
++			@Override
++			protected void onEvent(Event event) {
++				try {
++					TopologyManager.acquireReadLock();
++					if (log.isDebugEnabled()) {
++						log.debug("Member suspended event received");
++					}
++					MemberSuspendedEvent memberSuspendedEvent = (MemberSuspendedEvent) event;
++					// extensionHandler.onMemberSuspendedEvent(memberSuspendedEvent);
++				} catch (Exception e) {
++					if (log.isErrorEnabled()) {
++						log.error("Error processing member suspended event", e);
++					}
++				} finally {
++					TopologyManager.releaseReadLock();
++				}
++			}
++		});
++
++		topologyEventReceiver.addEventListener(new CompleteTopologyEventListener() {
++			private boolean initialized;
++
++			@Override
++			protected void onEvent(Event event) {
++				if (!initialized) {
++					try {
++						TopologyManager.acquireReadLock();
++						if (log.isDebugEnabled()) {
++							log.debug("Complete topology event received");
++						}
++						CompleteTopologyEvent completeTopologyEvent = (CompleteTopologyEvent) event;
++						// extensionHandler.onCompleteTopologyEvent(completeTopologyEvent);
++						initialized = true;
++					} catch (Exception e) {
++						if (log.isErrorEnabled()) {
++							log.error("Error processing complete topology event", e);
++						}
++					} finally {
++						TopologyManager.releaseReadLock();
++					}
++				}
++			}
++		});
++
++		topologyEventReceiver.addEventListener(new MemberStartedEventListener() {
++			@Override
++			protected void onEvent(Event event) {
++				try {
++					TopologyManager.acquireReadLock();
++					if (log.isDebugEnabled()) {
++						log.debug("Member started event received");
++					}
++					MemberStartedEvent memberStartedEvent = (MemberStartedEvent) event;
++					// extensionHandler.onMemberStartedEvent(memberStartedEvent);
++				} catch (Exception e) {
++					if (log.isErrorEnabled()) {
++						log.error("Error processing member started event", e);
++					}
++				} finally {
++					TopologyManager.releaseReadLock();
++				}
++			}
++		});
++
++		Thread thread = new Thread(topologyEventReceiver);
++		thread.start();
++		if (log.isDebugEnabled()) {
++			log.info("Cartridge Agent topology receiver thread started");
++		}
++	}
++
++}
+diff --git a/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/services/MetaDataAdmin.java b/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/services/MetaDataAdmin.java
+index 2080951..6121d50 100644
+--- a/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/services/MetaDataAdmin.java
++++ b/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/services/MetaDataAdmin.java
+@@ -13,11 +13,14 @@ import javax.ws.rs.core.Context;
+ 
+ import org.apache.axis2.context.ConfigurationContext;
+ import org.apache.axis2.context.ConfigurationContextFactory;
++import org.apache.commons.configuration.XMLConfiguration;
+ import org.apache.commons.logging.Log;
+ import org.apache.commons.logging.LogFactory;
+ import org.apache.stratos.metadataservice.annotation.AuthorizationAction;
+ import org.apache.stratos.metadataservice.definition.CartridgeMetaData;
++import org.apache.stratos.metadataservice.definition.PropertyBean;
+ import org.apache.stratos.metadataservice.exception.RestAPIException;
++import org.apache.stratos.metadataservice.util.ConfUtil;
+ import org.wso2.carbon.registry.api.Registry;
+ import org.wso2.carbon.registry.api.Resource;
+ import org.wso2.carbon.registry.core.Comment;
+@@ -49,6 +52,10 @@ public class MetaDataAdmin {
+ 
+ 	private static WSRegistryServiceClient setRegistry() throws Exception {
+ 
++		XMLConfiguration conf = ConfUtil.getInstance(null).getConfiguration();
++		String gregUsername = conf.getString("metadataservice.username", "admin@org.com");
++		String gregPassword = conf.getString("metadataservice.password", "admin@org.com");
++
+ 		System.setProperty("javax.net.ssl.trustStore", "repository" + File.separator + "resources" +
+ 		                                               File.separator + "security" +
+ 		                                               File.separator + "wso2carbon.jks");
+@@ -58,15 +65,17 @@ public class MetaDataAdmin {
+ 		configContext =
+ 		                ConfigurationContextFactory.createConfigurationContextFromFileSystem(axis2Repo,
+ 		                                                                                     axis2Conf);
+-		return new WSRegistryServiceClient(serverURL, username, password, configContext);
++		return new WSRegistryServiceClient(serverURL, gregUsername, gregPassword, configContext);
+ 	}
+ 
+ 	@POST
+-	@Path("/cartridge/metadata")
++	@Path("/cartridge/metadata/{applicationname}/{cartridgetype}")
+ 	@Produces("application/json")
+ 	@Consumes("application/json")
+ 	@AuthorizationAction("/permission/protected/manage/monitor/tenants")
+-	public String addCartridgeMetaDataDetails(CartridgeMetaData cartridgeMetaData) throws Exception {
++	public String addCartridgeMetaDataDetails(@PathParam("applicationname") String applicationName,
++	                                          @PathParam("cartridgetype") String cartridgeType,
++	                                          CartridgeMetaData cartridgeMetaData) throws Exception {
+ 		System.out.println("Adding meta data details");
+ 		Registry registry = setRegistry();
+ 		try {
+@@ -75,12 +84,16 @@ public class MetaDataAdmin {
+ 
+ 			String type = cartridgeMetaData.type;
+ 
+-			resource.setContent("Hello Out there!" + type);
++			resource.setContent("Application description :: " + type);
+ 
+-			String resourcePath = "/startos/app-3/" + type;
++			String resourcePath = "/startos/" + applicationName + "/" + cartridgeType;
+ 
+-			resource.addProperty("id", "ewwtreiwet");
+-			resource.addProperty("name", "admin");
++			resource.addProperty("Application Name", cartridgeMetaData.applicationName);
++			resource.addProperty("Cartidge Type", cartridgeMetaData.type);
++
++			for (PropertyBean prop : cartridgeMetaData.property) {
++				resource.addProperty(prop.name, prop.value);
++			}
+ 
+ 			registry.put(resourcePath, resource);
+ 
+@@ -91,9 +104,8 @@ public class MetaDataAdmin {
+ 
+ 			System.out.println("Resource rated with 3 stars!");
+ 			Comment comment = new Comment();
+-			comment.setText("Wow! A comment out there");
++			comment.setText("Added the " + applicationName + " " + type + " cartridge");
+ 			registry.addComment(resourcePath, comment);
+-			System.out.println("Comment added to resource");
+ 
+ 			Resource getResource = registry.get("/startos/app-2");
+ 			System.out.println("Resource retrived");
+@@ -123,12 +135,19 @@ public class MetaDataAdmin {
+ 
+ 	throws Exception {
+ 		Registry registry = setRegistry();
++		CartridgeMetaData cartridgeMetaData = new CartridgeMetaData();
+ 		try {
+ 
+-			Resource getResource = registry.get("/startos/" + cartridgeType);
+-			System.out.println("Resource retrived");
+-			System.out.println("Printing retrieved resource content: " +
+-			                   new String((byte[]) getResource.getContent()));
++			cartridgeMetaData.applicationName = "appi1";
++			cartridgeMetaData.type = "mysql";
++			String resourcePath = "/startos/" + applicationName + "/" + cartridgeType;
++			if (registry.resourceExists(resourcePath)) {
++
++				Resource getResource = registry.get(resourcePath);
++				System.out.println("Resource retrived");
++				System.out.println("Printing retrieved resource content: " +
++				                   new String((byte[]) getResource.getContent()));
++			}
+ 
+ 		} catch (Exception e) {
+ 
+@@ -138,6 +157,6 @@ public class MetaDataAdmin {
+ 			// Close the session
+ 			((WSRegistryServiceClient) registry).logut();
+ 		}
+-		return "result";
++		return cartridgeMetaData.toString();
+ 	}
+ }
+diff --git a/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/util/ConfUtil.java b/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/util/ConfUtil.java
+new file mode 100644
+index 0000000..bbe2078
+--- /dev/null
++++ b/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/util/ConfUtil.java
+@@ -0,0 +1,74 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one
++ * or more contributor license agreements. See the NOTICE file
++ * distributed with this work for additional information
++ * regarding copyright ownership. The ASF licenses this file
++ * to you under the Apache License, Version 2.0 (the
++ * "License"); you may not use this file except in compliance
++ * with the License. You may obtain a copy of the License at
++ * 
++ * http://www.apache.org/licenses/LICENSE-2.0
++ * 
++ * Unless required by applicable law or agreed to in writing,
++ * software distributed under the License is distributed on an
++ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
++ * KIND, either express or implied. See the License for the
++ * specific language governing permissions and limitations
++ * under the License.
++ */
++
++package org.apache.stratos.metadataservice.util;
++
++import java.io.File;
++
++import org.apache.commons.configuration.ConfigurationException;
++import org.apache.commons.configuration.XMLConfiguration;
++import org.apache.commons.logging.Log;
++import org.apache.commons.logging.LogFactory;
++import org.apache.stratos.metadataservice.Constants;
++import org.wso2.carbon.utils.CarbonUtils;
++
++/**
++ * This class contains utility methods for read metadata configuration file.
++ */
++public class ConfUtil {
++
++	private static Log log = LogFactory.getLog(ConfUtil.class);
++
++	private XMLConfiguration config;
++
++	private static ConfUtil instance = null;
++
++	private ConfUtil(String configFilePath) {
++		log.info("Loading configuration.....");
++		try {
++
++			File confFile;
++			if (configFilePath != null && !configFilePath.isEmpty()) {
++				confFile = new File(configFilePath);
++
++			} else {
++				confFile =
++				           new File(CarbonUtils.getCarbonConfigDirPath(),
++				                    Constants.METADATASERVICE_CONFIG_FILE_NAME);
++			}
++
++			config = new XMLConfiguration(confFile);
++		} catch (ConfigurationException e) {
++			log.error("Unable to load autoscaler configuration file", e);
++			config = new XMLConfiguration(); // continue with default values
++		}
++	}
++
++	public static ConfUtil getInstance(String configFilePath) {
++		if (instance == null) {
++			instance = new ConfUtil(configFilePath);
++		}
++		return instance;
++	}
++
++	public XMLConfiguration getConfiguration() {
++		return config;
++	}
++
++}
+diff --git a/components/org.apache.stratos.metadataservice/src/main/webapp/stratosmetadataservice/WEB-INF/web.xml b/components/org.apache.stratos.metadataservice/src/main/webapp/stratosmetadataservice/WEB-INF/web.xml
+index 7cef351..7929bed 100644
+--- a/components/org.apache.stratos.metadataservice/src/main/webapp/stratosmetadataservice/WEB-INF/web.xml
++++ b/components/org.apache.stratos.metadataservice/src/main/webapp/stratosmetadataservice/WEB-INF/web.xml
+@@ -24,7 +24,9 @@
+          http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+ 
+     <display-name>S2 Admin Endpoint</display-name>
+-
++ 	<listener>  
++          <listener-class>org.apache.stratos.metadataservice.listener.TopologyListener</listener-class>  
++    </listener>  
+     <servlet>
+         <servlet-name>StratosAdminEndpoint</servlet-name>
+         <servlet-class>org.apache.cxf.transport.servlet.CXFServlet</servlet-class>
+diff --git a/features/manager/metadataservice/org.apache.stratos.metadataservice.feature/pom.xml b/features/manager/metadataservice/org.apache.stratos.metadataservice.feature/pom.xml
+index b711037..f12fed0 100644
+--- a/features/manager/metadataservice/org.apache.stratos.metadataservice.feature/pom.xml
++++ b/features/manager/metadataservice/org.apache.stratos.metadataservice.feature/pom.xml
+@@ -216,6 +216,18 @@
+             <artifactId>carbon-cxf</artifactId>
+             <version>1.0.0</version>
+         </dependency>
++         <dependency>
++            <groupId>org.wso2.carbon</groupId>
++            <artifactId>org.wso2.carbon.registry.ws.client</artifactId>
++            <version>4.2.0</version>
++        </dependency>
++         <dependency>
++            <groupId>org.wso2.carbon</groupId>
++            <artifactId>org.wso2.carbon.registry.ws.stub</artifactId>
++            <version>4.2.0</version>
++        </dependency>
++        
++        
+         <!--dependency>
+             <groupId>org.apache.stratos</groupId>
+             <artifactId>org.apache.stratos.autoscaler.service.stub</artifactId>
+@@ -266,7 +278,7 @@
+                                     <type>war</type>
+                                     <overWrite>true</overWrite>
+                                     <outputDirectory>${project.build.directory}/web-app/web-app</outputDirectory>
+-                                    <destFileName>stratosmetadata.war</destFileName>
++                                    <destFileName>stratosmetadataservice.war</destFileName>
+                                 </artifactItem>
+                             </artifactItems>
+                         </configuration>
+@@ -293,7 +305,7 @@
+                                 </properties>
+                             </adviceFile>
+ 			    <bundles>
+-				<bundleDef>org.apache.stratos:org.apache.stratos.autoscaler.service.stub:${project.version}</bundleDef>
++				<bundleDef>org.apache.stratos:org.apache.stratos.manager.stub:${project.version}</bundleDef>
+ 			    </bundles>
+                             <importFeatures>
+                                 <importFeatureDef>org.wso2.carbon.core:${wso2carbon.version}</importFeatureDef>
+diff --git a/features/manager/rest-endpoint/org.apache.stratos.rest.endpoint.feature/pom.xml b/features/manager/rest-endpoint/org.apache.stratos.rest.endpoint.feature/pom.xml
+index 96736c6..b55e277 100644
+--- a/features/manager/rest-endpoint/org.apache.stratos.rest.endpoint.feature/pom.xml
++++ b/features/manager/rest-endpoint/org.apache.stratos.rest.endpoint.feature/pom.xml
+@@ -216,6 +216,16 @@
+             <artifactId>carbon-cxf</artifactId>
+             <version>1.0.0</version>
+         </dependency>
++        <dependency>
++            <groupId>org.wso2.carbon</groupId>
++            <artifactId>org.wso2.carbon.registry.ws.client</artifactId>
++            <version>4.2.0</version>
++        </dependency>
++         <dependency>
++            <groupId>org.wso2.carbon</groupId>
++            <artifactId>org.wso2.carbon.registry.ws.stub</artifactId>
++            <version>4.2.0</version>
++        </dependency>
+         <!--dependency>
+             <groupId>org.apache.stratos</groupId>
+             <artifactId>org.apache.stratos.autoscaler.service.stub</artifactId>
+diff --git a/products/stratos/modules/distribution/src/assembly/bin.xml b/products/stratos/modules/distribution/src/assembly/bin.xml
+index 581fcc5..19e5e95 100755
+--- a/products/stratos/modules/distribution/src/assembly/bin.xml
++++ b/products/stratos/modules/distribution/src/assembly/bin.xml
+@@ -629,6 +629,12 @@
+             <filtered>true</filtered>
+             <fileMode>755</fileMode>
+         </file>
++        <file>
++            <source>src/main/conf/metadataservice.xml</source>
++            <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf</outputDirectory>
++            <filtered>true</filtered>
++            <fileMode>755</fileMode>
++        </file>
+ 		<file>
+             <source>src/main/conf/mincheck.drl</source>
+             <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf</outputDirectory>
+diff --git a/products/stratos/modules/distribution/src/main/conf/metadataservice.xml b/products/stratos/modules/distribution/src/main/conf/metadataservice.xml
+new file mode 100644
+index 0000000..fb5a80f
+--- /dev/null
++++ b/products/stratos/modules/distribution/src/main/conf/metadataservice.xml
+@@ -0,0 +1,49 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- 
++       Licensed to the Apache Software Foundation (ASF) under one
++       or more contributor license agreements.  See the NOTICE file
++       distributed with this work for additional information
++       regarding copyright ownership.  The ASF licenses this file
++       to you under the Apache License, Version 2.0 (the
++       "License"); you may not use this file except in compliance
++       with the License.  You may obtain a copy of the License at
++
++         http://www.apache.org/licenses/LICENSE-2.0
++
++       Unless required by applicable law or agreed to in writing,
++       software distributed under the License is distributed on an
++       "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
++       KIND, either express or implied.  See the License for the
++       specific language governing permissions and limitations
++       under the License.
++-->
++<configuration>
++	<metadataservice>
++		<username>admin</username>
++		<password>admin</password>
++	    <rulesEvaluator>
++	        <schedule>
++		    <initialDelay>30</initialDelay>
++	            <period>15</period>
++	        </schedule>
++	    </rulesEvaluator>
++	    <cloudController>
++	        <hostname>localhost</hostname>
++		<port>9444</port>
++		<!-->CC client timout in ms<-->
++                <clientTimeout>300000</clientTimeout>
++	    </cloudController>
++            <stratosManager>
++	        <hostname>localhost</hostname>
++		<port>9445</port>
++		<!--SM client timeout in ms-->
++                <clientTimeout>300000</clientTimeout>
++	    </stratosManager>
++	    <member>
++		<!-->member expiry timeout (time waited till activation) in ms<-->
++		<expiryTimeout>900000</expiryTimeout>
++	    </member>
++	    <!-- monitor task interval -->
++	    <monitorInterval>90000</monitorInterval>
++	</metadataservice>
++</configuration>
+diff --git a/products/stratos/modules/p2-profile-gen/pom.xml b/products/stratos/modules/p2-profile-gen/pom.xml
+index 4faf8a3..893b3dd 100644
+--- a/products/stratos/modules/p2-profile-gen/pom.xml
++++ b/products/stratos/modules/p2-profile-gen/pom.xml
+@@ -218,7 +218,7 @@
+                                 <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.identity.application.authentication.framework.server.feature:4.2.1</featureArtifactDef>
+                                 <featureArtifactDef>org.apache.stratos:org.apache.stratos.messaging.feature:${project.version}</featureArtifactDef>
+                                 <featureArtifactDef>org.apache.stratos:org.apache.stratos.autoscaler.feature:${project.version}</featureArtifactDef>
+-                                <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.registry.ui.menu.feature:${carbon.version}</featureArtifactDef>--&gt;
++                                <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.registry.ui.menu.feature:${carbon.version}</featureArtifactDef>
+                                 <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.logging.mgt.feature:${carbon.version}</featureArtifactDef>
+                                 <featureArtifactDef>org.apache.stratos:org.apache.stratos.cloud.controller.feature:${project.version}</featureArtifactDef>
+                                 <featureArtifactDef>org.wso2.carbon:org.apache.synapse.wso2.feature:${synapse.version}</featureArtifactDef>
+@@ -496,6 +496,14 @@
+                             <id>org.wso2.carbon.registry.resource.properties.feature.group</id>
+                             <version>${carbon.platform.patch.version.4.2.1}</version>
+                         </feature>
++                        <feature>
++                             <id>org.apache.stratos.metadataservice.feature.group</id>
++                             <version>${project.version}</version>
++                        </feature>
++                          <feature>
++                                    <id>org.apache.stratos.metadataservice.feature.group</id>
++                                    <version>${project.version}</version>
++                                </feature>
+                     </features>
+                     </configuration>
+                     </execution>
+@@ -578,6 +586,10 @@
+                             <id>org.wso2.carbon.event.server.feature.group</id>
+                             <version>${carbon.platform.patch.version.4.2.1}</version>
+                         </feature>
++                            <feature>
++                                    <id>org.apache.stratos.metadataservice.feature.group</id>
++                                    <version>${project.version}</version>
++                                </feature>
+                     </features>
+                     </configuration>
+                     </execution>
+@@ -817,6 +829,10 @@
+                                     <id>org.wso2.carbon.cassandra.common.feature.group</id>
+                                     <version>${carbon.platform.version}</version>
+                                 </feature>
++                               <feature>
++                                    <id>org.apache.stratos.metadataservice.feature.group</id>
++                                    <version>${project.version}</version>
++                                </feature>
+                             </features>
+                         </configuration>
+                     </execution>
+-- 
+1.9.1
+

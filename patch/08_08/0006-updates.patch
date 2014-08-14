@@ -1,0 +1,92 @@
+From ff2243417e94515cb776369153387e8834b02fa6 Mon Sep 17 00:00:00 2001
+From: gayan <gayan@puppet.gayan.org>
+Date: Mon, 4 Aug 2014 11:29:53 +0530
+Subject: [PATCH 06/30] updates
+
+---
+ .../metadataservice/services/MetaDataAdmin.java    | 38 +++++++++++++++++++---
+ 1 file changed, 33 insertions(+), 5 deletions(-)
+
+diff --git a/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/services/MetaDataAdmin.java b/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/services/MetaDataAdmin.java
+index b5063ff..7a24624 100644
+--- a/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/services/MetaDataAdmin.java
++++ b/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/services/MetaDataAdmin.java
+@@ -1,6 +1,8 @@
+ package org.apache.stratos.metadataservice.services;
+ 
+ import java.io.File;
++import java.util.ArrayList;
++import java.util.List;
+ 
+ import javax.servlet.http.HttpServletRequest;
+ import javax.ws.rs.Consumes;
+@@ -39,8 +41,8 @@ public class MetaDataAdmin {
+ 	private static String axis2Repo = "repository/deployment/client";
+ 	private static String axis2Conf = "repository/conf/axis2/axis2_client.xml";
+ 
+-	private static final String username = "admin@org.com";
+-	private static final String password = "admin123";
++	private static final String defaultUsername = "admin@org.com";
++	private static final String defaultPassword = "admin123";
+ 	private static final String serverURL = "https://localhost:9445/services/";
+ 
+ 	@POST
+@@ -53,8 +55,9 @@ public class MetaDataAdmin {
+ 	private static WSRegistryServiceClient setRegistry() throws Exception {
+ 
+ 		XMLConfiguration conf = ConfUtil.getInstance(null).getConfiguration();
+-		String gregUsername = conf.getString("metadataservice.username", "admin@org.com");
+-		String gregPassword = conf.getString("metadataservice.password", "admin@org.com");
++
++		String gregUsername = conf.getString("metadataservice.username", defaultUsername);
++		String gregPassword = conf.getString("metadataservice.password", defaultPassword);
+ 
+ 		System.setProperty("javax.net.ssl.trustStore", "repository" + File.separator + "resources" +
+ 		                                               File.separator + "security" +
+@@ -89,10 +92,17 @@ public class MetaDataAdmin {
+ 			String resourcePath = "/startos/" + applicationName + "/" + cartridgeType;
+ 
+ 			resource.addProperty("Application Name", cartridgeMetaData.applicationName);
++			resource.addProperty("Display Name", cartridgeMetaData.displayName);
++			resource.addProperty("Description", cartridgeMetaData.description);
+ 			resource.addProperty("Cartidge Type", cartridgeMetaData.type);
++			resource.addProperty("provider", cartridgeMetaData.provider);
++			resource.addProperty("Version", cartridgeMetaData.version);
++			resource.addProperty("host", cartridgeMetaData.host);
+ 
+ 			for (PropertyBean prop : cartridgeMetaData.property) {
+-				resource.addProperty("hotsname", prop.username);
++				resource.addProperty("hostname", prop.hostname);
++				resource.addProperty("username", prop.username);
++				resource.addProperty("password", prop.password);
+ 			}
+ 
+ 			registry.put(resourcePath, resource);
+@@ -147,6 +157,24 @@ public class MetaDataAdmin {
+ 				System.out.println("Resource retrived");
+ 				System.out.println("Printing retrieved resource content: " +
+ 				                   new String((byte[]) getResource.getContent()));
++
++				cartridgeMetaData.type = getResource.getProperty("Cartidge Type");
++				cartridgeMetaData.applicationName = getResource.getProperty("Application Name");
++				cartridgeMetaData.description = getResource.getProperty("Description");
++				cartridgeMetaData.displayName = getResource.getProperty("Display Name");
++				cartridgeMetaData.host = getResource.getProperty("host");
++				cartridgeMetaData.provider = getResource.getProperty("provider");
++				cartridgeMetaData.version = getResource.getProperty("Version");
++
++				List<PropertyBean> lst = new ArrayList<PropertyBean>();
++				PropertyBean prop = new PropertyBean();
++				prop.hostname = getResource.getProperty("hostname");
++				prop.username = getResource.getProperty("username");
++				prop.password = getResource.getProperty("password");
++				lst.add(prop);
++
++				cartridgeMetaData.property = lst;
++
+ 			}
+ 
+ 		} catch (Exception e) {
+-- 
+1.9.1
+

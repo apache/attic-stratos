@@ -1,0 +1,31 @@
+From f3a73a3ae0b7d6626269ed070c71b0e484c0f454 Mon Sep 17 00:00:00 2001
+From: gayan <gayan@puppet.gayan.org>
+Date: Wed, 6 Aug 2014 18:13:50 +0530
+Subject: [PATCH 15/30] updates
+
+---
+ .../metadataservice/Registry/DataRegistryFactory.java        | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+ create mode 100644 components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/Registry/DataRegistryFactory.java
+
+diff --git a/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/Registry/DataRegistryFactory.java b/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/Registry/DataRegistryFactory.java
+new file mode 100644
+index 0000000..aef5c28
+--- /dev/null
++++ b/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/Registry/DataRegistryFactory.java
+@@ -0,0 +1,12 @@
++package org.apache.stratos.metadataservice.Registry;
++
++public class DataRegistryFactory {
++
++	public static DataStore getDataRegistryFactory(String registryName) {
++		if (registryName.equals("GREG"))
++			return new GRegRegistry();
++		else
++			return null;
++	}
++
++}
+-- 
+1.9.1
+

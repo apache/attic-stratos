@@ -1,0 +1,138 @@
+From 4d3fab8783f1ae0e64898b44d383f0166613f639 Mon Sep 17 00:00:00 2001
+From: gayan <gayan@puppet.gayan.org>
+Date: Fri, 8 Aug 2014 16:19:13 +0530
+Subject: [PATCH 23/30] updates
+
+---
+ .../metadataservice/registry/GRegRegistry.java     | 69 +++++++++++++++++++---
+ 1 file changed, 62 insertions(+), 7 deletions(-)
+
+diff --git a/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/registry/GRegRegistry.java b/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/registry/GRegRegistry.java
+index 27bc91e..080fc60 100644
+--- a/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/registry/GRegRegistry.java
++++ b/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/registry/GRegRegistry.java
+@@ -1,3 +1,21 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one
++ * or more contributor license agreements. See the NOTICE file
++ * distributed with this work for additional information
++ * regarding copyright ownership. The ASF licenses this file
++ * to you under the Apache License, Version 2.0 (the
++ * "License"); you may not use this file except in compliance
++ * with the License. You may obtain a copy of the License at
++ * 
++ * http://www.apache.org/licenses/LICENSE-2.0
++ * 
++ * Unless required by applicable law or agreed to in writing,
++ * software distributed under the License is distributed on an
++ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
++ * KIND, either express or implied. See the License for the
++ * specific language governing permissions and limitations
++ * under the License.
++ */
+ package org.apache.stratos.metadataservice.registry;
+ 
+ import java.io.File;
+@@ -20,6 +38,11 @@ import org.wso2.carbon.registry.api.Resource;
+ import org.wso2.carbon.registry.core.Comment;
+ import org.wso2.carbon.registry.ws.client.registry.WSRegistryServiceClient;
+ 
++/**
++ * 
++ * Governance registry implementation for the registry factory
++ * 
++ */
+ public class GRegRegistry implements DataStore {
+ 
+ 	private static Log log = LogFactory.getLog(GRegRegistry.class);
+@@ -28,8 +51,8 @@ public class GRegRegistry implements DataStore {
+ 
+ 	private static ConfigurationContext configContext = null;
+ 
+-	private static String axis2Repo = "repository/deployment/client";
+-	private static String axis2Conf = "repository/conf/axis2/axis2_client.xml";
++	private static String defaultAxis2Repo = "repository/deployment/client";
++	private static String defaultAxis2Conf = "repository/conf/axis2/axis2_client.xml";
+ 
+ 	private static final String defaultUsername = "admin@org.com";
+ 	private static final String defaultPassword = "admin123";
+@@ -37,6 +60,9 @@ public class GRegRegistry implements DataStore {
+ 	private static final String mainResource = "/startos/";
+ 	private static final int defaultRank = 3;
+ 
++	/*
++	 * Registry initiation
++	 */
+ 	private static WSRegistryServiceClient setRegistry() throws Exception {
+ 
+ 		XMLConfiguration conf = ConfUtil.getInstance(null).getConfiguration();
+@@ -44,11 +70,20 @@ public class GRegRegistry implements DataStore {
+ 		String gregUsername = conf.getString("metadataservice.username", defaultUsername);
+ 		String gregPassword = conf.getString("metadataservice.password", defaultPassword);
+ 		String gregServerURL = conf.getString("metadataservice.serverurl", serverURL);
+-		System.setProperty("javax.net.ssl.trustStore", "repository" + File.separator + "resources" +
+-		                                               File.separator + "security" +
+-		                                               File.separator + "wso2carbon.jks");
+-		System.setProperty("javax.net.ssl.trustStorePassword", "wso2carbon");
+-		System.setProperty("javax.net.ssl.trustStoreType", "JKS");
++		String axis2Repo = conf.getString("metadataservice.axis2Repo", defaultAxis2Repo);
++		String axis2Conf = conf.getString("metadataservice.axis2Conf", defaultAxis2Conf);
++		String defaultTrustStore =
++		                           "repository" + File.separator + "resources" + File.separator +
++		                                   "security" + File.separator + "wso2carbon.jks";
++		String trustStorePath = conf.getString("metadataservice.trustStore", defaultTrustStore);
++		String trustStorePassword =
++		                            conf.getString("metadataservice.trustStorePassword",
++		                                           "wso2carbon");
++		String trustStoreType = conf.getString("metadataservice.trustStoreType", "JKS");
++
++		System.setProperty("javax.net.ssl.trustStore", trustStorePath);
++		System.setProperty("javax.net.ssl.trustStorePassword", trustStorePassword);// "wso2carbon"
++		System.setProperty("javax.net.ssl.trustStoreType", trustStoreType);// "JKS"
+ 		System.setProperty("carbon.repo.write.mode", "true");
+ 		configContext =
+ 		                ConfigurationContextFactory.createConfigurationContextFromFileSystem(axis2Repo,
+@@ -56,6 +91,13 @@ public class GRegRegistry implements DataStore {
+ 		return new WSRegistryServiceClient(gregServerURL, gregUsername, gregPassword, configContext);
+ 	}
+ 
++	/*
++	 * Add the meta data to governance registry
++	 * 
++	 * @see org.apache.stratos.metadataservice.registry.DataStore#
++	 * addCartridgeMetaDataDetails(java.lang.String, java.lang.String,
++	 * org.apache.stratos.metadataservice.definition.CartridgeMetaData)
++	 */
+ 	@Override
+ 	public String addCartridgeMetaDataDetails(String applicationName, String cartridgeType,
+ 	                                          CartridgeMetaData cartridgeMetaData) throws Exception {
+@@ -108,6 +150,12 @@ public class GRegRegistry implements DataStore {
+ 		return "success";
+ 	}
+ 
++	/*
++	 * Get the meta data from the registry
++	 * 
++	 * @see org.apache.stratos.metadataservice.registry.DataStore#
++	 * getCartridgeMetaDataDetails(java.lang.String, java.lang.String)
++	 */
+ 	@Override
+ 	public String getCartridgeMetaDataDetails(String applicationName, String cartridgeType)
+ 	                                                                                       throws Exception {
+@@ -153,6 +201,13 @@ public class GRegRegistry implements DataStore {
+ 		return cartridgeMetaData.toString();
+ 	}
+ 
++	/*
++	 * 
++	 * Remove the meta data from the registry
++	 * 
++	 * @see org.apache.stratos.metadataservice.registry.DataStore#
++	 * removeCartridgeMetaDataDetails(java.lang.String, java.lang.String)
++	 */
+ 	@Override
+ 	public boolean removeCartridgeMetaDataDetails(String applicationName, String cartridgeType)
+ 	                                                                                           throws Exception {
+-- 
+1.9.1
+

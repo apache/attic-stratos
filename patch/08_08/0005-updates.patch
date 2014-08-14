@@ -1,0 +1,25 @@
+From 5d375dd0024b9aa77d01e8191c003cdad4a6c9ee Mon Sep 17 00:00:00 2001
+From: gayan <gayan@puppet.gayan.org>
+Date: Fri, 1 Aug 2014 18:05:28 +0530
+Subject: [PATCH 05/30] updates
+
+---
+ .../java/org/apache/stratos/metadataservice/services/MetaDataAdmin.java | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/services/MetaDataAdmin.java b/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/services/MetaDataAdmin.java
+index 6121d50..b5063ff 100644
+--- a/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/services/MetaDataAdmin.java
++++ b/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/services/MetaDataAdmin.java
+@@ -92,7 +92,7 @@ public class MetaDataAdmin {
+ 			resource.addProperty("Cartidge Type", cartridgeMetaData.type);
+ 
+ 			for (PropertyBean prop : cartridgeMetaData.property) {
+-				resource.addProperty(prop.name, prop.value);
++				resource.addProperty("hotsname", prop.username);
+ 			}
+ 
+ 			registry.put(resourcePath, resource);
+-- 
+1.9.1
+

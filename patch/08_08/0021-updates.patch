@@ -1,0 +1,43 @@
+From 688cfce3f803af3f1f1f4bb73b44fe67bfa12149 Mon Sep 17 00:00:00 2001
+From: gayan <gayan@puppet.gayan.org>
+Date: Fri, 8 Aug 2014 16:18:44 +0530
+Subject: [PATCH 21/30] updates
+
+---
+ .../registry/DataRegistryFactory.java               | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+
+diff --git a/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/registry/DataRegistryFactory.java b/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/registry/DataRegistryFactory.java
+index 3b9e061..93e2803 100644
+--- a/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/registry/DataRegistryFactory.java
++++ b/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/registry/DataRegistryFactory.java
+@@ -1,5 +1,26 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one
++ * or more contributor license agreements. See the NOTICE file
++ * distributed with this work for additional information
++ * regarding copyright ownership. The ASF licenses this file
++ * to you under the Apache License, Version 2.0 (the
++ * "License"); you may not use this file except in compliance
++ * with the License. You may obtain a copy of the License at
++ * 
++ * http://www.apache.org/licenses/LICENSE-2.0
++ * 
++ * Unless required by applicable law or agreed to in writing,
++ * software distributed under the License is distributed on an
++ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
++ * KIND, either express or implied. See the License for the
++ * specific language governing permissions and limitations
++ * under the License.
++ */
+ package org.apache.stratos.metadataservice.registry;
+ 
++/*
++ * Factory for the Data Registry
++ */
+ public class DataRegistryFactory {
+ 
+ 	public static DataStore getDataRegistryFactory(String registryName) {
+-- 
+1.9.1
+

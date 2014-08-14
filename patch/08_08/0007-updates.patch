@@ -1,0 +1,30 @@
+From 64d2b83f16310ba7f3f678762666d31059fcfa69 Mon Sep 17 00:00:00 2001
+From: gayan <gayan@puppet.gayan.org>
+Date: Mon, 4 Aug 2014 11:30:10 +0530
+Subject: [PATCH 07/30] updates
+
+---
+ .../src/main/resources/p2.inf                                  | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/features/manager/metadataservice/org.apache.stratos.metadataservice.feature/src/main/resources/p2.inf b/features/manager/metadataservice/org.apache.stratos.metadataservice.feature/src/main/resources/p2.inf
+index 91fef8c..13f9684 100644
+--- a/features/manager/metadataservice/org.apache.stratos.metadataservice.feature/src/main/resources/p2.inf
++++ b/features/manager/metadataservice/org.apache.stratos.metadataservice.feature/src/main/resources/p2.inf
+@@ -16,8 +16,8 @@
+ # under the License.
+ 
+ instructions.configure = \
+-org.eclipse.equinox.p2.touchpoint.natives.copy(source:${installFolder}/../features/org.apache.stratos.rest.endpoint_${feature.version}/cxf,target:${installFolder}/../../../lib/runtimes/cxf,overwrite:true);\
+-org.eclipse.equinox.p2.touchpoint.natives.copy(source:${installFolder}/../features/org.apache.stratos.rest.endpoint_${feature.version}/web-app/stratos.war,target:${installFolder}/../../deployment/server/webapps/stratos.war,overwrite:true);\
+-org.eclipse.equinox.p2.touchpoint.natives.copy(source:${installFolder}/../features/org.apache.stratos.rest.endpoint_${feature.version}/tomcat/webapp-classloading.xml,target:${installFolder}/../../conf/tomcat/webapp-classloading.xml,overwrite:true);\
+-org.eclipse.equinox.p2.touchpoint.natives.copy(source:${installFolder}/../features/org.apache.stratos.rest.endpoint_${feature.version}/tomcat/webapp-classloading-environments.xml,target:${installFolder}/../../conf/tomcat/webapp-classloading-environments.xml,overwrite:true);\
+-org.eclipse.equinox.p2.touchpoint.natives.copy(source:${installFolder}/../features/org.apache.stratos.rest.endpoint_${feature.version}/tomcat/context.xml,target:${installFolder}/../../conf/tomcat/context.xml,overwrite:true);\
++org.eclipse.equinox.p2.touchpoint.natives.copy(source:${installFolder}/../features/org.apache.stratos.metadataservice_${feature.version}/cxf,target:${installFolder}/../../../lib/runtimes/cxf,overwrite:true);\
++org.eclipse.equinox.p2.touchpoint.natives.copy(source:${installFolder}/../features/org.apache.stratos.metadataservice_${feature.version}/web-app/stratosmetadataservice.war,target:${installFolder}/../../deployment/server/webapps/stratosmetadataservice.war,overwrite:true);\
++org.eclipse.equinox.p2.touchpoint.natives.copy(source:${installFolder}/../features/org.apache.stratos.metadataservice_${feature.version}/tomcat/webapp-classloading.xml,target:${installFolder}/../../conf/tomcat/webapp-classloading.xml,overwrite:true);\
++org.eclipse.equinox.p2.touchpoint.natives.copy(source:${installFolder}/../features/org.apache.stratos.metadataservice_${feature.version}/tomcat/webapp-classloading-environments.xml,target:${installFolder}/../../conf/tomcat/webapp-classloading-environments.xml,overwrite:true);\
++org.eclipse.equinox.p2.touchpoint.natives.copy(source:${installFolder}/../features/org.apache.stratos.metadataservice_${feature.version}/tomcat/context.xml,target:${installFolder}/../../conf/tomcat/context.xml,overwrite:true);\
+-- 
+1.9.1
+

@@ -1,0 +1,84 @@
+From b65a7125cfc19be3b2678aa4e3dc508cd9c1e375 Mon Sep 17 00:00:00 2001
+From: gayan <gayan@puppet.gayan.org>
+Date: Fri, 8 Aug 2014 16:49:09 +0530
+Subject: [PATCH 26/30] updates
+
+---
+ .../metadataservice/services/MetaDataAdmin.java    | 34 ----------------------
+ 1 file changed, 34 deletions(-)
+
+diff --git a/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/services/MetaDataAdmin.java b/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/services/MetaDataAdmin.java
+index cdf33f4..e30ffec 100644
+--- a/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/services/MetaDataAdmin.java
++++ b/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/services/MetaDataAdmin.java
+@@ -1,7 +1,5 @@
+ package org.apache.stratos.metadataservice.services;
+ 
+-import java.io.File;
+-
+ import javax.servlet.http.HttpServletRequest;
+ import javax.ws.rs.Consumes;
+ import javax.ws.rs.GET;
+@@ -11,8 +9,6 @@ import javax.ws.rs.PathParam;
+ import javax.ws.rs.Produces;
+ import javax.ws.rs.core.Context;
+ 
+-import org.apache.axis2.context.ConfigurationContext;
+-import org.apache.axis2.context.ConfigurationContextFactory;
+ import org.apache.commons.configuration.XMLConfiguration;
+ import org.apache.commons.logging.Log;
+ import org.apache.commons.logging.LogFactory;
+@@ -21,7 +17,6 @@ import org.apache.stratos.metadataservice.definition.CartridgeMetaData;
+ import org.apache.stratos.metadataservice.exception.RestAPIException;
+ import org.apache.stratos.metadataservice.registry.DataRegistryFactory;
+ import org.apache.stratos.metadataservice.util.ConfUtil;
+-import org.wso2.carbon.registry.ws.client.registry.WSRegistryServiceClient;
+ 
+ @Path("/metadataservice/")
+ public class MetaDataAdmin {
+@@ -30,16 +25,6 @@ public class MetaDataAdmin {
+ 	@Context
+ 	HttpServletRequest httpServletRequest;
+ 
+-	private static ConfigurationContext configContext = null;
+-
+-	private static final String CARBON_HOME = "/../../../../";
+-	private static String axis2Repo = "repository/deployment/client";
+-	private static String axis2Conf = "repository/conf/axis2/axis2_client.xml";
+-
+-	private static final String defaultUsername = "admin@org.com";
+-	private static final String defaultPassword = "admin123";
+-	private static final String serverURL = "https://localhost:9445/services/";
+-	private static final String mainResource = "/startos/";
+ 	private final String defaultRegType = "GREG";
+ 
+ 	private XMLConfiguration conf;
+@@ -51,25 +36,6 @@ public class MetaDataAdmin {
+ 		conf = ConfUtil.getInstance(null).getConfiguration();
+ 	}
+ 
+-	private static WSRegistryServiceClient setRegistry() throws Exception {
+-
+-		XMLConfiguration conf = ConfUtil.getInstance(null).getConfiguration();
+-
+-		String gregUsername = conf.getString("metadataservice.username", defaultUsername);
+-		String gregPassword = conf.getString("metadataservice.password", defaultPassword);
+-		String gregServerURL = conf.getString("metadataservice.serverurl", serverURL);
+-		System.setProperty("javax.net.ssl.trustStore", "repository" + File.separator + "resources" +
+-		                                               File.separator + "security" +
+-		                                               File.separator + "wso2carbon.jks");
+-		System.setProperty("javax.net.ssl.trustStorePassword", "wso2carbon");
+-		System.setProperty("javax.net.ssl.trustStoreType", "JKS");
+-		System.setProperty("carbon.repo.write.mode", "true");
+-		configContext =
+-		                ConfigurationContextFactory.createConfigurationContextFromFileSystem(axis2Repo,
+-		                                                                                     axis2Conf);
+-		return new WSRegistryServiceClient(gregServerURL, gregUsername, gregPassword, configContext);
+-	}
+-
+ 	@POST
+ 	@Path("/cartridge/metadata/{applicationname}/{cartridgetype}")
+ 	@Produces("application/json")
+-- 
+1.9.1
+

@@ -1,0 +1,28 @@
+From 0bf4e553ad0794bec8bbf00783dba44d0b62e58b Mon Sep 17 00:00:00 2001
+From: gayan <gayan@puppet.gayan.org>
+Date: Wed, 6 Aug 2014 18:21:56 +0530
+Subject: [PATCH 20/30] updates
+
+---
+ .../java/org/apache/stratos/metadataservice/services/MetaDataAdmin.java | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/services/MetaDataAdmin.java b/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/services/MetaDataAdmin.java
+index 36316f2..acbc125 100644
+--- a/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/services/MetaDataAdmin.java
++++ b/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/services/MetaDataAdmin.java
+@@ -16,10 +16,10 @@ import org.apache.axis2.context.ConfigurationContextFactory;
+ import org.apache.commons.configuration.XMLConfiguration;
+ import org.apache.commons.logging.Log;
+ import org.apache.commons.logging.LogFactory;
+-import org.apache.stratos.metadataservice.Registry.DataRegistryFactory;
+ import org.apache.stratos.metadataservice.annotation.AuthorizationAction;
+ import org.apache.stratos.metadataservice.definition.CartridgeMetaData;
+ import org.apache.stratos.metadataservice.exception.RestAPIException;
++import org.apache.stratos.metadataservice.registry.DataRegistryFactory;
+ import org.apache.stratos.metadataservice.util.ConfUtil;
+ import org.wso2.carbon.registry.ws.client.registry.WSRegistryServiceClient;
+ 
+-- 
+1.9.1
+

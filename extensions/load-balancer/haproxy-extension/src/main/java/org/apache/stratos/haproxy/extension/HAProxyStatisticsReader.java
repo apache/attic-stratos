@@ -60,6 +60,7 @@ public class HAProxyStatisticsReader implements LoadBalancerStatisticsReader {
                     }
 
                     for (Port port : service.getPorts()) {
+<<<<<<< HEAD
                         for(String hostname : cluster.getHostNames()) {
                             backendId = hostname+"-http-members";
                             for (Member member : cluster.getMembers()) {
@@ -75,6 +76,23 @@ public class HAProxyStatisticsReader implements LoadBalancerStatisticsReader {
                                                 log.debug(String.format("Member weight found: [cluster] %s [member] %s [weight] %d", member.getClusterId(), member.getMemberId(), weight));
                                             }
                                             totalWeight += weight;
+=======
+                        frontendId = cluster.getClusterId() + "-host-" + HAProxyContext.getInstance().getHAProxyPrivateIp() + "-proxy-" + port.getProxy();
+                        //frontendId = cluster.getClusterId() + "-proxy-" + port.getProxy();
+                        backendId = frontendId + "-members";
+                        
+                        for (Member member : cluster.getMembers()) {
+                            // echo "get weight <backend>/<server>" | socat stdio <stats-socket>
+                            command = String.format("%s/get-weight.sh %s %s %s", scriptsPath, backendId, member.getMemberId(), statsSocketFilePath);
+                            try {
+                                output = CommandUtils.executeCommand(command);
+                                if ((output != null) && (output.length() > 0)) {
+                                    array = output.split(" ");
+                                    if ((array != null) && (array.length > 0)) {
+                                        weight = Integer.parseInt(array[0]);
+                                        if (log.isDebugEnabled()) {
+                                            log.debug(String.format("Member weight found: [cluster] %s [member] %s [weight] %d", member.getClusterId(), member.getMemberId(), weight));
+>>>>>>> ae58fb91107a55b0a56a94ab4a2a1aa5cd2f8fb8
                                         }
                                     }
                                 } catch (IOException e) {

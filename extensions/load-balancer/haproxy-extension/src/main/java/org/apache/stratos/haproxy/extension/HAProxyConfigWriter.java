@@ -77,6 +77,10 @@ public class HAProxyConfigWriter {
                 if(cluster.getServiceName().equals("haproxy"))
                     continue;
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> ae58fb91107a55b0a56a94ab4a2a1aa5cd2f8fb8
                 if ((service.getPorts() == null) || (service.getPorts().size() == 0)) {
                     throw new RuntimeException(String.format("No ports found in service: %s", service.getServiceName()));
                 }

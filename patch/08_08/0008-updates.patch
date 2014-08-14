@@ -1,0 +1,25 @@
+From b1a61f6aeb9c2db7113d5664c978ac68461d3dd4 Mon Sep 17 00:00:00 2001
+From: gayan <gayan@puppet.gayan.org>
+Date: Mon, 4 Aug 2014 11:30:25 +0530
+Subject: [PATCH 08/30] updates
+
+---
+ products/stratos/modules/distribution/src/assembly/bin.xml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/products/stratos/modules/distribution/src/assembly/bin.xml b/products/stratos/modules/distribution/src/assembly/bin.xml
+index 19e5e95..edeebab 100755
+--- a/products/stratos/modules/distribution/src/assembly/bin.xml
++++ b/products/stratos/modules/distribution/src/assembly/bin.xml
+@@ -864,7 +864,7 @@
+         </file>
+         <!-- Meta data service -->
+         <file>
+-            <source>../p2-profile-gen/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/webapps/stratos.war</source>
++            <source>../p2-profile-gen/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/webapps/stratosmetadataservice.war</source>
+             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps/</outputDirectory>
+             <fileMode>644</fileMode>
+         </file>
+-- 
+1.9.1
+

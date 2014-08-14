@@ -45,8 +45,12 @@ var render = function (theme, data, meta, require) {
                         class_name: create_btn_class,
                         class_icon: 'icons-arrow-left'
                     },
+<<<<<<< HEAD
                     bamInfo:data.bamInfo,
                     has_help: true,
+=======
+                    has_help:false,
+>>>>>>> ae58fb91107a55b0a56a94ab4a2a1aa5cd2f8fb8
                     help: "Tenants you create has permission to view and subscribe to Cartridges. Tenants don't have permission to do Partition deployment, Policy deployment, LB Creation, and MT service deployment.",
                     tenant_mgt: true
                 }

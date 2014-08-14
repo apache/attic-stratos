@@ -1,0 +1,73 @@
+From 6cd41ce3c24c4df4b0704f1c78e2d6ee6a62fc57 Mon Sep 17 00:00:00 2001
+From: gayan <gayan@puppet.gayan.org>
+Date: Fri, 8 Aug 2014 16:19:31 +0530
+Subject: [PATCH 24/30] updates
+
+---
+ .../metadataservice/services/MetaDataAdmin.java    | 24 +++++++++++++++-------
+ 1 file changed, 17 insertions(+), 7 deletions(-)
+
+diff --git a/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/services/MetaDataAdmin.java b/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/services/MetaDataAdmin.java
+index acbc125..cdf33f4 100644
+--- a/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/services/MetaDataAdmin.java
++++ b/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/services/MetaDataAdmin.java
+@@ -40,13 +40,15 @@ public class MetaDataAdmin {
+ 	private static final String defaultPassword = "admin123";
+ 	private static final String serverURL = "https://localhost:9445/services/";
+ 	private static final String mainResource = "/startos/";
+-	private static final int defaultRank = 3;
++	private final String defaultRegType = "GREG";
++
++	private XMLConfiguration conf;
+ 
+ 	@POST
+ 	@Path("/init")
+ 	@AuthorizationAction("/permission/protected/manage/monitor/tenants")
+ 	public void initialize() throws RestAPIException {
+-
++		conf = ConfUtil.getInstance(null).getConfiguration();
+ 	}
+ 
+ 	private static WSRegistryServiceClient setRegistry() throws Exception {
+@@ -77,7 +79,11 @@ public class MetaDataAdmin {
+ 	                                          @PathParam("cartridgetype") String cartridgeType,
+ 	                                          CartridgeMetaData cartridgeMetaData) throws Exception {
+ 
+-		String registryType = "GREG";
++		conf = ConfUtil.getInstance(null).getConfiguration();
++
++		String registryType =
++		                      conf.getString("metadataservice.govenanceregistrytype",
++		                                     defaultRegType);
+ 		return DataRegistryFactory.getDataRegistryFactory(registryType)
+ 		                          .addCartridgeMetaDataDetails(applicationName, cartridgeType,
+ 		                                                       cartridgeMetaData);
+@@ -93,8 +99,10 @@ public class MetaDataAdmin {
+ 	                                          @PathParam("cartridgetype") String cartridgeType)
+ 
+ 	throws Exception {
+-
+-		String registryType = "GREG";
++		conf = ConfUtil.getInstance(null).getConfiguration();
++		String registryType =
++		                      conf.getString("metadataservice.govenanceregistrytype",
++		                                     defaultRegType);
+ 		return DataRegistryFactory.getDataRegistryFactory(registryType)
+ 		                          .getCartridgeMetaDataDetails(applicationName, cartridgeType);
+ 
+@@ -102,8 +110,10 @@ public class MetaDataAdmin {
+ 
+ 	public boolean removeCartridgeMetaDataDetails(String applicationName, String cartridgeType)
+ 	                                                                                           throws Exception {
+-
+-		String registryType = "GREG";
++		conf = ConfUtil.getInstance(null).getConfiguration();
++		String registryType =
++		                      conf.getString("metadataservice.govenanceregistrytype",
++		                                     defaultRegType);
+ 		return DataRegistryFactory.getDataRegistryFactory(registryType)
+ 		                          .removeCartridgeMetaDataDetails(applicationName, cartridgeType);
+ 
+-- 
+1.9.1
+

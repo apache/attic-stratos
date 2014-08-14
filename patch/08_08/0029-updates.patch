@@ -1,0 +1,32 @@
+From 8097ebed6961881bd8797a973ca43126141ee3e4 Mon Sep 17 00:00:00 2001
+From: gayan <gayan@puppet.gayan.org>
+Date: Fri, 8 Aug 2014 16:50:11 +0530
+Subject: [PATCH 29/30] updates
+
+---
+ .../main/java/org/apache/stratos/metadataservice/Main.java  | 13 -------------
+ 1 file changed, 13 deletions(-)
+ delete mode 100644 components/org.apache.stratos.metadataserviceconsole/src/main/java/org/apache/stratos/metadataservice/Main.java
+
+diff --git a/components/org.apache.stratos.metadataserviceconsole/src/main/java/org/apache/stratos/metadataservice/Main.java b/components/org.apache.stratos.metadataserviceconsole/src/main/java/org/apache/stratos/metadataservice/Main.java
+deleted file mode 100644
+index e5b1bd7..0000000
+--- a/components/org.apache.stratos.metadataserviceconsole/src/main/java/org/apache/stratos/metadataservice/Main.java
++++ /dev/null
+@@ -1,13 +0,0 @@
+-package org.apache.stratos.metadataservice;
+-
+-public class Main {
+-
+-	/**
+-	 * @param args
+-	 */
+-	public static void main(String[] args) {
+-		// TODO Auto-generated method stub
+-		System.out.println("Meta data service started");
+-	}
+-
+-}
+-- 
+1.9.1
+

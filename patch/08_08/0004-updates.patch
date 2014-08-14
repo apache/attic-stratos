@@ -1,0 +1,33 @@
+From cb97b61ab92db7290d7cf71bb8cfefc4c50cbbc3 Mon Sep 17 00:00:00 2001
+From: gayan <gayan@puppet.gayan.org>
+Date: Fri, 1 Aug 2014 18:05:15 +0530
+Subject: [PATCH 04/30] updates
+
+---
+ .../stratos/metadataservice/definition/PropertyBean.java      | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/definition/PropertyBean.java b/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/definition/PropertyBean.java
+index 9ec1981..ae4fcf8 100644
+--- a/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/definition/PropertyBean.java
++++ b/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/definition/PropertyBean.java
+@@ -24,7 +24,14 @@ import javax.xml.bind.annotation.XmlRootElement;
+ @XmlRootElement(name = "property")
+ public class PropertyBean {
+ 
+-	public String name;
++	public String hostname;
+ 
+-	public String value;
++	public String username;
++	public String password;
++
++	@Override
++	public String toString() {
++		return " [ hostname: " + hostname + ", username: " + username + ", password: " + password +
++		       "] ";
++	}
+ }
+-- 
+1.9.1
+

@@ -1,0 +1,41 @@
+From a05381d7d22da87de486d8c23a4ca4a85f97b32f Mon Sep 17 00:00:00 2001
+From: gayan <gayan@puppet.gayan.org>
+Date: Wed, 6 Aug 2014 17:21:29 +0530
+Subject: [PATCH 13/30] updates
+
+---
+ .../stratos/metadataservice/services/MetaDataAdmin.java     | 13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
+
+diff --git a/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/services/MetaDataAdmin.java b/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/services/MetaDataAdmin.java
+index 086ec86..d441e0e 100644
+--- a/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/services/MetaDataAdmin.java
++++ b/components/org.apache.stratos.metadataservice/src/main/java/org/apache/stratos/metadataservice/services/MetaDataAdmin.java
+@@ -136,8 +136,8 @@ public class MetaDataAdmin {
+ 	@Produces("application/json")
+ 	@Consumes("application/json")
+ 	@AuthorizationAction("/permission/protected/manage/monitor/tenants")
+-	public String getPartition(@PathParam("applicationname") String applicationName,
+-	                           @PathParam("cartridgetype") String cartridgeType)
++	public String getCartridgeMetaDataDetails(@PathParam("applicationname") String applicationName,
++	                                          @PathParam("cartridgetype") String cartridgeType)
+ 
+ 	throws Exception {
+ 		Registry registry = setRegistry();
+@@ -181,4 +181,13 @@ public class MetaDataAdmin {
+ 		}
+ 		return cartridgeMetaData.toString();
+ 	}
++
++	public boolean removeCartridgeMetaDataDetails(String applicationName, String cartridgeType)
++	                                                                                           throws Exception {
++		Registry registry = setRegistry();
++		String resourcePath = mainResource + applicationName + "/" + cartridgeType;
++		registry.delete(resourcePath);
++		return false;
++
++	}
+ }
+-- 
+1.9.1
+
