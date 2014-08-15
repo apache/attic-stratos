@@ -335,21 +335,39 @@ function sm_related_popup() {
 }
 
 function sm_conf_validate() {
-    if [[ -z $puppet_ip ]]; then
-        echo "Please specify the ip of puppet master"
-        exit 1
-    elif !(valid_ip $puppet_ip); then
-        echo "Please provide valid ip for puppet master"
-        exit 1
+    if [[ $config_auto_flag -eq "puppet" ]]; then
+        if [[ -z $puppet_ip ]]; then
+            echo "Please specify the ip of puppet master"
+            exit 1
+        elif !(valid_ip $puppet_ip); then
+            echo "Please provide valid ip for puppet master"
+            exit 1
+        fi
+        if [[ -z $puppet_hostname ]]; then
+            echo "Please specify the puppet master's hostname"
+            exit 1
+        fi
+        if [[ -z $puppet_environment ]]; then
+            echo "Please specify the relevant puppet environment"
+            exit 1
+        fi
     fi
-    if [[ -z $puppet_hostname ]]; then
-        echo "Please specify the puppet master's hostname"
-        exit 1
+
+    if [[ $$config_auto_flag -eq "chef" ]]; then
+        if [[ -z $chef_ip ]]; then
+            echo "Please specify the IP address of the Chef server"
+            exit 1
+        elif !(valid_ip $chef_ip); then
+            echo "Please specify the valid IP address of the Chef server"
+            exit 1
+        fi
+
+        if [[ -z $chef_hostname ]]; then
+            echo "Please specify the host name of the Chef master"
+            exit 1
+        fi
     fi
-    if [[ -z $puppet_environment ]]; then
-        echo "Please specify the relevant puppet environment"
-        exit 1
-    fi
+
     if [[ ! -f $mysql_connector_jar ]]; then
         echo "Please copy the mysql connector jar to the stratos release pack folder and update the JAR name in conf/setup.conf file"
         exit 1
@@ -383,9 +401,15 @@ function sm_setup() {
     echo "In repository/conf/cartridge-config.properties"
     sed -i "s@CC_HOSTNAME:CC_HTTPS_PORT@$cc_hostname:$sm_cc_https_port@g" repository/conf/cartridge-config.properties
     sed -i "s@AS_HOSTNAME:AS_HTTPS_PORT@$as_hostname:$sm_as_https_port@g" repository/conf/cartridge-config.properties
+
+    sed -i "s@CONFIG_AUTO_FLAG@$config_auto_flag@g" repository/conf/cartridge-config.properties
+
     sed -i "s@PUPPET_IP@$puppet_ip@g" repository/conf/cartridge-config.properties
     sed -i "s@PUPPET_HOSTNAME@$puppet_hostname@g" repository/conf/cartridge-config.properties
     sed -i "s@PUPPET_ENV@$puppet_environment@g" repository/conf/cartridge-config.properties
+
+    sed -i "s@CHEF_IP@$chef_ip@g" repository/conf/cartridge-config.properties
+    sed -i "s@CHEF_HOSTNAME@$chef_hostname@g" repository/conf/cartridge-config.properties
 
     echo "In repository/conf/datasources/master-datasources.xml"
     sed -i "s@USERSTORE_DB_HOSTNAME@$userstore_db_hostname@g" repository/conf/datasources/master-datasources.xml
