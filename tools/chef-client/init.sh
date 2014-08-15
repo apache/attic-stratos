@@ -46,6 +46,7 @@ LOG=/tmp/puppet-init.log
 HOSTSFILE=/etc/hosts
 HOSTNAMEFILE=/etc/hostname
 PUPPETCONF=/etc/puppet/puppet.conf
+PUPPET=true
 
 is_public_ip_assigned() {
 
@@ -78,6 +79,54 @@ do
 done
 }
 
+run_puppet_agent() {
+    ${ECHO} "Running puppet agent"
+
+    PUPPET=`which puppet`
+    PUPPETAGENT="${PUPPET} agent"
+    RUNPUPPET="${PUPPETAGENT} -vt"
+
+    ${SLEEP} 5
+    ${PUPPETAGENT} --enable
+    ${RUNPUPPET}
+    ${PUPPETAGENT} --disable
+}
+
+run_chef_client() {
+    ${ECHO} "Configuring chef-client"
+
+    CHEF_CLIENT=`which chef-client`
+    VALIDATER_KEY="/etc/chef/chef-validator.pem"
+
+    ${ECHO} "Registering chef-client with server"
+    CHEF_REGISTRATION="${CHEF_CLIENT} -S https://${CHEF_HOSTNAME} -K ${VALIDATER_KEY}"
+    ${CHEF_REGISTRATION}
+
+    ${ECHO} "Creating chef-client configuration"
+    cat > /etc/chef/client.rb << EOF
+    log_level       :info
+    log_location    STDOUT
+    chef_server_url "https://${CHEF_HOSTNAME}"
+    EOF
+
+    ${ECHO} "Creating run list"
+    RUN_LIST_FILE=/etc/chef/run_list.json
+    printf '{"run_list" : ["role[%s]"]}\n' "${SERVICE_NAME}" > ${RUN_LIST_FILE}
+
+    ${ECHO} "Running chef-client"
+    CHEF_CLIENT_RUN="${CHEF_CLIENT} -j ${RUN_LIST_FILE}"
+    ${CHEF_CLIENT_RUN}
+}
+
+set_hostnames() {
+    local ipaddress=$1
+    local hostname=$2
+
+    ${ECHO} "${ipaddress}  ${hostname}" >> ${HOSTSFILE}
+    ${ECHO} "127.0.0.1 ${HOST}" >> ${HOSTSFILE}
+
+    /etc/init.d/hostname start
+}
 
 DATE=`date +%d%m%y%S`
 RANDOMNUMBER="`${TR} -c -d 0-9 < /dev/urandom | ${HEAD} -c 4`${DATE}"
@@ -100,36 +149,50 @@ if [ ! -d /tmp/payload ]; then
 	SERVICE_NAME=`sed 's/,/\n/g' launch-params | grep SERVICE_NAME | cut -d "=" -f 2`
 	DEPLOYMENT=`sed 's/,/\n/g' launch-params | grep DEPLOYMENT | cut -d "=" -f 2`
 	INSTANCE_HOSTNAME=`sed 's/,/\n/g' launch-params | grep HOSTNAME | cut -d "=" -f 2`
-	PUPPET_IP=`sed 's/,/\n/g' launch-params | grep PUPPET_IP | cut -d "=" -f 2`
-	PUPPET_HOSTNAME=`sed 's/,/\n/g' launch-params | grep PUPPET_HOSTNAME | cut -d "=" -f 2`
-	PUPPET_ENV=`sed 's/,/\n/g' launch-params | grep PUPPET_ENV | cut -d "=" -f 2`
+	CONFIG_AUTO_FLAG=`sed 's/,/\n/g' launch-params | grep CONFIG_AUTO_FLAG | cut -d "=" -f 2`
+	DOMAIN=""
+
+	if [[ ${CONFIG_AUTO_FLAG} -eq "puppet" ]]; then
+        PUPPET_IP=`sed 's/,/\n/g' launch-params | grep PUPPET_IP | cut -d "=" -f 2`
+        PUPPET_HOSTNAME=`sed 's/,/\n/g' launch-params | grep PUPPET_HOSTNAME | cut -d "=" -f 2`
+        PUPPET_ENV=`sed 's/,/\n/g' launch-params | grep PUPPET_ENV | cut -d "=" -f 2`
+
+        #essential to have PUPPET_HOSTNAME at the end in order to auto-sign the certs
+	    ${DOMAIN}="${PUPPET_HOSTNAME}"
+	elif [[ ${CONFIG_AUTO_FLAG} -eq "chef" ]]; then
+	    PUPPET=false
+	    CHEF_IP=`sed 's/,/\n/g' launch-params | grep CHEF_IP | cut -d "=" -f 2`
+        CHEF_HOSTNAME=`sed 's/,/\n/g' launch-params | grep CHEF_HOSTNAME | cut -d "=" -f 2`
+
+        # Assigning Chef server domain name for consistansy
+        ${DOMAIN}="${CHEF_HOSTNAME}"
+	fi
+
 	NODEID="${RANDOMNUMBER}.${DEPLOYMENT}.${SERVICE_NAME}"
-	#essential to have PUPPET_HOSTNAME at the end in order to auto-sign the certs
-	DOMAIN="${PUPPET_HOSTNAME}"
+
 	${ECHO} -e "\nNode Id ${NODEID}\n"
 	${ECHO} -e "\nDomain ${DOMAIN}\n"
-	sed -i "s/server=.*/server=${PUPPET_HOSTNAME}/g"  ${PUPPETCONF}
-	/etc/init.d/puppet restart
-	ARGS=("-n${NODEID}" "-d${DOMAIN}" "-s${PUPPET_IP}")
+
 	HOST="${NODEID}.${DOMAIN}"
 	${HOSTNAME} ${HOST}
 	${ECHO} "${HOST}" > ${HOSTNAMEFILE}
-	${ECHO} "${PUPPET_IP}  ${PUPPET_HOSTNAME}" >> ${HOSTSFILE}
-	${ECHO} "127.0.0.1 ${HOST}" >> ${HOSTSFILE}
-	/etc/init.d/hostname start
 
-	PUPPET=`which puppet`
-        PUPPETAGENT="${PUPPET} agent"
-        RUNPUPPET="${PUPPETAGENT} -vt"
+	if [ ${PUPPET} = true ]; then
+	    sed -i "s/server=.*/server=${PUPPET_HOSTNAME}/g"  ${PUPPETCONF}
+	    /etc/init.d/puppet restart
+	    ARGS=("-n${NODEID}" "-d${DOMAIN}" "-s${PUPPET_IP}")
+	    #${ECHO} "${PUPPET_IP}  ${PUPPET_HOSTNAME}" >> ${HOSTSFILE}
+	    set_hostnames ${PUPPET_IP} ${PUPPET_HOSTNAME}
 
-        ${SLEEP} 5
+	    run_puppet_agent
+	else
+	    #${ECHO} "${CHEF_IP}  ${CHEF_HOSTNAME}" >> ${HOSTSFILE}
+	    set_hostnames ${CHEF_IP} ${CHEF_HOSTNAME}
 
-        ${PUPPETAGENT} --enable
+	    run_chef_client
+	fi
 
-        ${RUNPUPPET}
-
-        ${PUPPETAGENT} --disable
-    	${ECHO} -e "Initialization completed successfully."
+    ${ECHO} -e "Initialization completed successfully."
 
 fi
 
