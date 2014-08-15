@@ -87,11 +87,21 @@ public class BasicPayloadData implements Serializable {
 
         //Payload Data exposed as system variables
         payloadBuilder.append(",");
-        payloadBuilder.append("PUPPET_IP=" + System.getProperty(CartridgeConstants.PUPPET_IP));
-        payloadBuilder.append(",");
-        payloadBuilder.append("PUPPET_HOSTNAME=" + System.getProperty(CartridgeConstants.PUPPET_HOSTNAME));
-        payloadBuilder.append(",");
-        payloadBuilder.append("PUPPET_ENV=" + System.getProperty(CartridgeConstants.PUPPET_ENVIRONMENT));
+
+        // set configuration automation servers accordingly
+        if(System.getProperty(CartridgeConstants.CONFIG_AUTO_FLAG).equals("puppet")) {
+            payloadBuilder.append("PUPPET_IP=" + System.getProperty(CartridgeConstants.PUPPET_IP));
+            payloadBuilder.append(",");
+            payloadBuilder.append("PUPPET_HOSTNAME=" + System.getProperty(CartridgeConstants.PUPPET_HOSTNAME));
+            payloadBuilder.append(",");
+            payloadBuilder.append("PUPPET_ENV=" + System.getProperty(CartridgeConstants.PUPPET_ENVIRONMENT));
+        }
+        else {
+            payloadBuilder.append("CHEF_IP=" + System.getProperty(CartridgeConstants.CHEF_IP));
+            payloadBuilder.append(",");
+            payloadBuilder.append("CHEF_IP=" + System.getProperty(CartridgeConstants.CHEF_HOSTNAME));
+            payloadBuilder.append(",");
+        }
 
     }
 

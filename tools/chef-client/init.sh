@@ -19,6 +19,10 @@
 #
 # --------------------------------------------------------------
 
+# init file to run chef-client
+# ---------------------------
+
+
 MKDIR=`which mkdir`
 UNZIP=`which unzip`
 ECHO=`which echo`
@@ -105,12 +109,12 @@ if [ ! -d /tmp/payload ]; then
 	${ECHO} -e "\nNode Id ${NODEID}\n"
 	${ECHO} -e "\nDomain ${DOMAIN}\n"
 	sed -i "s/server=.*/server=${PUPPET_HOSTNAME}/g"  ${PUPPETCONF}
-	/etc/init.d/puppet restart    
+	/etc/init.d/puppet restart
 	ARGS=("-n${NODEID}" "-d${DOMAIN}" "-s${PUPPET_IP}")
 	HOST="${NODEID}.${DOMAIN}"
 	${HOSTNAME} ${HOST}
 	${ECHO} "${HOST}" > ${HOSTNAMEFILE}
-	${ECHO} "${PUPPET_IP}  ${PUPPET_HOSTNAME}" >> ${HOSTSFILE} 
+	${ECHO} "${PUPPET_IP}  ${PUPPET_HOSTNAME}" >> ${HOSTSFILE}
 	${ECHO} "127.0.0.1 ${HOST}" >> ${HOSTSFILE}
 	/etc/init.d/hostname start
 
