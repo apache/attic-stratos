@@ -31,6 +31,7 @@ GREP=`which grep`
 SED=`which sed`
 CP=`which cp`
 MV=`which mv`
+CURL=`which curl`
 
 HOSTSFILE=/etc/hosts
 DATE=`date +%d%m%y%S`
@@ -85,6 +86,7 @@ run_chef_client() {
 
     ${ECHO} "Creating run list"
     RUN_LIST_FILE=/etc/chef/run_list.json
+    ${RM} -rf ${RUN_LIST_FILE}
     printf '{"run_list" : ["role[%s]"]}\n' "${SERVICE_NAME}" > ${RUN_LIST_FILE}
 
     ${ECHO} "Running chef-client"
@@ -137,14 +139,12 @@ if [[ $answer = y ]] ; then
 
 	    #install_chef_client
 	    ${ECHO} -e "Installing chef-client"
-	    curl -L https://www.opscode.com/chef/install.sh | bash
-	    mkdir /etc/chef
+	    ${CURL} -L https://www.opscode.com/chef/install.sh | bash
+	    ${MKDIR} /etc/chef
 	    cd /etc/chef/
 
 	    run_chef_client
-
 	elif [[ ${CONFIG_AUTO_FLAG} -eq "puppet" ]]; then
-
         read -p "Please provide puppet master IP:" PUPPET_IP
         if ! valid_ip $PUPPET_IP ; then
         echo "invalid IP address format!"
