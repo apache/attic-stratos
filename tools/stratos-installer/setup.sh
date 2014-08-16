@@ -335,7 +335,7 @@ function sm_related_popup() {
 }
 
 function sm_conf_validate() {
-    if [[ $config_auto_flag -eq "puppet" ]]; then
+    if [[ ${config_auto_flag} -eq "puppet" ]]; then
         if [[ -z $puppet_ip ]]; then
             echo "Please specify the ip of puppet master"
             exit 1
@@ -353,16 +353,16 @@ function sm_conf_validate() {
         fi
     fi
 
-    if [[ $$config_auto_flag -eq "chef" ]]; then
-        if [[ -z $chef_ip ]]; then
+    if [[ ${config_auto_flag} -eq "chef" ]]; then
+        if [[ -z ${chef_ip} ]]; then
             echo "Please specify the IP address of the Chef server"
             exit 1
-        elif !(valid_ip $chef_ip); then
+        elif !(valid_ip ${chef_ip}); then
             echo "Please specify the valid IP address of the Chef server"
             exit 1
         fi
 
-        if [[ -z $chef_hostname ]]; then
+        if [[ -z ${chef_hostname} ]]; then
             echo "Please specify the host name of the Chef master"
             exit 1
         fi

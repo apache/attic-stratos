@@ -150,7 +150,6 @@ if [ ! -d /tmp/payload ]; then
 	DEPLOYMENT=`sed 's/,/\n/g' launch-params | grep DEPLOYMENT | cut -d "=" -f 2`
 	INSTANCE_HOSTNAME=`sed 's/,/\n/g' launch-params | grep HOSTNAME | cut -d "=" -f 2`
 	CONFIG_AUTO_FLAG=`sed 's/,/\n/g' launch-params | grep CONFIG_AUTO_FLAG | cut -d "=" -f 2`
-	DOMAIN=""
 
 	if [[ ${CONFIG_AUTO_FLAG} -eq "puppet" ]]; then
         PUPPET_IP=`sed 's/,/\n/g' launch-params | grep PUPPET_IP | cut -d "=" -f 2`
@@ -158,14 +157,14 @@ if [ ! -d /tmp/payload ]; then
         PUPPET_ENV=`sed 's/,/\n/g' launch-params | grep PUPPET_ENV | cut -d "=" -f 2`
 
         #essential to have PUPPET_HOSTNAME at the end in order to auto-sign the certs
-	    ${DOMAIN}="${PUPPET_HOSTNAME}"
+	    DOMAIN="${PUPPET_HOSTNAME}"
 	elif [[ ${CONFIG_AUTO_FLAG} -eq "chef" ]]; then
 	    PUPPET=false
 	    CHEF_IP=`sed 's/,/\n/g' launch-params | grep CHEF_IP | cut -d "=" -f 2`
         CHEF_HOSTNAME=`sed 's/,/\n/g' launch-params | grep CHEF_HOSTNAME | cut -d "=" -f 2`
 
         # Assigning Chef server domain name for consistansy
-        ${DOMAIN}="${CHEF_HOSTNAME}"
+        DOMAIN="${CHEF_HOSTNAME}"
 	fi
 
 	NODEID="${RANDOMNUMBER}.${DEPLOYMENT}.${SERVICE_NAME}"
