@@ -90,7 +90,7 @@ run_chef_client() {
     printf '{"run_list" : ["role[%s]"]}\n' "${SERVICE_NAME}" > ${RUN_LIST_FILE}
 
     ${ECHO} "Running chef-client"
-    CHEF_CLIENT_RUN="${CHEF_CLIENT} -j ${RUN_LIST_FILE}"
+    CHEF_CLIENT_RUN="${CHEF_CLIENT} -j ${RUN_LIST_FILE} -l info"
     ${CHEF_CLIENT_RUN}
 }
 
