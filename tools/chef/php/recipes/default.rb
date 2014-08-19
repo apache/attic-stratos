@@ -54,12 +54,10 @@ cookbook_file "/etc/apt/apt.conf.d/90forceyes" do
   mode 0755
 end
 
-if FileTest.exists?("/etc/apt/apt.conf.d/90forceyes")
-  execute "apt-update" do
-    command "apt-get update > /dev/null 2>&1"
-  end
-  log "Running apt update"
+execute "apt-update" do
+  command "apt-get update > /dev/null 2>&1"
 end
+
 
 #Installing packages
 packages.each do |pkg|
@@ -78,42 +76,33 @@ template "/etc/apache2/apache2.conf" do
 end
 
 #Creating defaulf host file
-if FileTest.exists?("/etc/apache2/apache2.conf")
-  template "/etc/apache2/sites-available/default" do
-    source "apache2/sites-available/default.erb"
-    owner 'root'
-    group 'root'
-    mode '0775'
-    action :create
-  end
+template "/etc/apache2/sites-available/default" do
+  source "apache2/sites-available/default.erb"
+  owner 'root'
+  group 'root'
+  mode '0775'
+  action :create
 end
 
 #Creating default ssl host file
-if FileTest.exists?("/etc/apache2/sites-available/default")
-  template "/etc/apache2/sites-available/default-ssl" do
-    source "apache2/sites-available/default-ssl.erb"
-    owner 'root'
-    group 'root'
-    mode '0775'
-    action :create
-  end
+template "/etc/apache2/sites-available/default-ssl" do
+  source "apache2/sites-available/default-ssl.erb"
+  owner 'root'
+  group 'root'
+  mode '0775'
+  action :create
 end
 
 #Enabling ssl module
-if FileTest.exists?("/etc/apache2/sites-available/default-ssl")
-  execute "enable ssl module" do
-    command "a2enmod ssl"
-    action :run
-  end
-  log "Enabled ssl module"
+execute "enable ssl module" do
+  command "a2enmod ssl"
+  action :run
 end
 
 #Restarting apache to apply cheges
-if FileTest.exists?("/etc/apache2/apache2.conf")
-  execute "apache2 relaod" do
-    command "service apache2 restart"
-    action :run
-  end
-  log "Apache2 reloaded"
+execute "apache2 relaod" do
+  command "service apache2 restart"
+  action :run
 end
+
 
