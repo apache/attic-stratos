@@ -1,0 +1,13 @@
+{
+  "name": "tomcat",
+  "description": "Role to be applied for a Tomcat cartridge in Apache Stratos",
+  "default_attributes": {
+    "docroot": "/mnt/apache-tomcat-#{tomcat_version}/webapps/",
+    "samlalias": "/mnt/apache-tomcat-#{tomcat_version}/webapps/"
+  },
+  "run_list": [
+    "base",
+    "java",
+    "tomcat"
+  ]
+}
