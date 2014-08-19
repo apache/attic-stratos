@@ -1,4 +1,5 @@
 #tomcat config
+#
 
 package_name="apache-tomcat-#{node[:tomcat][:version]}"
 service_code="apache-tomcat"
@@ -37,5 +38,6 @@ execute "Start tomcat" do
 	environment	({'JAVA_HOME' => '/opt/java'})
 	command	"bash startup.sh"
 	# logoutput   => 'on_failure',
+	# notifies agent
 end
 
