@@ -18,6 +18,13 @@
 # nodejs cartridge node
 node /nodejs/ inherits base {
   require java
+
+  $custom_agent_templates = ['extensions/start-servers.sh']
+  class {'agent':
+    custom_templates => $custom_agent_templates,
+    module=>'nodejs'
+  }
+
   class {'agent':
     type => 'nodejs',
   }
