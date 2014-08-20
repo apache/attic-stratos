@@ -22,9 +22,13 @@ node /php/ inherits base {
   $samlalias="/var/www/"
 
   require java
+ 
+  $custom_agent_templates = ['extensions/artifacts-updated.sh']
   class {'agent':
-    type => 'php',
+    custom_templates => $custom_agent_templates,
+    module=>'php'
   }
+
   class {'php':}
   
   #install stratos_base before java before php before agent
