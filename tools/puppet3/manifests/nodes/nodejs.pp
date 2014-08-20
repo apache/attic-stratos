@@ -25,9 +25,6 @@ node /nodejs/ inherits base {
     module=>'nodejs'
   }
 
-  class {'agent':
-    type => 'nodejs',
-  }
   class {'nodejs':}
 
   Class['stratos_base'] -> Class['java'] -> Class['nodejs'] ~> Class['agent']
