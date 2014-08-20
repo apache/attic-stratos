@@ -24,6 +24,8 @@ class agent(
   $enable_artifact_update = true,
   $auto_commit            = false,
   $auto_checkout          = true,
+  $custom_templates       = [],
+  $module                 = 'undef'
 ){
 
   $deployment_code = 'cartridge-agent'
@@ -68,18 +70,43 @@ class agent(
     require => Agent::Initialize[$deployment_code];
   }
 
+  $default_templates = $module ? {
+     'undef'    => $service_templates,
+      default   => difference($service_templates,$custom_templates)
+  }
+
+  # applying default extensions
   agent::push_templates {
-    $service_templates:
+    $default_templates:
       target    => $carbon_home,
+      template_dir => "agent",
       require   => Agent::Initialize[$deployment_code];
+  }
+
+  # applying custom extensions
+  unless $module == 'undef' {
+    agent::push_templates {
+      $custom_templates:
+        target    => $carbon_home,
+        template_dir => "${module}/agent",
+        require   => [Agent::Initialize[$deployment_code]]
+    }
+  }
+
+  $required_resources = $module ? {
+    'undef'  => [
+            Exec['copy launch-params to carbon_home'],
+            Agent::Push_templates[$default_templates],
+           ],
+     default =>[
+            Exec['copy launch-params to carbon_home'],
+            Agent::Push_templates[$default_templates],
+            Agent::Push_templates[$custom_templates]         ]
   }
 
   agent::start { $deployment_code:
     owner   => $owner,
     target  => $carbon_home,
-    require => [
-      Exec['copy launch-params to carbon_home'],
-      Agent::Push_templates[$service_templates],
-    ];
+    require => $required_resources
   }
 }
