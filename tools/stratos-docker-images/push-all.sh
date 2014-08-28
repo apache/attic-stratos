@@ -22,14 +22,26 @@
 
 set -e
 
+cd bind
+docker push apachestratos/bind
+cd ..
+
+cd puppetmaster
+docker push apachestratos/puppetmaster
+cd ..
+
+cd puppettestnode
+docker push apachestratos/puppettestnode
+cd ..
+
 cd mysql
-sudo docker push apachestratos/mysql
+docker push apachestratos/mysql
 cd ..
 
 cd activemq
-sudo docker push apachestratos/activemq
+docker push apachestratos/activemq
 cd ..
 
 cd stratos
-sudo docker push apachestratos/stratos
+docker push apachestratos/stratos
 cd ..
