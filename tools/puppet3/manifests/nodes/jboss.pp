@@ -1,0 +1,43 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+# 
+#   http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# Jboss cartridge node
+node /jboss/ inherits base {
+  $product = 'jboss-as'
+  $version = '7.1.1.Final'
+  $docroot = "/mnt/${product}-${version}/standalone/deployments/"
+  $jboss_user    = 'jbossas1'
+  $jboss_group   = 'jboss'
+  require java
+  class {'jboss': 
+     user       => $jboss_user,
+     group      => $jboss_group,
+     java_home  => $java_home,
+     version    => $version,
+     java_opts  => "-Xms512m -Xmx3000m",
+     extra_jars => ['mysql-connector-java-5.1.29-bin.jar']
+  }
+
+  $custom_agent_templates = ['extensions/artifacts-updated.sh']
+  class {'agent':
+    custom_templates => $custom_agent_templates,
+    module=>'jboss'
+  }
+
+  #install stratos_base before java before jboss before agent
+  Class['stratos_base'] -> Class['java'] -> Class['jboss'] ~> Class['agent']
+}
