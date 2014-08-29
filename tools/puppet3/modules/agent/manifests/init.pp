@@ -24,8 +24,9 @@ class agent(
   $enable_artifact_update = true,
   $auto_commit            = false,
   $auto_checkout          = true,
+  $module                 = 'undef',
   $custom_templates       = [],
-  $module                 = 'undef'
+  $exclude_templates	  = []
 ){
 
   $deployment_code = 'cartridge-agent'
@@ -35,7 +36,7 @@ class agent(
 
   tag($service_code)
 
-  $service_templates = [
+  $default_templates = [
     'bin/stratos.sh',
     'conf/templates/jndi.properties.template',
     'conf/log4j.properties',   
@@ -70,14 +71,18 @@ class agent(
     require => Agent::Initialize[$deployment_code];
   }
 
-  $default_templates = $module ? {
-     'undef'    => $service_templates,
-      default   => difference($service_templates,$custom_templates)
+  # excluding templates which are not needed by a cartridge module from default_templates
+  $default_templates_excluded = difference($default_templates,$exclude_templates)
+
+  # excluding custom_templates, if any,(which will be overrided by a cartridge module) from default_templates
+  $service_templates = $module ? {
+     'undef'    => $default_templates_excluded,
+      default   => difference($default_templates_excluded,$custom_templates)
   }
 
   # applying default extensions
   agent::push_templates {
-    $default_templates:
+    $service_templates:
       target    => $carbon_home,
       template_dir => "agent",
       require   => Agent::Initialize[$deployment_code];
@@ -93,14 +98,20 @@ class agent(
     }
   }
 
+  # removing default extensions which are shipped by agent.zip
+  agent::remove_templates {
+    $exclude_templates:
+      target    => $carbon_home,
+  }
+
   $required_resources = $module ? {
     'undef'  => [
             Exec['copy launch-params to carbon_home'],
-            Agent::Push_templates[$default_templates],
+            Agent::Push_templates[$default_templates_excluded],
            ],
      default =>[
             Exec['copy launch-params to carbon_home'],
-            Agent::Push_templates[$default_templates],
+            Agent::Push_templates[$default_templates_excluded],
             Agent::Push_templates[$custom_templates]         ]
   }
 
