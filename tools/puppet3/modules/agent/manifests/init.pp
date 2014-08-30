@@ -38,7 +38,7 @@ class agent(
 
   $default_templates = [
     'bin/stratos.sh',
-    'conf/templates/jndi.properties.template',
+    'conf/jndi.properties',
     'conf/log4j.properties',   
     'extensions/clean.sh',
     'extensions/instance-activated.sh',
