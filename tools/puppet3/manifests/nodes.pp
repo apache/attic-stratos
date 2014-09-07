@@ -135,11 +135,14 @@ node /mysql/ inherits base {
 
 # nodejs cartridge node
 node /nodejs/ inherits base {
+  $docroot = "/var/local/"
   require java
   class {'agent':
     type => 'nodejs',
   }
-  class {'nodejs':}
+  class {'nodejs':
+  manage_repo => true,
+}
 
   #install agent before nodejs
   Class['nodejs'] ~> Class['agent']

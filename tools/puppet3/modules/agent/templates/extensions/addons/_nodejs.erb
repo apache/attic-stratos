@@ -16,6 +16,12 @@
 # under the License.
 
 export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin"
-NODEJS_HOME=<%= @stratos_app_path %>
-npm install express
-node web.js > /dev/null 2&1 &
+cd <%=@docroot%>
+SERVICE='node'
+if ps ax | grep -v grep | grep $SERVICE > /dev/null
+then
+ echo "$SERVICE service running." | tee -a service_status.log
+else
+ npm install  | tee -a npm_install.log
+ nohup npm start > npm_start.log 2>&1 &
+fi
