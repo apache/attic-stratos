@@ -17,15 +17,6 @@
 
 # ruby cartridge node
 node /ruby/ inherits base {
-  require java
-
-  $custom_agent_templates = ['extensions/instance-started.sh']
-  class {'agent':
-    custom_templates => $custom_agent_templates,
-    module=>'ruby'
-  }
 
   class {'ruby':}
-
-  Class['stratos_base'] -> Class['java'] -> Class['ruby'] ~> Class['agent']
 }

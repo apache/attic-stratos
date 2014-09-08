@@ -17,15 +17,6 @@
 
 # mysql cartridge node
 node /mysql/ inherits base {
-  require java
-
-  $custom_agent_templates = ['extensions/instance-started.sh']
-  class {'agent':
-    custom_templates => $custom_agent_templates,
-    module=>'mysql'
-  }
 
   class {'mysql':}
-
-  Class['stratos_base'] -> Class['java'] -> Class['mysql'] ~> Class['agent']
 }
