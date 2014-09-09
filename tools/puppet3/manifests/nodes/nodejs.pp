@@ -17,11 +17,17 @@
 
 # nodejs cartridge node
 node /nodejs/ inherits base {
+  # clones node.js git repository to the $docroot 
+  $docroot = "/var/local/"
   require java
   class {'agent':
     type => 'nodejs',
   }
-  class {'nodejs':}
+  class {'nodejs':
+  # required parameter to set when using puppet-labs nodejs module
+  # when installing in ubuntu
+  manage_repo => true,
+  }
 
   Class['stratos_base'] -> Class['java'] -> Class['nodejs'] ~> Class['agent']
 }
