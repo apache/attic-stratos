@@ -81,6 +81,6 @@ class tomcat(
   }
 
   # install stratos_base before java before tomcat before agent
-  Class['stratos_base'] -> Class['java'] -> Class['tomcat'] ~> Class['agent']
+  Class['stratos_base'] -> Class['java'] -> Class['agent'] -> Class['tomcat']
 }
 

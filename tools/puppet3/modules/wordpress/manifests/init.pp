@@ -88,5 +88,5 @@ class wordpress (
   }
  
   # install stratos_base before java before mysql before wordpress before agent
-  Class['stratos_base'] -> Class['java'] -> Class['mysql'] -> Class['wordpress'] ~> Class['agent']
+  Class['stratos_base'] -> Class['java'] -> Class['agent'] -> Class['mysql'] -> Class['wordpress']
 }

@@ -55,5 +55,5 @@ class jboss (
   }
   
   #install stratos_base before java before jboss before agent
-  Class['stratos_base'] -> Class['java'] -> Class['jboss'] ~> Class['agent']
+  Class['stratos_base'] -> Class['java'] -> Class['agent'] -> Class['jboss']
 }

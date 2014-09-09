@@ -67,5 +67,5 @@ class ruby( $target = '/mnt' ) {
   }
 
   # install stratos_base before java before ruby before agent
-  Class['stratos_base'] -> Class['java'] -> Class['ruby'] ~> Class['agent']
+  Class['stratos_base'] -> Class['java'] -> Class['agent'] -> Class['ruby']
 }

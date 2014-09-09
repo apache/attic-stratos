@@ -75,6 +75,6 @@ class nodejs {
   }
 
   # install stratos_base before java before nodejs before agent
-  Class['stratos_base'] -> Class['java'] -> Class['nodejs'] ~> Class['agent']
+  Class['stratos_base'] -> Class['java'] -> Class['agent'] -> Class['nodejs']
 }
 

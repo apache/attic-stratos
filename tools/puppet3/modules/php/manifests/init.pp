@@ -141,5 +141,5 @@ class php () {
   }
 
   #install stratos_base before java before php before agent
-  Class['stratos_base'] -> Class['java'] -> Class['php'] ~> Class['agent']
+  Class['stratos_base'] -> Class['java'] -> Class['agent'] -> Class['php']
 }

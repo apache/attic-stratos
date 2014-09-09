@@ -72,5 +72,5 @@ class haproxy(
   }
 
   # install stratos_base before java before haproxy before agent
-  Class['stratos_base'] -> Class['java'] -> Class['haproxy'] ~> Class['agent']
+  Class['stratos_base'] -> Class['java'] -> Class['agent'] -> Class['haproxy']
 }
