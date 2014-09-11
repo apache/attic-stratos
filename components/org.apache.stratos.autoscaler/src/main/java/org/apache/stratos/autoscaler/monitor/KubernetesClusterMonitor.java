@@ -6,6 +6,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.stratos.autoscaler.KubernetesClusterContext;
 import org.apache.stratos.autoscaler.policy.model.AutoscalePolicy;
+import org.apache.stratos.cloud.controller.stub.pojo.MemberContext;
+import org.apache.stratos.cloud.controller.stub.pojo.Property;
 import org.apache.stratos.common.constants.StratosConstants;
 import org.apache.stratos.messaging.domain.topology.ClusterStatus;
 import org.apache.stratos.messaging.message.receiver.topology.TopologyManager;
@@ -32,6 +34,7 @@ public class KubernetesClusterMonitor implements Runnable{
     }
 
     private void readConfigurations () {
+    	// should read from a config file
         monitorInterval = 90000;
     }
 	
@@ -81,7 +84,19 @@ public class KubernetesClusterMonitor implements Runnable{
 			int minReplicas = Integer.parseInt(props.getProperty(StratosConstants.MIN_REPLICAS));
 
 			if (numberOfReplicasInServiceCluster < minReplicas) {
+				
 				int numOfAdditionalReplicas = minReplicas - numberOfReplicasInServiceCluster;
+				
+	            MemberContext member = new MemberContext();
+	            member.setClusterId(serviceClusterId);
+	            member.setInitTime(System.currentTimeMillis());
+	            org.apache.stratos.cloud.controller.stub.pojo.Properties memberContextProps = new org.apache.stratos.cloud.controller.stub.pojo.Properties();
+	            Property kubernetesClusterMasterIPProps = new Property();
+	            kubernetesClusterMasterIPProps.setName("MIN_COUNT");
+	            kubernetesClusterMasterIPProps.setValue(String.valueOf("127.0.0.1"));
+	            memberContextProps.addProperties(kubernetesClusterMasterIPProps);
+	            member.setProperties(memberContextProps);
+	            
 				for (int i = 0; i < numOfAdditionalReplicas; i++) {
 					// cc.createContainers(kubernetesClusterID, serviceClusterID);
 				}
