@@ -50,6 +50,9 @@ import org.apache.stratos.manager.subscription.CartridgeSubscription;
 import org.apache.stratos.manager.subscription.DataCartridgeSubscription;
 import org.apache.stratos.manager.subscription.SubscriptionData;
 import org.apache.stratos.manager.topology.model.TopologyClusterInformationModel;
+import org.apache.stratos.manager.user.mgt.StratosUserManager;
+import org.apache.stratos.manager.user.mgt.beans.UserInfoBean;
+import org.apache.stratos.manager.user.mgt.exception.UserManagementException;
 import org.apache.stratos.manager.utils.ApplicationManagementUtil;
 import org.apache.stratos.manager.utils.CartridgeConstants;
 import org.apache.stratos.messaging.domain.topology.Cluster;
@@ -72,6 +75,10 @@ import org.apache.stratos.rest.endpoint.exception.KubernetesGroupDoesNotExistExc
 import org.apache.stratos.rest.endpoint.exception.KubernetesHostAlreadyDeployedException;
 import org.apache.stratos.rest.endpoint.exception.KubernetesMasterDoesNotExistException;
 import org.apache.stratos.rest.endpoint.exception.RestAPIException;
+import org.wso2.carbon.context.CarbonContext;
+import org.wso2.carbon.user.api.UserRealm;
+import org.wso2.carbon.user.api.UserStoreException;
+import org.wso2.carbon.user.api.UserStoreManager;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -1262,6 +1269,65 @@ public class ServiceUtils {
 
     }
 
+
+    public static void addUser(UserInfoBean userInfoBean) throws RestAPIException {
+
+        try {
+            getStratosUserManager().addUser(userInfoBean);
+        } catch (UserManagementException e) {
+            log.error(e.getMessage(), e);
+            throw new RestAPIException(e.getMessage(), e);
+        }
+
+        log.info("Successfully added an user with UserName " + userInfoBean.getUserName());
+    }
+
+    public static void updateUser(UserInfoBean userInfoBean) throws RestAPIException {
+
+        try {
+            getStratosUserManager().updateUser(userInfoBean);
+        } catch (UserManagementException e) {
+            log.error(e.getMessage(), e);
+            throw new RestAPIException(e.getMessage(), e);
+        }
+        log.info("Successfully updated an user with UserName " + userInfoBean.getUserName());
+    }
+
+    public static void deleteUser(String userName) throws RestAPIException {
+
+        try {
+            getStratosUserManager().deleteUser(userName);
+        } catch (UserManagementException e) {
+            log.error(e.getMessage(), e);
+            throw new RestAPIException(e.getMessage(), e);
+        }
+        log.info("Successfully deleted an user with UserName " + userName);
+    }
+
+    /**
+     * Get Tenant aware UserStore
+     * @return
+     * @throws RestAPIException
+     */
+    private static StratosUserManager getStratosUserManager() throws RestAPIException {
+
+        CarbonContext carbonContext = CarbonContext.getThreadLocalCarbonContext();
+        UserRealm userRealm = null;
+        StratosUserManager stratosUserManager = null;
+
+        try {
+            userRealm = carbonContext.getUserRealm();
+            UserStoreManager userStoreManager = userRealm.getUserStoreManager();
+            stratosUserManager = new StratosUserManager(userStoreManager);
+
+        } catch (UserStoreException e) {
+            log.error(e.getMessage(), e);
+            throw new RestAPIException(e.getMessage(), e);
+        }
+
+        return stratosUserManager;
+    }
+
     public static boolean deployKubernetesGroup(KubernetesGroup kubernetesGroup) throws KubernetesGroupDoesNotExistException {
         return false;
     }
@@ -1285,4 +1351,5 @@ public class ServiceUtils {
     public static boolean undeployKubernetesGroup(String kubernetesGroupId) throws KubernetesGroupDoesNotExistException {
         return false;
     }
+
 }

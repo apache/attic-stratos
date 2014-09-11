@@ -17,43 +17,30 @@
   #  under the License.
   -->
 <component xmlns="http://products.wso2.org/carbon">
-    <deployers>
-    	<deployer>
-            <directory>../../conf</directory>
-            <extension>xml</extension>
-            <class>org.apache.stratos.cloud.controller.deployers.CloudControllerDeployer</class>
-        </deployer>
-        <!-- >deployer>
-            <directory>cartridges</directory>
-            <extension>xml</extension>
-            <class>org.apache.stratos.cloud.controller.deployers.CartridgeDeployer</class>
-        </deployer-->
-        <!-- >deployer>
-            <directory>services</directory>
-            <extension>xml</extension>
-            <class>org.apache.stratos.cloud.controller.deployers.ServiceDeployer</class>
-        </deployer-->
-    </deployers>
     <ManagementPermissions>
         <ManagementPermission>
-            <DisplayName>Cartridge Definition</DisplayName>
-            <ResourceId>/permission/admin/manage/add/cartridgeDefinition</ResourceId>
-        </ManagementPermission>
-        <ManagementPermission>
-            <DisplayName>Service</DisplayName>
-            <ResourceId>/permission/admin/manage/add/service</ResourceId>
+            <DisplayName>Subscription</DisplayName>
+            <ResourceId>/permission/admin/manage/add/subscription</ResourceId>
         </ManagementPermission>
         <ManagementPermission>
             <DisplayName>View</DisplayName>
             <ResourceId>/permission/admin/manage/view</ResourceId>
         </ManagementPermission>
         <ManagementPermission>
-            <DisplayName>Service</DisplayName>
-            <ResourceId>/permission/admin/manage/view/service</ResourceId>
+            <DisplayName>Subscription</DisplayName>
+            <ResourceId>/permission/admin/manage/view/subscription</ResourceId>
         </ManagementPermission>
         <ManagementPermission>
-            <DisplayName>Cartridge</DisplayName>
-            <ResourceId>/permission/admin/manage/view/cartridge</ResourceId>
+            <DisplayName>Users</DisplayName>
+            <ResourceId>/permission/admin/manage/add/users</ResourceId>
+        </ManagementPermission>
+        <ManagementPermission>
+            <DisplayName>Git Sync</DisplayName>
+            <ResourceId>/permission/admin/manage/add/sync</ResourceId>
+        </ManagementPermission>
+        <ManagementPermission>
+            <DisplayName>REST Login</DisplayName>
+            <ResourceId>/permission/admin/restlogin</ResourceId>
         </ManagementPermission>
     </ManagementPermissions>
 </component>
