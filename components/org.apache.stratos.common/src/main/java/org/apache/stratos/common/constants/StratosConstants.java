@@ -142,5 +142,6 @@ public class StratosConstants {
     
     // Kubernetes related constants
     public static final String KUBERNETES_HOST_CLUSTER_ID = "khost.cluster.id";
+    public static final String MIN_REPLICAS = "replicas.min";
 
 }
