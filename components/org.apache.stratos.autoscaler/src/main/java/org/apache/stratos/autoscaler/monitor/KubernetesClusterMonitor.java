@@ -14,7 +14,6 @@ public class KubernetesClusterMonitor implements Runnable{
 	
 	private static final Log log = LogFactory.getLog(KubernetesClusterMonitor.class);
 
-	// Map<KubernetesClusterID, KubernetesClusterContext>
 	protected KubernetesClusterContext kubernetesClusterCtxt;
 	protected String serviceClusterId;
 	protected String serviceId;
