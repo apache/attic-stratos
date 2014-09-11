@@ -143,4 +143,5 @@ public class StratosConstants {
     // Kubernetes related constants
     public static final String KUBERNETES_CLUSTER_ID = "kubernetes.cluster.id";
     public static final String KUBERNETES_MASTER_IP = "kubernetes.master.ip";
+    public static final String KUBERNETES_MIN_REPLICAS = "kubernetes.replicas.min";
 }
