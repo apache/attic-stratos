@@ -37,6 +37,7 @@ import org.apache.stratos.cloud.controller.stub.pojo.MemberContext;
 import org.apache.stratos.cloud.controller.stub.pojo.Properties;
 import org.apache.stratos.cloud.controller.stub.pojo.Property;
 import org.apache.stratos.common.constants.StratosConstants;
+import org.apache.stratos.common.kubernetes.KubernetesGroup;
 import org.apache.stratos.common.kubernetes.KubernetesMaster;
 
 import java.rmi.RemoteException;
@@ -236,6 +237,10 @@ public class CloudControllerClient {
     		AutoScalerServiceInterface service = new AutoScalerServiceImpl();
     		KubernetesMaster kubernetesMaster = service.getMasterForKubernetesGroup(kubernetesClusterId);
     		String kubernetesMasterIP = kubernetesMaster.getHostIpAddress();
+    		KubernetesGroup kubernetesGroup = service.getKubernetesGroup(kubernetesClusterId);
+    		int lower = kubernetesGroup.getPortRange().getLower();
+    		int upper = kubernetesGroup.getPortRange().getUpper();
+    		String portRange = Integer.toString(lower) + "-" + Integer.toString(upper);
     		
             MemberContext member = new MemberContext();
             member.setClusterId(clusterId);
@@ -247,7 +252,7 @@ public class CloudControllerClient {
             memberContextProps.addProperties(kubernetesClusterMasterIPProps);
             Property kubernetesClusterPortRangeProps = new Property();
             kubernetesClusterPortRangeProps.setName(StratosConstants.KUBERNETES_PORT_RANGE);
-            kubernetesClusterPortRangeProps.setValue("1000-2000");
+            kubernetesClusterPortRangeProps.setValue(portRange);
             memberContextProps.addProperties(kubernetesClusterPortRangeProps);
             member.setProperties(memberContextProps);
             long startTime = System.currentTimeMillis();
