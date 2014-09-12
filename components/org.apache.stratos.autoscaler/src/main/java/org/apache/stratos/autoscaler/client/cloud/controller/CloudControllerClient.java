@@ -245,6 +245,10 @@ public class CloudControllerClient {
             kubernetesClusterMasterIPProps.setName(StratosConstants.KUBERNETES_MASTER_IP);
             kubernetesClusterMasterIPProps.setValue(kubernetesMasterIP);
             memberContextProps.addProperties(kubernetesClusterMasterIPProps);
+            Property kubernetesClusterPortRangeProps = new Property();
+            kubernetesClusterPortRangeProps.setName(StratosConstants.KUBERNETES_PORT_RANGE);
+            kubernetesClusterPortRangeProps.setValue("1000-2000");
+            memberContextProps.addProperties(kubernetesClusterPortRangeProps);
             member.setProperties(memberContextProps);
             long startTime = System.currentTimeMillis();
             MemberContext memberContext = stub.startContainer(member);
