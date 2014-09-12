@@ -27,6 +27,7 @@ public class KubernetesClusterMonitor implements Runnable{
     private ClusterStatus status;
     private String lbReferenceType;
     private boolean hasPrimary;
+    private int numberOfReplicasInServiceCluster = 0;
 	
     public KubernetesClusterMonitor(KubernetesClusterContext kubernetesClusterCtxt, String serviceClusterID, String serviceId, 
     		AutoscalePolicy autoscalePolicy) {
@@ -83,21 +84,20 @@ public class KubernetesClusterMonitor implements Runnable{
 	private void monitor() {
 		
 		String kubernetesClusterId = this.kubernetesClusterCtxt.getKubernetesClusterID();
-		int numberOfReplicasInServiceCluster = 0;
-		// cc.getNumberOfReplicas(kubernetesClusterID, serviceClusterID);
-
+		
 		try {
 			TopologyManager.acquireReadLock();
 			Properties props = TopologyManager.getTopology().getService(serviceId).getCluster(clusterId).getProperties();
 			int minReplicas = Integer.parseInt(props.getProperty(StratosConstants.KUBERNETES_MIN_REPLICAS));
 
-			if (numberOfReplicasInServiceCluster < minReplicas) {
+			if (this.numberOfReplicasInServiceCluster < minReplicas) {
 				
-				int numOfAdditionalReplicas = minReplicas - numberOfReplicasInServiceCluster;
-				// since cc api is not available yet, we will create only 1 container for now.
-				for (int i = 0; i < 1; i++) {
+				int numOfAdditionalReplicas = minReplicas - this.numberOfReplicasInServiceCluster;
+
+				for (int i = 0; i < numOfAdditionalReplicas; i++) {
 					try {
 						CloudControllerClient.getInstance().createContainer(kubernetesClusterId, clusterId);
+						this.numberOfReplicasInServiceCluster++;
 					} catch (Throwable e) {
 			            String message = "Cannot create a container";
 			            log.error(message, e);
