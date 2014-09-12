@@ -20,8 +20,12 @@
 package org.apache.stratos.rest.endpoint.bean.util.converter;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.stratos.autoscaler.stub.kubernetes.PropertiesE;
+import org.apache.stratos.autoscaler.stub.kubernetes.PropertyE;
 import org.apache.stratos.cloud.controller.stub.pojo.*;
-import org.apache.stratos.common.kubernetes.KubernetesGroup;
+import org.apache.stratos.cloud.controller.stub.pojo.Properties;
+import org.apache.stratos.cloud.controller.stub.pojo.Property;
+import org.apache.stratos.common.kubernetes.*;
 import org.apache.stratos.manager.deploy.service.Service;
 import org.apache.stratos.manager.subscription.SubscriptionDomain;
 import org.apache.stratos.messaging.domain.topology.Cluster;
@@ -30,6 +34,7 @@ import org.apache.stratos.rest.endpoint.bean.autoscaler.partition.PartitionGroup
 import org.apache.stratos.rest.endpoint.bean.autoscaler.policy.autoscale.*;
 import org.apache.stratos.rest.endpoint.bean.autoscaler.policy.deployment.DeploymentPolicy;
 import org.apache.stratos.rest.endpoint.bean.cartridge.definition.*;
+import org.apache.stratos.rest.endpoint.bean.kubernetes.KubernetesGroup;
 import org.apache.stratos.rest.endpoint.bean.subscription.domain.SubscriptionDomainBean;
 import org.apache.stratos.rest.endpoint.bean.topology.Member;
 
@@ -54,7 +59,7 @@ public class PojoConverter {
         cartridgeConfig.setDefaultAutoscalingPolicy(cartridgeDefinitionBean.defaultAutoscalingPolicy);
         cartridgeConfig.setDefaultDeploymentPolicy(cartridgeDefinitionBean.defaultDeploymentPolicy);
         cartridgeConfig.setServiceGroup(cartridgeDefinitionBean.serviceGroup);
-
+        cartridgeConfig.setDeployerType(cartridgeDefinitionBean.deployerType);
 
         //deployment information
         if (cartridgeDefinitionBean.deployment != null) {
@@ -86,11 +91,24 @@ public class PojoConverter {
         if (cartridgeDefinitionBean.property != null && !cartridgeDefinitionBean.property.isEmpty()) {
             cartridgeConfig.setProperties(getProperties(cartridgeDefinitionBean.property));
         }
+        
+        if(cartridgeDefinitionBean.container != null) {
+        	cartridgeConfig.setContainer(getContainer(cartridgeDefinitionBean.container));
+        }
 
         return cartridgeConfig;
     }
 
-    private static LoadbalancerConfig getLBConfig(LoadBalancerBean loadBalancer) {
+
+	private static Container getContainer(ContainerBean container) {
+		Container cn = new Container();
+		cn.setDockerFileRepo(container.dockerfileRepo);
+		cn.setImageName(container.imageName);
+		//cn.setProperties(getProperties(container.property));
+		return cn;
+	}
+
+	private static LoadbalancerConfig getLBConfig(LoadBalancerBean loadBalancer) {
         LoadbalancerConfig lbConfig = new LoadbalancerConfig();
         lbConfig.setType(loadBalancer.type);
         if (loadBalancer.property != null && !loadBalancer.property.isEmpty()) {
@@ -190,6 +208,26 @@ public class PojoConverter {
         }
 
         Properties properties = new Properties();
+        properties.setProperties(propertyArray);
+        return properties;
+    }
+
+
+    public static org.apache.stratos.autoscaler.stub.kubernetes.PropertiesE getASProperties(List<PropertyBean> propertyBeans) {
+
+        //convert to an array
+        PropertyBean[] propertyBeansArray = new PropertyBean[propertyBeans.size()];
+        propertyBeans.toArray(propertyBeansArray);
+        PropertyE[]  propertyArray = new PropertyE[propertyBeansArray.length];
+
+        for (int j = 0; j < propertyBeansArray.length; j++) {
+            PropertyE property = new PropertyE();
+            property.setName(propertyBeansArray[j].name);
+            property.setValue(propertyBeansArray[j].value);
+            propertyArray[j] = property;
+        }
+
+        org.apache.stratos.autoscaler.stub.kubernetes.PropertiesE properties = new PropertiesE();
         properties.setProperties(propertyArray);
         return properties;
     }
@@ -658,6 +696,15 @@ public class PojoConverter {
     }
 
     public static org.apache.stratos.autoscaler.stub.kubernetes.KubernetesGroup convertToASKubernetesGroupPojo(KubernetesGroup kubernetesGroupBean) {
-        return null;
+        org.apache.stratos.autoscaler.stub.kubernetes.KubernetesGroup kubernetesGroup = new
+                org.apache.stratos.autoscaler.stub.kubernetes.KubernetesGroup();
+
+        kubernetesGroup.setGroupId(kubernetesGroupBean.getGroupId());
+
+        if (kubernetesGroupBean.getProperty() != null && !kubernetesGroupBean.getProperty().isEmpty()) {
+            kubernetesGroup.setProperties((getASProperties(kubernetesGroupBean.getProperty())));
+        }
+
+        return kubernetesGroup;
     }
 }
