@@ -2,12 +2,14 @@ package org.apache.stratos.autoscaler.monitor;
 
 import java.util.Properties;
 
+import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.stratos.autoscaler.KubernetesClusterContext;
+import org.apache.stratos.autoscaler.client.cloud.controller.CloudControllerClient;
 import org.apache.stratos.autoscaler.policy.model.AutoscalePolicy;
-import org.apache.stratos.cloud.controller.stub.pojo.MemberContext;
-import org.apache.stratos.cloud.controller.stub.pojo.Property;
+import org.apache.stratos.autoscaler.util.AutoScalerConstants;
+import org.apache.stratos.autoscaler.util.ConfUtil;
 import org.apache.stratos.common.constants.StratosConstants;
 import org.apache.stratos.messaging.domain.topology.ClusterStatus;
 import org.apache.stratos.messaging.message.receiver.topology.TopologyManager;
@@ -17,8 +19,9 @@ public class KubernetesClusterMonitor implements Runnable{
 	private static final Log log = LogFactory.getLog(KubernetesClusterMonitor.class);
 
 	protected KubernetesClusterContext kubernetesClusterCtxt;
-	protected String serviceClusterId;
+	protected String clusterId;
 	protected String serviceId;
+	protected AutoscalePolicy autoscalePolicy;
 	protected int monitorInterval;
 	protected boolean isDestroyed;
     private ClusterStatus status;
@@ -27,15 +30,20 @@ public class KubernetesClusterMonitor implements Runnable{
 	
     public KubernetesClusterMonitor(KubernetesClusterContext kubernetesClusterCtxt, String serviceClusterID, String serviceId, 
     		AutoscalePolicy autoscalePolicy) {
-    	this.serviceClusterId = serviceClusterID;
+    	this.clusterId = serviceClusterID;
     	this.serviceId = serviceId;
     	this.kubernetesClusterCtxt = kubernetesClusterCtxt;
+    	this.autoscalePolicy = autoscalePolicy;
         readConfigurations();
     }
 
     private void readConfigurations () {
-    	// should read from a config file
-        monitorInterval = 90000;
+    	// same as VM cluster monitor interval
+        XMLConfiguration conf = ConfUtil.getInstance(null).getConfiguration();
+        monitorInterval = conf.getInt(AutoScalerConstants.AUTOSCALER_MONITOR_INTERVAL, 90000);
+        if (log.isDebugEnabled()) {
+            log.debug("Kubernetes Cluster Monitor task interval: " + getMonitorInterval());
+        }
     }
 	
 	@Override
@@ -74,31 +82,27 @@ public class KubernetesClusterMonitor implements Runnable{
 	
 	private void monitor() {
 		
-		String kubernetesClusterID = this.kubernetesClusterCtxt.getKubernetesClusterID();
-		int numberOfReplicasInServiceCluster = 2;
+		String kubernetesClusterId = this.kubernetesClusterCtxt.getKubernetesClusterID();
+		int numberOfReplicasInServiceCluster = 0;
 		// cc.getNumberOfReplicas(kubernetesClusterID, serviceClusterID);
 
 		try {
 			TopologyManager.acquireReadLock();
-			Properties props = TopologyManager.getTopology().getService(serviceId).getCluster(serviceClusterId).getProperties();
-			int minReplicas = Integer.parseInt(props.getProperty(StratosConstants.MIN_REPLICAS));
+			Properties props = TopologyManager.getTopology().getService(serviceId).getCluster(clusterId).getProperties();
+			int minReplicas = Integer.parseInt(props.getProperty(StratosConstants.KUBERNETES_MIN_REPLICAS));
 
 			if (numberOfReplicasInServiceCluster < minReplicas) {
 				
 				int numOfAdditionalReplicas = minReplicas - numberOfReplicasInServiceCluster;
-				
-	            MemberContext member = new MemberContext();
-	            member.setClusterId(serviceClusterId);
-	            member.setInitTime(System.currentTimeMillis());
-	            org.apache.stratos.cloud.controller.stub.pojo.Properties memberContextProps = new org.apache.stratos.cloud.controller.stub.pojo.Properties();
-	            Property kubernetesClusterMasterIPProps = new Property();
-	            kubernetesClusterMasterIPProps.setName("MIN_COUNT");
-	            kubernetesClusterMasterIPProps.setValue(String.valueOf("127.0.0.1"));
-	            memberContextProps.addProperties(kubernetesClusterMasterIPProps);
-	            member.setProperties(memberContextProps);
-	            
-				for (int i = 0; i < numOfAdditionalReplicas; i++) {
-					// cc.createContainers(kubernetesClusterID, serviceClusterID);
+				// since cc api is not available yet, we will create only 1 container for now.
+				for (int i = 0; i < 1; i++) {
+					try {
+						CloudControllerClient.getInstance().createContainer(kubernetesClusterId, clusterId);
+					} catch (Throwable e) {
+			            String message = "Cannot create a container";
+			            log.error(message, e);
+			            throw new RuntimeException(message, e);
+					}
 				}
 			}
 		} finally {
@@ -110,7 +114,7 @@ public class KubernetesClusterMonitor implements Runnable{
     public String toString() {
         return "KubernetesClusterMonitor "
         		+ "[ kubernetesHostClusterId=" + this.kubernetesClusterCtxt.getKubernetesClusterID() 
-        		+ ", clusterId=" + serviceClusterId 
+        		+ ", clusterId=" + clusterId 
         		+ ", serviceId=" + serviceId + "]";
     }
     
@@ -123,13 +127,21 @@ public class KubernetesClusterMonitor implements Runnable{
     }
     
     public String getClusterId() {
-        return serviceClusterId;
+        return clusterId;
     }
 
     public void setClusterId(String clusterId) {
-        this.serviceClusterId = clusterId;
+        this.clusterId = clusterId;
     }
-	
+    
+	public AutoscalePolicy getAutoscalePolicy() {
+		return autoscalePolicy;
+	}
+
+	public void setAutoscalePolicy(AutoscalePolicy autoscalePolicy) {
+		this.autoscalePolicy = autoscalePolicy;
+	}
+
 	public int getMonitorInterval() {
 		return monitorInterval;
 	}

@@ -332,7 +332,7 @@ public class AutoscalerUtil {
 
         AutoscalePolicy policy = PolicyManager.getInstance().getAutoscalePolicy(autoscalePolicyName);
         java.util.Properties props = cluster.getProperties();
-        String kubernetesHostClusterID = props.getProperty(StratosConstants.KUBERNETES_HOST_CLUSTER_ID);
+        String kubernetesHostClusterID = props.getProperty(StratosConstants.KUBERNETES_CLUSTER_ID);
 		KubernetesClusterContext kubernetesClusterCtxt = new KubernetesClusterContext(kubernetesHostClusterID);
 
         KubernetesClusterMonitor kubernetesClusterMonitor = new KubernetesClusterMonitor(

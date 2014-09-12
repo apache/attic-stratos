@@ -185,7 +185,9 @@ public class AutoscalerTopologyEventReceiver implements Runnable {
                     TopologyManager.acquireReadLock();
                     Service service = TopologyManager.getTopology().getService(e.getServiceName());
                     Cluster cluster = service.getCluster(e.getClusterId());
-                    if(AutoscalerContext.getInstance().monitorExist((cluster.getClusterId()))) {
+                    if(AutoscalerContext.getInstance().kubernetesClusterMonitorExist(cluster.getClusterId())) {
+                    	AutoscalerContext.getInstance().getKubernetesClusterMonitor(e.getClusterId()).setStatus(e.getStatus());
+                    } else if(AutoscalerContext.getInstance().monitorExist((cluster.getClusterId()))) {
                         AutoscalerContext.getInstance().getMonitor(e.getClusterId()).setStatus(e.getStatus());
                     } else if (AutoscalerContext.getInstance().lbMonitorExist((cluster.getClusterId()))) {
                         AutoscalerContext.getInstance().getLBMonitor(e.getClusterId()).setStatus(e.getStatus());
