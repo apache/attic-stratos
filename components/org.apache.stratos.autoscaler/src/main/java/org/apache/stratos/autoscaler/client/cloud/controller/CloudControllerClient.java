@@ -276,5 +276,4 @@ public class CloudControllerClient {
             throw new SpawningException(e.getMessage(), e);
         }
     }
-
 }
