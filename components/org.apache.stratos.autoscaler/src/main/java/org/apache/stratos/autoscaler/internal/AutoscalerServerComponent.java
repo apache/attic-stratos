@@ -31,9 +31,11 @@ import org.apache.stratos.autoscaler.policy.model.AutoscalePolicy;
 import org.apache.stratos.autoscaler.registry.RegistryManager;
 import org.apache.stratos.autoscaler.util.ServiceReferenceHolder;
 import org.apache.stratos.cloud.controller.stub.deployment.partition.Partition;
+import org.osgi.framework.BundleContext;
 import org.osgi.service.component.ComponentContext;
 import org.wso2.carbon.registry.api.RegistryException;
 import org.wso2.carbon.registry.core.service.RegistryService;
+import org.wso2.carbon.utils.Axis2ConfigurationContextObserver;
 
 import java.util.Iterator;
 import java.util.List;
@@ -80,36 +82,25 @@ public class AutoscalerServerComponent {
             if (log.isDebugEnabled()) {
                 log.debug("Health message processor thread started");
             }
+            
+            // Register tenantLoadListener
+            BundleContext bundleContext = componentContext.getBundleContext();
+            TenantArtifactLoader listener = new TenantArtifactLoader();
+            bundleContext.registerService(
+                    Axis2ConfigurationContextObserver.class.getName(), listener, null);
+
 
             // Adding the registry stored partitions to the information model
-            List<Partition> partitions = RegistryManager.getInstance().retrievePartitions();
-            Iterator<Partition> partitionIterator = partitions.iterator();
-            while (partitionIterator.hasNext()) {
-                Partition partition = partitionIterator.next();
-                PartitionManager.getInstance().addPartitionToInformationModel(partition);
-            }
+            PartitionManager.getInstance().loadPartitionsToInformationModel();
             
             // Adding the network partitions stored in registry to the information model
-            List<NetworkPartitionLbHolder> nwPartitionHolders = RegistryManager.getInstance().retrieveNetworkPartitionLbHolders();
-            Iterator<NetworkPartitionLbHolder> nwPartitionIterator = nwPartitionHolders.iterator();
-            while (nwPartitionIterator.hasNext()) {
-                NetworkPartitionLbHolder nwPartition = nwPartitionIterator.next();
-                PartitionManager.getInstance().addNetworkPartitionLbHolder(nwPartition);
-            }
+            PartitionManager.getInstance().loadNetworkPartitionsToInformationModel();
             
-            List<AutoscalePolicy> asPolicies = RegistryManager.getInstance().retrieveASPolicies();
-            Iterator<AutoscalePolicy> asPolicyIterator = asPolicies.iterator();
-            while (asPolicyIterator.hasNext()) {
-                AutoscalePolicy asPolicy = asPolicyIterator.next();
-                PolicyManager.getInstance().addASPolicyToInformationModel(asPolicy);
-            }
-
-            List<DeploymentPolicy> depPolicies = RegistryManager.getInstance().retrieveDeploymentPolicies();
-            Iterator<DeploymentPolicy> depPolicyIterator = depPolicies.iterator();
-            while (depPolicyIterator.hasNext()) {
-                DeploymentPolicy depPolicy = depPolicyIterator.next();
-                PolicyManager.getInstance().addDeploymentPolicyToInformationModel(depPolicy);
-            }
+            // Adding the registry stored autoscaling policies to the information model
+            PolicyManager.getInstance().loadASPoliciesToInformationModel();
+            
+            // Adding the registry stored deployment policies to the information model
+            PolicyManager.getInstance().loadDeploymentPoliciesToInformationModel();
 
             if (log.isInfoEnabled()) {
                 log.info("Autoscaler Server Component activated");

@@ -27,12 +27,17 @@ import org.apache.stratos.autoscaler.client.cloud.controller.CloudControllerClie
 import org.apache.stratos.autoscaler.deployment.policy.DeploymentPolicy;
 import org.apache.stratos.autoscaler.exception.AutoScalerException;
 import org.apache.stratos.autoscaler.exception.InvalidPartitionException;
+import org.apache.stratos.autoscaler.exception.InvalidPolicyException;
 import org.apache.stratos.autoscaler.exception.PartitionValidationException;
 import org.apache.stratos.autoscaler.registry.RegistryManager;
 import org.apache.stratos.cloud.controller.stub.deployment.partition.Partition;
+import org.apache.stratos.common.constants.StratosConstants;
+import org.wso2.carbon.context.CarbonContext;
+import org.wso2.carbon.context.PrivilegedCarbonContext;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -44,7 +49,7 @@ public class PartitionManager {
 private static final Log log = LogFactory.getLog(PartitionManager.class);
 	
 	// Partitions against partitionID
-	private static Map<String,Partition> partitions = new HashMap<String, Partition>();
+	private static Map<Integer, Map<String,Partition>> partitions = new HashMap<Integer, Map<String, Partition>>();
 	
 	/*
 	 * Key - network partition id
@@ -64,9 +69,20 @@ private static final Log log = LogFactory.getLog(PartitionManager.class);
         networkPartitionLbHolders = new HashMap<String, NetworkPartitionLbHolder>();
 	}
 	
+    // Checks whether a given tenant's policies have been added to memory model
+    public boolean isTenantPolicyDetailsInInformationModel(int containerId){
+    	return (partitions.containsKey(containerId));
+    }
 	
 	public boolean partitionExist(String partitionId){
-		return partitions.containsKey(partitionId);
+		int tenantId = CarbonContext.getThreadLocalCarbonContext().getTenantId();
+        if(partitions.containsKey(tenantId)){
+    		return (partitions.get(tenantId)).containsKey(partitionId);
+        }
+        else if(partitions.containsKey(StratosConstants.PUBLIC_DEFINITION)){
+        	return (partitions.get(StratosConstants.PUBLIC_DEFINITION)).containsKey(partitionId);
+        }
+        return false;
 	}
 	
 	/*
@@ -95,25 +111,96 @@ private static final Log log = LogFactory.getLog(PartitionManager.class);
         }
     }
 
+    public void loadPartitionsToInformationModel(){
+    	List<Partition> partitions = RegistryManager.getInstance().retrievePartitions();
+        Iterator<Partition> partitionIterator = partitions.iterator();
+        while (partitionIterator.hasNext()) {
+            Partition partition = partitionIterator.next();
+            try{
+            	addPartitionToInformationModel(partition);
+            }
+            catch(InvalidPolicyException e){
+            	// ignore and move on
+            }
+        }
+    }
+    
+    public void removePartitionsFromInformationModel(int tenantId){
+    	partitions.remove(tenantId);
+    }
+       
+    public void loadNetworkPartitionsToInformationModel(){
+    	List<NetworkPartitionLbHolder> nwPartitionHolders = RegistryManager.getInstance().retrieveNetworkPartitionLbHolders();
+        Iterator<NetworkPartitionLbHolder> nwPartitionIterator = nwPartitionHolders.iterator();
+        while (nwPartitionIterator.hasNext()) {
+            NetworkPartitionLbHolder nwPartition = nwPartitionIterator.next();
+            PartitionManager.getInstance().addNetworkPartitionLbHolder(nwPartition);
+        }
+    }
 
-    public void addPartitionToInformationModel(Partition partition) {
-		partitions.put(partition.getId(), partition);
+    public void addPartitionToInformationModel(Partition partition) throws InvalidPolicyException {
+    	int tenantId = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantId();
+    	        
+        if(partition.getIsPublic()){
+        	addPartitionToSpecificContainer(partition, StratosConstants.PUBLIC_DEFINITION);
+        }
+        else{
+        	addPartitionToSpecificContainer(partition, tenantId);
+        }
 	}
+    
+    private void addPartitionToSpecificContainer(Partition partition, int containerId) throws InvalidPolicyException {
+    	
+    	Map<String, Partition> partitionDefinitions;
+    	if(!partitions.containsKey(containerId))
+    	{
+    		partitionDefinitions = new HashMap<String, Partition>();
+    		partitions.put(containerId, partitionDefinitions);
+    	}
+    	else {
+    		partitionDefinitions = partitions.get(containerId);
+    	}
+    	
+        if (!partitionDefinitions.containsKey(partition.getId())) {
+            if (log.isDebugEnabled()) {
+                log.debug("Adding policy :" + partition.getId());
+            }
+            partitionDefinitions.put(partition.getId(), partition);
+        } else {
+        	String errMsg = "Specified policy [" + partition.getId() + "] already exists";
+        	log.error(errMsg);
+            throw new InvalidPolicyException(errMsg);
+        }
+    }
 
 	public NetworkPartitionLbHolder getNetworkPartitionLbHolder(String networkPartitionId) {
 	    return this.networkPartitionLbHolders.get(networkPartitionId);
 	}
 
     public Partition getPartitionById(String partitionId){
-		if(partitionExist(partitionId))
-			return partitions.get(partitionId);
-		else
-			return null;
+    	int tenantId = CarbonContext.getThreadLocalCarbonContext().getTenantId();
+        if(partitions.containsKey(tenantId)){
+    		return (partitions.get(tenantId)).get(partitionId);
+        }
+        else if(partitions.containsKey(StratosConstants.PUBLIC_DEFINITION)){
+        	return (partitions.get(StratosConstants.PUBLIC_DEFINITION)).get(partitionId);
+        }
+    	
+    	return null;
 	}
 	
 	public Partition[] getAllPartitions(){
-		return partitions.values().toArray(new Partition[0]);
+		System.out.println("Tenant ID from PartitionManager-getAllAvailablePartitions: "+ CarbonContext.getThreadLocalCarbonContext().getTenantId());
+		List<Partition> policyList = new ArrayList<Partition>();
+    	int t = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantId();
 		
+    	if(partitions.containsKey(t))
+    		policyList.addAll(partitions.get(CarbonContext.getThreadLocalCarbonContext().getTenantId()).values());
+		
+    	if(partitions.containsKey(StratosConstants.PUBLIC_DEFINITION))
+		policyList.addAll(partitions.get(StratosConstants.PUBLIC_DEFINITION).values());
+    	
+    	return policyList.toArray(new Partition[0]);
 	}
 	
 	public boolean validatePartitionViaCloudController(Partition partition) throws PartitionValidationException {
@@ -144,7 +231,6 @@ private static final Log log = LogFactory.getLog(PartitionManager.class);
                 addNetworkPartitionLbHolder(networkPartitionLbHolder);
                 RegistryManager.getInstance().persistNetworkPartitionIbHolder(networkPartitionLbHolder);
             }
-
         }
     }
     
@@ -162,7 +248,6 @@ private static final Log log = LogFactory.getLog(PartitionManager.class);
             	log.error(errMsg);
             	throw new AutoScalerException(errMsg);
             }
-
         }
     }
     
