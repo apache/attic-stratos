@@ -72,7 +72,7 @@ public class GRegRegistry implements DataStore {
 
 		String gregUsername = conf.getString("metadataservice.username", defaultUsername);
 		String gregPassword = conf.getString("metadataservice.password", defaultPassword);
-		String gregServerURL = conf.getString("metadataservice.serverurl", serverURL);
+		String gregServerURL = conf.getString("metadataservice.serverUrl", serverURL);
 		String axis2Repo = conf.getString("metadataservice.axis2Repo", defaultAxis2Repo);
 		String axis2Conf = conf.getString("metadataservice.axis2Conf", defaultAxis2Conf);
 		String defaultTrustStore =

@@ -21,7 +21,9 @@ import java.util.List;
 
 @Path("/")
 public class MetaDataAdmin {
-    @Context
+	public static final java.lang.String METADATASERVICE_GOVENANCE_REGISTRY_TYPE =
+			"metadataservice.govenanceRegistryType";
+	@Context
     UriInfo uriInfo;
 
 	private static Log log = LogFactory.getLog(MetaDataAdmin.class);
@@ -51,7 +53,7 @@ public class MetaDataAdmin {
 		conf = ConfUtil.getInstance(null).getConfiguration();
 
 		String registryType =
-		                      conf.getString("metadataservice.govenanceregistrytype",
+		                      conf.getString(METADATASERVICE_GOVENANCE_REGISTRY_TYPE,
 		                                     defaultRegType);
 		return DataRegistryFactory.getDataRegistryFactory(registryType)
 		                          .addCartridgeMetaDataDetails(applicationName, cartridgeType,
@@ -70,7 +72,7 @@ public class MetaDataAdmin {
 	throws Exception {
 		conf = ConfUtil.getInstance(null).getConfiguration();
 		String registryType =
-		                      conf.getString("metadataservice.govenanceregistrytype",
+		                      conf.getString(METADATASERVICE_GOVENANCE_REGISTRY_TYPE,
 		                                     defaultRegType);
 		return DataRegistryFactory.getDataRegistryFactory(registryType)
 		                          .getCartridgeMetaDataDetails(applicationName, cartridgeType);
@@ -81,7 +83,7 @@ public class MetaDataAdmin {
 	                                                                                           throws Exception {
 		conf = ConfUtil.getInstance(null).getConfiguration();
 		String registryType =
-		                      conf.getString("metadataservice.govenanceregistrytype",
+		                      conf.getString(METADATASERVICE_GOVENANCE_REGISTRY_TYPE,
 		                                     defaultRegType);
 		return DataRegistryFactory.getDataRegistryFactory(registryType)
 		                          .removeCartridgeMetaDataDetails(applicationName, cartridgeType);
@@ -97,7 +99,7 @@ public class MetaDataAdmin {
         conf = ConfUtil.getInstance(null).getConfiguration();
 
         String registryType =
-                conf.getString("metadataservice.govenanceregistrytype",
+                conf.getString(METADATASERVICE_GOVENANCE_REGISTRY_TYPE,
                         defaultRegType);
         List<NewProperty> properties;
         NewProperty[] propertiesArr = null;
@@ -129,7 +131,7 @@ public class MetaDataAdmin {
     public Response getClusterProperty(@PathParam("application_id") String applicationId, @PathParam("cluster_id") String clusterId, @PathParam("property_name") String propertyName){
         conf = ConfUtil.getInstance(null).getConfiguration();
         String registryType =
-                conf.getString("metadataservice.govenanceregistrytype",
+                conf.getString(METADATASERVICE_GOVENANCE_REGISTRY_TYPE,
                         defaultRegType);
         List<NewProperty> properties = null;
         NewProperty property = null;
@@ -167,7 +169,7 @@ public class MetaDataAdmin {
     public Response getClusterDependencies(@PathParam("application_id") String applicationId, @PathParam("cluster_id") String clusterId){
         conf = ConfUtil.getInstance(null).getConfiguration();
         String registryType =
-                conf.getString("metadataservice.govenanceregistrytype",
+                conf.getString(METADATASERVICE_GOVENANCE_REGISTRY_TYPE,
                         defaultRegType);
         List<NewProperty> properties = null;
         NewProperty property = null;
@@ -205,7 +207,7 @@ public class MetaDataAdmin {
         conf = ConfUtil.getInstance(null).getConfiguration();
 
         String registryType =
-                conf.getString("metadataservice.govenanceregistrytype",
+                conf.getString(METADATASERVICE_GOVENANCE_REGISTRY_TYPE,
                         defaultRegType);
         List<NewProperty> properties = null;
         NewProperty[] propertiesArr = null;
@@ -237,7 +239,7 @@ public class MetaDataAdmin {
     public Response getApplicationProperty(@PathParam("application_id") String applicationId, @PathParam("property_name") String propertyName){
         conf = ConfUtil.getInstance(null).getConfiguration();
         String registryType =
-                conf.getString("metadataservice.govenanceregistrytype",
+                conf.getString(METADATASERVICE_GOVENANCE_REGISTRY_TYPE,
                         defaultRegType);
         List<NewProperty> properties = null;
         NewProperty property = null;
@@ -281,7 +283,7 @@ public class MetaDataAdmin {
         URI url =  uriInfo.getAbsolutePathBuilder().path(applicationId + "/" + clusterId + "/" + property.getKey()).build();
         conf = ConfUtil.getInstance(null).getConfiguration();
 
-        String registryType = conf.getString("metadataservice.govenanceregistrytype", defaultRegType);
+        String registryType = conf.getString(METADATASERVICE_GOVENANCE_REGISTRY_TYPE, defaultRegType);
         try {
             DataRegistryFactory.getDataRegistryFactory(registryType).addPropertyToCluster(applicationId, clusterId, property);
         } catch (RegistryException e) {
@@ -301,7 +303,7 @@ public class MetaDataAdmin {
         URI url =  uriInfo.getAbsolutePathBuilder().path(applicationId + "/" + clusterId + "/" + property.getKey()).build();
         conf = ConfUtil.getInstance(null).getConfiguration();
 
-        String registryType = conf.getString("metadataservice.govenanceregistrytype", defaultRegType);
+        String registryType = conf.getString(METADATASERVICE_GOVENANCE_REGISTRY_TYPE, defaultRegType);
         try {
             DataRegistryFactory.getDataRegistryFactory(registryType).addPropertyToCluster(applicationId, clusterId, property);
         } catch (RegistryException e) {
@@ -324,7 +326,7 @@ public class MetaDataAdmin {
         conf = ConfUtil.getInstance(null).getConfiguration();
 
         String registryType =
-                conf.getString("metadataservice.govenanceregistrytype",
+                conf.getString(METADATASERVICE_GOVENANCE_REGISTRY_TYPE,
                         defaultRegType);
         try {
             DataRegistryFactory.getDataRegistryFactory(registryType).addPropertiesToCluster(applicationId, clusterId, properties);
@@ -348,7 +350,7 @@ public class MetaDataAdmin {
         conf = ConfUtil.getInstance(null).getConfiguration();
 
         String registryType =
-                conf.getString("metadataservice.govenanceregistrytype",
+                conf.getString(METADATASERVICE_GOVENANCE_REGISTRY_TYPE,
                         defaultRegType);
         try {
             DataRegistryFactory.getDataRegistryFactory(registryType).addPropertiesToApplication(applicationId, properties);
@@ -372,7 +374,7 @@ public class MetaDataAdmin {
         conf = ConfUtil.getInstance(null).getConfiguration();
 
         String registryType =
-                conf.getString("metadataservice.govenanceregistrytype",
+                conf.getString(METADATASERVICE_GOVENANCE_REGISTRY_TYPE,
                         defaultRegType);
         try {
             DataRegistryFactory.getDataRegistryFactory(registryType).addPropertyToApplication(applicationId, property);

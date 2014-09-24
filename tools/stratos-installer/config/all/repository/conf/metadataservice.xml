@@ -19,8 +19,8 @@
 -->
 <configuration>
 	<metadataservice>
-	    <govenanceregistrytype>GREG</govenanceregistrytype>
-	    <serverurl>https://localhost:9445/services/</serverurl>
+	    <govenanceRegistryType>GREG</govenanceRegistryType>
+	    <serverUrl>https://localhost:9445/services/</serverUrl>
 		<username>admin</username>
 		<password>admin</password>
 		
