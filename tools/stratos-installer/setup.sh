@@ -539,7 +539,8 @@ if [[ !(-d $stratos_extract_path) ]]; then
     echo "Extracting Apache Stratos"
     unzip -q $stratos_pack_zip -d $stratos_path
     extracted_folder=${stratos_pack_zip%.zip}
-    mv -f $extracted_folder $stratos_extract_path
+    extracted_folder=${extracted_folder#$stratos_packs/}
+    mv -f $stratos_path/$extracted_folder $stratos_extract_path
 fi
 
 if [[ ($profile = "default" && $config_mb = "true") ]]; then
