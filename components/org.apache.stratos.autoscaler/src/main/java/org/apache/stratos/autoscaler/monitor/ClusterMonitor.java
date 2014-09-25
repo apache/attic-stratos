@@ -156,6 +156,7 @@ public class ClusterMonitor extends AbstractMonitor {
             boolean rifReset = networkPartitionContext.isRifReset();
             boolean memoryConsumptionReset = networkPartitionContext.isMemoryConsumptionReset();
             boolean loadAverageReset = networkPartitionContext.isLoadAverageReset();
+			boolean averageRequestServedPerInstanceReset = networkPartitionContext.isAverageRequestServedPerInstanceReset();
             if (log.isDebugEnabled()) {
                 log.debug("flag of rifReset: "  + rifReset + " flag of memoryConsumptionReset" + memoryConsumptionReset
                         + " flag of loadAverageReset" + loadAverageReset);
@@ -167,6 +168,7 @@ public class ClusterMonitor extends AbstractMonitor {
                 scaleCheckKnowledgeSession.setGlobal("rifReset", rifReset);
                 scaleCheckKnowledgeSession.setGlobal("mcReset", memoryConsumptionReset);
                 scaleCheckKnowledgeSession.setGlobal("laReset", loadAverageReset);
+                scaleCheckKnowledgeSession.setGlobal("arspiReset", averageRequestServedPerInstanceReset);
                 scaleCheckKnowledgeSession.setGlobal("lbRef", lbReferenceType);
                 scaleCheckKnowledgeSession.setGlobal("isPrimary", false);
                 scaleCheckKnowledgeSession.setGlobal("primaryMembers", primaryMemberListInNetworkPartition);
