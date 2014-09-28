@@ -82,12 +82,6 @@ public class TopicSubscriber implements Runnable {
 
 			// Continue waiting for messages until the Enter is pressed
 			mqttClient.setCallback(messageListener);
-			while (true) {
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-				}
-			}
 
 		} finally {
 			mqttClient.disconnect();
@@ -116,6 +110,7 @@ public class TopicSubscriber implements Runnable {
 		while (!terminated) {
 			try {
 				doSubscribe();
+				subscribed = true;
 			} catch (Exception e) {
 				subscribed = false;
 				log.error("Error while subscribing to the topic: " + topicName, e);
