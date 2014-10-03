@@ -21,13 +21,14 @@ package org.apache.stratos.autoscaler.util;
 */
 
 
-import org.wso2.carbon.registry.core.Registry;
-import org.wso2.carbon.registry.core.session.UserRegistry;
+import org.wso2.carbon.registry.api.RegistryService;
+import org.wso2.carbon.user.core.service.RealmService;
 
 public class ServiceReferenceHolder {
 	
 	private static ServiceReferenceHolder instance;
-	private Registry registry;	
+	private RegistryService registryService;	
+	private RealmService realmService;	
 
 	private ServiceReferenceHolder() {
 	}
@@ -39,11 +40,19 @@ public class ServiceReferenceHolder {
 	        return instance;
 	}
 	 
-	public void setRegistry(UserRegistry governanceSystemRegistry) {
-		registry = governanceSystemRegistry;
+	public void setRegistry(RegistryService registrySerivice) {
+		this.registryService = registrySerivice;
 	}
 
-    public Registry getRegistry() {
-		return registry;
+    public RegistryService getRegistry() {
+		return this.registryService;
 	}
+    
+    public void setRealmService(RealmService realmService) {
+    	this.realmService = realmService;
+    }
+    
+    public RealmService getRealmService() {
+    	return this.realmService;
+    }
 }

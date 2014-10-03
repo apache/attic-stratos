@@ -84,6 +84,14 @@
                 <exclude>**/jboss-transaction-api_1.1_spec-1.0.0.Final.jar</exclude>
             </excludes>
         </fileSet>
+
+	 <fileSet>
+	    <directory>../p2-profile-gen/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/tomcat</directory>
+	    <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf/tomcat</outputDirectory>
+	    <excludes>
+	       <exclude>**/catalina-server.xml</exclude>
+	    </excludes>
+	 </fileSet>
 	
         <fileSet>
         <directory>../p2-profile-gen/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/jaggeryapps</directory>
@@ -749,6 +757,12 @@
             <filtered>true</filtered>
             <fileMode>644</fileMode>
         </file>
+	<file>
+	    <source>../../conf/tomcat/catalina-server.xml</source>
+	    <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf/tomcat</outputDirectory>
+	    <filtered>true</filtered>
+	    <fileMode>644</fileMode>
+	</file>
         <file>
             <source>${project.basedir}/README.txt</source>
             <outputDirectory>${pom.artifactId}-${pom.version}</outputDirectory>

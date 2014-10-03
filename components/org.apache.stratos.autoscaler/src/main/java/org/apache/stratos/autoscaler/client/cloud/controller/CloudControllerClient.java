@@ -19,6 +19,11 @@
 
 package org.apache.stratos.autoscaler.client.cloud.controller;
 
+import java.rmi.RemoteException;
+
+import javax.xml.stream.XMLStreamException;
+
+import org.apache.axiom.om.impl.llom.util.AXIOMUtil;
 import org.apache.axis2.transport.http.HTTPConstants;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.logging.Log;
@@ -42,7 +47,7 @@ import org.apache.stratos.common.constants.StratosConstants;
 import org.apache.stratos.common.kubernetes.KubernetesGroup;
 import org.apache.stratos.common.kubernetes.KubernetesMaster;
 
-import java.rmi.RemoteException;
+import org.wso2.carbon.context.CarbonContext;
 
 
 /**
@@ -61,7 +66,7 @@ public class CloudControllerClient {
         private static final CloudControllerClient INSTANCE = new CloudControllerClient(); 
     }
     
-    public static CloudControllerClient getInstance() {
+    private static CloudControllerClient getInstance() {
     	return InstanceHolder.INSTANCE;
     }
     
@@ -78,6 +83,36 @@ public class CloudControllerClient {
 		} catch (Exception e) {
 			log.error("Stub init error", e);
 		}
+    }
+    
+    /**
+     * Sets the mutual auth header with default carbon.
+     */
+    private void setMutualAuthHeader() {
+    	String userName=CarbonContext.getThreadLocalCarbonContext().getUsername();
+    	String tenantDomain=CarbonContext.getThreadLocalCarbonContext().getTenantDomain();
+    	String fullUserName = userName+"@"+tenantDomain;
+    	        
+    	String mutualAuthHeader = "<tns:UserName xmlns:tns=\""+ StratosConstants.MUTUAL_AUTH_URL+ "\">" + fullUserName + "</tns:UserName> ";
+        try {
+        	// Need to remove headers since this is a stateless client and this is a new request
+            stub._getServiceClient().removeHeaders();
+        	stub._getServiceClient().addHeader(AXIOMUtil.stringToOM(mutualAuthHeader));
+        } catch (XMLStreamException e) {
+            log.error("Failed to set mutualAuth Header to stub:" + stub, e);
+        }
+    }
+    
+    /**
+     * Gets the client with mutual auth header set.
+     *
+     * @return the client with mutual auth header set
+     */
+    public static CloudControllerClient getClientWithMutualAuthHeaderSet() {
+		CloudControllerClient client = CloudControllerClient.getInstance();
+		// Set mutual auth header for communication between Autoscalar and Cloud controller
+        client.setMutualAuthHeader();
+    	return client;
     }
     
     /*

@@ -83,7 +83,7 @@ public class CartridgeSubscriptionManager {
 
         CartridgeInfo cartridgeInfo;
         try {
-            cartridgeInfo = CloudControllerServiceClient.getServiceClient().getCartridgeInfo(subscriptionData.getCartridgeType());
+            cartridgeInfo = CloudControllerServiceClient.getClientWithMutualAuthHeaderSet().getCartridgeInfo(subscriptionData.getCartridgeType());
 
         } catch (CloudControllerServiceUnregisteredCartridgeExceptionException e) {
             String message = subscriptionData.getCartridgeType() + " is not a valid cartridgeSubscription type. Please try again with a valid cartridgeSubscription type.";

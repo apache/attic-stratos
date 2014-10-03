@@ -299,6 +299,8 @@ do
     -Djava.security.egd=file:/dev/./urandom \
     -Dfile.encoding=UTF8 \
     -Ddisable.cassandra.server.startup=true \
+    -Djavax.net.ssl.keyStore="$CARBON_HOME/repository/resources/security/wso2carbon.jks" \
+    -Djavax.net.ssl.keyStorePassword="wso2carbon" \
     -Djndi.properties.dir="$CARBON_HOME/repository/conf" \
     org.wso2.carbon.bootstrap.Bootstrap $*
     status=$?

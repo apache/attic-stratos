@@ -19,6 +19,7 @@
 
 package org.apache.stratos.manager.client;
 
+import org.apache.axiom.om.impl.llom.util.AXIOMUtil;
 import org.apache.axis2.AxisFault;
 import org.apache.axis2.context.ConfigurationContext;
 import org.apache.axis2.transport.http.HTTPConstants;
@@ -34,8 +35,13 @@ import org.apache.stratos.cloud.controller.stub.CloudControllerServiceInvalidIaa
 import org.apache.stratos.cloud.controller.stub.CloudControllerServiceStub;
 import org.apache.stratos.cloud.controller.stub.CloudControllerServiceUnregisteredCartridgeExceptionException;
 import org.apache.stratos.cloud.controller.stub.CloudControllerServiceUnregisteredClusterExceptionException;
+import org.apache.stratos.common.constants.StratosConstants;
+import org.wso2.carbon.context.CarbonContext;
 
 import java.rmi.RemoteException;
+
+import javax.xml.stream.XMLStreamException;
+
 import java.util.Iterator;
 
 public class CloudControllerServiceClient {
@@ -66,7 +72,7 @@ public class CloudControllerServiceClient {
 
 	}
 
-    public static CloudControllerServiceClient getServiceClient() throws AxisFault {
+    private static CloudControllerServiceClient getServiceClient() throws AxisFault {
         if (serviceClient == null) {
             synchronized (CloudControllerServiceClient.class) {
                 if (serviceClient == null) {
@@ -78,6 +84,39 @@ public class CloudControllerServiceClient {
         return serviceClient;
     }
 
+    private void setMutualAuthHeader() {
+    	String userName=CarbonContext.getThreadLocalCarbonContext().getUsername();
+    	String tenantDomain=CarbonContext.getThreadLocalCarbonContext().getTenantDomain();
+    	String fullUserName = userName+"@"+tenantDomain;
+        
+    	String mutualAuthHeader = "<tns:UserName xmlns:tns=\""+ StratosConstants.MUTUAL_AUTH_URL+ "\">" + fullUserName + "</tns:UserName> ";
+        try {
+        	// Need to remove headers since this is a stateless client and this is a new request
+            stub._getServiceClient().removeHeaders();
+        	stub._getServiceClient().addHeader(AXIOMUtil.stringToOM(mutualAuthHeader));
+        } catch (XMLStreamException e) {
+            log.error("Failed to set mutualAuth Header to stub:" + stub, e);
+        }
+    }
+    
+    /**
+     * Gets the client with mutual auth header set.
+     *
+     * @return the client with mutual auth header set
+     * @throws AxisFault the axis fault
+     */
+    public static CloudControllerServiceClient getClientWithMutualAuthHeaderSet() throws AxisFault{
+    	try {
+    		CloudControllerServiceClient client = CloudControllerServiceClient.getServiceClient();
+        	// Set mutual auth header for communication between StratosManager and Autoscalar
+            client.setMutualAuthHeader();
+        	return client;
+
+        } catch (AxisFault axisFault) {
+            throw axisFault;
+        }
+    }
+    
     public void deployCartridgeDefinition (CartridgeConfig cartridgeConfig) 
     		throws RemoteException, CloudControllerServiceInvalidCartridgeDefinitionExceptionException, 
     		CloudControllerServiceInvalidIaasProviderExceptionException {

@@ -155,5 +155,8 @@ public class StratosConstants {
 
     // Policy and definition related constants
     public static final int PUBLIC_DEFINITION = 0;
+    
+    // Authentication related constants
+    public static final String MUTUAL_AUTH_URL = "http://mutualssl.carbon.wso2.org";
 
 }

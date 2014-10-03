@@ -85,7 +85,7 @@ public class RuleTasksDelegator {
                                                           .getNetworkPartitionLbHolder(nwPartitionId);
             String lbClusterId = getLbClusterId(lbRefType, partitionContext, lbHolder);
             MemberContext memberContext =
-                                         CloudControllerClient.getInstance()
+                                         CloudControllerClient.getClientWithMutualAuthHeaderSet()
                                                               .spawnAnInstance(partitionContext.getPartition(),
                                                                       clusterId,
                                                                       lbClusterId, partitionContext.getNetworkPartitionId(),
@@ -184,7 +184,7 @@ public class RuleTasksDelegator {
 
     public void terminateObsoleteInstance(String memberId) {
         try {
-            CloudControllerClient.getInstance().terminate(memberId);
+            CloudControllerClient.getClientWithMutualAuthHeaderSet().terminate(memberId);
         } catch (Throwable e) {
             log.error("Cannot terminate instance", e);
         }
@@ -193,7 +193,7 @@ public class RuleTasksDelegator {
    	public void delegateTerminateAll(String clusterId) {
            try {
 
-               CloudControllerClient.getInstance().terminateAllInstances(clusterId);
+               CloudControllerClient.getClientWithMutualAuthHeaderSet().terminateAllInstances(clusterId);
            } catch (Throwable e) {
                log.error("Cannot terminate instance", e);
            }

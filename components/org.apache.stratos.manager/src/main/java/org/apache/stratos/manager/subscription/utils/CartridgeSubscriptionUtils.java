@@ -297,7 +297,7 @@ public class CartridgeSubscriptionUtils {
 
                 for (String clusterId : clusterIds) {
                     try {
-                        AutoscalerServiceClient.getServiceClient().checkLBExistenceAgainstPolicy(clusterId, deploymentPolicyName);
+                        AutoscalerServiceClient.getClientWithMutualAuthHeaderSet().checkLBExistenceAgainstPolicy(clusterId, deploymentPolicyName);
                     } catch (Exception ex) {
                         // we don't need to throw the error here.
                         log.error(ex.getMessage(), ex);
@@ -319,7 +319,7 @@ public class CartridgeSubscriptionUtils {
                     CartridgeInfo lbCartridgeInfo;
 
                     try {
-                        lbCartridgeInfo = CloudControllerServiceClient.getServiceClient().getCartridgeInfo(lbCartridgeType);
+                        lbCartridgeInfo = CloudControllerServiceClient.getClientWithMutualAuthHeaderSet().getCartridgeInfo(lbCartridgeType);
 
                     } catch (Exception e) {
                         String message = "Error getting info for " + lbCartridgeType;
@@ -396,7 +396,7 @@ public class CartridgeSubscriptionUtils {
                     CartridgeInfo lbCartridgeInfo;
 
                     try {
-                        lbCartridgeInfo = CloudControllerServiceClient.getServiceClient().getCartridgeInfo(lbCartridgeType);
+                        lbCartridgeInfo = CloudControllerServiceClient.getClientWithMutualAuthHeaderSet().getCartridgeInfo(lbCartridgeType);
 
                     } catch (Exception e) {
                         String message = "Error getting info for " + lbCartridgeType;
@@ -475,7 +475,7 @@ public class CartridgeSubscriptionUtils {
     private static AutoscalerServiceClient getAutoscalerServiceClient() throws ADCException {
 
         try {
-            return AutoscalerServiceClient.getServiceClient();
+            return AutoscalerServiceClient.getClientWithMutualAuthHeaderSet();
 
         } catch (AxisFault axisFault) {
             String errorMsg = "Error in getting AutoscalerServiceClient instance";
