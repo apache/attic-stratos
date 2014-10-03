@@ -55,6 +55,7 @@ import org.jclouds.compute.domain.NodeMetadata;
 import org.jclouds.compute.domain.NodeMetadataBuilder;
 import org.jclouds.compute.domain.Template;
 import org.jclouds.rest.ResourceNotFoundException;
+import org.wso2.carbon.core.AbstractAdmin;
 import org.wso2.carbon.registry.core.exceptions.RegistryException;
 
 import java.util.*;
@@ -68,7 +69,7 @@ import java.util.concurrent.Future;
  * terminating already started instances, providing pending instance count etc.
  * 
  */
-public class CloudControllerServiceImpl implements CloudControllerService {
+public class CloudControllerServiceImpl extends AbstractAdmin implements CloudControllerService {
 
 	private static final Log log = LogFactory
 			.getLog(CloudControllerServiceImpl.class);

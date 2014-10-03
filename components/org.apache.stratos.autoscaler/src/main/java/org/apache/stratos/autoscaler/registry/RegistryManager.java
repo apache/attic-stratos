@@ -33,24 +33,41 @@ import org.apache.stratos.autoscaler.util.Serializer;
 import org.apache.stratos.autoscaler.util.ServiceReferenceHolder;
 import org.apache.stratos.cloud.controller.stub.deployment.partition.Partition;
 import org.apache.stratos.common.kubernetes.KubernetesGroup;
+import org.wso2.carbon.context.CarbonContext;
+import org.wso2.carbon.registry.api.RegistryException;
+import org.wso2.carbon.registry.api.RegistryService;
 import org.wso2.carbon.registry.core.Registry;
 import org.wso2.carbon.registry.core.Resource;
-import org.wso2.carbon.registry.core.exceptions.RegistryException;
 import org.wso2.carbon.registry.core.exceptions.ResourceNotFoundException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class RegistryManager {
 
     private final static Log log = LogFactory.getLog(RegistryManager.class);
-    private static Registry registryService;
+    private static RegistryService registryService;
     private static RegistryManager registryManager;
-
-    public static RegistryManager getInstance() {
-
-        registryService = ServiceReferenceHolder.getInstance().getRegistry();
-
+    private static Registry registry;
+   
+    /**
+     * Gets the single instance of RegistryManager where the registry is for the current tenant.
+     *
+     * @param tenantId the tenant id
+     * @return single instance of RegistryManager
+     */
+    public static RegistryManager getInstance(int tenantId) {
+    	try {
+    		registryService = ServiceReferenceHolder.getInstance().getRegistry();
+    		registry = (Registry) registryService.getGovernanceSystemRegistry(tenantId);
+    	}
+    	catch(RegistryException e){
+    		String msg = "Failed when retrieving Governance System Registry.";
+            log.error(msg, e);
+            throw new AutoScalerException(msg, e);
+    	} 
+        
         synchronized (RegistryManager.class) {
             if (registryManager == null) {
                 if (registryService == null) {
@@ -65,9 +82,9 @@ public class RegistryManager {
 
     private RegistryManager() {
         try {
-            if (!registryService.resourceExists(AutoScalerConstants.AUTOSCALER_RESOURCE)) {
-                registryService.put(AutoScalerConstants.AUTOSCALER_RESOURCE,
-                        registryService.newCollection());
+            if (!registry.resourceExists(AutoScalerConstants.AUTOSCALER_RESOURCE)) {
+            	registry.put(AutoScalerConstants.AUTOSCALER_RESOURCE,
+            			registry.newCollection());
             }
         } catch (RegistryException e) {
             String msg =
@@ -87,16 +104,16 @@ public class RegistryManager {
     private void persist(Object dataObj, String resourcePath) throws AutoScalerException {
 
         try {
-            registryService.beginTransaction();
+        	registry.beginTransaction();
 
-            Resource nodeResource = registryService.newResource();
+            Resource nodeResource = registry.newResource();
             nodeResource.setContent(Serializer.serializeToByteArray(dataObj));
 
-            registryService.put(resourcePath, nodeResource);
-            registryService.commitTransaction();
+            registry.put(resourcePath, nodeResource);
+            registry.commitTransaction();
         } catch (Exception e) {
             try {
-                registryService.rollbackTransaction();
+            	registry.rollbackTransaction();
             } catch (RegistryException e1) {
                 if (log.isErrorEnabled()) {
                     log.error("Could not rollback transaction", e);
@@ -107,7 +124,12 @@ public class RegistryManager {
     }
 
     public void persistPartition(Partition partition) {
-        String resourcePath = AutoScalerConstants.AUTOSCALER_RESOURCE + AutoScalerConstants.PARTITION_RESOURCE + "/" + partition.getId();
+    	String resourcePath;
+    	if (!partition.getIsPublic()) {
+	        resourcePath = AutoScalerConstants.AUTOSCALER_RESOURCE + AutoScalerConstants.PARTITION_RESOURCE + "/" + AutoScalerConstants.TENANT_RESOURCE + "/" + partition.getId();
+    	} else {
+    		resourcePath = AutoScalerConstants.AUTOSCALER_RESOURCE + AutoScalerConstants.PARTITION_RESOURCE + "/" + AutoScalerConstants.PUBLIC_RESOURCE + "/" + partition.getId();
+    	}
         persist(partition, resourcePath);
         if (log.isDebugEnabled()) {
             log.debug(String.format("Partition written to registry: [id] %s [provider] %s [min] %d [max] %d",
@@ -125,7 +147,12 @@ public class RegistryManager {
     }
 
     public void persistAutoscalerPolicy(AutoscalePolicy autoscalePolicy) {
-        String resourcePath = AutoScalerConstants.AUTOSCALER_RESOURCE + AutoScalerConstants.AS_POLICY_RESOURCE + "/" + autoscalePolicy.getId();
+    	String resourcePath;
+    	if (!autoscalePolicy.getIsPublic()) {
+	        resourcePath = AutoScalerConstants.AUTOSCALER_RESOURCE + AutoScalerConstants.AS_POLICY_RESOURCE + "/" + AutoScalerConstants.TENANT_RESOURCE + "/" + autoscalePolicy.getId();
+    	} else {
+    		resourcePath = AutoScalerConstants.AUTOSCALER_RESOURCE + AutoScalerConstants.AS_POLICY_RESOURCE + "/" + AutoScalerConstants.PUBLIC_RESOURCE + "/" + autoscalePolicy.getId();
+    	}
         persist(autoscalePolicy, resourcePath);
         if (log.isDebugEnabled()) {
             log.debug(String.format("Autoscaler policy written to registry: [id] %s [name] %s [description] %s",
@@ -134,7 +161,12 @@ public class RegistryManager {
     }
 
     public void persistDeploymentPolicy(DeploymentPolicy deploymentPolicy) {
-        String resourcePath = AutoScalerConstants.AUTOSCALER_RESOURCE + AutoScalerConstants.DEPLOYMENT_POLICY_RESOURCE + "/" + deploymentPolicy.getId();
+    	String resourcePath;
+    	if (!deploymentPolicy.getIsPublic()) {
+	        resourcePath = AutoScalerConstants.AUTOSCALER_RESOURCE + AutoScalerConstants.DEPLOYMENT_POLICY_RESOURCE + "/" + AutoScalerConstants.TENANT_RESOURCE + "/" + deploymentPolicy.getId();
+    	} else {
+    		resourcePath = AutoScalerConstants.AUTOSCALER_RESOURCE + AutoScalerConstants.DEPLOYMENT_POLICY_RESOURCE + "/" + AutoScalerConstants.PUBLIC_RESOURCE + "/" + deploymentPolicy.getId();
+    	}
         persist(deploymentPolicy, resourcePath);
         if (log.isDebugEnabled()) {
             log.debug(deploymentPolicy.toString());
@@ -143,7 +175,7 @@ public class RegistryManager {
 
     private Object retrieve(String resourcePath) {
         try {
-            Resource resource = registryService.get(resourcePath);
+            Resource resource = registry.get(resourcePath);
 
             return resource.getContent();
 
@@ -158,13 +190,20 @@ public class RegistryManager {
     }
 
     public List<Partition> retrievePartitions() {
-        List<Partition> partitionList = new ArrayList<Partition>();
-        RegistryManager registryManager = RegistryManager.getInstance();
-        String[] partitionsResourceList = (String[]) registryManager.retrieve(AutoScalerConstants.AUTOSCALER_RESOURCE + AutoScalerConstants.PARTITION_RESOURCE);
+    	List<Partition> partitionList = new ArrayList<Partition>();
+        RegistryManager registryManager = RegistryManager.getInstance(CarbonContext.getThreadLocalCarbonContext().getTenantId());
+        String[] partitionsResourceList = (String[]) registryManager.retrieve(AutoScalerConstants.AUTOSCALER_RESOURCE + AutoScalerConstants.PARTITION_RESOURCE + AutoScalerConstants.TENANT_RESOURCE);
+        String[] publicPartitionsResourceList = (String[]) registryManager.retrieve(AutoScalerConstants.AUTOSCALER_RESOURCE + AutoScalerConstants.PARTITION_RESOURCE + AutoScalerConstants.PUBLIC_RESOURCE);
+        
+        ArrayList<String> allPartitions = new ArrayList<String>();
+        if (partitionsResourceList != null)
+        	allPartitions.addAll(Arrays.asList(partitionsResourceList));
+        if (publicPartitionsResourceList != null)
+        	allPartitions.addAll(Arrays.asList(publicPartitionsResourceList));
 
-        if (partitionsResourceList != null) {
+        if (allPartitions != null) {
             Partition partition;
-            for (String resourcePath : partitionsResourceList) {
+            for (String resourcePath : allPartitions) {
                 Object serializedObj = registryManager.retrieve(resourcePath);
                 if (serializedObj != null) {
                     try {
@@ -192,7 +231,7 @@ public class RegistryManager {
 
     public List<NetworkPartitionLbHolder> retrieveNetworkPartitionLbHolders() {
         List<NetworkPartitionLbHolder> nwPartitionLbHolderList = new ArrayList<NetworkPartitionLbHolder>();
-        RegistryManager registryManager = RegistryManager.getInstance();
+        RegistryManager registryManager = RegistryManager.getInstance(CarbonContext.getThreadLocalCarbonContext().getTenantId());
         String[] partitionsResourceList = (String[]) registryManager.retrieve(AutoScalerConstants.AUTOSCALER_RESOURCE +
                 AutoScalerConstants.NETWORK_PARTITION_LB_HOLDER_RESOURCE);
 
@@ -224,13 +263,20 @@ public class RegistryManager {
     }
 
     public List<AutoscalePolicy> retrieveASPolicies() {
-        List<AutoscalePolicy> asPolicyList = new ArrayList<AutoscalePolicy>();
-        RegistryManager registryManager = RegistryManager.getInstance();
-        String[] partitionsResourceList = (String[]) registryManager.retrieve(AutoScalerConstants.AUTOSCALER_RESOURCE + AutoScalerConstants.AS_POLICY_RESOURCE);
-
-        if (partitionsResourceList != null) {
+    	List<AutoscalePolicy> asPolicyList = new ArrayList<AutoscalePolicy>();
+        RegistryManager registryManager = RegistryManager.getInstance(CarbonContext.getThreadLocalCarbonContext().getTenantId());
+        String[] asPolicyResourceList = (String[]) registryManager.retrieve(AutoScalerConstants.AUTOSCALER_RESOURCE + AutoScalerConstants.AS_POLICY_RESOURCE + AutoScalerConstants.TENANT_RESOURCE);
+        String[] publicAsPolicyResourceList = (String[]) registryManager.retrieve(AutoScalerConstants.AUTOSCALER_RESOURCE + AutoScalerConstants.AS_POLICY_RESOURCE + AutoScalerConstants.PUBLIC_RESOURCE);
+        
+        ArrayList<String> allAsPolicies = new ArrayList<String>();
+        if (asPolicyResourceList != null)
+        	allAsPolicies.addAll(Arrays.asList(asPolicyResourceList));
+        if (publicAsPolicyResourceList != null)
+        	allAsPolicies.addAll(Arrays.asList(publicAsPolicyResourceList));
+        
+        if (allAsPolicies != null) {
             AutoscalePolicy asPolicy;
-            for (String resourcePath : partitionsResourceList) {
+            for (String resourcePath : allAsPolicies) {
                 Object serializedObj = registryManager.retrieve(resourcePath);
                 if (serializedObj != null) {
                     try {
@@ -256,13 +302,20 @@ public class RegistryManager {
     }
 
     public List<DeploymentPolicy> retrieveDeploymentPolicies() {
-        List<DeploymentPolicy> depPolicyList = new ArrayList<DeploymentPolicy>();
-        RegistryManager registryManager = RegistryManager.getInstance();
-        String[] depPolicyResourceList = (String[]) registryManager.retrieve(AutoScalerConstants.AUTOSCALER_RESOURCE + AutoScalerConstants.DEPLOYMENT_POLICY_RESOURCE);
+    	List<DeploymentPolicy> depPolicyList = new ArrayList<DeploymentPolicy>();
+        RegistryManager registryManager = RegistryManager.getInstance(CarbonContext.getThreadLocalCarbonContext().getTenantId());
+        String[] depPolicyResourceList = (String[]) registryManager.retrieve(AutoScalerConstants.AUTOSCALER_RESOURCE + AutoScalerConstants.DEPLOYMENT_POLICY_RESOURCE + AutoScalerConstants.TENANT_RESOURCE);
+        String[] publicDepPolicyResourceList = (String[]) registryManager.retrieve(AutoScalerConstants.AUTOSCALER_RESOURCE + AutoScalerConstants.DEPLOYMENT_POLICY_RESOURCE + AutoScalerConstants.PUBLIC_RESOURCE);
+        
+        ArrayList<String> allDepPolicies = new ArrayList<String>();
+        if (depPolicyResourceList != null)
+        	allDepPolicies.addAll(Arrays.asList(depPolicyResourceList));
+        if (publicDepPolicyResourceList != null)
+        	allDepPolicies.addAll(Arrays.asList(publicDepPolicyResourceList));
 
-        if (depPolicyResourceList != null) {
+        if (allDepPolicies != null) {
             DeploymentPolicy depPolicy;
-            for (String resourcePath : depPolicyResourceList) {
+            for (String resourcePath : allDepPolicies) {
                 Object serializedObj = registryManager.retrieve(resourcePath);
                 if (serializedObj != null) {
                     try {
@@ -287,7 +340,14 @@ public class RegistryManager {
     }
 
     public void removeAutoscalerPolicy(AutoscalePolicy autoscalePolicy) {
-        String resourcePath = AutoScalerConstants.AUTOSCALER_RESOURCE + AutoScalerConstants.AS_POLICY_RESOURCE + "/" + autoscalePolicy.getId();
+    	String resourcePath;
+		if(!autoscalePolicy.getIsPublic()) {
+			resourcePath = AutoScalerConstants.AUTOSCALER_RESOURCE + AutoScalerConstants.AS_POLICY_RESOURCE + "/" + AutoScalerConstants.TENANT_RESOURCE + "/" + autoscalePolicy.getId();
+		}
+		else {
+			resourcePath = AutoScalerConstants.AUTOSCALER_RESOURCE + AutoScalerConstants.AS_POLICY_RESOURCE + "/" + AutoScalerConstants.PUBLIC_RESOURCE + "/" +autoscalePolicy.getId();
+		}
+    	
         this.delete(resourcePath);
         if (log.isDebugEnabled()) {
             log.debug(String.format("Autoscaler policy deleted from registry: [id] %s [name] %s [description] %s",
@@ -297,7 +357,14 @@ public class RegistryManager {
     }
 
     public void removeDeploymentPolicy(DeploymentPolicy depPolicy) {
-        String resourcePath = AutoScalerConstants.AUTOSCALER_RESOURCE + AutoScalerConstants.DEPLOYMENT_POLICY_RESOURCE;
+    	String resourcePath;
+		if(!depPolicy.getIsPublic()) {
+			resourcePath = AutoScalerConstants.AUTOSCALER_RESOURCE + AutoScalerConstants.DEPLOYMENT_POLICY_RESOURCE + "/" + AutoScalerConstants.TENANT_RESOURCE + "/" + depPolicy.getId();
+		}
+		else {
+			resourcePath = AutoScalerConstants.AUTOSCALER_RESOURCE + AutoScalerConstants.DEPLOYMENT_POLICY_RESOURCE + "/" + AutoScalerConstants.PUBLIC_RESOURCE + "/" +depPolicy.getId();
+		}
+    	
         this.delete(resourcePath);
         if (log.isDebugEnabled()) {
             log.debug(String.format("Deployment policy deleted from registry: [id] %s",
@@ -317,12 +384,12 @@ public class RegistryManager {
 
     private void delete(String resourcePath) {
         try {
-            registryService.beginTransaction();
-            registryService.delete(resourcePath);
-            registryService.commitTransaction();
+        	registry.beginTransaction();
+        	registry.delete(resourcePath);
+        	registry.commitTransaction();
         } catch (RegistryException e) {
             try {
-                registryService.rollbackTransaction();
+            	registry.rollbackTransaction();
             } catch (RegistryException e1) {
                 if (log.isErrorEnabled()) {
                     log.error("Could not rollback transaction", e);
@@ -345,7 +412,7 @@ public class RegistryManager {
 
     public List<KubernetesGroup> retrieveKubernetesGroups() {
         List<KubernetesGroup> kubernetesGroupList = new ArrayList<KubernetesGroup>();
-        RegistryManager registryManager = RegistryManager.getInstance();
+        RegistryManager registryManager = RegistryManager.getInstance(CarbonContext.getThreadLocalCarbonContext().getTenantId());
         String[] kubernetesGroupResourceList = (String[]) registryManager.retrieve(AutoScalerConstants.AUTOSCALER_RESOURCE + AutoScalerConstants.KUBERNETES_RESOURCE);
 
         if (kubernetesGroupResourceList != null) {

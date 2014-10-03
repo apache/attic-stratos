@@ -72,7 +72,7 @@ public class ServiceDeploymentManager {
         //get deployed Cartridge Definition information
         CartridgeInfo cartridgeInfo;
         try {
-            cartridgeInfo = CloudControllerServiceClient.getServiceClient().getCartridgeInfo(type);
+            cartridgeInfo = CloudControllerServiceClient.getClientWithMutualAuthHeaderSet().getCartridgeInfo(type);
 
         } catch (CloudControllerServiceUnregisteredCartridgeExceptionException e) {
             String message = type + " is not a valid cartridgeSubscription type. Please try again with a valid cartridgeSubscription type.";
@@ -142,7 +142,7 @@ public class ServiceDeploymentManager {
 //                    for (String clusterId : clusterIds) {
 //
 //                            try {
-//                            	AutoscalerServiceClient.getServiceClient().checkLBExistenceAgainstPolicy(clusterId,
+//                            	AutoscalerServiceClient.getClientWithMutualAuthHeaderSet().checkLBExistenceAgainstPolicy(clusterId,
 //                            			deploymentPolicyName);
 //                            } catch (Exception ex) {
 //                                // we don't need to throw the error here.
@@ -163,7 +163,7 @@ public class ServiceDeploymentManager {
 //                        String lbCartridgeType = lbConfig.getType();
 //                        try {
 //                            // retrieve lb Cartridge info
-//                            lbCartridgeInfo = CloudControllerServiceClient.getServiceClient().getCartridgeInfo(lbCartridgeType);
+//                            lbCartridgeInfo = CloudControllerServiceClient.getClientWithMutualAuthHeaderSet().getCartridgeInfo(lbCartridgeType);
 //                        } catch (Exception e) {
 //                            String msg = "Cannot get cartridge info: " + type;
 //                            log.error(msg, e);
@@ -179,13 +179,13 @@ public class ServiceDeploymentManager {
 //                            try {
 //                                // get the valid policies for lb cartridge
 //                                DeploymentPolicy[] lbCartridgeDepPolicies =
-//                                	AutoscalerServiceClient.getServiceClient().getDeploymentPolicies(lbCartridgeType);
+//                                	AutoscalerServiceClient.getClientWithMutualAuthHeaderSet().getDeploymentPolicies(lbCartridgeType);
 //                                // traverse deployment policies of lb cartridge
 //                                for (DeploymentPolicy policy : lbCartridgeDepPolicies) {
 //                                    // check existence of the subscribed policy
 //                                    if (deploymentPolicyName.equals(policy.getId())) {
 //
-//                                        if (!AutoscalerServiceClient.getServiceClient().checkDefaultLBExistenceAgainstPolicy(deploymentPolicyName)) {
+//                                        if (!AutoscalerServiceClient.getClientWithMutualAuthHeaderSet().checkDefaultLBExistenceAgainstPolicy(deploymentPolicyName)) {
 //
 //                                            // if lb cluster doesn't exist
 //                                            lbService = new LBService(lbCartridgeType,
@@ -229,7 +229,7 @@ public class ServiceDeploymentManager {
 //                        String lbCartridgeType = lbConfig.getType();
 //                        try {
 //                            // retrieve lb Cartridge info
-//                            lbCartridgeInfo = CloudControllerServiceClient.getServiceClient().getCartridgeInfo(lbCartridgeType);
+//                            lbCartridgeInfo = CloudControllerServiceClient.getClientWithMutualAuthHeaderSet().getCartridgeInfo(lbCartridgeType);
 //                        } catch (Exception e) {
 //                            String msg = "Cannot get cartridge info: " + type;
 //                            log.error(msg, e);
@@ -251,14 +251,14 @@ public class ServiceDeploymentManager {
 //
 //                            // get the valid policies for lb cartridge
 //                            DeploymentPolicy[] lbCartridgeDepPolicies =
-//                                    AutoscalerServiceClient.getServiceClient().getDeploymentPolicies(lbCartridgeType);
+//                                    AutoscalerServiceClient.getClientWithMutualAuthHeaderSet().getDeploymentPolicies(lbCartridgeType);
 //                            // traverse deployment policies of lb cartridge
 //                            for (DeploymentPolicy policy : lbCartridgeDepPolicies) {
 //
 //                                // check existence of the subscribed policy
 //                                if (deploymentPolicyName.equals(policy.getId())) {
 //
-//                                    if (!AutoscalerServiceClient.getServiceClient().checkServiceLBExistenceAgainstPolicy(type,
+//                                    if (!AutoscalerServiceClient.getClientWithMutualAuthHeaderSet().checkServiceLBExistenceAgainstPolicy(type,
 //                                            deploymentPolicyName)) {
 //
 //                                        lbCartridgeInfo.addProperties(property);

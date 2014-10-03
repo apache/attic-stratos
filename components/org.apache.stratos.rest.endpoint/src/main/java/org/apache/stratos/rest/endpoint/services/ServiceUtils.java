@@ -222,7 +222,7 @@ public class ServiceUtils {
     private static CloudControllerServiceClient getCloudControllerServiceClient() throws RestAPIException {
 
         try {
-            return CloudControllerServiceClient.getServiceClient();
+            return CloudControllerServiceClient.getClientWithMutualAuthHeaderSet();
 
         } catch (AxisFault axisFault) {
             String errorMsg = "Error while getting CloudControllerServiceClient instance to connect to the "
@@ -313,7 +313,7 @@ public class ServiceUtils {
     private static AutoscalerServiceClient getAutoscalerServiceClient() throws RestAPIException {
 
         try {
-            return AutoscalerServiceClient.getServiceClient();
+            return AutoscalerServiceClient.getClientWithMutualAuthHeaderSet();
 
         } catch (AxisFault axisFault) {
             String errorMsg = "Error while getting AutoscalerServiceClient instance to connect to the "
@@ -495,13 +495,13 @@ public class ServiceUtils {
         try {
             Pattern searchPattern = getSearchStringPattern(cartridgeSearchString);
 
-            String[] availableCartridges = CloudControllerServiceClient.getServiceClient().getRegisteredCartridges();
+            String[] availableCartridges = getCloudControllerServiceClient().getRegisteredCartridges();
 
             if (availableCartridges != null) {
                 for (String cartridgeType : availableCartridges) {
                     CartridgeInfo cartridgeInfo = null;
                     try {
-                        cartridgeInfo = CloudControllerServiceClient.getServiceClient().getCartridgeInfo(cartridgeType);
+                        cartridgeInfo = getCloudControllerServiceClient().getCartridgeInfo(cartridgeType);
                     } catch (Exception e) {
                         if (log.isWarnEnabled()) {
                             log.warn("Error when calling getCartridgeInfo for " + cartridgeType + ", Error: "

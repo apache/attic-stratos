@@ -84,7 +84,7 @@ public class ClusterMonitorFactory {
             throw new PolicyValidationException(msg);
         }
 
-        CloudControllerClient.getInstance().validateDeploymentPolicy(cluster.getServiceName(), deploymentPolicy);
+        CloudControllerClient.getClientWithMutualAuthHeaderSet().validateDeploymentPolicy(cluster.getServiceName(), deploymentPolicy);
 
         VMServiceClusterMonitor clusterMonitor =
                                         new VMServiceClusterMonitor(cluster.getClusterId(),

@@ -85,7 +85,7 @@ public final class DockerServiceClusterMonitor extends ContainerClusterMonitor{
 				while (!success) {
 					try {
 
-						MemberContext memberContext = CloudControllerClient.getInstance().createContainer(kubernetesClusterId, getClusterId());
+						MemberContext memberContext = CloudControllerClient.getClientWithMutualAuthHeaderSet().createContainer(kubernetesClusterId, getClusterId());
 						if(null != memberContext) {
 							getKubernetesClusterCtxt().addPendingMember(memberContext);
 							success = true;

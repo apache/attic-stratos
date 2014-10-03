@@ -902,7 +902,7 @@ public class AutoscalerHealthStatEventReceiver implements Runnable {
                     return;
                 }
                 // terminate the faulty member
-                CloudControllerClient ccClient = CloudControllerClient.getInstance();
+                CloudControllerClient ccClient = CloudControllerClient.getClientWithMutualAuthHeaderSet();
                 ccClient.terminate(memberId);
 
                 // remove from active member list

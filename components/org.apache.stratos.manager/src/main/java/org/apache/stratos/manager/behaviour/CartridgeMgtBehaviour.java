@@ -155,7 +155,7 @@ public abstract class CartridgeMgtBehaviour implements Serializable {
         log.info("Instance Cleanup Notification sent to Cluster:  " + clusterId);
 
         try {
-            CloudControllerServiceClient.getServiceClient().unregisterService(clusterId);
+            CloudControllerServiceClient.getClientWithMutualAuthHeaderSet().unregisterService(clusterId);
 
         } catch (Exception e) {
             String errorMsg = "Error in unregistering service cluster with domain " + clusterId;

@@ -286,7 +286,7 @@ public class KubernetesClusterContext implements Serializable{
 
 							// terminate all containers of this cluster
 							try {
-								CloudControllerClient.getInstance().terminateAllContainers(clusterId);
+								CloudControllerClient.getClientWithMutualAuthHeaderSet().terminateAllContainers(clusterId);
 								iterator.remove();
 							} catch (TerminationException e) {
 								log.error(e.getMessage(), e);

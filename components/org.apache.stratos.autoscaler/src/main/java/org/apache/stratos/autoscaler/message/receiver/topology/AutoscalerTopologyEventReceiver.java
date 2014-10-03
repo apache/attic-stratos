@@ -163,7 +163,7 @@ public class AutoscalerTopologyEventReceiver implements Runnable {
 
 
                         // terminate the shutdown ready member
-                        CloudControllerClient ccClient = CloudControllerClient.getInstance();
+                        CloudControllerClient ccClient = CloudControllerClient.getClientWithMutualAuthHeaderSet();
                         ccClient.terminate(memberId);
 
                         // remove from active member list
@@ -438,7 +438,7 @@ public class AutoscalerTopologyEventReceiver implements Runnable {
 
 
                        // terminate the shutdown ready member
-                       CloudControllerClient ccClient = CloudControllerClient.getInstance();
+                       CloudControllerClient ccClient = CloudControllerClient.getClientWithMutualAuthHeaderSet();
                        ccClient.terminate(memberId);
 
                        // remove from active member list

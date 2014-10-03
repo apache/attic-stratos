@@ -52,7 +52,7 @@ public class ServiceLevelLoadBalancerCategory extends LoadBalancerCategory {
         String clusterId = null;
 
         try {
-            clusterId = AutoscalerServiceClient.getServiceClient().getServiceLBClusterId(getLoadBalancedServiceType(), getDeploymentPolicyName());
+            clusterId = AutoscalerServiceClient.getClientWithMutualAuthHeaderSet().getServiceLBClusterId(getLoadBalancedServiceType(), getDeploymentPolicyName());
 
         } catch (Exception e) {
             log.error("Error occurred in retrieving Service LB cluster id" + e.getMessage());
@@ -71,7 +71,7 @@ public class ServiceLevelLoadBalancerCategory extends LoadBalancerCategory {
             //get the hostname for this cluster and set it
             ClusterContext clusterContext;
             try {
-                clusterContext = CloudControllerServiceClient.getServiceClient().getClusterContext(clusterId);
+                clusterContext = CloudControllerServiceClient.getClientWithMutualAuthHeaderSet().getClusterContext(clusterId);
 
             } catch (RemoteException e) {
                 log.error("Error occurred in retrieving Cluster Context for Service LB ", e);

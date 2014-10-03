@@ -110,7 +110,7 @@ public class AutoscalerUtil {
 //            throw new PolicyValidationException(msg);
 //        }
 //
-//        CloudControllerClient.getInstance().validateDeploymentPolicy(cluster.getServiceName(), deploymentPolicy);
+//        CloudControllerClient.getClientWithMutualAuthHeaderSet().validateDeploymentPolicy(cluster.getServiceName(), deploymentPolicy);
 //
 //        ClusterMonitor clusterMonitor =
 //                                        new ClusterMonitor(cluster.getClusterId(),

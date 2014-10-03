@@ -26,6 +26,7 @@ import org.apache.stratos.autoscaler.commands.PartitionsCommands;
 import org.eclipse.osgi.framework.console.CommandProvider;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
+import org.wso2.carbon.utils.Axis2ConfigurationContextObserver;
 
 public class ASBundleActivater implements BundleActivator{
 
@@ -39,6 +40,7 @@ public class ASBundleActivater implements BundleActivator{
 		context.registerService(CommandProvider.class.getName(),new ASPolicyCommands(), null);
 		context.registerService(CommandProvider.class.getName(),new DeploymentPolicyCommands(), null);
 		context.registerService(CommandProvider.class.getName(),new PartitionsCommands(), null);
+		context.registerService(Axis2ConfigurationContextObserver.class.getName(),new TenantArtifactLoader(), null);
 	}
 
 

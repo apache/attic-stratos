@@ -29,6 +29,7 @@ import org.apache.stratos.autoscaler.util.AutoScalerConstants;
 import org.apache.stratos.common.kubernetes.KubernetesGroup;
 import org.apache.stratos.common.kubernetes.KubernetesHost;
 import org.apache.stratos.common.kubernetes.KubernetesMaster;
+import org.wso2.carbon.context.CarbonContext;
 
 import java.util.*;
 
@@ -177,7 +178,7 @@ public class KubernetesManager {
             addKubernetesGroupToInformationModel(kubernetesGroup);
 
             // Persist the KubernetesGroup object in registry space
-            RegistryManager.getInstance().persistKubernetesGroup(kubernetesGroup);
+            RegistryManager.getInstance(CarbonContext.getThreadLocalCarbonContext().getTenantId()).persistKubernetesGroup(kubernetesGroup);
 
             if (log.isInfoEnabled()) {
                 log.info(String.format("Kubernetes group deployed successfully: [id] %s, [description] %s",
@@ -224,7 +225,7 @@ public class KubernetesManager {
             kubernetesGroupStored.setKubernetesHosts(kubernetesHostArrayList.toArray(new KubernetesHost[kubernetesHostArrayList.size()]));
 
             // Persist the new KubernetesHost wrapped under KubernetesGroup object
-            RegistryManager.getInstance().persistKubernetesGroup(kubernetesGroupStored);
+            RegistryManager.getInstance(CarbonContext.getThreadLocalCarbonContext().getTenantId()).persistKubernetesGroup(kubernetesGroupStored);
 
             if (log.isInfoEnabled()) {
                 log.info(String.format("Kubernetes host deployed successfully: [id] %s", kubernetesGroupStored.getGroupId()));
@@ -252,7 +253,7 @@ public class KubernetesManager {
             kubernetesGroupStored.setKubernetesMaster(kubernetesMaster);
 
             // Persist the new KubernetesHost wrapped under KubernetesGroup object
-            RegistryManager.getInstance().persistKubernetesGroup(kubernetesGroupStored);
+            RegistryManager.getInstance(CarbonContext.getThreadLocalCarbonContext().getTenantId()).persistKubernetesGroup(kubernetesGroupStored);
 
             if (log.isInfoEnabled()) {
                 log.info(String.format("Kubernetes master updated successfully: [id] %s", kubernetesMaster.getHostId()));
@@ -284,7 +285,7 @@ public class KubernetesManager {
                     kubernetesGroupStored.getKubernetesHosts()[i] = kubernetesHost;
 
                     // Persist the new KubernetesHost wrapped under KubernetesGroup object
-                    RegistryManager.getInstance().persistKubernetesGroup(kubernetesGroupStored);
+                    RegistryManager.getInstance(CarbonContext.getThreadLocalCarbonContext().getTenantId()).persistKubernetesGroup(kubernetesGroupStored);
 
                     if (log.isInfoEnabled()) {
                         log.info(String.format("Kubernetes host updated successfully: [id] %s", kubernetesHost.getHostId()));
@@ -316,7 +317,7 @@ public class KubernetesManager {
             kubernetesGroupsMap.remove(kubernetesGroupId);
 
             // Persist the new KubernetesHost wrapped under KubernetesGroup object
-            RegistryManager.getInstance().removeKubernetesGroup(kubernetesGroupStored);
+            RegistryManager.getInstance(CarbonContext.getThreadLocalCarbonContext().getTenantId()).removeKubernetesGroup(kubernetesGroupStored);
 
             if (log.isInfoEnabled()) {
                 log.info(String.format("Kubernetes group removed successfully: [id] %s", kubernetesGroupId));
@@ -362,7 +363,7 @@ public class KubernetesManager {
             kubernetesGroupStored.setKubernetesHosts(kubernetesHostsArray);
 
             // Persist the updated KubernetesGroup object
-            RegistryManager.getInstance().persistKubernetesGroup(kubernetesGroupStored);
+            RegistryManager.getInstance(CarbonContext.getThreadLocalCarbonContext().getTenantId()).persistKubernetesGroup(kubernetesGroupStored);
 
             if (log.isInfoEnabled()) {
                 log.info(String.format("Kubernetes host removed successfully: [id] %s", kubernetesHostId));

@@ -56,7 +56,7 @@ public class DefaultLBService extends LBService {
         // call the relevant method to get the cluster id, using deployment policy
         String clusterId = null;
         try {
-            clusterId = AutoscalerServiceClient.getServiceClient().getDefaultLBClusterId(getDeploymentPolicyName());
+            clusterId = AutoscalerServiceClient.getClientWithMutualAuthHeaderSet().getDefaultLBClusterId(getDeploymentPolicyName());
         } catch (Exception e) {
             log.error("Error occurred in retrieving default LB cluster id" + e.getMessage());
             throw new ADCException(e);
@@ -73,7 +73,7 @@ public class DefaultLBService extends LBService {
             //get the hostname for this cluster and set it
             ClusterContext clusterContext;
             try {
-                clusterContext = CloudControllerServiceClient.getServiceClient().getClusterContext(clusterId);
+                clusterContext = CloudControllerServiceClient.getClientWithMutualAuthHeaderSet().getClusterContext(clusterId);
 
             } catch (RemoteException e) {
                 log.error("Error occurred in retrieving Cluster Context for default LB ", e);

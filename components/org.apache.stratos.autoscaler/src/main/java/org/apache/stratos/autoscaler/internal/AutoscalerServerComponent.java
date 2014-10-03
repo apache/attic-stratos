@@ -34,6 +34,7 @@ import org.apache.stratos.autoscaler.util.ServiceReferenceHolder;
 import org.apache.stratos.cloud.controller.stub.deployment.partition.Partition;
 import org.apache.stratos.common.kubernetes.KubernetesGroup;
 import org.osgi.service.component.ComponentContext;
+import org.wso2.carbon.context.CarbonContext;
 import org.wso2.carbon.registry.api.RegistryException;
 import org.wso2.carbon.registry.core.service.RegistryService;
 
@@ -84,37 +85,19 @@ public class AutoscalerServerComponent {
             }
 
             // Adding the registry stored partitions to the information model
-            List<Partition> partitions = RegistryManager.getInstance().retrievePartitions();
-            Iterator<Partition> partitionIterator = partitions.iterator();
-            while (partitionIterator.hasNext()) {
-                Partition partition = partitionIterator.next();
-                PartitionManager.getInstance().addPartitionToInformationModel(partition);
-            }
+            PartitionManager.getInstance().loadPartitionsToInformationModel();
             
             // Adding the network partitions stored in registry to the information model
-            List<NetworkPartitionLbHolder> nwPartitionHolders = RegistryManager.getInstance().retrieveNetworkPartitionLbHolders();
-            Iterator<NetworkPartitionLbHolder> nwPartitionIterator = nwPartitionHolders.iterator();
-            while (nwPartitionIterator.hasNext()) {
-                NetworkPartitionLbHolder nwPartition = nwPartitionIterator.next();
-                PartitionManager.getInstance().addNetworkPartitionLbHolder(nwPartition);
-            }
+            PartitionManager.getInstance().loadNetworkPartitionsToInformationModel();
             
-            List<AutoscalePolicy> asPolicies = RegistryManager.getInstance().retrieveASPolicies();
-            Iterator<AutoscalePolicy> asPolicyIterator = asPolicies.iterator();
-            while (asPolicyIterator.hasNext()) {
-                AutoscalePolicy asPolicy = asPolicyIterator.next();
-                PolicyManager.getInstance().addASPolicyToInformationModel(asPolicy);
-            }
-
-            List<DeploymentPolicy> depPolicies = RegistryManager.getInstance().retrieveDeploymentPolicies();
-            Iterator<DeploymentPolicy> depPolicyIterator = depPolicies.iterator();
-            while (depPolicyIterator.hasNext()) {
-                DeploymentPolicy depPolicy = depPolicyIterator.next();
-                PolicyManager.getInstance().addDeploymentPolicyToInformationModel(depPolicy);
-            }
+            // Adding the registry stored autoscaling policies to the information model
+            PolicyManager.getInstance().loadASPoliciesToInformationModel();
+            
+            // Adding the registry stored deployment policies to the information model
+            PolicyManager.getInstance().loadDeploymentPoliciesToInformationModel();
 
             // Adding KubernetesGroups stored in registry to the information model
-            List<KubernetesGroup> kubernetesGroupList = RegistryManager.getInstance().retrieveKubernetesGroups();
+            List<KubernetesGroup> kubernetesGroupList = RegistryManager.getInstance(CarbonContext.getThreadLocalCarbonContext().getTenantId()).retrieveKubernetesGroups();
             Iterator<KubernetesGroup> kubernetesGroupIterator = kubernetesGroupList.iterator();
             while (kubernetesGroupIterator.hasNext()) {
                 KubernetesGroup kubernetesGroup = kubernetesGroupIterator.next();
@@ -138,13 +121,7 @@ public class AutoscalerServerComponent {
         if (log.isDebugEnabled()) {
             log.debug("Setting the Registry Service");
         }
-        try {
-            ServiceReferenceHolder.getInstance().setRegistry(registryService.getGovernanceSystemRegistry());
-        } catch (RegistryException e) {
-            String msg = "Failed when retrieving Governance System Registry.";
-            log.error(msg, e);
-            throw new AutoScalerException(msg, e);
-        }
+        ServiceReferenceHolder.getInstance().setRegistry(registryService);
     }
 
     protected void unsetRegistryService(RegistryService registryService) {

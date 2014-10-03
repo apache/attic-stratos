@@ -34,13 +34,14 @@ import org.apache.stratos.cloud.controller.stub.deployment.partition.Partition;
 import org.apache.stratos.common.kubernetes.KubernetesGroup;
 import org.apache.stratos.common.kubernetes.KubernetesHost;
 import org.apache.stratos.common.kubernetes.KubernetesMaster;
+import org.wso2.carbon.core.AbstractAdmin;
 
 import java.util.ArrayList;
 
 /**
  * Auto Scaler Service API is responsible getting Partitions and Policies.
  */
-public class AutoScalerServiceImpl implements AutoScalerServiceInterface {
+public class AutoScalerServiceImpl extends AbstractAdmin implements AutoScalerServiceInterface {
 
     private static final Log log = LogFactory.getLog(AutoScalerServiceImpl.class);
     PartitionManager partitionManager = PartitionManager.getInstance();
@@ -65,7 +66,7 @@ public class AutoScalerServiceImpl implements AutoScalerServiceInterface {
         for (DeploymentPolicy deploymentPolicy : this.getAllDeploymentPolicies()) {
             try {
                 // call CC API
-                CloudControllerClient.getInstance().validateDeploymentPolicy(cartridgeType, deploymentPolicy);
+                CloudControllerClient.getClientWithMutualAuthHeaderSet().validateDeploymentPolicy(cartridgeType, deploymentPolicy);
                 // if this deployment policy is valid for this cartridge, add it.
                 validPolicies.add(deploymentPolicy);
             } catch (PartitionValidationException ignoredException) {
