@@ -23,9 +23,8 @@ import org.apache.axis2.context.ConfigurationContext;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.stratos.autoscaler.deployment.policy.DeploymentPolicy;
-import org.apache.stratos.autoscaler.stub.AutoScalerServiceInvalidPartitionExceptionException;
-import org.apache.stratos.autoscaler.stub.AutoScalerServiceInvalidPolicyExceptionException;
+import org.apache.stratos.autoscaler.stub.*;
+import org.apache.stratos.autoscaler.stub.deployment.policy.DeploymentPolicy;
 import org.apache.stratos.cloud.controller.stub.CloudControllerServiceInvalidCartridgeDefinitionExceptionException;
 import org.apache.stratos.cloud.controller.stub.CloudControllerServiceInvalidCartridgeTypeExceptionException;
 import org.apache.stratos.cloud.controller.stub.CloudControllerServiceInvalidIaasProviderExceptionException;
@@ -34,17 +33,24 @@ import org.apache.stratos.cloud.controller.stub.pojo.CartridgeInfo;
 import org.apache.stratos.cloud.controller.stub.pojo.Property;
 import org.apache.stratos.manager.client.AutoscalerServiceClient;
 import org.apache.stratos.manager.client.CloudControllerServiceClient;
+import org.apache.stratos.manager.deploy.cartridge.CartridgeDeploymentManager;
 import org.apache.stratos.manager.deploy.service.Service;
 import org.apache.stratos.manager.deploy.service.ServiceDeploymentManager;
 import org.apache.stratos.manager.dto.Cartridge;
 import org.apache.stratos.manager.dto.SubscriptionInfo;
-import org.apache.stratos.manager.exception.*;
+import org.apache.stratos.manager.exception.ADCException;
+import org.apache.stratos.manager.exception.DomainMappingExistsException;
+import org.apache.stratos.manager.exception.NotSubscribedException;
+import org.apache.stratos.manager.exception.ServiceDoesNotExistException;
 import org.apache.stratos.manager.manager.CartridgeSubscriptionManager;
 import org.apache.stratos.manager.repository.RepositoryNotification;
 import org.apache.stratos.manager.subscription.CartridgeSubscription;
 import org.apache.stratos.manager.subscription.DataCartridgeSubscription;
 import org.apache.stratos.manager.subscription.SubscriptionData;
 import org.apache.stratos.manager.topology.model.TopologyClusterInformationModel;
+import org.apache.stratos.manager.user.mgt.StratosUserManager;
+import org.apache.stratos.manager.user.mgt.beans.UserInfoBean;
+import org.apache.stratos.manager.user.mgt.exception.UserManagementException;
 import org.apache.stratos.manager.utils.ApplicationManagementUtil;
 import org.apache.stratos.manager.utils.CartridgeConstants;
 import org.apache.stratos.messaging.domain.topology.Cluster;
@@ -60,13 +66,19 @@ import org.apache.stratos.rest.endpoint.bean.autoscaler.policy.autoscale.Autosca
 import org.apache.stratos.rest.endpoint.bean.cartridge.definition.CartridgeDefinitionBean;
 import org.apache.stratos.rest.endpoint.bean.cartridge.definition.PersistenceBean;
 import org.apache.stratos.rest.endpoint.bean.cartridge.definition.ServiceDefinitionBean;
+import org.apache.stratos.rest.endpoint.bean.kubernetes.KubernetesGroup;
+import org.apache.stratos.rest.endpoint.bean.kubernetes.KubernetesHost;
+import org.apache.stratos.rest.endpoint.bean.kubernetes.KubernetesMaster;
 import org.apache.stratos.rest.endpoint.bean.repositoryNotificationInfoBean.Payload;
 import org.apache.stratos.rest.endpoint.bean.subscription.domain.SubscriptionDomainBean;
 import org.apache.stratos.rest.endpoint.bean.util.converter.PojoConverter;
 import org.apache.stratos.rest.endpoint.exception.RestAPIException;
+import org.wso2.carbon.context.CarbonContext;
+import org.wso2.carbon.user.api.UserRealm;
+import org.wso2.carbon.user.api.UserStoreException;
+import org.wso2.carbon.user.api.UserStoreManager;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-
 import java.rmi.RemoteException;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -80,43 +92,23 @@ public class ServiceUtils {
 
     private static Log log = LogFactory.getLog(ServiceUtils.class);
     private static ServiceDeploymentManager serviceDeploymentManager = new ServiceDeploymentManager();
+    private static StratosUserManager stratosUserManager = new StratosUserManager();
 
     static void deployCartridge(CartridgeDefinitionBean cartridgeDefinitionBean, ConfigurationContext ctxt,
-                                                String userName, String tenantDomain) throws RestAPIException {
+                                String userName, String tenantDomain) throws RestAPIException {
 
-        log.info("Starting to deploy a Cartridge [type] " + cartridgeDefinitionBean.type);
-
-        CloudControllerServiceClient cloudControllerServiceClient = getCloudControllerServiceClient();
-
-        if (cloudControllerServiceClient != null) {
-
-            CartridgeConfig cartridgeConfig = PojoConverter.populateCartridgeConfigPojo(cartridgeDefinitionBean);
-
-            if (cartridgeConfig == null) {
-                throw new RestAPIException("Populated CartridgeConfig instance is null, cartridge deployment aborted");
-            }
-
-
-            // call CC
-            try {
-                cloudControllerServiceClient
-                        .deployCartridgeDefinition(cartridgeConfig);
-            } catch (RemoteException e) {
-                log.error(e.getMessage(), e);
-                throw new RestAPIException(e.getMessage(), e);
-            } catch (CloudControllerServiceInvalidCartridgeDefinitionExceptionException e) {
-                String message = e.getFaultMessage().getInvalidCartridgeDefinitionException().getMessage();
-                log.error(message, e);
-                throw new RestAPIException(message, e);
-            } catch (CloudControllerServiceInvalidIaasProviderExceptionException e) {
-                String message = e.getFaultMessage().getInvalidIaasProviderException().getMessage();
-                log.error(message, e);
-                throw new RestAPIException(message, e);
-            }
-
-            log.info("Successfully deployed Cartridge [type] " + cartridgeDefinitionBean.type);
-
-        }
+		log.info("Starting to deploy a Cartridge [type] "+ cartridgeDefinitionBean.type);
+		
+		CartridgeConfig cartridgeConfig = PojoConverter.populateCartridgeConfigPojo(cartridgeDefinitionBean);
+		if (cartridgeConfig == null) {
+			throw new RestAPIException("Populated CartridgeConfig instance is null, cartridge deployment aborted");
+		}
+		try {
+			CartridgeDeploymentManager.getDeploymentManager(cartridgeDefinitionBean.deployerType).deploy(cartridgeConfig);
+		} catch (ADCException e) {	
+			throw new RestAPIException(e.getMessage());
+		}
+		log.info("Successfully deployed Cartridge [type] "+ cartridgeDefinitionBean.type);
     }
 
     @SuppressWarnings("unused")
@@ -189,7 +181,7 @@ public class ServiceUtils {
         AutoscalerServiceClient autoscalerServiceClient = getAutoscalerServiceClient();
         if (autoscalerServiceClient != null) {
 
-            org.apache.stratos.autoscaler.policy.model.AutoscalePolicy autoscalePolicy = PojoConverter.
+            org.apache.stratos.autoscaler.stub.policy.model.AutoscalePolicy autoscalePolicy = PojoConverter.
                     convertToCCAutoscalerPojo(autoscalePolicyBean);
 
             try {
@@ -217,7 +209,7 @@ public class ServiceUtils {
         AutoscalerServiceClient autoscalerServiceClient = getAutoscalerServiceClient();
         if (autoscalerServiceClient != null) {
 
-            org.apache.stratos.autoscaler.deployment.policy.DeploymentPolicy deploymentPolicy =
+            org.apache.stratos.autoscaler.stub.deployment.policy.DeploymentPolicy deploymentPolicy =
                     PojoConverter.convetToCCDeploymentPolicyPojo(deploymentPolicyBean);
 
             try {
@@ -249,7 +241,7 @@ public class ServiceUtils {
     }
 
     public static Partition[] getAvailablePartitions() throws RestAPIException {
-
+    	
         org.apache.stratos.cloud.controller.stub.deployment.partition.Partition[] partitions = null;
         AutoscalerServiceClient autoscalerServiceClient = getAutoscalerServiceClient();
         if (autoscalerServiceClient != null) {
@@ -262,7 +254,7 @@ public class ServiceUtils {
                 throw new RestAPIException(errorMsg, e);
             }
         }
-
+        
         return PojoConverter.populatePartitionPojos(partitions);
     }
 
@@ -341,7 +333,7 @@ public class ServiceUtils {
 
     public static AutoscalePolicy[] getAutoScalePolicies() throws RestAPIException {
 
-        org.apache.stratos.autoscaler.policy.model.AutoscalePolicy[] autoscalePolicies = null;
+        org.apache.stratos.autoscaler.stub.policy.model.AutoscalePolicy[] autoscalePolicies = null;
         AutoscalerServiceClient autoscalerServiceClient = getAutoscalerServiceClient();
         if (autoscalerServiceClient != null) {
             try {
@@ -358,7 +350,7 @@ public class ServiceUtils {
 
     public static AutoscalePolicy getAutoScalePolicy(String autoscalePolicyId) throws RestAPIException {
 
-        org.apache.stratos.autoscaler.policy.model.AutoscalePolicy autoscalePolicy = null;
+        org.apache.stratos.autoscaler.stub.policy.model.AutoscalePolicy autoscalePolicy = null;
         AutoscalerServiceClient autoscalerServiceClient = getAutoscalerServiceClient();
         if (autoscalerServiceClient != null) {
             try {
@@ -450,7 +442,7 @@ public class ServiceUtils {
     public static PartitionGroup[] getPartitionGroups(String deploymentPolicyId)
             throws RestAPIException {
 
-        org.apache.stratos.autoscaler.partition.PartitionGroup[] partitionGroups = null;
+        org.apache.stratos.autoscaler.stub.partition.PartitionGroup[] partitionGroups = null;
         AutoscalerServiceClient autoscalerServiceClient = getAutoscalerServiceClient();
         if (autoscalerServiceClient != null) {
             try {
@@ -491,7 +483,7 @@ public class ServiceUtils {
         }
 
 		/*if(lbCartridges == null || lbCartridges.isEmpty()) {
-			String msg = "Load balancer Cartridges are not available.";
+            String msg = "Load balancer Cartridges are not available.";
 	        log.error(msg);
 	        throw new RestAPIException(msg) ;
 		}*/
@@ -649,7 +641,7 @@ public class ServiceUtils {
 
         if (service == null) {
             return null;
-        }else{
+        } else {
             return PojoConverter.convertToServiceDefinitionBean(service);
         }
     }
@@ -693,7 +685,7 @@ public class ServiceUtils {
         }
         
 		/*if (availableMultitenantCartridges.isEmpty()) {
-			String msg = "Cannot find any active deployed service for tenant [id] "+tenantId;
+            String msg = "Cannot find any active deployed service for tenant [id] "+tenantId;
 			log.error(msg);
 			throw new RestAPIException(msg);
 		}*/
@@ -702,7 +694,7 @@ public class ServiceUtils {
     }
 
 
-	static List<Cartridge> getSubscriptions (String cartridgeSearchString, String serviceGroup, ConfigurationContext configurationContext) throws RestAPIException {
+    static List<Cartridge> getSubscriptions(String cartridgeSearchString, String serviceGroup, ConfigurationContext configurationContext) throws RestAPIException {
         List<Cartridge> cartridges = new ArrayList<Cartridge>();
 
         if (log.isDebugEnabled()) {
@@ -771,7 +763,7 @@ public class ServiceUtils {
         }
         
         /*if(cartridges.isEmpty()) {
-        	String msg = "Cannot find any subscribed Cartridge, matching the given string: "+cartridgeSearchString;
+            String msg = "Cannot find any subscribed Cartridge, matching the given string: "+cartridgeSearchString;
             log.error(msg);
             throw new RestAPIException(msg);
         }*/
@@ -884,18 +876,19 @@ public class ServiceUtils {
                     }
                 }
             }
-            if(subscription.getCartridgeInfo().getServiceGroup() != null) {
-            	cartridge.setServiceGroup(subscription.getCartridgeInfo().getServiceGroup());
+            if (subscription.getCartridgeInfo().getServiceGroup() != null) {
+                cartridge.setServiceGroup(subscription.getCartridgeInfo().getServiceGroup());
             }
-			return cartridge;
-			
-		} catch (Exception e) {
-			String msg = "Unable to extract the Cartridge from subscription. Cause: "+e.getMessage();
-			log.error(msg);
-			throw new RestAPIException(msg);
-		}
-		
-	}
+            return cartridge;
+
+        } catch (Exception e) {
+            String msg = "Unable to extract the Cartridge from subscription. Cause: " + e.getMessage();
+            log.error(msg);
+            throw new RestAPIException(msg);
+        }
+
+    }
+
     static Pattern getSearchStringPattern(String searchString) {
         if (log.isDebugEnabled()) {
             log.debug("Creating search pattern for " + searchString);
@@ -951,9 +944,9 @@ public class ServiceUtils {
     public static CartridgeSubscription getCartridgeSubscription(String alias, ConfigurationContext configurationContext) {
         return CartridgeSubscriptionManager.getCartridgeSubscription(ApplicationManagementUtil.getTenantId(configurationContext), alias);
     }
-  
-    static SubscriptionInfo subscribe(CartridgeInfoBean cartridgeInfoBean, ConfigurationContext configurationContext, String tenantUsername, String tenantDomain) 
-    		throws RestAPIException{
+
+    static SubscriptionInfo subscribe(CartridgeInfoBean cartridgeInfoBean, ConfigurationContext configurationContext, String tenantUsername, String tenantDomain)
+            throws RestAPIException {
 
         SubscriptionData subscriptionData = new SubscriptionData();
         subscriptionData.setCartridgeType(cartridgeInfoBean.getCartridgeType());
@@ -971,10 +964,10 @@ public class ServiceUtils {
         subscriptionData.setServiceGroup(cartridgeInfoBean.getServiceGroup());
 
         PersistenceBean persistenceBean = cartridgeInfoBean.getPersistence();
-        if(persistenceBean != null) {
+        if (persistenceBean != null) {
             subscriptionData.setPersistence(PojoConverter.getPersistence(persistenceBean));
         }
-        if(cartridgeInfoBean.getProperty() != null){
+        if (cartridgeInfoBean.getProperty() != null) {
             subscriptionData.setProperties(PojoConverter.getProperties(cartridgeInfoBean.getProperty()));
         }
 
@@ -994,12 +987,12 @@ public class ServiceUtils {
         */
         //subscribe
         SubscriptionInfo subscriptionInfo = null;
-        try{
-        	subscriptionInfo = CartridgeSubscriptionManager.subscribeToCartridgeWithProperties(subscriptionData);
-        }catch(Exception e){
-        	throw new RestAPIException(e.getMessage(), e);
+        try {
+            subscriptionInfo = CartridgeSubscriptionManager.subscribeToCartridgeWithProperties(subscriptionData);
+        } catch (Exception e) {
+            throw new RestAPIException(e.getMessage(), e);
         }
-        
+
         return subscriptionInfo;
     }
 
@@ -1049,19 +1042,19 @@ public class ServiceUtils {
     
 	public static org.apache.stratos.rest.endpoint.bean.topology.Cluster[] getClustersForCartridgeType(String cartridgeType) {
 
-		Set<Cluster> clusterSet = TopologyClusterInformationModel
-				.getInstance()
-				.getClusters(cartridgeType);
-		List<org.apache.stratos.rest.endpoint.bean.topology.Cluster> clusters = new ArrayList<org.apache.stratos.rest.endpoint.bean.topology.Cluster>();
-		for (Cluster cluster : clusterSet) {
-			clusters.add(PojoConverter.populateClusterPojos(cluster));
-		}
-		org.apache.stratos.rest.endpoint.bean.topology.Cluster[] arrCluster = new org.apache.stratos.rest.endpoint.bean.topology.Cluster[clusters
-				.size()];
-		arrCluster = clusters.toArray(arrCluster);
-		return arrCluster;
+        Set<Cluster> clusterSet = TopologyClusterInformationModel
+                .getInstance()
+                .getClusters(cartridgeType);
+        List<org.apache.stratos.rest.endpoint.bean.topology.Cluster> clusters = new ArrayList<org.apache.stratos.rest.endpoint.bean.topology.Cluster>();
+        for (Cluster cluster : clusterSet) {
+            clusters.add(PojoConverter.populateClusterPojos(cluster));
+        }
+        org.apache.stratos.rest.endpoint.bean.topology.Cluster[] arrCluster = new org.apache.stratos.rest.endpoint.bean.topology.Cluster[clusters
+                .size()];
+        arrCluster = clusters.toArray(arrCluster);
+        return arrCluster;
 
-	}
+    }
 
     // return the cluster id for the lb. This is a temp fix.
     /*private static String subscribeToLb(String cartridgeType, String loadBalancedCartridgeType, String lbAlias,
@@ -1112,7 +1105,7 @@ public class ServiceUtils {
     static void unsubscribe(String alias, String tenantDomain) throws RestAPIException {
 
         try {
-        	CartridgeSubscriptionManager.unsubscribeFromCartridge(tenantDomain, alias);
+            CartridgeSubscriptionManager.unsubscribeFromCartridge(tenantDomain, alias);
 
         } catch (ADCException e) {
             String msg = "Failed to unsubscribe from [alias] " + alias + ". Cause: " + e.getMessage();
@@ -1134,10 +1127,10 @@ public class ServiceUtils {
      * @param clusterSubdomain
      */
     static void deployService(String cartridgeType, String alias, String autoscalingPolicy, String deploymentPolicy,
-                                              String tenantDomain, String tenantUsername, int tenantId, String clusterDomain, String clusterSubdomain, String tenantRange) throws RestAPIException {
+                                              String tenantDomain, String tenantUsername, int tenantId, String clusterDomain, String clusterSubdomain, String tenantRange, boolean isPublic) throws RestAPIException {
         log.info("Deploying service..");
         try {
-            serviceDeploymentManager.deployService(cartridgeType, autoscalingPolicy, deploymentPolicy, tenantId, tenantRange, tenantDomain, tenantUsername);
+            serviceDeploymentManager.deployService(cartridgeType, autoscalingPolicy, deploymentPolicy, tenantId, tenantRange, tenantDomain, tenantUsername, isPublic);
 
         } catch (Exception e) {
             String msg = String.format("Failed to deploy the Service [Cartridge type] %s [alias] %s . Cause: %s", cartridgeType, alias, e.getMessage());
@@ -1150,9 +1143,9 @@ public class ServiceUtils {
 
         try {
             serviceDeploymentManager.undeployService(serviceType);
-        }catch(ServiceDoesNotExistException ex){
+        } catch (ServiceDoesNotExistException ex) {
             throw ex;
-        }catch (Exception e) {
+        } catch (Exception e) {
             String msg = "Failed to undeploy service cluster definition of type " + serviceType + " Cause: " + e.getMessage();
             log.error(msg, e);
             throw new RestAPIException(msg, e);
@@ -1184,9 +1177,9 @@ public class ServiceUtils {
     }
 
     public static void addSubscriptionDomains(ConfigurationContext configurationContext, String cartridgeType,
-                                                             String subscriptionAlias, 
-                                                             SubscriptionDomainRequest request) 
-                                                            		 throws RestAPIException {
+                                              String subscriptionAlias,
+                                              SubscriptionDomainRequest request)
+            throws RestAPIException {
         try {
             int tenantId = ApplicationManagementUtil.getTenantId(configurationContext);
 
@@ -1199,10 +1192,10 @@ public class ServiceUtils {
             }
 
             for (org.apache.stratos.rest.endpoint.bean.subscription.domain.SubscriptionDomainBean subscriptionDomain : request.domains) {
-				
-            	CartridgeSubscriptionManager.addSubscriptionDomain(tenantId, subscriptionAlias, 
-            			subscriptionDomain.domainName, subscriptionDomain.applicationContext);
-			}
+
+                CartridgeSubscriptionManager.addSubscriptionDomain(tenantId, subscriptionAlias,
+                        subscriptionDomain.domainName, subscriptionDomain.applicationContext);
+            }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new RestAPIException(e.getMessage(), e);
@@ -1229,7 +1222,7 @@ public class ServiceUtils {
     }
 
     public static List<SubscriptionDomainBean> getSubscriptionDomains(ConfigurationContext configurationContext, String cartridgeType,
-                                                      String subscriptionAlias) throws RestAPIException {
+                                                                      String subscriptionAlias) throws RestAPIException {
         try {
             int tenantId = ApplicationManagementUtil.getTenantId(configurationContext);
             return PojoConverter.populateSubscriptionDomainPojos(CartridgeSubscriptionManager.getSubscriptionDomains(tenantId, subscriptionAlias));
@@ -1238,32 +1231,32 @@ public class ServiceUtils {
             throw new RestAPIException(e.getMessage(), e);
         }
     }
-    
-	public static SubscriptionDomainBean getSubscriptionDomain(ConfigurationContext configurationContext, String cartridgeType,
-			String subscriptionAlias, String domain) throws RestAPIException {
-		try {
-			int tenantId = ApplicationManagementUtil
-					.getTenantId(configurationContext);
-			SubscriptionDomainBean subscriptionDomain = PojoConverter.populateSubscriptionDomainPojo(CartridgeSubscriptionManager.getSubscriptionDomain(tenantId,
-					subscriptionAlias, domain));
-			
-			if (subscriptionDomain == null) {
-				String message = "Could not find a subscription [domain] "+domain+ " for Cartridge [type] "
-							+cartridgeType+ " and [alias] "+subscriptionAlias;
-				log.error(message);
-				throw new RestAPIException(Status.NOT_FOUND, message);
-			}
-			
-			return subscriptionDomain;
-			
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-			throw new RestAPIException(e.getMessage(), e);
-		}
-	}
+
+    public static SubscriptionDomainBean getSubscriptionDomain(ConfigurationContext configurationContext, String cartridgeType,
+                                                               String subscriptionAlias, String domain) throws RestAPIException {
+        try {
+            int tenantId = ApplicationManagementUtil
+                    .getTenantId(configurationContext);
+            SubscriptionDomainBean subscriptionDomain = PojoConverter.populateSubscriptionDomainPojo(CartridgeSubscriptionManager.getSubscriptionDomain(tenantId,
+                    subscriptionAlias, domain));
+
+            if (subscriptionDomain == null) {
+                String message = "Could not find a subscription [domain] " + domain + " for Cartridge [type] "
+                        + cartridgeType + " and [alias] " + subscriptionAlias;
+                log.error(message);
+                throw new RestAPIException(Status.NOT_FOUND, message);
+            }
+
+            return subscriptionDomain;
+
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw new RestAPIException(e.getMessage(), e);
+        }
+    }
 
     public static void removeSubscriptionDomain(ConfigurationContext configurationContext, String cartridgeType,
-                                                                String subscriptionAlias, String domain) throws RestAPIException, DomainMappingExistsException {
+                                                String subscriptionAlias, String domain) throws RestAPIException, DomainMappingExistsException {
         try {
             int tenantId = ApplicationManagementUtil.getTenantId(configurationContext);
             CartridgeSubscriptionManager.removeSubscriptionDomain(tenantId, subscriptionAlias, domain);
@@ -1274,4 +1267,293 @@ public class ServiceUtils {
 
     }
 
+    public static void addUser(UserInfoBean userInfoBean) throws RestAPIException {
+
+        try {
+
+            stratosUserManager.addUser(getTenantUserStoreManager(), userInfoBean);
+
+        } catch (UserManagementException e) {
+            log.error(e.getMessage(), e);
+            throw new RestAPIException(e.getMessage(), e);
+        }
+        log.info("Successfully added an user with Username " + userInfoBean.getUserName());
+    }
+
+    public static void updateUser(UserInfoBean userInfoBean) throws RestAPIException {
+
+        try {
+
+            stratosUserManager.updateUser(getTenantUserStoreManager(), userInfoBean);
+
+        } catch (UserManagementException e) {
+            log.error(e.getMessage(), e);
+            throw new RestAPIException(e.getMessage(), e);
+        }
+        log.info("Successfully updated an user with Username " + userInfoBean.getUserName());
+    }
+
+    public static void deleteUser(String userName) throws RestAPIException {
+
+        try {
+
+            stratosUserManager.deleteUser(getTenantUserStoreManager(), userName);
+
+        } catch (UserManagementException e) {
+            log.error(e.getMessage(), e);
+            throw new RestAPIException(e.getMessage(), e);
+        }
+        log.info("Successfully deleted an user with Username " + userName);
+    }
+
+    public static List<UserInfoBean> getAllUsers() throws RestAPIException {
+
+        List<UserInfoBean> userList = null;
+
+        try {
+
+            userList = stratosUserManager.getAllUsers(getTenantUserStoreManager());
+
+        } catch (UserManagementException e) {
+            log.error(e.getMessage(), e);
+            throw new RestAPIException(e.getMessage(), e);
+        }
+        return userList;
+    }
+
+    /**
+     * Get Tenant aware UserStoreManager
+     *
+     * @return UserStoreManager
+     * @throws RestAPIException
+     */
+    private static UserStoreManager getTenantUserStoreManager() throws RestAPIException {
+
+        CarbonContext carbonContext = CarbonContext.getThreadLocalCarbonContext();
+        UserRealm userRealm = null;
+        UserStoreManager userStoreManager = null;
+
+        try {
+            userRealm = carbonContext.getUserRealm();
+            userStoreManager = userRealm.getUserStoreManager();
+
+        } catch (UserStoreException e) {
+            log.error(e.getMessage(), e);
+            throw new RestAPIException(e.getMessage(), e);
+        }
+
+        return userStoreManager;
+    }
+
+    public static boolean deployKubernetesGroup(KubernetesGroup kubernetesGroupBean) throws RestAPIException {
+
+        AutoscalerServiceClient autoscalerServiceClient = getAutoscalerServiceClient();
+        if (autoscalerServiceClient != null) {
+            org.apache.stratos.autoscaler.stub.kubernetes.KubernetesGroup kubernetesGroup =
+                    PojoConverter.convertToASKubernetesGroupPojo(kubernetesGroupBean);
+
+            try {
+                return autoscalerServiceClient.deployKubernetesGroup(kubernetesGroup);
+            } catch (RemoteException e) {
+                log.error(e.getMessage(), e);
+                throw new RestAPIException(e.getMessage(), e);
+            } catch (AutoScalerServiceInvalidKubernetesGroupExceptionException e) {
+                String message = e.getFaultMessage().getInvalidKubernetesGroupException().getMessage();
+                log.error(message, e);
+                throw new RestAPIException(message, e);
+            }
+        }
+        return false;
+    }
+
+    public static boolean deployKubernetesHost(String kubernetesGroupId, KubernetesHost kubernetesHostBean)
+            throws RestAPIException {
+
+        AutoscalerServiceClient autoscalerServiceClient = getAutoscalerServiceClient();
+        if (autoscalerServiceClient != null) {
+            org.apache.stratos.autoscaler.stub.kubernetes.KubernetesHost kubernetesHost =
+                    PojoConverter.convertToASKubernetesHostPojo(kubernetesHostBean);
+
+            try {
+                return autoscalerServiceClient.deployKubernetesHost(kubernetesGroupId, kubernetesHost);
+            } catch (RemoteException e) {
+                log.error(e.getMessage(), e);
+                throw new RestAPIException(e.getMessage(), e);
+            } catch (AutoScalerServiceInvalidKubernetesHostExceptionException e) {
+                String message = e.getFaultMessage().getInvalidKubernetesHostException().getMessage();
+                log.error(message, e);
+                throw new RestAPIException(message, e);
+            } catch (AutoScalerServiceNonExistingKubernetesGroupExceptionException e) {
+                String message = e.getFaultMessage().getNonExistingKubernetesGroupException().getMessage();
+                log.error(message, e);
+                throw new RestAPIException(message, e);
+            }
+        }
+        return false;
+    }
+
+    public static boolean updateKubernetesMaster(KubernetesMaster kubernetesMasterBean) throws RestAPIException {
+
+        AutoscalerServiceClient autoscalerServiceClient = getAutoscalerServiceClient();
+        if (autoscalerServiceClient != null) {
+            org.apache.stratos.autoscaler.stub.kubernetes.KubernetesMaster kubernetesMaster =
+                    PojoConverter.convertToASKubernetesMasterPojo(kubernetesMasterBean);
+
+            try {
+                return autoscalerServiceClient.updateKubernetesMaster(kubernetesMaster);
+            } catch (RemoteException e) {
+                log.error(e.getMessage(), e);
+                throw new RestAPIException(e.getMessage(), e);
+            } catch (AutoScalerServiceInvalidKubernetesMasterExceptionException e) {
+                String message = e.getFaultMessage().getInvalidKubernetesMasterException().getMessage();
+                log.error(message, e);
+                throw new RestAPIException(message, e);
+            } catch (AutoScalerServiceNonExistingKubernetesMasterExceptionException e) {
+                String message = e.getFaultMessage().getNonExistingKubernetesMasterException().getMessage();
+                log.error(message, e);
+                throw new RestAPIException(message, e);
+            }
+        }
+        return false;
+    }
+
+    public static KubernetesGroup[] getAvailableKubernetesGroups() throws RestAPIException {
+
+        AutoscalerServiceClient autoscalerServiceClient = getAutoscalerServiceClient();
+        if (autoscalerServiceClient != null) {
+            try {
+                org.apache.stratos.autoscaler.stub.kubernetes.KubernetesGroup[]
+                        kubernetesGroups = autoscalerServiceClient.getAvailableKubernetesGroups();
+                return PojoConverter.populateKubernetesGroupsPojo(kubernetesGroups);
+
+            } catch (RemoteException e) {
+                log.error(e.getMessage(), e);
+                throw new RestAPIException(e.getMessage(), e);
+            }
+        }
+        return null;
+    }
+
+    public static KubernetesGroup getKubernetesGroup(String kubernetesGroupId) throws RestAPIException {
+
+        AutoscalerServiceClient autoscalerServiceClient = getAutoscalerServiceClient();
+        if (autoscalerServiceClient != null) {
+            try {
+                org.apache.stratos.autoscaler.stub.kubernetes.KubernetesGroup
+                        kubernetesGroup = autoscalerServiceClient.getKubernetesGroup(kubernetesGroupId);
+                return PojoConverter.populateKubernetesGroupPojo(kubernetesGroup);
+
+            } catch (RemoteException e) {
+                log.error(e.getMessage(), e);
+                throw new RestAPIException(e.getMessage(), e);
+            } catch (AutoScalerServiceNonExistingKubernetesGroupExceptionException e) {
+                String message = e.getFaultMessage().getNonExistingKubernetesGroupException().getMessage();
+                log.error(message, e);
+                throw new RestAPIException(message, e);
+            }
+        }
+        return null;
+    }
+
+    public static boolean undeployKubernetesGroup(String kubernetesGroupId) throws RestAPIException {
+
+        AutoscalerServiceClient autoscalerServiceClient = getAutoscalerServiceClient();
+        if (autoscalerServiceClient != null) {
+            try {
+                return autoscalerServiceClient.undeployKubernetesGroup(kubernetesGroupId);
+
+            } catch (RemoteException e) {
+                log.error(e.getMessage(), e);
+                throw new RestAPIException(e.getMessage(), e);
+            } catch (AutoScalerServiceNonExistingKubernetesGroupExceptionException e) {
+                String message = e.getFaultMessage().getNonExistingKubernetesGroupException().getMessage();
+                log.error(message, e);
+                throw new RestAPIException(message, e);
+            }
+        }
+        return false;
+    }
+
+    public static boolean undeployKubernetesHost(String kubernetesHostId) throws RestAPIException {
+
+        AutoscalerServiceClient autoscalerServiceClient = getAutoscalerServiceClient();
+        if (autoscalerServiceClient != null) {
+            try {
+                return autoscalerServiceClient.undeployKubernetesHost(kubernetesHostId);
+
+            } catch (RemoteException e) {
+                log.error(e.getMessage(), e);
+                throw new RestAPIException(e.getMessage(), e);
+            } catch (AutoScalerServiceNonExistingKubernetesHostExceptionException e) {
+                String message = e.getFaultMessage().getNonExistingKubernetesHostException().getMessage();
+                log.error(message, e);
+                throw new RestAPIException(message, e);
+            }
+        }
+        return false;
+    }
+
+    public static List<KubernetesHost> getKubernetesHosts(String kubernetesGroupId) throws RestAPIException {
+
+        AutoscalerServiceClient autoscalerServiceClient = getAutoscalerServiceClient();
+        if (autoscalerServiceClient != null) {
+            try {
+                org.apache.stratos.autoscaler.stub.kubernetes.KubernetesHost[]
+                        kubernetesHosts = autoscalerServiceClient.getKubernetesHosts(kubernetesGroupId);
+                return PojoConverter.populateKubernetesHostsPojo(kubernetesHosts);
+
+            } catch (RemoteException e) {
+                log.error(e.getMessage(), e);
+                throw new RestAPIException(e.getMessage(), e);
+            } catch (AutoScalerServiceNonExistingKubernetesGroupExceptionException e) {
+                String message = e.getFaultMessage().getNonExistingKubernetesGroupException().getMessage();
+                log.error(message, e);
+                throw new RestAPIException(message, e);
+            }
+        }
+        return null;
+    }
+
+    public static KubernetesMaster getKubernetesMaster(String kubernetesGroupId) throws RestAPIException {
+        AutoscalerServiceClient autoscalerServiceClient = getAutoscalerServiceClient();
+        if (autoscalerServiceClient != null) {
+            try {
+                org.apache.stratos.autoscaler.stub.kubernetes.KubernetesMaster
+                        kubernetesMaster = autoscalerServiceClient.getKubernetesMaster(kubernetesGroupId);
+                return PojoConverter.populateKubernetesMasterPojo(kubernetesMaster);
+
+            } catch (RemoteException e) {
+                log.error(e.getMessage(), e);
+                throw new RestAPIException(e.getMessage(), e);
+            } catch (AutoScalerServiceNonExistingKubernetesGroupExceptionException e) {
+                String message = e.getFaultMessage().getNonExistingKubernetesGroupException().getMessage();
+                log.error(message, e);
+                throw new RestAPIException(message, e);
+            }
+        }
+        return null;
+    }
+
+    public static boolean updateKubernetesHost(KubernetesHost kubernetesHostBean) throws RestAPIException {
+        AutoscalerServiceClient autoscalerServiceClient = getAutoscalerServiceClient();
+        if (autoscalerServiceClient != null) {
+            org.apache.stratos.autoscaler.stub.kubernetes.KubernetesHost kubernetesHost =
+                    PojoConverter.convertToASKubernetesHostPojo(kubernetesHostBean);
+            try {
+                return autoscalerServiceClient.updateKubernetesHost(kubernetesHost);
+            } catch (RemoteException e) {
+                log.error(e.getMessage(), e);
+                throw new RestAPIException(e.getMessage(), e);
+            } catch (AutoScalerServiceInvalidKubernetesHostExceptionException e) {
+                String message = e.getFaultMessage().getInvalidKubernetesHostException().getMessage();
+                log.error(message, e);
+                throw new RestAPIException(message, e);
+            } catch (AutoScalerServiceNonExistingKubernetesHostExceptionException e) {
+                String message = e.getFaultMessage().getNonExistingKubernetesHostException().getMessage();
+                log.error(message, e);
+                throw new RestAPIException(message, e);
+            }
+        }
+        return false;
+    }
 }

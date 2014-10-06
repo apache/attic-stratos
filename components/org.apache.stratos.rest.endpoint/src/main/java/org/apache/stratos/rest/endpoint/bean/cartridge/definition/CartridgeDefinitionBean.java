@@ -39,6 +39,8 @@ public class CartridgeDefinitionBean {
     public String version;
 
     public boolean multiTenant;
+    
+    public boolean isPublic;
 
     public DeploymentBean deployment;
 
@@ -57,11 +59,15 @@ public class CartridgeDefinitionBean {
     public String defaultDeploymentPolicy;
     
     public String serviceGroup;
+    
+    public ContainerBean container;
+    
+    public String deployerType;
 
     public String toString () {
 
         return "Type: " + type + ", Provider: " + provider + ", Host: " + host + ", Display Name: " + displayName +
-                ", Description: " + description +  ", Version: " + version + ", Multitenant " + multiTenant + "\n" +
+                ", Description: " + description +  ", Version: " + version + ", Multitenant " + multiTenant +", Public " + isPublic + "\n" +
                 getDeploymentDetails() + "\n PortMapping: " + getPortMappings() + "\n IaaS: " + getIaasProviders() +
                 "\n LoadBalancer: " + getLoadBalancerInfo() + "\n Properties: " + getProperties() +"\n VolumeBean mappings "+ persistence.toString();
     }
