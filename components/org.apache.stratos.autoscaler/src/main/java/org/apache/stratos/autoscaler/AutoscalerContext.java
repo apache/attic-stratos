@@ -66,14 +66,7 @@ public class AutoscalerContext {
         this.clusterMonitors = clusterMonitors;
     }
 
-    public AbstractClusterMonitor removeClusterMonitor(String clusterId) {
-
-        AbstractClusterMonitor monitor = clusterMonitors.remove(clusterId);
-        if (monitor == null) {
-            log.warn("ClusterMonitor not found for cluster id: " + clusterId);
-        } else {
-            log.info("Removed ClusterMonitor [cluster id]: " + clusterId);
-        }
-        return monitor;
+    public void removeClusterMonitor(String clusterId) {
+        clusterMonitors.remove(clusterId);
     }
 }

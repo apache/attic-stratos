@@ -93,6 +93,39 @@ public abstract class AbstractClusterMonitor implements Runnable {
     protected abstract void monitor();
 
     public abstract void destroy();
+    
+    @Override
+    public int hashCode() {
+
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((this.clusterId == null) ? 0 : this.clusterId.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof AbstractClusterMonitor)) {
+            return false;
+        }
+        final AbstractClusterMonitor other = (AbstractClusterMonitor) obj;
+        if (this.clusterId == null) {
+            if (other.clusterId != null) {
+                return false;
+            }
+        }
+        if (!this.clusterId.equals(other.clusterId)) {
+            return false;
+        }
+        return true;
+    }
 
     //handle health events
     public abstract void handleAverageLoadAverageEvent(
