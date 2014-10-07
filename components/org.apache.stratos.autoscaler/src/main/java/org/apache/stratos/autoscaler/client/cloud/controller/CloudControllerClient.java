@@ -238,10 +238,15 @@ public class CloudControllerClient {
     }
 
     /**
-     * @param kubernetesClusterId 
+     * @param kubernetesClusterId
+     *            kubernetes cluster id in which the cluster needs be created
      * @param clusterId
-     * @return
+     *            service cluster id
+     * @return the {@link MemberContext}
      * @throws SpawningException
+     *             if client can't connect to cloud controller service, if
+     *             cartridge not found for the given cluster id, or if the given
+     *             kubernetes cluster id is not valid
      */
     public synchronized MemberContext createContainer(String kubernetesClusterId, String clusterId) throws SpawningException {
         try {
@@ -291,6 +296,13 @@ public class CloudControllerClient {
         }
     }
     
+    /**
+     * @param clusterId
+     *            Id of cluster to be terminated
+     * @throws TerminationException
+     *             if client can't connect to cloud controller service or
+     *             invalid cluster id
+     */
     public synchronized void terminateAllContainers(String clusterId) throws TerminationException {
         try {
             if (log.isInfoEnabled()) {
