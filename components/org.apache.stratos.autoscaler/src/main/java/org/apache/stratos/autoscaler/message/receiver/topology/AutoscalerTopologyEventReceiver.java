@@ -125,10 +125,8 @@ public class AutoscalerTopologyEventReceiver implements Runnable {
                     AbstractClusterMonitor monitor;
                     monitor = asCtx.getClusterMonitor(clusterId);
                     if (null == monitor) {
-                        if (log.isDebugEnabled()) {
-                            log.debug(String.format("A cluster monitor is not found in autoscaler context "
-                                                    + "[cluster] %s", clusterId));
-                        }
+                        log.error(String.format("A cluster monitor is not found in autoscaler context "
+                                + "[cluster] %s", clusterId));
                         return;
                     }
                     monitor.handleMemberReadyToShutdownEvent(memberReadyToShutdownEvent);
@@ -193,10 +191,8 @@ public class AutoscalerTopologyEventReceiver implements Runnable {
                     AbstractClusterMonitor monitor;
                     monitor = asCtx.getClusterMonitor(clusterId);
                     if (null == monitor) {
-                        if (log.isDebugEnabled()) {
-                            log.debug(String.format("A cluster monitor is not found in autoscaler context "
-                                                    + "[cluster] %s", clusterId));
-                        }
+                        log.error(String.format("A cluster monitor is not found in autoscaler context "
+                                + "[cluster] %s", clusterId));
                         return;
                     }
                     monitor.handleClusterRemovedEvent(clusterRemovedEvent);
@@ -229,10 +225,8 @@ public class AutoscalerTopologyEventReceiver implements Runnable {
                     AutoscalerContext asCtx = AutoscalerContext.getInstance();
                     monitor = asCtx.getClusterMonitor(clusterId);
                     if (null == monitor) {
-                        if (log.isDebugEnabled()) {
-                            log.debug(String.format("A cluster monitor is not found in autoscaler context "
-                                                    + "[cluster] %s", clusterId));
-                        }
+                        log.error(String.format("A cluster monitor is not found in autoscaler context "
+                                + "[cluster] %s", clusterId));
                         return;
                     }
                     monitor.handleMemberTerminatedEvent(memberTerminatedEvent);
@@ -254,10 +248,8 @@ public class AutoscalerTopologyEventReceiver implements Runnable {
                     AutoscalerContext asCtx = AutoscalerContext.getInstance();
                     monitor = asCtx.getClusterMonitor(clusterId);
                     if (null == monitor) {
-                        if (log.isDebugEnabled()) {
-                            log.debug(String.format("A cluster monitor is not found in autoscaler context "
-                                                    + "[cluster] %s", clusterId));
-                        }
+                        log.error(String.format("A cluster monitor is not found in autoscaler context "
+                                + "[cluster] %s", clusterId));
                         return;
                     }
                     monitor.handleMemberActivatedEvent(memberActivatedEvent);
@@ -278,10 +270,8 @@ public class AutoscalerTopologyEventReceiver implements Runnable {
                     AutoscalerContext asCtx = AutoscalerContext.getInstance();
                     monitor = asCtx.getClusterMonitor(clusterId);
                     if (null == monitor) {
-                        if (log.isDebugEnabled()) {
-                            log.debug(String.format("A cluster monitor is not found in autoscaler context "
-                                                    + "[cluster] %s", clusterId));
-                        }
+                        log.error(String.format("A cluster monitor is not found in autoscaler context "
+                                + "[cluster] %s", clusterId));
                         return;
                     }
                     monitor.handleMemberMaintenanceModeEvent(maintenanceModeEvent);
@@ -314,25 +304,25 @@ public class AutoscalerTopologyEventReceiver implements Runnable {
             boolean success = false;
             do {
                 try {
-                    Thread.sleep(5000);
-                } catch (InterruptedException e1) {
-                }
-
-                try {
                     monitor = ClusterMonitorFactory.getMonitor(cluster);
                     success = true;
                 } catch (PolicyValidationException e) {
-                    if (log.isDebugEnabled()) {
+                    if (log.isWarnEnabled()) {
                         String msg = "Cluster monitor creation failed for cluster: " + cluster.getClusterId();
-                        log.debug(msg, e);
+                        log.warn(msg, e);
                     }
                     retries--;
                 } catch (PartitionValidationException e) {
-                    if (log.isDebugEnabled()) {
+                    if (log.isWarnEnabled()) {
                         String msg = "Cluster monitor creation failed for cluster: " + cluster.getClusterId();
-                        log.debug(msg, e);
+                        log.warn(msg, e);
                     }
                     retries--;
+                }
+                // retry creating cluster monitors with 5 seconds delay
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException ignored) {
                 }
             } while (!success && retries != 0);
 
@@ -343,8 +333,6 @@ public class AutoscalerTopologyEventReceiver implements Runnable {
                 throw new RuntimeException(msg);
             }
 
-//            Thread th = new Thread(monitor);
-//            th.start();
             monitor.startScheduler();
             AutoscalerContext.getInstance().addClusterMonitor(monitor);
             if (log.isInfoEnabled()) {

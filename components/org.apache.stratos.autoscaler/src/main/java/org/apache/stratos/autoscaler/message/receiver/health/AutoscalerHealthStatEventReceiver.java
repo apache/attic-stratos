@@ -111,10 +111,8 @@ public class AutoscalerHealthStatEventReceiver implements Runnable {
                 AbstractClusterMonitor monitor;
                 monitor = asCtx.getClusterMonitor(clusterId);
                 if (null == monitor) {
-                    if (log.isDebugEnabled()) {
-                        log.debug(String.format("A cluster monitor is not found in autoscaler context "
-                                                + "[cluster] %s", clusterId));
-                    }
+                    log.error(String.format("A cluster monitor is not found in autoscaler context " + "[cluster] %s",
+                            clusterId));
                     return;
                 }
                 monitor.handleAverageLoadAverageEvent(averageLoadAverageEvent);
@@ -130,10 +128,8 @@ public class AutoscalerHealthStatEventReceiver implements Runnable {
                 AbstractClusterMonitor monitor;
                 monitor = asCtx.getClusterMonitor(clusterId);
                 if (null == monitor) {
-                    if (log.isDebugEnabled()) {
-                        log.debug(String.format("A cluster monitor is not found in autoscaler context "
-                                                + "[cluster] %s", clusterId));
-                    }
+                    log.error(String.format("A cluster monitor is not found in autoscaler context " + "[cluster] %s",
+                            clusterId));
                     return;
                 }
                 monitor.handleAverageMemoryConsumptionEvent(averageMemoryConsumptionEvent);
@@ -149,10 +145,8 @@ public class AutoscalerHealthStatEventReceiver implements Runnable {
                 AbstractClusterMonitor monitor;
                 monitor = asCtx.getClusterMonitor(clusterId);
                 if (null == monitor) {
-                    if (log.isDebugEnabled()) {
-                        log.debug(String.format("A cluster monitor is not found in autoscaler context "
-                                                + "[cluster] %s", clusterId));
-                    }
+                    log.error(String.format("A cluster monitor is not found in autoscaler context " + "[cluster] %s",
+                            clusterId));
                     return;
                 }
                 monitor.handleAverageRequestsInFlightEvent(averageRequestsInFlightEvent);
@@ -168,10 +162,8 @@ public class AutoscalerHealthStatEventReceiver implements Runnable {
                 AbstractClusterMonitor monitor;
                 monitor = asCtx.getClusterMonitor(clusterId);
                 if (null == monitor) {
-                    if (log.isDebugEnabled()) {
-                        log.debug(String.format("A cluster monitor is not found in autoscaler context "
-                                                + "[cluster] %s", clusterId));
-                    }
+                    log.error(String.format("A cluster monitor is not found in autoscaler context " + "[cluster] %s",
+                            clusterId));
                     return;
                 }
                 monitor.handleGradientOfLoadAverageEvent(gradientOfLoadAverageEvent);
@@ -187,10 +179,8 @@ public class AutoscalerHealthStatEventReceiver implements Runnable {
                 AbstractClusterMonitor monitor;
                 monitor = asCtx.getClusterMonitor(clusterId);
                 if (null == monitor) {
-                    if (log.isDebugEnabled()) {
-                        log.debug(String.format("A cluster monitor is not found in autoscaler context "
-                                                + "[cluster] %s", clusterId));
-                    }
+                    log.error(String.format("A cluster monitor is not found in autoscaler context " + "[cluster] %s",
+                            clusterId));
                     return;
                 }
                 monitor.handleGradientOfMemoryConsumptionEvent(gradientOfMemoryConsumptionEvent);
@@ -206,10 +196,8 @@ public class AutoscalerHealthStatEventReceiver implements Runnable {
                 AbstractClusterMonitor monitor;
                 monitor = asCtx.getClusterMonitor(clusterId);
                 if (null == monitor) {
-                    if (log.isDebugEnabled()) {
-                        log.debug(String.format("A cluster monitor is not found in autoscaler context "
-                                                + "[cluster] %s", clusterId));
-                    }
+                    log.error(String.format("A cluster monitor is not found in autoscaler context " + "[cluster] %s",
+                            clusterId));
                     return;
                 }
                 monitor.handleGradientOfRequestsInFlightEvent(gradientOfRequestsInFlightEvent);
@@ -223,9 +211,7 @@ public class AutoscalerHealthStatEventReceiver implements Runnable {
                 String memberId = memberAverageLoadAverageEvent.getMemberId();
                 Member member = getMemberByMemberId(memberId);
                 if (null == member) {
-                    if (log.isDebugEnabled()) {
-                        log.debug(String.format("Member not found in the Topology: [member] %s", memberId));
-                    }
+                    log.error(String.format("Member not found in the Topology: [member] %s", memberId));
                     return;
                 }
                 if (!member.isActive()) {
@@ -240,10 +226,8 @@ public class AutoscalerHealthStatEventReceiver implements Runnable {
                 String clusterId = member.getClusterId();
                 monitor = asCtx.getClusterMonitor(clusterId);
                 if (null == monitor) {
-                    if (log.isDebugEnabled()) {
-                        log.debug(String.format("A cluster monitor is not found in autoscaler context "
-                                                + "[cluster] %s", clusterId));
-                    }
+                    log.error(String.format("A cluster monitor is not found in autoscaler context " + "[cluster] %s",
+                            clusterId));
                     return;
                 }
                 monitor.handleMemberAverageLoadAverageEvent(memberAverageLoadAverageEvent);
@@ -257,9 +241,7 @@ public class AutoscalerHealthStatEventReceiver implements Runnable {
                 String memberId = memberAverageMemoryConsumptionEvent.getMemberId();
                 Member member = getMemberByMemberId(memberId);
                 if (null == member) {
-                    if (log.isDebugEnabled()) {
-                        log.debug(String.format("Member not found in the Topology: [member] %s", memberId));
-                    }
+                    log.error(String.format("Member not found in the Topology: [member] %s", memberId));
                     return;
                 }
                 if (!member.isActive()) {
@@ -274,10 +256,8 @@ public class AutoscalerHealthStatEventReceiver implements Runnable {
                 String clusterId = member.getClusterId();
                 monitor = asCtx.getClusterMonitor(clusterId);
                 if (null == monitor) {
-                    if (log.isDebugEnabled()) {
-                        log.debug(String.format("A cluster monitor is not found in autoscaler context "
-                                                + "[cluster] %s", clusterId));
-                    }
+                    log.debug(String.format("A cluster monitor is not found in autoscaler context " + "[cluster] %s",
+                            clusterId));
                     return;
                 }
                 monitor.handleMemberAverageMemoryConsumptionEvent(memberAverageMemoryConsumptionEvent);
@@ -301,10 +281,8 @@ public class AutoscalerHealthStatEventReceiver implements Runnable {
                 AbstractClusterMonitor monitor;
                 monitor = asCtx.getClusterMonitor(clusterId);
                 if (null == monitor) {
-                    if (log.isDebugEnabled()) {
-                        log.debug(String.format("A cluster monitor is not found in autoscaler context "
-                                                + "[cluster] %s", clusterId));
-                    }
+                    log.error(String.format("A cluster monitor is not found in autoscaler context " + "[cluster] %s",
+                            clusterId));
                     return;
                 }
                 monitor.handleMemberFaultEvent(memberFaultEvent);
@@ -318,9 +296,7 @@ public class AutoscalerHealthStatEventReceiver implements Runnable {
                 String memberId = memberGradientOfLoadAverageEvent.getMemberId();
                 Member member = getMemberByMemberId(memberId);
                 if (null == member) {
-                    if (log.isDebugEnabled()) {
-                        log.debug(String.format("Member not found in the Topology: [member] %s", memberId));
-                    }
+                    log.error(String.format("Member not found in the Topology: [member] %s", memberId));
                     return;
                 }
                 if (!member.isActive()) {
@@ -335,10 +311,8 @@ public class AutoscalerHealthStatEventReceiver implements Runnable {
                 String clusterId = member.getClusterId();
                 monitor = asCtx.getClusterMonitor(clusterId);
                 if (null == monitor) {
-                    if (log.isDebugEnabled()) {
-                        log.debug(String.format("A cluster monitor is not found in autoscaler context "
-                                                + "[cluster] %s", clusterId));
-                    }
+                    log.error(String.format("A cluster monitor is not found in autoscaler context " + "[cluster] %s",
+                            clusterId));
                     return;
                 }
                 monitor.handleMemberGradientOfLoadAverageEvent(memberGradientOfLoadAverageEvent);
@@ -352,9 +326,7 @@ public class AutoscalerHealthStatEventReceiver implements Runnable {
                 String memberId = memberGradientOfMemoryConsumptionEvent.getMemberId();
                 Member member = getMemberByMemberId(memberId);
                 if (null == member) {
-                    if (log.isDebugEnabled()) {
-                        log.debug(String.format("Member not found in the Topology: [member] %s", memberId));
-                    }
+                    log.error(String.format("Member not found in the Topology: [member] %s", memberId));
                     return;
                 }
                 if (!member.isActive()) {
@@ -369,10 +341,8 @@ public class AutoscalerHealthStatEventReceiver implements Runnable {
                 String clusterId = member.getClusterId();
                 monitor = asCtx.getClusterMonitor(clusterId);
                 if (null == monitor) {
-                    if (log.isDebugEnabled()) {
-                        log.debug(String.format("A cluster monitor is not found in autoscaler context "
-                                                + "[cluster] %s", clusterId));
-                    }
+                    log.error(String.format("A cluster monitor is not found in autoscaler context " + "[cluster] %s",
+                            clusterId));
                     return;
                 }
                 monitor.handleMemberGradientOfMemoryConsumptionEvent(memberGradientOfMemoryConsumptionEvent);
@@ -386,9 +356,7 @@ public class AutoscalerHealthStatEventReceiver implements Runnable {
                 String memberId = memberSecondDerivativeOfLoadAverageEvent.getMemberId();
                 Member member = getMemberByMemberId(memberId);
                 if (null == member) {
-                    if (log.isDebugEnabled()) {
-                        log.debug(String.format("Member not found in the Topology: [member] %s", memberId));
-                    }
+                    log.error(String.format("Member not found in the Topology: [member] %s", memberId));
                     return;
                 }
                 if (!member.isActive()) {
@@ -403,10 +371,8 @@ public class AutoscalerHealthStatEventReceiver implements Runnable {
                 String clusterId = member.getClusterId();
                 monitor = asCtx.getClusterMonitor(clusterId);
                 if (null == monitor) {
-                    if (log.isDebugEnabled()) {
-                        log.debug(String.format("A cluster monitor is not found in autoscaler context "
-                                                + "[cluster] %s", clusterId));
-                    }
+                    log.error(String.format("A cluster monitor is not found in autoscaler context " + "[cluster] %s",
+                            clusterId));
                     return;
                 }
                 monitor.handleMemberSecondDerivativeOfLoadAverageEvent(memberSecondDerivativeOfLoadAverageEvent);
@@ -429,10 +395,8 @@ public class AutoscalerHealthStatEventReceiver implements Runnable {
                 AbstractClusterMonitor monitor;
                 monitor = asCtx.getClusterMonitor(clusterId);
                 if (null == monitor) {
-                    if (log.isDebugEnabled()) {
-                        log.debug(String.format("A cluster monitor is not found in autoscaler context "
-                                                + "[cluster] %s", clusterId));
-                    }
+                    log.error(String.format("A cluster monitor is not found in autoscaler context " + "[cluster] %s",
+                            clusterId));
                     return;
                 }
                 monitor.handleSecondDerivativeOfLoadAverageEvent(secondDerivativeOfLoadAverageEvent);
@@ -448,10 +412,8 @@ public class AutoscalerHealthStatEventReceiver implements Runnable {
                 AbstractClusterMonitor monitor;
                 monitor = asCtx.getClusterMonitor(clusterId);
                 if (null == monitor) {
-                    if (log.isDebugEnabled()) {
-                        log.debug(String.format("A cluster monitor is not found in autoscaler context "
-                                                + "[cluster] %s", clusterId));
-                    }
+                    log.error(String.format("A cluster monitor is not found in autoscaler context " + "[cluster] %s",
+                            clusterId));
                     return;
                 }
                 monitor.handleSecondDerivativeOfMemoryConsumptionEvent(secondDerivativeOfMemoryConsumptionEvent);
@@ -467,10 +429,8 @@ public class AutoscalerHealthStatEventReceiver implements Runnable {
                 AbstractClusterMonitor monitor;
                 monitor = asCtx.getClusterMonitor(clusterId);
                 if (null == monitor) {
-                    if (log.isDebugEnabled()) {
-                        log.debug(String.format("A cluster monitor is not found in autoscaler context "
-                                                + "[cluster] %s", clusterId));
-                    }
+                    log.error(String.format("A cluster monitor is not found in autoscaler context " + "[cluster] %s",
+                            clusterId));
                     return;
                 }
                 monitor.handleSecondDerivativeOfRequestsInFlightEvent(secondDerivativeOfRequestsInFlightEvent);

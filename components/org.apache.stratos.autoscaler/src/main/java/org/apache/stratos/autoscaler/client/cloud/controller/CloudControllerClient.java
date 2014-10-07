@@ -272,14 +272,16 @@ public class CloudControllerClient {
             }
             return memberContext;
         } catch (CloudControllerServiceUnregisteredCartridgeExceptionException e) {
-        	String message = e.getFaultMessage().getUnregisteredCartridgeException().getMessage();
-        	log.error(message, e);
-			throw new SpawningException(message, e);
+            String message = "Invalid Cartrdige for [clusterId] " + clusterId;
+            log.error(message, e);
+            throw new SpawningException(message, e);
         } catch (RemoteException e) {
-        	log.error(e.getMessage(), e);
+            String msg = "Error while communicating with cloud controller service " + e.getLocalizedMessage();
+            log.error(msg, e);
             throw new SpawningException(e.getMessage(), e);
-		} catch (NonExistingKubernetesGroupException e){
-            log.error(e.getMessage(), e);
+        } catch (NonExistingKubernetesGroupException e) {
+            String msg = "Invalid KubernetesGroup [kubernetesClusterId] " + kubernetesClusterId;
+            log.error(msg, e);
             throw new SpawningException(e.getMessage(), e);
         }
     }
@@ -296,14 +298,14 @@ public class CloudControllerClient {
                 log.debug(String.format("Service call terminateContainer() returned in %dms", (endTime - startTime)));
             }
         } catch (RemoteException e) {
-        	String msg = e.getMessage();
+        	String msg = "Error while communicating with cloud controller service " + e.getLocalizedMessage();
             log.error(msg, e);
             throw new TerminationException(msg, e);
         } catch (CloudControllerServiceInvalidClusterExceptionException e) {
-        	String msg = e.getFaultMessage().getInvalidClusterException().getMessage();
+            String msg = "Invalid Cluster [clusterId] " + clusterId;
             log.error(msg, e);
             throw new TerminationException(msg, e);
-		} 
+        } 
     }
 
 }

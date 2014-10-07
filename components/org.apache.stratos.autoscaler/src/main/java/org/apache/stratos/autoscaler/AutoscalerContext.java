@@ -70,7 +70,7 @@ public class AutoscalerContext {
 
         AbstractClusterMonitor monitor = clusterMonitors.remove(clusterId);
         if (monitor == null) {
-            log.fatal("ClusterMonitor not found for cluster id: " + clusterId);
+            log.warn("ClusterMonitor not found for cluster id: " + clusterId);
         } else {
             log.info("Removed ClusterMonitor [cluster id]: " + clusterId);
         }
