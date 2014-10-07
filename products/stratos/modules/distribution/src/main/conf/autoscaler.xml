@@ -41,7 +41,7 @@
 		<!-- this is the maximum time a member can be in pending member state -->
 		<pendingMemberExpiryTimeout>900000</pendingMemberExpiryTimeout>
                 <!-- this is the maximum time a member can bee in obsoleted member state -->
-		<obsoltedMemberExpiryTimeout>86400000</obsoltedMemberExpiryTimeout>
+		<autoscaler.member.obsoletedMemberExpiryTimeout>86400000</autoscaler.member.obsoletedMemberExpiryTimeout>
 	    </member>
 	    <!-- monitor task interval -->
 	    <monitorInterval>90000</monitorInterval>
