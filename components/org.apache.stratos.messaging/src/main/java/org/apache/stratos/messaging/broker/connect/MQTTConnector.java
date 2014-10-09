@@ -52,6 +52,10 @@ public class MQTTConnector {
 			Util.getProperties(configFileLocation + File.separator +
 			                   "mqtttopic.properties");
 
+    /**
+     * Get MQTT conncetion Client
+     * @return
+     */
 	public static synchronized MqttClient getMQTTConClient() {
 
 		if (topicClient == null) {
@@ -78,6 +82,12 @@ public class MQTTConnector {
 
 	}
 
+    /**
+     * Get MQTT subscription client
+     * @param identifier identifier of the connection
+     * @return
+     * @throws MqttException
+     */
 	public static synchronized MqttClient getMQTTSubClient(String identifier) throws MqttException {
 		//if (topicClientSub == null) {
 

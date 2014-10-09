@@ -38,51 +38,50 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
  */
 public class HealthStatEventMessageListener implements MqttCallback {
 
-	private static final Log log = LogFactory.getLog(HealthStatEventMessageListener.class);
+    private static final Log log = LogFactory.getLog(HealthStatEventMessageListener.class);
 
-	private final HealthStatEventMessageQueue messageQueue;
+    private final HealthStatEventMessageQueue messageQueue;
 
-	public HealthStatEventMessageListener(HealthStatEventMessageQueue messageQueue) {
-		this.messageQueue = messageQueue;
-	}
+    public HealthStatEventMessageListener(HealthStatEventMessageQueue messageQueue) {
+        this.messageQueue = messageQueue;
+    }
 
-	@Override
-	public void connectionLost(Throwable arg0) {
-		// TODO Auto-generated method stub
+    @Override
+    public void connectionLost(Throwable err) {
+        log.debug("MQTT connection lost", err);
+    }
 
-	}
+    @Override
+    public void deliveryComplete(IMqttDeliveryToken err) {
+        log.debug("Message delivery completed");
 
-	@Override
-	public void deliveryComplete(IMqttDeliveryToken arg0) {
-		// TODO Auto-generated method stub
+    }
 
-	}
+    @Override
+    public void messageArrived(String topicName, MqttMessage message) throws Exception {
 
-	@Override
-	public void messageArrived(String topicName, MqttMessage message) throws Exception {
-		if (message instanceof MqttMessage) {
 
-			TextMessage receivedMessage = new ActiveMQTextMessage();
-			if (log.isDebugEnabled()) {
-				log.debug(String.format("Health stat event messege received...."));
+        TextMessage receivedMessage = new ActiveMQTextMessage();
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("Health stat event messege received...."));
 
-			}
-			receivedMessage.setText(new String(message.getPayload()));
-			receivedMessage.setStringProperty(Constants.EVENT_CLASS_NAME,
-			                                  Util.getEventNameForTopic(topicName));
+        }
+        receivedMessage.setText(new String(message.getPayload()));
+        receivedMessage.setStringProperty(Constants.EVENT_CLASS_NAME,
+                Util.getEventNameForTopic(topicName));
 
-			try {
-				if (log.isDebugEnabled()) {
-					log.debug(String.format("Health stat event message received: %s",
-					                        ((TextMessage) message).getText()));
-				}
-				// Add received message to the queue
-				messageQueue.add(receivedMessage);
+        try {
+            if (log.isDebugEnabled()) {
+                log.debug(String.format("Health stat event message received: %s",
+                        ((TextMessage) message).getText()));
+            }
+            // Add received message to the queue
+            messageQueue.add(receivedMessage);
 
-			} catch (JMSException e) {
-				log.error(e.getMessage(), e);
-			}
-		}
+        } catch (JMSException e) {
+            log.error(e.getMessage(), e);
+        }
 
-	}
+
+    }
 }
