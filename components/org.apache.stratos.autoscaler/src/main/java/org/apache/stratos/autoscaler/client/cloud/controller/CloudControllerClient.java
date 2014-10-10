@@ -19,21 +19,27 @@
 
 package org.apache.stratos.autoscaler.client.cloud.controller;
 
+import java.rmi.RemoteException;
+
 import org.apache.axis2.transport.http.HTTPConstants;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.stratos.autoscaler.Constants;
-import org.apache.stratos.autoscaler.api.AutoScalerServiceImpl;
 import org.apache.stratos.autoscaler.deployment.policy.DeploymentPolicy;
 import org.apache.stratos.autoscaler.exception.NonExistingKubernetesGroupException;
 import org.apache.stratos.autoscaler.exception.PartitionValidationException;
 import org.apache.stratos.autoscaler.exception.SpawningException;
 import org.apache.stratos.autoscaler.exception.TerminationException;
-import org.apache.stratos.autoscaler.interfaces.AutoScalerServiceInterface;
 import org.apache.stratos.autoscaler.kubernetes.KubernetesManager;
 import org.apache.stratos.autoscaler.util.ConfUtil;
-import org.apache.stratos.cloud.controller.stub.*;
+import org.apache.stratos.cloud.controller.stub.CloudControllerServiceInvalidCartridgeTypeExceptionException;
+import org.apache.stratos.cloud.controller.stub.CloudControllerServiceInvalidClusterExceptionException;
+import org.apache.stratos.cloud.controller.stub.CloudControllerServiceInvalidIaasProviderExceptionException;
+import org.apache.stratos.cloud.controller.stub.CloudControllerServiceInvalidMemberExceptionException;
+import org.apache.stratos.cloud.controller.stub.CloudControllerServiceInvalidPartitionExceptionException;
+import org.apache.stratos.cloud.controller.stub.CloudControllerServiceStub;
+import org.apache.stratos.cloud.controller.stub.CloudControllerServiceUnregisteredCartridgeExceptionException;
 import org.apache.stratos.cloud.controller.stub.deployment.partition.Partition;
 import org.apache.stratos.cloud.controller.stub.pojo.MemberContext;
 import org.apache.stratos.cloud.controller.stub.pojo.Properties;
@@ -41,8 +47,6 @@ import org.apache.stratos.cloud.controller.stub.pojo.Property;
 import org.apache.stratos.common.constants.StratosConstants;
 import org.apache.stratos.common.kubernetes.KubernetesGroup;
 import org.apache.stratos.common.kubernetes.KubernetesMaster;
-
-import java.rmi.RemoteException;
 
 
 /**
@@ -235,9 +239,14 @@ public class CloudControllerClient {
 
     /**
      * @param kubernetesClusterId
+     *            kubernetes cluster id in which the cluster needs be created
      * @param clusterId
-     * @return
+     *            service cluster id
+     * @return the {@link MemberContext}
      * @throws SpawningException
+     *             if client can't connect to cloud controller service, if
+     *             cartridge not found for the given cluster id, or if the given
+     *             kubernetes cluster id is not valid
      */
     public synchronized MemberContext createContainer(String kubernetesClusterId, String clusterId) throws SpawningException {
         try {
@@ -272,38 +281,48 @@ public class CloudControllerClient {
             }
             return memberContext;
         } catch (CloudControllerServiceUnregisteredCartridgeExceptionException e) {
-        	String message = e.getFaultMessage().getUnregisteredCartridgeException().getMessage();
-        	log.error(message, e);
-			throw new SpawningException(message, e);
+            String msg = "Error while creating containers, cartridge not found for [cluster] " + clusterId;
+            log.error(msg, e);
+            throw new SpawningException(msg, e);
         } catch (RemoteException e) {
-        	log.error(e.getMessage(), e);
-            throw new SpawningException(e.getMessage(), e);
-		} catch (NonExistingKubernetesGroupException e){
-            log.error(e.getMessage(), e);
-            throw new SpawningException(e.getMessage(), e);
+            String msg = "Error while creating containers, couldn't communicate with cloud controller service";
+            log.error(msg, e);
+            throw new SpawningException(msg, e);
+        } catch (NonExistingKubernetesGroupException e) {
+            String msg = "Error while creating containers, invalid kubernetes group [kubernetesClusterId] "
+                    + kubernetesClusterId;
+            log.error(msg, e);
+            throw new SpawningException(msg, e);
         }
     }
     
+    /**
+     * @param clusterId
+     *            Id of cluster to be terminated
+     * @throws TerminationException
+     *             if client can't connect to cloud controller service or
+     *             invalid cluster id
+     */
     public synchronized void terminateAllContainers(String clusterId) throws TerminationException {
         try {
-            if(log.isInfoEnabled()) {
+            if (log.isInfoEnabled()) {
                 log.info(String.format("Terminating containers via cloud controller: [cluster] %s", clusterId));
             }
             long startTime = System.currentTimeMillis();
             stub.terminateAllContainers(clusterId);
-            if(log.isDebugEnabled()) {
+            if (log.isDebugEnabled()) {
                 long endTime = System.currentTimeMillis();
                 log.debug(String.format("Service call terminateContainer() returned in %dms", (endTime - startTime)));
             }
         } catch (RemoteException e) {
-        	String msg = e.getMessage();
+            String msg = "Error while creating containers, couldn't communicate with cloud controller service";
             log.error(msg, e);
             throw new TerminationException(msg, e);
         } catch (CloudControllerServiceInvalidClusterExceptionException e) {
-        	String msg = e.getFaultMessage().getInvalidClusterException().getMessage();
+            String msg = "Invalid Cluster [clusterId] " + clusterId;
             log.error(msg, e);
             throw new TerminationException(msg, e);
-		} 
+        }
     }
 
 }

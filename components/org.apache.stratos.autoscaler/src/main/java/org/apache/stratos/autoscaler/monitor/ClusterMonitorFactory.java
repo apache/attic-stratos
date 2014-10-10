@@ -347,13 +347,13 @@ public class ClusterMonitorFactory {
         KubernetesClusterContext kubernetesClusterCtxt = new KubernetesClusterContext(kubernetesHostClusterID,
                                                                                       cluster.getClusterId());
 
-        KubernetesServiceClusterMonitor dockerClusterMonitor = new KubernetesServiceClusterMonitor(
+        KubernetesServiceClusterMonitor kubernetesServiceClusterMonitor = new KubernetesServiceClusterMonitor(
                 kubernetesClusterCtxt,
                 cluster.getClusterId(),
                 cluster.getServiceName(),
                 policy);
 
-        dockerClusterMonitor.setStatus(ClusterStatus.Created);
+        kubernetesServiceClusterMonitor.setStatus(ClusterStatus.Created);
 
         //populate the members after restarting        
         for (Member member : cluster.getMembers()) {
@@ -364,23 +364,25 @@ public class ClusterMonitorFactory {
             memberContext.setClusterId(clusterId);
 
             if (MemberStatus.Activated.equals(member.getStatus())) {
-                dockerClusterMonitor.getKubernetesClusterCtxt().addActiveMember(memberContext);
+                kubernetesServiceClusterMonitor.getKubernetesClusterCtxt().addActiveMember(memberContext);
             } else if (MemberStatus.Created.equals(member.getStatus())
                        || MemberStatus.Starting.equals(member.getStatus())) {
-                dockerClusterMonitor.getKubernetesClusterCtxt().addPendingMember(memberContext);
+                kubernetesServiceClusterMonitor.getKubernetesClusterCtxt().addPendingMember(memberContext);
+            } else {
+                // We are not interested in other member statuses
             }
         }
 
         // find lb reference type
         if (props.containsKey(Constants.LOAD_BALANCER_REF)) {
             String value = props.getProperty(Constants.LOAD_BALANCER_REF);
-            dockerClusterMonitor.setLbReferenceType(value);
+            kubernetesServiceClusterMonitor.setLbReferenceType(value);
             if (log.isDebugEnabled()) {
                 log.debug("Set the lb reference type: " + value);
             }
         }
 
-        log.info("KubernetesServiceClusterMonitor created: " + dockerClusterMonitor.toString());
-        return dockerClusterMonitor;
+        log.info("KubernetesServiceClusterMonitor created: " + kubernetesServiceClusterMonitor.toString());
+        return kubernetesServiceClusterMonitor;
     }
 }

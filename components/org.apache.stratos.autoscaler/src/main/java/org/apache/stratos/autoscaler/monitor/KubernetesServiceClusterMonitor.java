@@ -25,7 +25,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.stratos.autoscaler.KubernetesClusterContext;
 import org.apache.stratos.autoscaler.client.cloud.controller.CloudControllerClient;
-import org.apache.stratos.autoscaler.exception.SpawningException;
 import org.apache.stratos.autoscaler.policy.model.AutoscalePolicy;
 import org.apache.stratos.autoscaler.rule.AutoscalerRuleEvaluator;
 import org.apache.stratos.autoscaler.util.AutoScalerConstants;
@@ -116,17 +115,11 @@ public final class KubernetesServiceClusterMonitor extends KubernetesClusterMoni
                             log.debug("Returned member context is null, did not add to pending members");
                         }
                     }
-                } catch (SpawningException spawningException) {
-                    if (log.isDebugEnabled()) {
-                        String message = "Cannot create containers, will retry in "
-                                         + (retryInterval / 1000) + "s";
-                        log.debug(message, spawningException);
-                    }
                 } catch (Exception exception) {
-                    if (log.isDebugEnabled()) {
+                    if (log.isWarnEnabled()) {
                         String message = "Error while creating containers, will retry in "
                                          + (retryInterval / 1000) + "s";
-                        log.debug(message, exception);
+                        log.warn(message, exception);
                     }
                 }
                 try {
