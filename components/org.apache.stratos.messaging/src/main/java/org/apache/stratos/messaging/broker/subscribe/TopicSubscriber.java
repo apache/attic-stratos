@@ -46,15 +46,14 @@ public class TopicSubscriber implements Runnable {
 
 	private boolean terminated = false;
 	private MqttCallback messageListener;
-	private TopicSession topicSession;
+
 	private final String topicName;
 
 	private TopicHealthChecker healthChecker;
 	private final javax.jms.TopicSubscriber topicSubscriber = null;
 	private boolean subscribed;
-	private final MessageProcessorChain processorChain;
 
-	/**
+    /**
 	 * @param aTopicName topic name of this subscriber instance.
 	 */
 	public TopicSubscriber(String aTopicName) {
@@ -63,9 +62,13 @@ public class TopicSubscriber implements Runnable {
 		if (log.isDebugEnabled()) {
 			log.debug(String.format("Topic subscriber connector created: [topic] %s", topicName));
 		}
-		this.processorChain = new InstanceNotifierMessageProcessorChain();
+
 	}
 
+    /**
+     * Subcribe to the topic
+     * @throws MqttException
+     */
 	private void doSubscribe() throws MqttException {
 
 		MqttClient mqttClient = MQTTConnector.getMQTTSubClient(Util.getRandomString(5));
@@ -74,26 +77,29 @@ public class TopicSubscriber implements Runnable {
 			log.debug("Subscribing to topic '" + topicName + "' from " +
 			          mqttClient.getServerURI());
 		}
-		// Subscribing to specific topic
-		try {
+		/* Subscribing to specific topic */
+        while(true) {
+            try {
 
-			MqttConnectOptions connOpts = new MqttConnectOptions();
-			connOpts.setCleanSession(true);
-			mqttClient.connect(connOpts);
-			// Continue waiting for messages
-			mqttClient.subscribe(topicName);
-			mqttClient.setCallback(messageListener);
-			subscribed = true;
-			while (true) {
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-				}
-			}
+                MqttConnectOptions connOpts = new MqttConnectOptions();
+                connOpts.setCleanSession(true);
+                mqttClient.connect(connOpts);
 
-		} finally {
-			mqttClient.disconnect();
-		}
+                mqttClient.subscribe(topicName);
+                mqttClient.setCallback(messageListener);
+                subscribed = true;
+                // Continue waiting for messages
+                while (true) {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException ignored) {
+                    }
+                }
+
+            } finally {
+                mqttClient.disconnect();
+            }
+        }
 	}
 
 	/**
@@ -151,13 +157,7 @@ public class TopicSubscriber implements Runnable {
 							                        topicName));
 						}
 					}
-					if (topicSession != null) {
-						topicSession.close();
-						if (log.isDebugEnabled()) {
-							log.debug(String.format("Topic subscriber session closed: [topic] %s",
-							                        topicName));
-						}
-					}
+
 
 				} catch (JMSException ignore) {
 				}
