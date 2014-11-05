@@ -96,9 +96,6 @@ public class StratosApplication extends CommandLineApplication<StratosCommandCon
 		command = new ExitCommand();
 		commands.put(command.getName(), command);
 
-		command = new SubscribeCartridgeCommand();
-		commands.put(command.getName(), command);
-
 		command = new UnsubscribeCommand();
 		commands.put(command.getName(), command);
 		
@@ -214,6 +211,18 @@ public class StratosApplication extends CommandLineApplication<StratosCommandCon
         commands.put(command.getName(), command);
 
         command = new UpdateDeploymentPolicyCommand();
+        commands.put(command.getName(), command);
+
+        command = new DeployServiceGroupCommand();
+        commands.put(command.getName(), command);
+
+        command = new UndeployServiceGroupCommand();
+        commands.put(command.getName(), command);
+
+        command = new DeployApplicationCommand();
+        commands.put(command.getName(), command);
+
+        command = new UndeployApplicationCommand();
         commands.put(command.getName(), command);
 
         if (logger.isDebugEnabled()) {
