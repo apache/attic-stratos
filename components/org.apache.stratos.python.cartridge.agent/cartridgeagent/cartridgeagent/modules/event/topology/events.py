@@ -170,7 +170,7 @@ class CompleteTopologyEvent:
                     cluster_obj.tenant_range = cluster_str["tenantRange"] if "tenantRange" in cluster_str else None
                     cluster_obj.is_lb_cluster = cluster_str["isLbCluster"]
                     cluster_obj.is_kubernetes_cluster = cluster_str["isKubernetesCluster"]
-                    cluster_obj.status = cluster_str["status"]
+                    cluster_obj.status = cluster_str["status"] if "status" in cluster_str else None
                     cluster_obj.load_balancer_algorithm_name = cluster_str["loadBalanceAlgorithmName"] if "loadBalanceAlgorithmName" in cluster_str else None
                     cluster_obj.properties = cluster_str["properties"]
                     cluster_obj.member_list_json = cluster_str["memberMap"]
