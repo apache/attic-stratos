@@ -72,6 +72,8 @@
 		<exclude>**/marshalling_1.3.6.wso2v1.jar</exclude>
 		<exclude>**/jboss-transaction-api_1.1_spec-1.0.0.Final.jar</exclude>
 		<exclude>**/org.wso2.carbon.ui_4.2.0.jar</exclude>
+		<exclude>**/httpclient_4.1.1.wso2v1.jar</exclude>
+		<exclude>**/httpcore_4.1.0.wso2v1.jar</exclude>
 	    </excludes>
 	</fileSet>
 
@@ -481,6 +483,9 @@
 	<fileSet>
             <directory>../../conf/temp-artifacts</directory>
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/components/plugins</outputDirectory>
+            <includes>
+                <include>org.wso2.stratos.identity.saml2.sso.mgt_2.2.0.jar</include>
+            </includes>
         </fileSet>
 
     <!-- autoscaler -->
@@ -605,10 +610,6 @@
                 <include>org.apache.geronimo.specs:geronimo-j2ee-management_1.1_spec:jar</include>
                 <include>org.fusesource.hawtbuf:hawtbuf:jar</include>
                 <include>org.eclipse.paho:mqtt-client:jar</include>
-  		<include>org.apache.stratos:org.apache.stratos.kubernetes.client:jar</include>
-		<include>org.jboss.resteasy:resteasy-jaxrs:jar</include>
-		<include>org.jboss.resteasy:resteasy-jaxb-provider:jar</include>
-		<include>org.jboss.resteasy:resteasy-jackson-provider:jar</include>
             </includes>
         </dependencySet>
         <dependencySet>
@@ -662,24 +663,57 @@
             <filtered>true</filtered>
             <fileMode>755</fileMode>
         </file>
-		<file>
-            <source>src/main/conf/mincheck.drl</source>
+        <file>
+            <source>src/main/conf/metadataservice.xml</source>
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>755</fileMode>
+        </file>
+	<file>
+            <source>src/main/conf/drools/mincheck.drl</source>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf/drools</outputDirectory>
             <filtered>true</filtered>
             <fileMode>755</fileMode>
         </file>
         <file>
-            <source>src/main/conf/scaling.drl</source>
-            <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf</outputDirectory>
+            <source>src/main/conf/drools/obsoletecheck.drl</source>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf/drools</outputDirectory>
             <filtered>true</filtered>
             <fileMode>755</fileMode>
         </file>
         <file>
-            <source>src/main/conf/terminateall.drl</source>
-            <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf</outputDirectory>
+            <source>src/main/conf/drools/scaling.drl</source>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf/drools</outputDirectory>
             <filtered>true</filtered>
             <fileMode>755</fileMode>
         </file>
+        <file>
+            <source>src/main/conf/drools/terminateall.drl</source>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf/drools</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>755</fileMode>
+        </file>
+                <!-- container-drools files -->
+        <file>
+            <source>src/main/conf/drools/container-mincheck.drl</source>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf/drools</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>755</fileMode>
+        </file>
+        <file>
+            <source>src/main/conf/drools/container-obsoletecheck.drl</source>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf/drools</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>755</fileMode>
+        </file>
+        <file>
+            <source>src/main/conf/drools/container-scaling.drl</source>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf/drools</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>755</fileMode>
+        </file>
+		<!-- container-drools files -->
+		<!-- /drools files end-->
 		<!-- autoscaler -->
         <file>
             <source>${project.basedir}/INSTALL.txt</source>
@@ -885,7 +919,7 @@
         </file>
         <!-- REST endpoint webapp -->
         <file>
-            <source>../p2-profile-gen/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/webapps/stratos.war</source>
+            <source>../p2-profile-gen/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/webapps/api.war</source>
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps/</outputDirectory>
             <fileMode>644</fileMode>
         </file>

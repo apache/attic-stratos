@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledFuture;
 
 /**
  * This object holds all runtime data and provides faster access. This is a Singleton class.
@@ -58,6 +59,12 @@ public class FasterLookUpDataHolder implements Serializable{
 	 * Value - {@link MemberContext}
 	 */
 	private Map<String, MemberContext> memberIdToContext = new ConcurrentHashMap<String, MemberContext>();
+	
+	/**
+     * Key - member id
+     * Value - ScheduledFuture task
+     */
+    private transient Map<String, ScheduledFuture<?>> memberIdToScheduledTask = new ConcurrentHashMap<String, ScheduledFuture<?>>();
 	
 	/**
 	 * Key - Kubernetes cluster id
@@ -88,6 +95,11 @@ public class FasterLookUpDataHolder implements Serializable{
 	 * List of registered {@link Cartridge}s
 	 */
 	private List<Cartridge> cartridges;
+	
+	/**
+	 * List of deployed service groups
+	 */
+	private List<ServiceGroup> serviceGroups;
 
 	/**
 	 * List of IaaS Providers.
@@ -132,7 +144,7 @@ public class FasterLookUpDataHolder implements Serializable{
 	private FasterLookUpDataHolder() {
 
 		cartridges = new ArrayList<Cartridge>();
-		
+		serviceGroups = new ArrayList<ServiceGroup>();
 	}
 
 	public List<Cartridge> getCartridges() {
@@ -142,6 +154,15 @@ public class FasterLookUpDataHolder implements Serializable{
 	public void setCartridges(List<Cartridge> cartridges) {
 	    this.cartridges = cartridges;
 	}
+	
+	public void setServiceGroups(List<ServiceGroup> serviceGroups) {
+		this.serviceGroups = serviceGroups;
+	}
+	
+	public List<ServiceGroup> getServiceGroups() {
+		return this.serviceGroups;
+	}
+
 
 	public Cartridge getCartridge(String cartridgeType) {
 		for (Cartridge cartridge : cartridges) {
@@ -151,7 +172,6 @@ public class FasterLookUpDataHolder implements Serializable{
 		}
 
 		return null;
-
 	}
 	
 	public void addCartridge(Cartridge newCartridges) {
@@ -164,6 +184,26 @@ public class FasterLookUpDataHolder implements Serializable{
 			this.cartridges.removeAll(cartridges);
 		}
 
+	}
+	
+	public ServiceGroup getServiceGroup(String name) {
+		for (ServiceGroup serviceGroup : serviceGroups) {
+			if (serviceGroup.getName().equals(name)) {
+				return serviceGroup;
+			}
+		}
+
+		return null;
+	}
+	
+	public void addServiceGroup(ServiceGroup newServiceGroup) {
+		this.serviceGroups.add(newServiceGroup);
+	}
+	
+	public void removeServiceGroup(List<ServiceGroup> serviceGroup) {
+		if (this.serviceGroups != null) {
+			this.serviceGroups.removeAll(serviceGroup);
+		}
 	}
 	
 	public IaasProvider getIaasProvider(String type) {
@@ -278,42 +318,61 @@ public class FasterLookUpDataHolder implements Serializable{
         }
     }
     
-    public void removeMemberContextsOfCluster(String clusterId) {
+    public void addScheduledFutureJob(String memberId, ScheduledFuture<?> job) {
+        memberIdToScheduledTask.put(memberId, job);
+    }
+    
+    public List<MemberContext> removeMemberContextsOfCluster(String clusterId) {
         List<MemberContext> ctxts = clusterIdToMemberContext.remove(clusterId);
         if(ctxts == null) {
-            return;
+            return new ArrayList<MemberContext>();
         }
         for (MemberContext memberContext : ctxts) {
             String memberId = memberContext.getMemberId();
             memberIdToContext.remove(memberId);
+            stopTask(memberIdToScheduledTask.remove(memberId));
         }
         if(log.isDebugEnabled()) {
         	
         	log.debug("Removed Member Context from the information model. "+ctxt);
         }
+        return ctxts;
     }
     
-    public void removeMemberContext(String memberId, String clusterId) {
-    	memberIdToContext.remove(memberId);
+    public MemberContext removeMemberContext(String memberId, String clusterId) {
+    	MemberContext returnedCtxt = memberIdToContext.remove(memberId);
         List<MemberContext> ctxts = clusterIdToMemberContext.get(clusterId);
-        if(ctxts == null) {
-            return;
+
+        if (ctxts != null) {
+            
+            List<MemberContext> newCtxts =  new ArrayList<MemberContext>(ctxts);
+            
+            for (Iterator<MemberContext> iterator = newCtxts.iterator(); iterator.hasNext();) {
+                MemberContext memberContext = (MemberContext) iterator.next();
+                if(memberId.equals(memberContext.getMemberId())) {
+                    if(log.isDebugEnabled()) {
+                        
+                        log.debug("MemberContext [id]: "+memberId+" removed from information model.");
+                    }
+                    iterator.remove();
+                }
+            }
+            
+            clusterIdToMemberContext.put(clusterId, newCtxts);
         }
         
-        List<MemberContext> newCtxts =  new ArrayList<MemberContext>(ctxts);
+        stopTask(memberIdToScheduledTask.remove(memberId));
         
-        for (Iterator<MemberContext> iterator = newCtxts.iterator(); iterator.hasNext();) {
-			MemberContext memberContext = (MemberContext) iterator.next();
-			if(memberId.equals(memberContext.getMemberId())) {
-				if(log.isDebugEnabled()) {
-					
-					log.debug("MemberContext [id]: "+memberId+" removed from information model.");
-				}
-            	iterator.remove();
-            }
-		}
+        return returnedCtxt;
         
-        clusterIdToMemberContext.put(clusterId, newCtxts);
+    }
+    
+    private void stopTask(ScheduledFuture<?> task) {
+        if (task != null) {
+            
+            task.cancel(true);
+            log.info("Scheduled Pod Activation Watcher task canceled.");
+        }
     }
     
     public MemberContext getMemberContextOfMemberId(String memberId) {
@@ -408,5 +467,13 @@ public class FasterLookUpDataHolder implements Serializable{
 			Map<String, KubernetesClusterContext> kubClusterIdToKubClusterContext) {
 		this.kubClusterIdToKubClusterContext = kubClusterIdToKubClusterContext;
 	}
+
+    public Map<String, ScheduledFuture<?>> getMemberIdToScheduledTask() {
+        return memberIdToScheduledTask;
+    }
+
+    public void setMemberIdToScheduledTask(Map<String, ScheduledFuture<?>> memberIdToScheduledTask) {
+        this.memberIdToScheduledTask = memberIdToScheduledTask;
+    }
 	
 }

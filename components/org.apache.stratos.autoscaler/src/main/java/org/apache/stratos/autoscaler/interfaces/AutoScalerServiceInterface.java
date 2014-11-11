@@ -21,11 +21,18 @@
 
 package org.apache.stratos.autoscaler.interfaces;
 
-import org.apache.stratos.autoscaler.deployment.policy.DeploymentPolicy;
+import org.apache.stratos.autoscaler.applications.pojo.ApplicationContext;
+import org.apache.stratos.autoscaler.policy.model.DeploymentPolicy;
 import org.apache.stratos.autoscaler.exception.*;
+import org.apache.stratos.autoscaler.exception.ApplicationDefinitionException;
+import org.apache.stratos.autoscaler.exception.InvalidPartitionException;
+import org.apache.stratos.autoscaler.exception.InvalidPolicyException;
+import org.apache.stratos.autoscaler.exception.NonExistingLBException;
 import org.apache.stratos.autoscaler.partition.PartitionGroup;
+import org.apache.stratos.autoscaler.pojo.ServiceGroup;
 import org.apache.stratos.autoscaler.policy.model.AutoscalePolicy;
 import org.apache.stratos.cloud.controller.stub.deployment.partition.Partition;
+import org.apache.stratos.cloud.controller.stub.pojo.Properties;
 import org.apache.stratos.common.kubernetes.KubernetesGroup;
 import org.apache.stratos.common.kubernetes.KubernetesHost;
 import org.apache.stratos.common.kubernetes.KubernetesMaster;
@@ -40,9 +47,13 @@ public interface AutoScalerServiceInterface {
 
     public boolean addDeploymentPolicy(DeploymentPolicy depPolicy) throws InvalidPolicyException;
 
+    public boolean updateDeploymentPolicy(DeploymentPolicy depPolicy) throws InvalidPolicyException;
+
     public AutoscalePolicy[] getAllAutoScalingPolicy();
 
     public boolean addAutoScalingPolicy(AutoscalePolicy aspolicy) throws InvalidPolicyException;
+
+    public boolean updateAutoScalingPolicy(AutoscalePolicy aspolicy) throws InvalidPolicyException;
 
     public DeploymentPolicy[] getValidDeploymentPoliciesforCartridge(String cartridgeType);
 
@@ -176,5 +187,37 @@ public interface AutoScalerServiceInterface {
 
     public String getDefaultLBClusterId(String deploymentPolicyName);
 
-    public String getServiceLBClusterId(String serviceType, String deploymentPolicyName);
+    public String getServiceLBClusterId (String serviceType, String deploymentPolicyName);
+
+    /**
+     * Dynamically update the properties of an Autoscaling Cluster Monitor
+     * @param clusterId id of the cluster.
+     * @param properties updated properties.
+     */
+    void updateClusterMonitor(String clusterId, Properties properties) throws InvalidArgumentException;
+    
+    /**
+     * deploys an Application Definition
+     *
+     * @param applicationContext {@link org.apache.stratos.autoscaler.applications.pojo.ApplicationContext} object
+     * @throws ApplicationDefinitionException if an error is encountered
+     */
+    public void deployApplicationDefinition (ApplicationContext applicationContext) throws ApplicationDefinitionException;
+
+    /**
+     * undeploys an Application Definition
+     *
+     * @param applicationId Id of the Application to be undeployed
+     * @throws ApplicationDefinitionException if an error is encountered
+     */
+    public void unDeployApplicationDefinition (String applicationId, int tenantId, String tenantDomain)
+            throws ApplicationDefinitionException;
+
+
+    /**
+     * Get service group by name
+     * @param name
+     * @return
+     */
+    public ServiceGroup getServiceGroup(String name);
 }

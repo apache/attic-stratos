@@ -18,15 +18,6 @@
  */
 package org.apache.stratos.autoscaler;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -34,6 +25,26 @@ import org.apache.stratos.autoscaler.util.ConfUtil;
 import org.apache.stratos.cloud.controller.stub.deployment.partition.Partition;
 import org.apache.stratos.cloud.controller.stub.pojo.MemberContext;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.stratos.autoscaler.util.ConfUtil;
+import org.apache.stratos.cloud.controller.stub.deployment.partition.Partition;
+import org.apache.stratos.cloud.controller.stub.pojo.MemberContext;
+import org.apache.stratos.common.constants.StratosConstants;
 
 /**
  * This is an object that inserted to the rules engine.
@@ -58,7 +69,7 @@ public class PartitionContext implements Serializable{
     private Properties properties;
     
     // 15 mints as the default
-    private long expiryTime = 900000;
+    private long pendingMemberExpiryTime = 900000;
     // pending members
     private List<MemberContext> pendingMembers;
     
@@ -82,7 +93,7 @@ public class PartitionContext implements Serializable{
 
         this.activeMembers = new ArrayList<MemberContext>();
         this.terminationPendingMembers = new ArrayList<MemberContext>();
-        expiryTime = memberExpiryTime;
+        pendingMemberExpiryTime = memberExpiryTime;
     }
     
     public PartitionContext(Partition partition) {
@@ -97,9 +108,11 @@ public class PartitionContext implements Serializable{
 
         // check if a different value has been set for expiryTime
         XMLConfiguration conf = ConfUtil.getInstance(null).getConfiguration();
-        expiryTime = conf.getLong("autoscaler.member.expiryTimeout", 900000);
+        pendingMemberExpiryTime = conf.getLong(StratosConstants.PENDING_VM_MEMBER_EXPIRY_TIMEOUT, 900000);
+        obsoltedMemberExpiryTime = conf.getLong(StratosConstants.OBSOLETED_VM_MEMBER_EXPIRY_TIMEOUT, 86400000);
         if (log.isDebugEnabled()) {
-            log.debug("Member expiry time is set to: " + expiryTime);
+        	log.debug("Member expiry time is set to: " + pendingMemberExpiryTime);
+        	log.debug("Member obsoleted expiry time is set to: " + obsoltedMemberExpiryTime);
         }
 
         Thread th = new Thread(new PendingMemberWatcher(this));
@@ -155,14 +168,16 @@ public class PartitionContext implements Serializable{
     	if (id == null) {
             return false;
         }
-        for (Iterator<MemberContext> iterator = pendingMembers.iterator(); iterator.hasNext();) {
-    		MemberContext pendingMember = (MemberContext) iterator.next();
-    		if(id.equals(pendingMember.getMemberId())){
-    			iterator.remove();
-    			return true;
-    		}
-			
-		}
+        synchronized (pendingMembers) {
+            for (Iterator<MemberContext> iterator = pendingMembers.iterator(); iterator.hasNext(); ) {
+                MemberContext pendingMember = (MemberContext) iterator.next();
+                if (id.equals(pendingMember.getMemberId())) {
+                    iterator.remove();
+                    return true;
+                }
+
+            }
+        }
     	
     	return false;
     }
@@ -171,25 +186,27 @@ public class PartitionContext implements Serializable{
         if (memberId == null) {
             return;
         }
-        Iterator<MemberContext> iterator = pendingMembers.listIterator();
-        while (iterator.hasNext()) {
-            MemberContext pendingMember = iterator.next();
-            if(pendingMember == null) {
-                iterator.remove();
-                continue;
-            }
-            if(memberId.equals(pendingMember.getMemberId())){
-                // member is activated
-                // remove from pending list
-                iterator.remove();
-                // add to the activated list
-                this.activeMembers.add(pendingMember);
-                pendingMembersFailureCount = 0;
-                if (log.isDebugEnabled()) {
-                    log.debug(String.format("Pending member is removed and added to the " +
-                            "activated member list. [Member Id] %s",memberId));
+        synchronized (pendingMembers) {
+            Iterator<MemberContext> iterator = pendingMembers.listIterator();
+            while (iterator.hasNext()) {
+                MemberContext pendingMember = iterator.next();
+                if (pendingMember == null) {
+                    iterator.remove();
+                    continue;
                 }
-                break;
+                if (memberId.equals(pendingMember.getMemberId())) {
+                    // member is activated
+                    // remove from pending list
+                    iterator.remove();
+                    // add to the activated list
+                    this.activeMembers.add(pendingMember);
+                    pendingMembersFailureCount = 0;
+                    if (log.isDebugEnabled()) {
+                        log.debug(String.format("Pending member is removed and added to the " +
+                                "activated member list. [Member Id] %s", memberId));
+                    }
+                    break;
+                }
             }
         }
     }
@@ -199,24 +216,26 @@ public class PartitionContext implements Serializable{
         if (memberId == null) {
             return;
         }
-        Iterator<MemberContext> iterator = activeMembers.listIterator();
-        while ( iterator.hasNext()) {
-            MemberContext activeMember = iterator.next();
-            if(activeMember == null) {
-                iterator.remove();
-                continue;
-            }
-            if(memberId.equals(activeMember.getMemberId())){
-                // member is activated
-                // remove from pending list
-                iterator.remove();
-                // add to the activated list
-                this.terminationPendingMembers.add(activeMember);
-                if (log.isDebugEnabled()) {
-                    log.debug(String.format("Active member is removed and added to the " +
-                            "termination pending member list. [Member Id] %s", memberId));
+        synchronized (activeMembers) {
+            Iterator<MemberContext> iterator = activeMembers.listIterator();
+            while (iterator.hasNext()) {
+                MemberContext activeMember = iterator.next();
+                if (activeMember == null) {
+                    iterator.remove();
+                    continue;
                 }
-                break;
+                if (memberId.equals(activeMember.getMemberId())) {
+                    // member is activated
+                    // remove from pending list
+                    iterator.remove();
+                    // add to the activated list
+                    this.terminationPendingMembers.add(activeMember);
+                    if (log.isDebugEnabled()) {
+                        log.debug(String.format("Active member is removed and added to the " +
+                                "termination pending member list. [Member Id] %s", memberId));
+                    }
+                    break;
+                }
             }
         }
     }
@@ -231,11 +250,13 @@ public class PartitionContext implements Serializable{
 
     public boolean removeTerminationPendingMember(String memberId) {
         boolean terminationPendingMemberAvailable = false;
-        for (MemberContext memberContext: terminationPendingMembers){
-            if(memberContext.getMemberId().equals(memberId)){
-                terminationPendingMemberAvailable = true;
-                terminationPendingMembers.remove(memberContext);
-                break;
+        synchronized (terminationPendingMembers) {
+            for (MemberContext memberContext : terminationPendingMembers) {
+                if (memberContext.getMemberId().equals(memberId)) {
+                    terminationPendingMemberAvailable = true;
+                    terminationPendingMembers.remove(memberContext);
+                    break;
+                }
             }
         }
         return terminationPendingMemberAvailable;
@@ -260,12 +281,12 @@ public class PartitionContext implements Serializable{
     	return true;
     }
 
-    public long getExpiryTime() {
-        return expiryTime;
+    public long getPendingMemberExpiryTime() {
+        return pendingMemberExpiryTime;
     }
 
-    public void setExpiryTime(long expiryTime) {
-        this.expiryTime = expiryTime;
+    public void setPendingMemberExpiryTime(long pendingMemberExpiryTime) {
+        this.pendingMemberExpiryTime = pendingMemberExpiryTime;
     }
     
     public Map<String, MemberContext> getObsoletedMembers() {
@@ -373,7 +394,42 @@ public class PartitionContext implements Serializable{
         }
         return false;
     }
+    
+    public  int getAllMemberForTerminationCount () {
+    	int count = activeMembers.size() + pendingMembers.size() + terminationPendingMembers.size();
+		if (log.isDebugEnabled()) {
+    		log.debug("PartitionContext:getAllMemberForTerminationCount:size:" + count);
+    	}
+    	return count;
+    }
+    
+    // Map<String, MemberStatsContext> getMemberStatsContexts().keySet()
+    public  Set<String> getAllMemberForTermination () {
 
+    	List<MemberContext> merged =  new ArrayList<MemberContext>();
+    	
+    	
+    	merged.addAll(activeMembers);
+    	merged.addAll(pendingMembers);
+    	merged.addAll(terminationPendingMembers);
+    	
+    	Set<String> results = new HashSet<String>(merged.size());
+    	
+    	for (MemberContext ctx: merged) {
+    		results.add(ctx.getMemberId());
+    	}
+    	
+
+    	if (log.isDebugEnabled()) {
+    		log.debug("PartitionContext:getAllMemberForTermination:size:" + results.size());
+    	}
+    	
+    	//MemberContext x = new MemberContext();
+    	//x.getMemberId()
+    	
+    	return results;
+    }
+    
     private class PendingMemberWatcher implements Runnable {
         private PartitionContext ctxt;
 
@@ -385,7 +441,7 @@ public class PartitionContext implements Serializable{
         public void run() {
 
             while (true) {
-                long expiryTime = ctxt.getExpiryTime();
+                long expiryTime = ctxt.getPendingMemberExpiryTime();
                 List<MemberContext> pendingMembers = ctxt.getPendingMembers();
                 
                 synchronized (pendingMembers) {
@@ -407,7 +463,7 @@ public class PartitionContext implements Serializable{
                             ctxt.addObsoleteMember(pendingMember);
                             pendingMembersFailureCount++;
                             if( pendingMembersFailureCount > PENDING_MEMBER_FAILURE_THRESHOLD){
-                                setExpiryTime(expiryTime * 2);//Doubles the expiry time after the threshold of failure exceeded
+                                setPendingMemberExpiryTime(expiryTime * 2);//Doubles the expiry time after the threshold of failure exceeded
                                 //TODO Implement an alerting system: STRATOS-369
                             }
                         }

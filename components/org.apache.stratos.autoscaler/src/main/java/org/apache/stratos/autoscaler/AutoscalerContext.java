@@ -23,34 +23,29 @@ package org.apache.stratos.autoscaler;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.stratos.autoscaler.monitor.AbstractClusterMonitor;
+import org.apache.stratos.autoscaler.monitor.application.ApplicationMonitor;
+import org.apache.stratos.autoscaler.monitor.cluster.AbstractClusterMonitor;
 
 /**
  * It holds all cluster monitors which are active in stratos.
  */
 public class AutoscalerContext {
 
-    private static final Log log = LogFactory.getLog(AutoscalerContext.class);
-    private AutoscalerContext() {
-        try {
-            setClusterMonitors(new HashMap<String, AbstractClusterMonitor>());
-        } catch (Exception e) {
-            log.error("Rule evaluateMinCheck error", e);
-        }
-    }
-    
+    private static final AutoscalerContext INSTANCE = new AutoscalerContext();
+
     // Map<ClusterId, AbstractClusterMonitor>
     private Map<String, AbstractClusterMonitor> clusterMonitors;
+    // Map<ApplicationId, ApplicationMonitor>
+    private Map<String, ApplicationMonitor> applicationMonitors;
 
-	private static class Holder {
-		private static final AutoscalerContext INSTANCE = new AutoscalerContext();
-	}
+    private AutoscalerContext() {
+        clusterMonitors = new HashMap<String, AbstractClusterMonitor>();
+        applicationMonitors = new HashMap<String, ApplicationMonitor>();
+    }
 
-	public static AutoscalerContext getInstance() {
-		return Holder.INSTANCE;
-	}
+    public static AutoscalerContext getInstance() {
+        return INSTANCE;
+    }
 
     public void addClusterMonitor(AbstractClusterMonitor clusterMonitor) {
         clusterMonitors.put(clusterMonitor.getClusterId(), clusterMonitor);
@@ -59,25 +54,20 @@ public class AutoscalerContext {
     public AbstractClusterMonitor getClusterMonitor(String clusterId) {
         return clusterMonitors.get(clusterId);
     }
-    
-    public boolean clusterMonitorExist(String clusterId) {
-        return clusterMonitors.containsKey(clusterId);
-    }
-    
-    public Map<String, AbstractClusterMonitor> getClusterMonitors() {
-        return clusterMonitors;
+
+    public AbstractClusterMonitor removeClusterMonitor(String clusterId) {
+        return clusterMonitors.remove(clusterId);
     }
 
-    public void setClusterMonitors(Map<String, AbstractClusterMonitor> clusterMonitors) {
-        this.clusterMonitors = clusterMonitors;
+    public void addAppMonitor(ApplicationMonitor applicationMonitor) {
+        applicationMonitors.put(applicationMonitor.getId(), applicationMonitor);
     }
-    
-    public AbstractClusterMonitor removeClusterMonitor(String clusterId) {
-    	if(!clusterMonitorExist(clusterId)) {
-    		log.fatal("ClusterMonitor not found for cluster id: "+clusterId);
-    		return null;
-    	}
-    	log.info("Removed ClusterMonitor [cluster id]: " + clusterId);
-        return clusterMonitors.remove(clusterId);
+
+    public ApplicationMonitor getAppMonitor(String applicationId) {
+        return applicationMonitors.get(applicationId);
+    }
+
+    public void removeAppMonitor(String applicationId) {
+        applicationMonitors.remove(applicationId);
     }
 }

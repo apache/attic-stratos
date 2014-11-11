@@ -51,12 +51,11 @@ public class ListCartridgesCommand implements Command<StratosCommandContext> {
 			logger.debug("Executing {} command...", getName());
 		}
 		if (args == null || args.length == 0) {
-			//CommandLineService.getInstance().listAvailableCartridges();
-            RestCommandLineService.getInstance().listAvailableCartridges();
-			return CliConstants.SUCCESSFUL_CODE;
+            RestCommandLineService.getInstance().listCartridges();
+			return CliConstants.COMMAND_SUCCESSFULL;
 		} else {
 			context.getStratosApplication().printUsage(getName());
-			return CliConstants.BAD_ARGS_CODE;
+			return CliConstants.COMMAND_FAILED;
 		}
 	}
 

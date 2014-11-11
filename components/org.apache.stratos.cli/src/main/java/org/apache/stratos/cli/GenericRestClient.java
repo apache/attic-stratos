@@ -21,6 +21,8 @@ package org.apache.stratos.cli;
 import org.apache.http.HttpResponse;
 import org.apache.http.impl.client.DefaultHttpClient;
 
+import java.io.IOException;
+
 public interface GenericRestClient {
 
     /**
@@ -47,7 +49,7 @@ public interface GenericRestClient {
      */
     public HttpResponse doGet(DefaultHttpClient httpClient, String resourcePath) throws Exception;
 
-    public HttpResponse doDelete(DefaultHttpClient httpClient, String resourcePath);
+    public HttpResponse doDelete(DefaultHttpClient httpClient, String resourcePath) throws IOException;
 
-    public void doPut();
+    public HttpResponse doPut(DefaultHttpClient httpClient, String resourcePath, String jsonParamString) throws IOException;
 }

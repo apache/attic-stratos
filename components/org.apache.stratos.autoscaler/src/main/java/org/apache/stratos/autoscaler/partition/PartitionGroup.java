@@ -20,9 +20,9 @@
 package org.apache.stratos.autoscaler.partition;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 import org.apache.stratos.cloud.controller.stub.deployment.partition.Partition;
-import org.apache.stratos.cloud.controller.stub.pojo.Properties;
 
 /**
  * The model class for PartitionGroup definition.
@@ -59,8 +59,11 @@ public class PartitionGroup implements Serializable{
     }
     
     public void setPartitions(Partition[] partitions) {
-        this.partitions = partitions;
-        partitions[0].setProperties(new Properties());
+        if(partitions == null) {
+            this.partitions = partitions;
+        } else {
+            this.partitions = Arrays.copyOf(partitions, partitions.length);
+        }
     }
 
     /**

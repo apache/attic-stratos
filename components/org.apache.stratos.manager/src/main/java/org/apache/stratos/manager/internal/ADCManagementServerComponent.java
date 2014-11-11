@@ -123,13 +123,25 @@ public class ADCManagementServerComponent {
 
             // retrieve persisted CartridgeSubscriptions
             new DataInsertionAndRetrievalManager().cachePersistedSubscriptions();
+            
+            //Grouping
+            /*
+            if (log.isDebugEnabled()) {
+            	log.debug("restoring composite applications ...");
+            }
+            new CompositeApplicationManager().restoreCompositeApplications ();
+            
+            if (log.isDebugEnabled()) {
+            	log.debug("done restoring composite applications ...");
+            }
+            */
 
             //Component activated successfully
             log.info("ADC management server component is activated");
 			
 		} catch (Exception e) {
-            if(log.isFatalEnabled()) {
-			    log.fatal("Could not activate ADC management server component", e);
+            if(log.isErrorEnabled()) {
+			    log.error("Could not activate ADC management server component", e);
             }
 		}
 	}

@@ -19,14 +19,15 @@
 
 package org.apache.stratos.messaging.broker.publish;
 
+import com.google.gson.Gson;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.stratos.messaging.broker.connect.MQTTConnector;
+import org.apache.stratos.messaging.domain.exception.MessagingException;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
-
-import com.google.gson.Gson;
 
 /**
  * Any instance who needs to publish data to a topic, should communicate with
@@ -40,23 +41,27 @@ import com.google.gson.Gson;
  */
 public class TopicPublisher {
 
-	private static final Log log = LogFactory.getLog(TopicPublisher.class);
+    private static final Log log = LogFactory.getLog(TopicPublisher.class);
 
+    /**
+     * Quality of Service for message delivery:
+     * Setting it to 2 to make sure that message is guaranteed to deliver once
+     * using two-phase acknowledgement across the network.
+     */
 	private static final int QOS = 2;
+    private static final int PUBLISH_RETRY_INTERVAL = 60000;
 
-	public static TopicPublisher topicPub;
-	private boolean initialized;
-	private final String topic;
-	MqttClient mqttClient;
+	private final String topicName;
+	private final MqttClient mqttClient;
 
 	/**
-	 * @param aTopicName
-	 *            topic name of this publisher instance.
+	 * @param topicName topic name of this publisher instance.
 	 */
-	TopicPublisher(String aTopicName) {
-		this.topic = aTopicName;
+	TopicPublisher(String topicName) {
+		this.topicName = topicName;
+        this.mqttClient = MQTTConnector.getMqttClient();
 		if (log.isDebugEnabled()) {
-			log.debug(String.format("Topic publisher connector created: [topic] %s", topic));
+			log.debug(String.format("Topic publisher created: [topic] %s", topicName));
 		}
 	}
 
@@ -67,58 +72,47 @@ public class TopicPublisher {
 	 */
 
 	public void publish(Object messageObj, boolean retry) {
-
 		synchronized (TopicPublisher.class) {
-			Gson gson = new Gson();
-			String message = gson.toJson(messageObj);
-			boolean published = false;
-			while (!published)
-				try {
-					mqttClient = MQTTConnector.getMQTTConClient();
+            Gson gson = new Gson();
+            String message = gson.toJson(messageObj);
+            boolean published = false;
 
-					MqttMessage mqttMSG = new MqttMessage(message.getBytes());
+            while (!published) {
+                MqttMessage mqttMessage = new MqttMessage(message.getBytes());
+                // Set quality of service
+                mqttMessage.setQos(QOS);
 
-					mqttMSG.setQos(QOS);
-					MqttConnectOptions connOpts = new MqttConnectOptions();
-					connOpts.setCleanSession(true);
-					mqttClient.connect(connOpts);
-					mqttClient.publish(topic, mqttMSG);
-					mqttClient.disconnect();
-					published = true;
-				} catch (Exception e) {
-					initialized = false;
-					if (log.isErrorEnabled()) {
-						log.error("Error while publishing to the topic: " + topic, e);
-					}
-					if (!retry) {
-						if (log.isDebugEnabled()) {
-							log.debug("Retry disabled for topic " + topic);
-						}
-						throw new RuntimeException(e);
-					}
+                try {
+                    MqttConnectOptions connectOptions = new MqttConnectOptions();
+                    // Do not maintain a session between the client and the server since it is nearly impossible to
+                    // generate unique client ids for each subscriber & publisher with the distributed nature of stratos.
+                    // Reliable message delivery is managed by topic subscriber and publisher.
+                    connectOptions.setCleanSession(true);
+                    mqttClient.connect(connectOptions);
+                    mqttClient.publish(topicName, mqttMessage);
+                    published = true;
+                } catch (Exception e) {
+                    if (!retry) {
+                        if (log.isDebugEnabled()) {
+                            log.debug("Retry disabled for topic " + topicName);
+                        }
+                        throw new MessagingException(e);
+                    }
 
-					if (log.isInfoEnabled()) {
-						log.info("Will try to re-publish in 60 sec");
-					}
-					try {
-						Thread.sleep(60000);
-					} catch (InterruptedException ignore) {
-					}
-				}
-				finally {
-
-				}
-		}
+                    if (log.isInfoEnabled()) {
+                        log.info(String.format("Will try to re-publish in %d sec", (PUBLISH_RETRY_INTERVAL/1000)));
+                    }
+                    try {
+                        Thread.sleep(PUBLISH_RETRY_INTERVAL);
+                    } catch (InterruptedException ignore) {
+                    }
+                } finally {
+                    try {
+                        mqttClient.disconnect();
+                    } catch (MqttException ignore) {
+                    }
+                }
+            }
+        }
 	}
-
-	public void close() {
-		synchronized (TopicPublisher.class) {
-			// closes all sessions/connections
-			try {
-
-			} catch (Exception ignore) {
-			}
-		}
-	}
-
 }
