@@ -26,15 +26,15 @@ import java.util.List;
 public class ClusterBean {
 
     private String clusterId;
-    private List<NewProperty> properties;
+    private List<MetaDataProperty> properties;
 
     public ClusterBean(){
-        this.setProperties(new ArrayList<NewProperty>());
+        this.setProperties(new ArrayList<MetaDataProperty>());
     }
 
     public ClusterBean(String id){
         this.setClusterId(id);
-        this.setProperties(new ArrayList<NewProperty>());
+        this.setProperties(new ArrayList<MetaDataProperty>());
     }
 
     public String getClusterId() {
@@ -45,15 +45,15 @@ public class ClusterBean {
         this.clusterId = clusterId;
     }
 
-    public List<NewProperty> getProperties() {
+    public List<MetaDataProperty> getProperties() {
         return properties;
     }
 
-    public void setProperties(List<NewProperty> properties) {
+    public void setProperties(List<MetaDataProperty> properties) {
         this.properties = properties;
     }
 
-    public void addProperty(NewProperty property){
+    public void addProperty(MetaDataProperty property){
         this.properties.add(property);
     }
 }

@@ -18,8 +18,7 @@
  */
 package org.apache.stratos.metadataservice.registry;
 
-
-import org.apache.stratos.metadataservice.definition.NewProperty;
+import org.apache.stratos.metadataservice.definition.MetaDataProperty;
 import org.wso2.carbon.registry.api.RegistryException;
 
 import java.util.List;
@@ -29,12 +28,14 @@ import java.util.List;
  */
 public interface DataStore {
 
-    public void addPropertiesToCluster(String applicationName, String clusterId, NewProperty[] properties)
-            throws RegistryException;
-    public List<NewProperty> getPropertiesOfCluster(String applicationName, String clusterId)
-            throws RegistryException;
+	public void addPropertiesToCluster(String applicationName, String clusterId, MetaDataProperty[] properties)
+			throws RegistryException;
 
-    public void addPropertyToCluster(String applicationId, String clusterId, NewProperty property) throws RegistryException;
+	public List<MetaDataProperty> getPropertiesOfCluster(String applicationName, String clusterId)
+			throws RegistryException;
 
-    public boolean deleteApplication(String applicationId) throws RegistryException;
+	public void addPropertyToCluster(String applicationId, String clusterId, MetaDataProperty property)
+			throws RegistryException;
+
+	public boolean deleteApplication(String applicationId) throws RegistryException;
 }

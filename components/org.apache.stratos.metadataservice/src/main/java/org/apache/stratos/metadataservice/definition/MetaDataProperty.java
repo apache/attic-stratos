@@ -19,8 +19,6 @@
 
 package org.apache.stratos.metadataservice.definition;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -28,13 +26,13 @@ import java.util.Arrays;
 import java.util.List;
 
 @XmlRootElement(name="properties")
-public class NewProperty implements Serializable{
+public class MetaDataProperty implements Serializable{
 
     private String key;
     private List<String> values = new ArrayList<String>();
 
-    public NewProperty(){}
-    public NewProperty(String key, String value){
+    public MetaDataProperty(){}
+    public MetaDataProperty(String key, String value){
         this.key=key;
         this.values.add(value);
     }
