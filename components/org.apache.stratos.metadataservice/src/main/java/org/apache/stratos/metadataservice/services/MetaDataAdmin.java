@@ -39,150 +39,157 @@ import java.util.List;
 
 @Path("/")
 public class MetaDataAdmin {
-    @Context
-    UriInfo uriInfo;
+	@Context
+	UriInfo uriInfo;
 
-    private static Log log = LogFactory.getLog(MetaDataAdmin.class);
-    @Context
-    HttpServletRequest httpServletRequest;
+	private static Log log = LogFactory.getLog(MetaDataAdmin.class);
+	@Context
+	HttpServletRequest httpServletRequest;
 
+	private DataStore registry;
 
-    private DataStore registry;
+	/**
+	 * Meta data admin configuration loading
+	 */
+	public MetaDataAdmin() {
+		XMLConfiguration conf = ConfUtil.getInstance(null).getConfiguration();
+		String KEY = "metadataservice.govenanceregistrytype";
+		String DEFAULT_REG_TYPE = "carbon";
+		String registryType = conf.getString(KEY, DEFAULT_REG_TYPE);
+		registry = DataRegistryFactory.getDataRegistryFactory(registryType);
+	}
 
-    /**
-     * Meta data admin configuration loading
-     */
-    public MetaDataAdmin(){
-        XMLConfiguration conf = ConfUtil.getInstance(null).getConfiguration();
-        String DEFAULT_REG_TYPE = "carbon";
-        String registryType =  conf.getString("metadataservice.govenanceregistrytype", DEFAULT_REG_TYPE);
-        registry = DataRegistryFactory.getDataRegistryFactory(registryType);
-    }
+	@GET
+	@Path("/application/{application_id}/cluster/{cluster_id}/properties")
+	@Produces("application/json")
+	@Consumes("application/json")
+	@AuthorizationAction("/permission/protected/manage/monitor/tenants")
+	public Response getClusterProperties(@PathParam("application_id") String applicationId,
+	                                     @PathParam("cluster_id") String clusterId) {
 
-    @GET
-    @Path("/application/{application_id}/cluster/{cluster_id}/properties")
-    @Produces("application/json")
-    @Consumes("application/json")
-    @AuthorizationAction("/permission/protected/manage/monitor/tenants")
-    public Response getClusterProperties(@PathParam("application_id") String applicationId, @PathParam("cluster_id") String clusterId){
+		List<NewProperty> properties;
+		NewProperty[] propertiesArr = null;
+		try {
+			properties = registry.getPropertiesOfCluster(applicationId, clusterId);
+			if (properties != null) {
+				propertiesArr = new NewProperty[properties.size()];
+				propertiesArr = properties.toArray(propertiesArr);
+			}
+		} catch (Exception e) {
+			log.error("Error occurred while getting properties ", e);
+		}
 
-        List<NewProperty> properties;
-        NewProperty[] propertiesArr = null;
-        try {
-            properties = registry
-                    .getPropertiesOfCluster(applicationId, clusterId);
-            if (properties != null) {
-                propertiesArr = new NewProperty[properties.size()];
-                propertiesArr = properties.toArray(propertiesArr);
-            }
-        } catch (Exception e) {
-            log.error("Error occurred while getting properties ", e);
-        }
+		Response.ResponseBuilder rb;
+		if (propertiesArr == null) {
+			rb = Response.status(Response.Status.NOT_FOUND);
+		} else {
+			rb = Response.ok().entity(propertiesArr);
+		}
+		return rb.build();
+	}
 
-        Response.ResponseBuilder rb;
-        if (propertiesArr == null) {
-            rb = Response.status(Response.Status.NOT_FOUND);
-        } else {
-            rb = Response.ok().entity(propertiesArr);
-        }
-        return rb.build();
-    }
+	@GET
+	@Path("/application/{application_id}/cluster/{cluster_id}/property/{property_name}")
+	@Produces("application/json")
+	@Consumes("application/json")
+	@AuthorizationAction("/permission/protected/manage/monitor/tenants")
 
-    @GET
-    @Path("/application/{application_id}/cluster/{cluster_id}/property/{property_name}")
-    @Produces("application/json")
-    @Consumes("application/json")
-    @AuthorizationAction("/permission/protected/manage/monitor/tenants")
+	public Response getClusterProperty(@PathParam("application_id") String applicationId,
+	                                   @PathParam("cluster_id") String clusterId,
+	                                   @PathParam("property_name") String propertyName) {
 
-    public Response getClusterProperty(@PathParam("application_id") String applicationId, @PathParam("cluster_id") String clusterId, @PathParam("property_name") String propertyName){
-        List<NewProperty> properties;
+		List<NewProperty> properties;
+		NewProperty property = null;
 
+		try {
+			properties = registry.getPropertiesOfCluster(applicationId, clusterId);
+			if (properties == null) {
+				return Response.status(Response.Status.NOT_FOUND).build();
+			}
+			for (NewProperty p : properties) {
+				if (propertyName.equals(p.getKey())) {
+					property = p;
+					break;
+				}
+			}
+		} catch (Exception e) {
+			log.error("Error occurred while getting property ", e);
+		}
 
-        NewProperty property = null;
+		Response.ResponseBuilder rb;
+		if (property == null) {
+			rb = Response.status(Response.Status.NOT_FOUND);
+		} else {
+			rb = Response.ok().entity(property);
+		}
+		return rb.build();
+	}
 
-        try {
-            properties = registry
-                    .getPropertiesOfCluster(applicationId, clusterId);
-            if (properties == null) {
-                return Response.status(Response.Status.NOT_FOUND).build();
-            }
-            for (NewProperty p : properties) {
-                if (propertyName.equals(p.getKey())) {
-                    property = p;
-                    break;
-                }
-            }
-        } catch (Exception e) {
-            log.error("Error occurred while getting property ", e);
-        }
+	@POST
+	@Path("application/{application_id}/cluster/{cluster_id}/property")
+	@Produces("application/json")
+	@Consumes("application/json")
+	@AuthorizationAction("/permission/protected/manage/monitor/tenants")
+	public Response addPropertyToACluster(@PathParam("application_id") String applicationId,
+	                                      @PathParam("cluster_id") String clusterId,
+	                                      NewProperty property)
+			throws RestAPIException {
 
-        Response.ResponseBuilder rb;
-        if (property == null) {
-            rb = Response.status(Response.Status.NOT_FOUND);
-        } else {
-            rb = Response.ok().entity(property);
-        }
-        return rb.build();
-    }
+		URI url = uriInfo.getAbsolutePathBuilder()
+		                 .path(applicationId + "/" + clusterId + "/" + property.getKey()).build();
 
-    @POST
-    @Path("application/{application_id}/cluster/{cluster_id}/property")
-    @Produces("application/json")
-    @Consumes("application/json")
-    @AuthorizationAction("/permission/protected/manage/monitor/tenants")
-    public Response addPropertyToACluster(@PathParam("application_id") String applicationId, @PathParam("cluster_id") String clusterId, NewProperty property)
-            throws RestAPIException {
+		try {
+			registry.addPropertyToCluster(applicationId, clusterId, property);
+		} catch (RegistryException e) {
+			log.error("Error occurred while adding property", e);
+		}
 
-        URI url =  uriInfo.getAbsolutePathBuilder().path(applicationId + "/" + clusterId + "/" + property.getKey()).build();
+		return Response.created(url).build();
+	}
 
-        try {
-            registry.addPropertyToCluster(applicationId, clusterId, property);
-        } catch (RegistryException e) {
-            log.error("Error occurred while adding property", e);
-        }
+	@POST
+	@Path("application/{application_id}/cluster/{cluster_id}/properties")
+	@Produces("application/json")
+	@Consumes("application/json")
+	@AuthorizationAction("/permission/protected/manage/monitor/tenants")
+	public Response addPropertiesToACluster(@PathParam("application_id") String applicationId,
+	                                        @PathParam("cluster_id") String clusterId,
+	                                        NewProperty[] properties)
+			throws RestAPIException {
+		URI url = uriInfo.getAbsolutePathBuilder().path(applicationId + "/" + clusterId).build();
 
-        return Response.created(url).build();
-    }
+		try {
+			registry.addPropertiesToCluster(applicationId, clusterId, properties);
+		} catch (Exception e) {
+			log.error("Error occurred while adding properties ", e);
+		}
 
-    @POST
-    @Path("application/{application_id}/cluster/{cluster_id}/properties")
-    @Produces("application/json")
-    @Consumes("application/json")
-    @AuthorizationAction("/permission/protected/manage/monitor/tenants")
-    public Response addPropertiesToACluster(@PathParam("application_id") String applicationId, @PathParam("cluster_id") String clusterId, NewProperty[] properties)
-            throws RestAPIException {
-        URI url = uriInfo.getAbsolutePathBuilder().path(applicationId + "/" + clusterId).build();
+		return Response.created(url).build();
+	}
 
-        try {
-            registry.addPropertiesToCluster(applicationId, clusterId, properties);
-        } catch (Exception e) {
-            log.error("Error occurred while adding properties ", e);
-        }
+	@DELETE
+	@Path("application/{application_id}")
+	@Produces("application/json")
+	@Consumes("application/json")
+	@AuthorizationAction("/permission/protected/manage/monitor/tenants")
+	public Response deleteApplicationProperties(@PathParam("application_id") String applicationId)
+			throws RestAPIException {
 
-        return Response.created(url).build();
-    }
+		try {
+			boolean deleted = registry.deleteApplication(applicationId);
+			if (!deleted) {
+				log.warn(String.format(
+						"Either no metadata is associated with given appId %s Or resources could " +
+						"not be deleted",
+						applicationId));
+			}
+		} catch (RegistryException e) {
+			String msg = "Resource attached with appId could not be deleted";
+			log.error(msg, e);
+			throw new RestAPIException(" ", e);
+		}
 
-    @DELETE
-    @Path("application/{application_id}")
-    @Produces("application/json")
-    @Consumes("application/json")
-    @AuthorizationAction("/permission/protected/manage/monitor/tenants")
-    public Response deleteApplicationProperties(@PathParam("application_id") String applicationId)
-            throws RestAPIException {
-
-        try {
-            boolean deleted = registry.deleteApplication(applicationId);
-            if(!deleted){
-                log.warn(String.format("Either no metadata is associated with given appId %s Or resources could not be deleted", applicationId));
-            }
-        } catch (RegistryException e) {
-            String msg= "Resource attached with appId could not be deleted";
-            log.error(msg, e);
-            throw  new RestAPIException(" ", e);
-        }
-
-        return Response.ok().build();
-    }
-
+		return Response.ok().build();
+	}
 
 }

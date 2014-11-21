@@ -41,7 +41,7 @@ public class ConfUtil {
 	private static ConfUtil instance = null;
 
 	private ConfUtil(String configFilePath) {
-        log.debug("Loading configuration.....");
+		log.debug("Loading configuration.....");
 
 		try {
 
@@ -51,8 +51,8 @@ public class ConfUtil {
 
 			} else {
 				confFile =
-				           new File(CarbonUtils.getCarbonConfigDirPath(),
-				                    Constants.METADATASERVICE_CONFIG_FILE_NAME);
+						new File(CarbonUtils.getCarbonConfigDirPath(),
+						         Constants.METADATASERVICE_CONFIG_FILE_NAME);
 			}
 
 			config = new XMLConfiguration(confFile);
@@ -62,6 +62,10 @@ public class ConfUtil {
 		}
 	}
 
+	/**
+	 * @param configFilePath Config File Path
+	 * @return
+	 */
 	public static ConfUtil getInstance(String configFilePath) {
 		if (instance == null) {
 			instance = new ConfUtil(configFilePath);
@@ -69,6 +73,9 @@ public class ConfUtil {
 		return instance;
 	}
 
+	/**
+	 * @return XML configurations
+	 */
 	public XMLConfiguration getConfiguration() {
 		return config;
 	}

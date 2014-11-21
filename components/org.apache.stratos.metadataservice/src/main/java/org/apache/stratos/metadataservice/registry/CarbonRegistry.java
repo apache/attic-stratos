@@ -31,162 +31,171 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Context;
 import java.util.*;
 
-
 /**
  * Carbon registry implementation
  */
 
 public class CarbonRegistry extends AbstractAdmin implements DataStore {
 
-    private static Log log = LogFactory.getLog(CarbonRegistry.class);
-    @Context
-    HttpServletRequest httpServletRequest;
+	private static Log log = LogFactory.getLog(CarbonRegistry.class);
+	@Context
+	HttpServletRequest httpServletRequest;
 
-    private static final String mainResource = "/stratos/";
+	private static final String mainResource = "/stratos/";
 
+	public CarbonRegistry() {
 
-    public CarbonRegistry() {
+	}
 
-    }
+	/**
+	 * Get Properties of clustor
+	 *
+	 * @param applicationName ID of the application.
+	 * @param clusterId Cluster ID
+	 * @return
+	 * @throws RegistryException
+	 */
+	public List<NewProperty> getPropertiesOfCluster(String applicationName,
+	                                                String clusterId) throws RegistryException {
+		Registry tempRegistry = getGovernanceUserRegistry();
+		String resourcePath = mainResource + applicationName + "/" + clusterId;
+		if (!tempRegistry.resourceExists(resourcePath)) {
+			return null;
+			//throw new RegistryException("Cluster does not exist at " + resourcePath);
+		}
+		Resource regResource = tempRegistry.get(resourcePath);
 
+		ArrayList<NewProperty> newProperties = new ArrayList<NewProperty>();
 
-    /**
-     * Get Properties of clustor
-     * @param applicationName
-     * @param clusterId
-     * @return
-     * @throws RegistryException
-     */
-    public List<NewProperty> getPropertiesOfCluster(String applicationName, String clusterId) throws RegistryException {
-        Registry tempRegistry = getGovernanceUserRegistry();
-        String resourcePath = mainResource + applicationName + "/" + clusterId;
-        if (!tempRegistry.resourceExists(resourcePath)) {
-            return null;
-            //throw new RegistryException("Cluster does not exist at " + resourcePath);
-        }
-        Resource regResource = tempRegistry.get(resourcePath);
+		Properties props = regResource.getProperties();
+		Enumeration<?> x = props.propertyNames();
+		while (x.hasMoreElements()) {
+			String key = (String) x.nextElement();
+			List<String> values = regResource.getPropertyValues(key);
+			NewProperty property = new NewProperty();
+			property.setKey(key);
+			String[] valueArr = new String[values.size()];
+			property.setValues(values.toArray(valueArr));
 
-        ArrayList<NewProperty> newProperties = new ArrayList<NewProperty>();
+			newProperties.add(property);
+		}
 
-        Properties props = regResource.getProperties();
-        Enumeration<?> x = props.propertyNames();
-        while (x.hasMoreElements()) {
-            String key = (String) x.nextElement();
-            List<String> values = regResource.getPropertyValues(key);
-            NewProperty property = new NewProperty();
-            property.setKey(key);
-            String[] valueArr = new String[values.size()];
-            property.setValues(values.toArray(valueArr));
+		return newProperties;
+	}
 
-            newProperties.add(property);
-        }
+	/**
+	 * Add property to cluster
+	 *
+	 * @param applicationId ID of the application.
+	 * @param clusterId Cluster ID
+	 * @param property Propertys
+	 * @throws RegistryException
+	 */
+	public void addPropertyToCluster(String applicationId, String clusterId, NewProperty property)
+			throws RegistryException {
+		Registry tempRegistry = getGovernanceUserRegistry();
+		String resourcePath = mainResource + applicationId + "/" + clusterId;
+		Resource regResource = createOrGetResourceforCluster(tempRegistry, resourcePath);
 
-        return newProperties;
-    }
+		regResource.setProperty(property.getKey(), Arrays.asList(property.getValues()));
+		tempRegistry.put(resourcePath, regResource);
+		log.info(String.format("Property %s is added to cluster %s of application %s", property.getKey(), clusterId,
+		                       applicationId));
 
-    /**
-     * Add property to cluster
-     * @param applicationId
-     * @param clusterId
-     * @param property
-     * @throws RegistryException
-     */
-    public void addPropertyToCluster(String applicationId, String clusterId, NewProperty property) throws RegistryException {
-        Registry tempRegistry = getGovernanceUserRegistry();
-        String resourcePath = mainResource + applicationId + "/" + clusterId;
-        Resource regResource = createOrGetResourceforCluster(tempRegistry, resourcePath);
+	}
 
-        regResource.setProperty(property.getKey(), Arrays.asList(property.getValues()));
-        tempRegistry.put(resourcePath, regResource);
-        log.info(String.format("Property %s is added to cluster %s of application %s", property.getKey(), clusterId, applicationId));
+	/**
+	 * Delete the resource identified by the applicationId, if exist.
+	 *
+	 * @param applicationId ID of the application.
+	 * @return True if resource exist and able to delete, else false.
+	 * @throws RegistryException
+	 */
+	public boolean deleteApplication(String applicationId) throws RegistryException {
+		if (StringUtils.isEmpty(applicationId)) {
+			throw new IllegalArgumentException("Application ID can not be null");
+		}
+		Registry tempRegistry = getGovernanceUserRegistry();
+		String resourcePath = mainResource + applicationId;
 
-    }
+		if (tempRegistry.resourceExists(resourcePath)) {
+			tempRegistry.delete(resourcePath);
+			log.info(String.format("Application removed from registry %s", applicationId));
+			return true;
+		}
 
-    /**
-     * Delete the resource identified by the applicationId, if exist.
-     * @param applicationId ID of the application.
-     * @return True if resource exist and able to delete, else false.
-     * @throws RegistryException
-     */
-    public boolean deleteApplication(String applicationId) throws RegistryException {
-        if(StringUtils.isEmpty(applicationId)){
-            throw new IllegalArgumentException("Application ID can not be null");
-        }
-        Registry tempRegistry = getGovernanceUserRegistry();
-        String resourcePath = mainResource + applicationId;
+		return false;
+	}
 
-        if(tempRegistry.resourceExists(resourcePath)){
-            tempRegistry.delete(resourcePath);
-            log.info(String.format("Application removed from registry %s", applicationId));
-            return true;
-        }
+	/**
+	 * Add properties to cluster
+	 *
+	 * @param applicationName Name of the application
+	 * @param clusterId Cluster id of the application
+	 * @param properties Properties of the application
+	 * @throws RegistryException
+	 */
+	public void addPropertiesToCluster(String applicationName, String clusterId, NewProperty[] properties)
+			throws RegistryException {
+		Registry tempRegistry = getGovernanceUserRegistry();
+		String resourcePath = mainResource + applicationName + "/" + clusterId;
+		Resource regResource;
+		regResource = createOrGetResourceforCluster(tempRegistry, resourcePath);
 
-        return false;
-    }
+		for (NewProperty property : properties) {
+			regResource.setProperty(property.getKey(), (Arrays.asList(property.getValues())));
 
-    /**
-     * Add properties to cluster
-     * @param applicationName
-     * @param clusterId
-     * @param properties
-     * @throws RegistryException
-     */
-    public void addPropertiesToCluster(String applicationName, String clusterId, NewProperty[] properties) throws RegistryException {
-        Registry tempRegistry = getGovernanceUserRegistry();
-        String resourcePath = mainResource + applicationName + "/" + clusterId;
-        Resource regResource;
-        regResource = createOrGetResourceforCluster(tempRegistry, resourcePath);
+		}
+		tempRegistry.put(resourcePath, regResource);
+		log.info(String.format("Properties  are added to cluster %s of application %s", clusterId, applicationName));
+	}
 
-        for (NewProperty property : properties) {
-            regResource.setProperty(property.getKey(), (Arrays.asList(property.getValues())));
+	/**
+	 * Create or get resource for application
+	 *
+	 * @param tempRegistry Temp registry
+	 * @param resourcePath Resource path
+	 * @return Resource
+	 * @throws RegistryException
+	 */
+	private Resource createOrGetResourceforApplication(Registry tempRegistry, String resourcePath)
+			throws RegistryException {
+		Resource regResource;
+		if (tempRegistry.resourceExists(resourcePath)) {
+			regResource = tempRegistry.get(resourcePath);
+		} else {
+			regResource = tempRegistry.newCollection();
+			if (log.isDebugEnabled()) {
+				log.debug("Registry resource is create at path " + regResource.getPath() + " for application");
+			}
+		}
+		return regResource;
+	}
 
-        }
-        tempRegistry.put(resourcePath, regResource);
-        log.info(String.format("Properties  are added to cluster %s of application %s", clusterId, applicationName));
-    }
+	/**
+	 * Create and get resources for Clustor
+	 *
+	 * @param tempRegistry Temp registry
+	 * @param resourcePath Resource path
+	 * @return
+	 * @throws RegistryException
+	 */
+	private Resource createOrGetResourceforCluster(Registry tempRegistry, String resourcePath)
+			throws RegistryException {
 
-    /**
-     * Create or get resource for application
-     * @param tempRegistry
-     * @param resourcePath
-     * @return
-     * @throws RegistryException
-     */
-    private Resource createOrGetResourceforApplication(Registry tempRegistry, String resourcePath) throws RegistryException {
-        Resource regResource;
-        if (tempRegistry.resourceExists(resourcePath)) {
-            regResource = tempRegistry.get(resourcePath);
-        } else {
-            regResource = tempRegistry.newCollection();
-            if (log.isDebugEnabled()) {
-                log.debug("Registry resource is create at path " + regResource.getPath() + " for application");
-            }
-        }
-        return regResource;
-    }
-
-    /**
-     * Create and get resources for Clustor
-     * @param tempRegistry
-     * @param resourcePath
-     * @return
-     * @throws RegistryException
-     */
-    private Resource createOrGetResourceforCluster(Registry tempRegistry, String resourcePath) throws RegistryException {
-
-        int index = resourcePath.lastIndexOf('/');
-        String applicationResourcePath = resourcePath.substring(0, index);
-        createOrGetResourceforApplication(tempRegistry, applicationResourcePath);
-        Resource regResource;
-        if (tempRegistry.resourceExists(resourcePath)) {
-            regResource = tempRegistry.get(resourcePath);
-        } else {
-            regResource = tempRegistry.newResource();
-            if (log.isDebugEnabled()) {
-                log.debug("Registry resource is create at path for cluster" + regResource.getPath() + " for cluster");
-            }
-        }
-        return regResource;
-    }
+		int index = resourcePath.lastIndexOf('/');
+		String applicationResourcePath = resourcePath.substring(0, index);
+		createOrGetResourceforApplication(tempRegistry, applicationResourcePath);
+		Resource regResource;
+		if (tempRegistry.resourceExists(resourcePath)) {
+			regResource = tempRegistry.get(resourcePath);
+		} else {
+			regResource = tempRegistry.newResource();
+			if (log.isDebugEnabled()) {
+				log.debug("Registry resource is create at path for cluster" + regResource.getPath() + " for cluster");
+			}
+		}
+		return regResource;
+	}
 
 }

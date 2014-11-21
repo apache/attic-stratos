@@ -39,71 +39,100 @@ import java.util.List;
  */
 public class GRegRegistry implements DataStore {
 
+	private static Log log = LogFactory.getLog(GRegRegistry.class);
+	@Context
+	HttpServletRequest httpServletRequest;
 
-    private static Log log = LogFactory.getLog(GRegRegistry.class);
-    @Context
-    HttpServletRequest httpServletRequest;
+	private static ConfigurationContext configContext;
 
-    private static ConfigurationContext configContext;
+	static {
+		configContext = null;
+	}
 
-    static {
-        configContext = null;
-    }
+	private static final String defaultUsername = "admin@org.com";
+	private static final String defaultPassword = "admin123";
+	private static final String serverURL = "https://localhost:9445/services/";
+	private static final String mainResource = "/startos/";
+	private static final int defaultRank = 3;
 
-    private static final String defaultUsername = "admin@org.com";
-    private static final String defaultPassword = "admin123";
-    private static final String serverURL = "https://localhost:9445/services/";
-    private static final String mainResource = "/startos/";
-    private static final int defaultRank = 3;
+	/*
+	 * Registry initiation
+	 */
+	private static WSRegistryServiceClient setRegistry() throws Exception {
 
-    /*
-     * Registry initiation
-     */
-    private static WSRegistryServiceClient setRegistry() throws Exception {
+		XMLConfiguration conf = ConfUtil.getInstance(null).getConfiguration();
 
-        XMLConfiguration conf = ConfUtil.getInstance(null).getConfiguration();
+		String gregUsername = conf.getString("metadataservice.username", defaultUsername);
+		String gregPassword = conf.getString("metadataservice.password", defaultPassword);
+		String gregServerURL = conf.getString("metadataservice.serverurl", serverURL);
+		String defaultAxis2Repo = "repository/deployment/client";
+		String axis2Repo = conf.getString("metadataservice.axis2Repo", defaultAxis2Repo);
+		String defaultAxis2Conf = "repository/conf/axis2/axis2_client.xml";
+		String axis2Conf = conf.getString("metadataservice.axis2Conf", defaultAxis2Conf);
+		String defaultTrustStore =
+				"repository" + File.separator + "resources" + File.separator +
+				"security" + File.separator + "wso2carbon.jks";
+		String trustStorePath = conf.getString("metadataservice.trustStore", defaultTrustStore);
+		String trustStorePassword =
+				conf.getString("metadataservice.trustStorePassword",
+				               "wso2carbon");
+		String trustStoreType = conf.getString("metadataservice.trustStoreType", "JKS");
 
-        String gregUsername = conf.getString("metadataservice.username", defaultUsername);
-        String gregPassword = conf.getString("metadataservice.password", defaultPassword);
-        String gregServerURL = conf.getString("metadataservice.serverurl", serverURL);
-        String defaultAxis2Repo = "repository/deployment/client";
-        String axis2Repo = conf.getString("metadataservice.axis2Repo", defaultAxis2Repo);
-        String defaultAxis2Conf = "repository/conf/axis2/axis2_client.xml";
-        String axis2Conf = conf.getString("metadataservice.axis2Conf", defaultAxis2Conf);
-        String defaultTrustStore =
-                "repository" + File.separator + "resources" + File.separator +
-                        "security" + File.separator + "wso2carbon.jks";
-        String trustStorePath = conf.getString("metadataservice.trustStore", defaultTrustStore);
-        String trustStorePassword =
-                conf.getString("metadataservice.trustStorePassword",
-                        "wso2carbon");
-        String trustStoreType = conf.getString("metadataservice.trustStoreType", "JKS");
+		System.setProperty("javax.net.ssl.trustStore", trustStorePath);
+		System.setProperty("javax.net.ssl.trustStorePassword", trustStorePassword);// "wso2carbon"
+		System.setProperty("javax.net.ssl.trustStoreType", trustStoreType);// "JKS"
+		System.setProperty("carbon.repo.write.mode", "true");
+		configContext =
+				ConfigurationContextFactory.createConfigurationContextFromFileSystem(axis2Repo,
+				                                                                     axis2Conf);
+		return new WSRegistryServiceClient(gregServerURL, gregUsername, gregPassword, configContext);
+	}
 
-        System.setProperty("javax.net.ssl.trustStore", trustStorePath);
-        System.setProperty("javax.net.ssl.trustStorePassword", trustStorePassword);// "wso2carbon"
-        System.setProperty("javax.net.ssl.trustStoreType", trustStoreType);// "JKS"
-        System.setProperty("carbon.repo.write.mode", "true");
-        configContext =
-                ConfigurationContextFactory.createConfigurationContextFromFileSystem(axis2Repo,
-                        axis2Conf);
-        return new WSRegistryServiceClient(gregServerURL, gregUsername, gregPassword, configContext);
-    }
+	/**
+	 *
+	 * @param applicationName Name of the application
+	 * @param clusterId Cluster ID
+	 * @param properties Properties
+	 * @throws RegistryException
+	 */
+	public void addPropertiesToCluster(String applicationName, String clusterId, NewProperty[] properties)
+			throws RegistryException {
+		//TODO : Implemenattion related to the GREG
+	}
 
+	/**
+	 *
+	 * @param applicationName Name of the application
+	 * @param clusterId Cluster ID
+	 * @return List of properties
+	 * @throws RegistryException
+	 */
+	public List<NewProperty> getPropertiesOfCluster(String applicationName,
+	                                                String clusterId) throws RegistryException {
+		//TODO : Implemenattion related to the GREG
+		return null;
+	}
 
-    public void addPropertiesToCluster(String applicationName, String clusterId, NewProperty[] properties) throws RegistryException {
+	/**
+	 *
+	 * @param applicationId ID of the application
+	 * @param clusterId ID of the clustor
+	 * @param property property
+	 * @throws RegistryException
+	 */
+	public void addPropertyToCluster(String applicationId, String clusterId, NewProperty property)
+			throws RegistryException {
+		//TODO : Implemenattion related to the GREG
+	}
 
-    }
-
-    public List<NewProperty> getPropertiesOfCluster(String applicationName, String clusterId) throws RegistryException {
-        return null;
-    }
-
-    public void addPropertyToCluster(String applicationId, String clusterId, NewProperty property) throws RegistryException {
-
-    }
-
-    public boolean deleteApplication(String applicationId) {
-        return false;
-    }
+	/**
+	 *
+	 * @param applicationId ID of the application
+	 * @return
+	 */
+	public boolean deleteApplication(String applicationId) {
+		//TODO : Implemenattion related to the GREG
+		return false;
+	}
 
 }
