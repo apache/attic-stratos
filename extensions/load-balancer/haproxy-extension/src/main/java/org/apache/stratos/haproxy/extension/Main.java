@@ -19,10 +19,12 @@
 
 package org.apache.stratos.haproxy.extension;
 
+import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.PropertyConfigurator;
 import org.apache.stratos.common.threading.StratosThreadPool;
+import org.apache.stratos.common.util.ConfUtil;
 import org.apache.stratos.load.balancer.extension.api.LoadBalancerExtension;
 
 import java.util.concurrent.ExecutorService;
@@ -33,6 +35,11 @@ import java.util.concurrent.ExecutorService;
 public class Main {
 	private static final Log log = LogFactory.getLog(Main.class);
 	private static ExecutorService executorService;
+	private static final String THREAD_IDENTIFIER_KEY = "threadPool.haproxyExtension.identifier";
+	private static final String DEFAULT_IDENTIFIER = "haproxy-entension";
+	private static final String THREAD_POOL_SIZE_KEY = "threadPool.haproxyExtension.threadPoolSize";
+	private static final String COMPONENTS_CONFIG = "stratos-config";
+	private static final int THREAD_POOL_SIZE = 10;
 
 	public static void main(String[] args) {
 
@@ -44,14 +51,17 @@ public class Main {
 			if (log.isInfoEnabled()) {
 				log.info("HAProxy extension started");
 			}
-			executorService = StratosThreadPool.getExecutorService("Load_Balance_Extension", 10);
+			XMLConfiguration conf = ConfUtil.getInstance(COMPONENTS_CONFIG).getConfiguration();
+			int threadPoolSize = conf.getInt(THREAD_POOL_SIZE_KEY, THREAD_POOL_SIZE);
+			String threadIdentifier = conf.getString(THREAD_IDENTIFIER_KEY, DEFAULT_IDENTIFIER);
+			ExecutorService executorService = StratosThreadPool.getExecutorService(threadIdentifier, threadPoolSize);
 			// Validate runtime parameters
 			HAProxyContext.getInstance().validate();
 			extension = new LoadBalancerExtension(new HAProxy(),
 			                                      (HAProxyContext.getInstance().isCEPStatsPublisherEnabled() ?
 			                                       new HAProxyStatisticsReader() : null));
-			Thread thread = new Thread(extension);
-			thread.start();
+			extension.setExecutorService(executorService);
+			extension.execute();
 		} catch (Exception e) {
 			if (log.isErrorEnabled()) {
 				log.error(e);

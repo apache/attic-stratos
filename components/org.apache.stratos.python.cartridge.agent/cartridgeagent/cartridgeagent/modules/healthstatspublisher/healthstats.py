@@ -159,6 +159,7 @@ class HealthStatisticsPublisher:
         """
 
         event = ThriftEvent()
+        event.payloadData.append(self.cartridge_agent_config.instance.member_id)
         event.payloadData.append(self.cartridge_agent_config.cluster_id)
         event.payloadData.append(self.cartridge_agent_config.network_partition_id)
         event.payloadData.append(self.cartridge_agent_config.member_id)

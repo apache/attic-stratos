@@ -18,9 +18,11 @@
  */
 package org.apache.stratos.cep.extension;
 
+import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.stratos.common.threading.StratosThreadPool;
+import org.apache.stratos.common.util.ConfUtil;
 import org.apache.stratos.messaging.broker.publish.EventPublisher;
 import org.apache.stratos.messaging.broker.publish.EventPublisherPool;
 import org.apache.stratos.messaging.domain.topology.*;
@@ -60,7 +62,11 @@ public class FaultHandlingWindowProcessor extends WindowProcessor implements Run
 
 	private static final int TIME_OUT = 60 * 1000;
 	static final Logger log = Logger.getLogger(FaultHandlingWindowProcessor.class);
-	public static final String IDENTIFIER = "AutoScaler";
+	private static final String THREAD_IDENTIFIER_KEY = "threadPool.cepExtension.identifier";
+	private static final String DEFAULT_IDENTIFIER = "cep-extension";
+	private static final String THREAD_POOL_SIZE_KEY = "threadPool.cepExtension.threadPoolSize";
+	private static final String COMPONENTS_CONFIG = "stratos-config";
+	private static final int THREAD_POOL_SIZE = 10;
 	private ScheduledExecutorService faultHandleScheduler;
 	private ThreadBarrier threadBarrier;
 	private long timeToKeep;
@@ -107,216 +113,220 @@ public class FaultHandlingWindowProcessor extends WindowProcessor implements Run
 			log.debug("Member not found in the toplogy. Event rejected");
 			return;
 		}
-        if (StringUtils.isNotEmpty(id)) {
-            memberTimeStampMap.put(id, event.getTimeStamp());
-        } else {
-            log.warn("NULL member id found in the event received. Event rejected.");
-        }
-        if (log.isDebugEnabled()){
-            log.debug("Event received from [member-id] " + id + " [time-stamp] " + event.getTimeStamp());
-        }
-    }
+		if (StringUtils.isNotEmpty(id)) {
+			memberTimeStampMap.put(id, event.getTimeStamp());
+		} else {
+			log.warn("NULL member id found in the event received. Event rejected.");
+		}
+		if (log.isDebugEnabled()) {
+			log.debug("Event received from [member-id] " + id + " [time-stamp] " + event.getTimeStamp());
+		}
+	}
 
-    @Override
-    public Iterator<StreamEvent> iterator() {
-        return window.iterator();
-    }
+	@Override
+	public Iterator<StreamEvent> iterator() {
+		return window.iterator();
+	}
 
-    @Override
-    public Iterator<StreamEvent> iterator(String predicate) {
-        if (siddhiContext.isDistributedProcessingEnabled()) {
-            return ((SchedulerSiddhiQueueGrid<StreamEvent>) window).iterator(predicate);
-        } else {
-            return window.iterator();
-        }
-    }
+	@Override
+	public Iterator<StreamEvent> iterator(String predicate) {
+		if (siddhiContext.isDistributedProcessingEnabled()) {
+			return ((SchedulerSiddhiQueueGrid<StreamEvent>) window).iterator(predicate);
+		} else {
+			return window.iterator();
+		}
+	}
 
-    /**
-     *  Retrieve the current activated members from the topology and initialize the time stamp map.
-     *  This will allow the system to recover from a restart
-     *
-     *  @param topology Topology model object
-     */
-    boolean loadTimeStampMapFromTopology(Topology topology){
+	/**
+	 * Retrieve the current activated members from the topology and initialize the time stamp map.
+	 * This will allow the system to recover from a restart
+	 *
+	 * @param topology Topology model object
+	 */
+	boolean loadTimeStampMapFromTopology(Topology topology) {
 
-        long currentTimeStamp = System.currentTimeMillis();
-        if (topology == null || topology.getServices() == null){
-            return false;
-        }
-        // TODO make this efficient by adding APIs to messaging component
-        for (Service service : topology.getServices()) {
-            if (service.getClusters() != null) {
-                for (Cluster cluster : service.getClusters()) {
-                    if (cluster.getMembers() != null) {
-                        for (Member member : cluster.getMembers()) {
-                            // we are checking faulty status only in previously activated members
-                            if (member != null && MemberStatus.Activated.equals(member.getStatus())) {
-                                // Initialize the member time stamp map from the topology at the beginning
-                                memberTimeStampMap.putIfAbsent(member.getMemberId(), currentTimeStamp);
-                            }
-                        }
-                    }
-                }
-            }
-        }
+		long currentTimeStamp = System.currentTimeMillis();
+		if (topology == null || topology.getServices() == null) {
+			return false;
+		}
+		// TODO make this efficient by adding APIs to messaging component
+		for (Service service : topology.getServices()) {
+			if (service.getClusters() != null) {
+				for (Cluster cluster : service.getClusters()) {
+					if (cluster.getMembers() != null) {
+						for (Member member : cluster.getMembers()) {
+							// we are checking faulty status only in previously activated members
+							if (member != null && MemberStatus.Activated.equals(member.getStatus())) {
+								// Initialize the member time stamp map from the topology at the beginning
+								memberTimeStampMap.putIfAbsent(member.getMemberId(), currentTimeStamp);
+							}
+						}
+					}
+				}
+			}
+		}
 
-        log.info("Member time stamp map was successfully loaded from the topology.");
-        if (log.isDebugEnabled()){
-            log.debug("Member TimeStamp Map: " + memberTimeStampMap);
-        }
-        return true;
-    }
+		log.info("Member time stamp map was successfully loaded from the topology.");
+		if (log.isDebugEnabled()) {
+			log.debug("Member TimeStamp Map: " + memberTimeStampMap);
+		}
+		return true;
+	}
 
-    private Member getMemberFromId(String memberId){
-        if (StringUtils.isEmpty(memberId)){
-            return null;
-        }
-        if (TopologyManager.getTopology().isInitialized()){
-        	try {
-                TopologyManager.acquireReadLock();
-                if (TopologyManager.getTopology().getServices() == null){
-                    return null;
-                }
-                // TODO make this efficient by adding APIs to messaging component
-                for (Service service : TopologyManager.getTopology().getServices()) {
-                    if (service.getClusters() != null) {
-                        for (Cluster cluster : service.getClusters()) {
-                            if (cluster.getMembers() != null) {
-                                for (Member member : cluster.getMembers()){
-                                    if (memberId.equals(member.getMemberId())){
-                                        return member;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-        	} catch (Exception e) {
-        		log.error("Error while reading topology" + e);
-        	} finally {
-        		TopologyManager.releaseReadLock();
-        	}
-        }
-        return null;
-    }
+	private Member getMemberFromId(String memberId) {
+		if (StringUtils.isEmpty(memberId)) {
+			return null;
+		}
+		if (TopologyManager.getTopology().isInitialized()) {
+			try {
+				TopologyManager.acquireReadLock();
+				if (TopologyManager.getTopology().getServices() == null) {
+					return null;
+				}
+				// TODO make this efficient by adding APIs to messaging component
+				for (Service service : TopologyManager.getTopology().getServices()) {
+					if (service.getClusters() != null) {
+						for (Cluster cluster : service.getClusters()) {
+							if (cluster.getMembers() != null) {
+								for (Member member : cluster.getMembers()) {
+									if (memberId.equals(member.getMemberId())) {
+										return member;
+									}
+								}
+							}
+						}
+					}
+				}
+			} catch (Exception e) {
+				log.error("Error while reading topology" + e);
+			} finally {
+				TopologyManager.releaseReadLock();
+			}
+		}
+		return null;
+	}
 
-    private void publishMemberFault(String memberId){
-        Member member = getMemberFromId(memberId);
-        if (member == null){
-            log.error("Failed to publish member fault event. Member having [member-id] " + memberId +
-                    " does not exist in topology");
-            return;
-        }
-        log.info("Publishing member fault event for [member-id] " + memberId);
+	private void publishMemberFault(String memberId) {
+		Member member = getMemberFromId(memberId);
+		if (member == null) {
+			log.error("Failed to publish member fault event. Member having [member-id] " + memberId +
+			          " does not exist in topology");
+			return;
+		}
+		log.info("Publishing member fault event for [member-id] " + memberId);
 
         MemberFaultEvent memberFaultEvent = new MemberFaultEvent(member.getClusterId(), member.getInstanceId(), member.getMemberId(),
                 member.getPartitionId(), member.getNetworkPartitionId(), 0);
 
-        memberFaultEventMessageMap.put("message", memberFaultEvent);
-        healthStatPublisher.publish(MemberFaultEventMap, true);
-    }
+		memberFaultEventMessageMap.put("message", memberFaultEvent);
+		healthStatPublisher.publish(MemberFaultEventMap, true);
+	}
 
+	@Override
+	public void run() {
+		try {
+			threadBarrier.pass();
 
-    @Override
-    public void run() {
-        try {
-            threadBarrier.pass();
+			for (Object o : memberTimeStampMap.entrySet()) {
+				Map.Entry pair = (Map.Entry) o;
+				long currentTime = System.currentTimeMillis();
+				Long eventTimeStamp = (Long) pair.getValue();
 
-            for (Object o : memberTimeStampMap.entrySet()) {
-                Map.Entry pair = (Map.Entry) o;
-                long currentTime = System.currentTimeMillis();
-                Long eventTimeStamp = (Long) pair.getValue();
+				if ((currentTime - eventTimeStamp) > TIME_OUT) {
+					log.info("Faulty member detected [member-id] " + pair.getKey() + " with [last time-stamp] " +
+					         eventTimeStamp + " [time-out] " + TIME_OUT + " milliseconds");
+					publishMemberFault((String) pair.getKey());
+				}
+			}
+			if (log.isDebugEnabled()) {
+				log.debug("Fault handling processor iteration completed with [time-stamp map length] " +
+				          memberTimeStampMap.size() + " [time-stamp map] " + memberTimeStampMap);
+			}
+		} catch (Throwable t) {
+			log.error(t.getMessage(), t);
+		} finally {
+			faultHandleScheduler.schedule(this, timeToKeep, TimeUnit.MILLISECONDS);
+		}
+	}
 
-                if ((currentTime - eventTimeStamp) > TIME_OUT) {
-                    log.info("Faulty member detected [member-id] " + pair.getKey() + " with [last time-stamp] " +
-                            eventTimeStamp + " [time-out] " + TIME_OUT + " milliseconds");
-                    publishMemberFault((String) pair.getKey());
-                }
-            }
-            if (log.isDebugEnabled()){
-                log.debug("Fault handling processor iteration completed with [time-stamp map length] " +
-                        memberTimeStampMap.size() + " [time-stamp map] " + memberTimeStampMap);
-            }
-        } catch (Throwable t) {
-            log.error(t.getMessage(), t);
-        } finally {
-            faultHandleScheduler.schedule(this, timeToKeep, TimeUnit.MILLISECONDS);
-        }
-    }
+	@Override
+	protected Object[] currentState() {
+		return new Object[] { window.currentState() };
+	}
 
-    @Override
-    protected Object[] currentState() {
-        return new Object[]{window.currentState()};
-    }
+	@Override
+	protected void restoreState(Object[] data) {
+		window.restoreState(data);
+		window.restoreState((Object[]) data[0]);
+		window.reSchedule();
+	}
 
-    @Override
-    protected void restoreState(Object[] data) {
-        window.restoreState(data);
-        window.restoreState((Object[]) data[0]);
-        window.reSchedule();
-    }
+	@Override
+	protected void init(Expression[] parameters, QueryPostProcessingElement nextProcessor,
+	                    AbstractDefinition streamDefinition, String elementId, boolean async,
+	                    SiddhiContext siddhiContext) {
 
-    @Override
-    protected void init(Expression[] parameters, QueryPostProcessingElement nextProcessor,
-                        AbstractDefinition streamDefinition, String elementId, boolean async, SiddhiContext siddhiContext) {
+		if (parameters[0] instanceof IntConstant) {
+			timeToKeep = ((IntConstant) parameters[0]).getValue();
+		} else {
+			timeToKeep = ((LongConstant) parameters[0]).getValue();
+		}
 
-        if (parameters[0] instanceof IntConstant) {
-            timeToKeep = ((IntConstant) parameters[0]).getValue();
-        } else {
-            timeToKeep = ((LongConstant) parameters[0]).getValue();
-        }
+		String memberIdAttrName = ((Variable) parameters[1]).getAttributeName();
+		memberIdAttrIndex = streamDefinition.getAttributePosition(memberIdAttrName);
 
-        String memberIdAttrName = ((Variable) parameters[1]).getAttributeName();
-        memberIdAttrIndex = streamDefinition.getAttributePosition(memberIdAttrName);
+		if (this.siddhiContext.isDistributedProcessingEnabled()) {
+			window = new SchedulerSiddhiQueueGrid<StreamEvent>(elementId, this, this.siddhiContext, this.async);
+		} else {
+			window = new SchedulerSiddhiQueue<StreamEvent>(this);
+		}
+		MemberFaultEventMap
+				.put("org.apache.stratos.messaging.event.health.stat.MemberFaultEvent", memberFaultEventMessageMap);
 
-        if (this.siddhiContext.isDistributedProcessingEnabled()) {
-            window = new SchedulerSiddhiQueueGrid<StreamEvent>(elementId, this, this.siddhiContext, this.async);
-        } else {
-            window = new SchedulerSiddhiQueue<StreamEvent>(this);
-        }
-        MemberFaultEventMap.put("org.apache.stratos.messaging.event.health.stat.MemberFaultEvent", memberFaultEventMessageMap);
+		XMLConfiguration conf = ConfUtil.getInstance(COMPONENTS_CONFIG).getConfiguration();
+		int threadPoolSize = conf.getInt(THREAD_POOL_SIZE_KEY, THREAD_POOL_SIZE);
+		String threadIdentifier = conf.getString(THREAD_IDENTIFIER_KEY, DEFAULT_IDENTIFIER);
+		ExecutorService executorService = StratosThreadPool.getExecutorService(threadIdentifier, threadPoolSize);
+		cepTopologyEventReceiver.setExecutorService(executorService);
+		executorService.execute(cepTopologyEventReceiver);
 
-	    ExecutorService executorService= StratosThreadPool.getExecutorService("AutoScaler",10);
-	    cepTopologyEventReceiver.setExecutorService(executorService);
-	    executorService.execute(cepTopologyEventReceiver);
+		//Ordinary scheduling
+		window.schedule();
+		if (log.isDebugEnabled()) {
+			log.debug("Fault handling window processor initialized with [timeToKeep] " + timeToKeep +
+			          ", [memberIdAttrName] " + memberIdAttrName + ", [memberIdAttrIndex] " + memberIdAttrIndex +
+			          ", [distributed-enabled] " + this.siddhiContext.isDistributedProcessingEnabled());
+		}
+	}
 
-        //Ordinary scheduling
-        window.schedule();
-        if (log.isDebugEnabled()){
-            log.debug("Fault handling window processor initialized with [timeToKeep] " + timeToKeep +
-                    ", [memberIdAttrName] " + memberIdAttrName + ", [memberIdAttrIndex] " + memberIdAttrIndex +
-                    ", [distributed-enabled] " + this.siddhiContext.isDistributedProcessingEnabled());
-        }
-    }
+	@Override
+	public void schedule() {
+		faultHandleScheduler.schedule(this, timeToKeep, TimeUnit.MILLISECONDS);
+	}
 
-    @Override
-    public void schedule() {
-        faultHandleScheduler.schedule(this, timeToKeep, TimeUnit.MILLISECONDS);
-    }
+	@Override
+	public void scheduleNow() {
+		faultHandleScheduler.schedule(this, 0, TimeUnit.MILLISECONDS);
+	}
 
-    @Override
-    public void scheduleNow() {
-        faultHandleScheduler.schedule(this, 0, TimeUnit.MILLISECONDS);
-    }
+	@Override
+	public void setScheduledExecutorService(ScheduledExecutorService scheduledExecutorService) {
+		this.faultHandleScheduler = scheduledExecutorService;
+	}
 
-    @Override
-    public void setScheduledExecutorService(ScheduledExecutorService scheduledExecutorService) {
-        this.faultHandleScheduler = scheduledExecutorService;
-    }
+	@Override
+	public void setThreadBarrier(ThreadBarrier threadBarrier) {
+		this.threadBarrier = threadBarrier;
+	}
 
-    @Override
-    public void setThreadBarrier(ThreadBarrier threadBarrier) {
-        this.threadBarrier = threadBarrier;
-    }
+	@Override
+	public void destroy() {
+		// terminate topology listener thread
+		cepTopologyEventReceiver.terminate();
+		window = null;
+	}
 
-    @Override
-    public void destroy(){
-        // terminate topology listener thread
-        cepTopologyEventReceiver.terminate();
-        window = null;
-    }
-
-    public ConcurrentHashMap<String, Long> getMemberTimeStampMap() {
-        return memberTimeStampMap;
-    }
+	public ConcurrentHashMap<String, Long> getMemberTimeStampMap() {
+		return memberTimeStampMap;
+	}
 }

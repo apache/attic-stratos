@@ -34,7 +34,7 @@ import java.util.concurrent.ExecutorService;
  * Load balancer extension thread for executing load balancer life-cycle according to the topology updates
  * received from the message broker.
  */
-public class LoadBalancerExtension implements Runnable {
+public class LoadBalancerExtension{
 	private static final Log log = LogFactory.getLog(LoadBalancerExtension.class);
 
 	private LoadBalancer loadBalancer;
@@ -56,8 +56,8 @@ public class LoadBalancerExtension implements Runnable {
 		this.statsReader = statsReader;
 	}
 
-	@Override
-	public void run() {
+
+	public void execute() {
 		try {
 			if (log.isInfoEnabled()) {
 				log.info("Load balancer extension started");
@@ -72,8 +72,7 @@ public class LoadBalancerExtension implements Runnable {
 			if (statsReader != null) {
 				// Start stats notifier thread
 				statisticsNotifier = new LoadBalancerStatisticsNotifier(statsReader);
-				Thread statsNotifierThread = new Thread(statisticsNotifier);
-				statsNotifierThread.start();
+				executorService.execute(statisticsNotifier);
 			} else {
 				if (log.isWarnEnabled()) {
 					log.warn("Load balancer statistics reader not found");

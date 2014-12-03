@@ -21,9 +21,29 @@
 <configuration>
     <threadPool>
         <autoscaler>
-            <identifier>Autoscaler</identifier>
+            <identifier>Auto-scaler</identifier>
             <threadPoolSize>10</threadPoolSize>
         </autoscaler>
+        <cloudController>
+            <identifier>Cloud-Controller</identifier>
+            <threadPoolSize>10</threadPoolSize>
+        </cloudController>
+        <ADCManagement>
+            <identifier>ADC-management</identifier>
+            <threadPoolSize>10</threadPoolSize>
+        </ADCManagement>
+        <stratosManager>
+            <identifier>Stratos-manager</identifier>
+            <threadPoolSize>10</threadPoolSize>
+        </stratosManager>
+        <haproxyExtension>
+            <identifier>HAProxy-extension</identifier>
+            <threadPoolSize>10</threadPoolSize>
+        </haproxyExtension>
+        <cepExtension>
+            <identifier>CEP-extension</identifier>
+            <threadPoolSize>10</threadPoolSize>
+        </cepExtension>
     </threadPool>
 </configuration>
 

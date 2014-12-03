@@ -19,9 +19,11 @@
 package org.apache.stratos.manager.internal;
 
 import org.apache.axis2.util.threadpool.ThreadPool;
+import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.stratos.common.threading.StratosThreadPool;
+import org.apache.stratos.common.util.ConfUtil;
 import org.apache.stratos.manager.listener.InstanceStatusListener;
 import org.apache.stratos.manager.listener.TenantUserRoleCreator;
 import org.apache.stratos.manager.publisher.TenantEventPublisher;
@@ -68,15 +70,21 @@ import java.util.concurrent.ExecutorService;
 public class ADCManagementServerComponent {
 
 	private static final Log log = LogFactory.getLog(ADCManagementServerComponent.class);
-	private static final String IDENTIFIER = "Stratos_manager";
-	private static final int THREAD_POOL_SIZE = 20;
+	private static final String THREAD_IDENTIFIER_KEY = "threadPool.autoscaler.identifier";
+	private static final String DEFAULT_IDENTIFIER = "ADC-Management";
+	private static final String THREAD_POOL_SIZE_KEY = "threadPool.ADCManagement.threadPoolSize";
+	private static final String COMPONENTS_CONFIG = "stratos-config";
+	private static final int THREAD_POOL_SIZE = 10;
 	private StratosManagerTopologyEventReceiver stratosManagerTopologyEventReceiver;
 	private ExecutorService executorService;
 
     protected void activate(ComponentContext componentContext) throws Exception {
 		try {
 			CartridgeConfigFileReader.readProperties();
-			executorService=StratosThreadPool.getExecutorService(IDENTIFIER, THREAD_POOL_SIZE);
+			XMLConfiguration conf = ConfUtil.getInstance(COMPONENTS_CONFIG).getConfiguration();
+			int threadPoolSize = conf.getInt(THREAD_POOL_SIZE_KEY, THREAD_POOL_SIZE);
+			String threadIdentifier = conf.getString(THREAD_IDENTIFIER_KEY, DEFAULT_IDENTIFIER);
+			ExecutorService executorService = StratosThreadPool.getExecutorService(threadIdentifier, threadPoolSize);
 			
             // Schedule complete tenant event synchronizer
             if(log.isDebugEnabled()) {
