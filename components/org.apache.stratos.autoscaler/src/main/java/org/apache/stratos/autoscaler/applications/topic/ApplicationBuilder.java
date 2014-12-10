@@ -296,9 +296,8 @@ public class ApplicationBuilder {
                 if(application.getInstanceContextCount() == 0) {
                     AutoscalerContext.getInstance().removeAppMonitor(appId);
                     //Removing the application from memory and registry
-                    ApplicationHolder.removeApplication(appId);
-                    log.info("Application is removed: [application-id] " + appId);
-
+                    //ApplicationHolder.removeApplication(appId);
+                    log.info("Application run time is removed: [application-id] " + appId);
                 }
                 ApplicationsEventPublisher.sendApplicationInstanceTerminatedEvent(appId, clusterData);
             } else {
@@ -338,6 +337,7 @@ public class ApplicationBuilder {
             if (context.isStateTransitionValid(status)) {
                 //setting the status, persist and publish
                 context.setStatus(status);
+                group.removeInstance(instanceId);
                 updateGroupMonitor(appId, groupId, status, instanceId);
                 ApplicationHolder.persistApplication(application);
                 ApplicationsEventPublisher.sendGroupInstanceTerminatedEvent(appId, groupId, instanceId);
@@ -426,7 +426,8 @@ public class ApplicationBuilder {
             ApplicationHolder.persistApplication(application);
             ApplicationsEventPublisher.sendGroupInstanceCreatedEvent(appId, groupId, null);
         } else {
-            log.warn("Group state transition is not valid: [group-id] " + groupId + " [current-state] " + group.getStatus(null)
+            log.warn("Group state transition is not valid: [group-id] " + groupId +
+                    " [current-state] " + group.getStatus(null)
                     + "[requested-state] " + status);
         }
     }
@@ -596,6 +597,9 @@ public class ApplicationBuilder {
         //Updating the Application Monitor
         ApplicationMonitor applicationMonitor = AutoscalerContext.getInstance().getAppMonitor(appId);
         if (applicationMonitor != null) {
+            if(status == ApplicationStatus.Terminating) {
+                applicationMonitor.setTerminating(true);
+            }
             applicationMonitor.setStatus(status, instanceId);
         } else {
             log.warn("Application monitor cannot be found: [application-id] " + appId);

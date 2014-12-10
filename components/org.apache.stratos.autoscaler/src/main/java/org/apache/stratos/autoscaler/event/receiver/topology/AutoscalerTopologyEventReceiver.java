@@ -33,6 +33,7 @@ import org.apache.stratos.autoscaler.exception.partition.PartitionValidationExce
 import org.apache.stratos.autoscaler.exception.policy.PolicyValidationException;
 import org.apache.stratos.autoscaler.monitor.MonitorFactory;
 import org.apache.stratos.autoscaler.monitor.cluster.AbstractClusterMonitor;
+import org.apache.stratos.autoscaler.monitor.cluster.VMClusterMonitor;
 import org.apache.stratos.autoscaler.monitor.component.ApplicationMonitor;
 import org.apache.stratos.autoscaler.monitor.events.ClusterStatusEvent;
 import org.apache.stratos.autoscaler.pojo.policy.PolicyManager;
@@ -260,7 +261,8 @@ public class AutoscalerTopologyEventReceiver {
                 if (clusterInstance.getCurrentState() == ClusterStatus.Active) {
                     // terminated gracefully
                     monitor.notifyParentMonitor(ClusterStatus.Terminating, instanceId);
-                    InstanceNotificationPublisher.getInstance().sendInstanceCleanupEventForCluster(clusterId, instanceId);
+                    InstanceNotificationPublisher.getInstance().
+                            sendInstanceCleanupEventForCluster(clusterId, instanceId);
                 } else {
                     monitor.notifyParentMonitor(ClusterStatus.Terminating, instanceId);
                     monitor.terminateAllMembers(instanceId, clusterInstance.getNetworkPartitionId());
@@ -281,13 +283,16 @@ public class AutoscalerTopologyEventReceiver {
                 AbstractClusterMonitor monitor;
                 ApplicationMonitor appMonitor = null;
                 monitor = asCtx.getClusterMonitor(clusterId);
+                appMonitor = AutoscalerContext.getInstance().
+                        getAppMonitor(clusterTerminatedEvent.getAppId());
                 if (null == monitor) {
                     if (log.isDebugEnabled()) {
                         log.debug(String.format("A cluster monitor is not found in autoscaler context "
                                 + "[cluster] %s", clusterId));
                     }
                     // if the cluster monitor is null, assume that its termianted
-                    appMonitor = AutoscalerContext.getInstance().getAppMonitor(clusterTerminatedEvent.getAppId());
+                    appMonitor = AutoscalerContext.getInstance().
+                            getAppMonitor(clusterTerminatedEvent.getAppId());
                     if (appMonitor != null) {
                         appMonitor.onChildStatusEvent(
                                 new ClusterStatusEvent(ClusterStatus.Terminated,

@@ -99,20 +99,24 @@ public class AutoScalerServiceImpl implements AutoScalerServiceInterface {
         }
         return validPolicies.toArray(new DeploymentPolicy[0]);
     }
-
+    
     @Override
-    public String addDeploymentPolicy(DeploymentPolicy deploymentPolicy) throws InvalidPolicyException {
-        String policyId = PolicyManager.getInstance().deployDeploymentPolicy(deploymentPolicy);
+    public boolean deployDeploymentPolicy(DeploymentPolicy policy) {
+        try {
+            String policyId = PolicyManager.getInstance().deployDeploymentPolicy(policy);
+        } catch (InvalidPolicyException e) {
+            log.error("Error while deploying the deployment policy " + policy.getApplicationId(), e);
+        }
         //Need to start the application Monitor after validation of the deployment policies.
         //FIXME add validation
-        validateDeploymentPolicy(deploymentPolicy);
+        validateDeploymentPolicy(policy);
         //Check whether all the clusters are there
         ApplicationHolder.acquireReadLock();
         boolean allClusterInitialized = false;
-        String appId = deploymentPolicy.getApplicationId();
+        String appId = policy.getApplicationId();
         try {
             Application application = ApplicationHolder.getApplications().
-                    getApplication(deploymentPolicy.getApplicationId());
+                    getApplication(policy.getApplicationId());
             if (application != null) {
 
                 allClusterInitialized = AutoscalerUtil.allClustersInitialized(application);
@@ -133,6 +137,14 @@ public class AutoScalerServiceImpl implements AutoScalerServiceInterface {
         } else {
             log.info("The application Monitor has already been created for [Application] " + appId);
         }
+        //FIXME add proper return value when validation is done properly
+        return true;
+    }
+
+    @Override
+    public String addDeploymentPolicy(DeploymentPolicy deploymentPolicy) throws InvalidPolicyException {
+        String policyId = PolicyManager.getInstance().deployDeploymentPolicy(deploymentPolicy);
+        
         return policyId;
     }
 

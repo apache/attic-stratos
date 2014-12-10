@@ -151,7 +151,6 @@ public class ClusterLevelPartitionContext extends PartitionContext implements Se
 
             }
         }
-
         return false;
     }
 
@@ -221,6 +220,7 @@ public class ClusterLevelPartitionContext extends PartitionContext implements Se
                     iterator.remove();
                     // add to the activated list
                     this.terminationPendingMembers.add(activeMember);
+                    terminationPendingStartedTime.put(memberId, System.currentTimeMillis());
                     if (log.isDebugEnabled()) {
                         log.debug(String.format("Active member is removed and added to the " +
                                 "termination pending member list. [Member Id] %s", memberId));
@@ -520,8 +520,6 @@ public class ClusterLevelPartitionContext extends PartitionContext implements Se
                 iterator.remove();
                 // add to the obsolete list
                 this.obsoletedMembers.put(memberId, terminationPendingMember);
-
-                terminationPendingStartedTime.put(memberId, System.currentTimeMillis());
 
                 if (log.isDebugEnabled()) {
                     log.debug(String.format("Termination pending member is removed and added to the " +

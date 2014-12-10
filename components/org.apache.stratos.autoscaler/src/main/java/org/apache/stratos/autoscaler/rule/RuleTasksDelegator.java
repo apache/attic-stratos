@@ -92,9 +92,10 @@ public class RuleTasksDelegator {
     }
 
     public int getNumberOfInstancesRequiredBasedOnLoadAndMemoryConsumption(float upperLimit, float lowerLimit, double predictedValue, int activeMemberCount) {
-
-        double numberOfInstances = (activeMemberCount * predictedValue) / upperLimit;
-
+        double numberOfInstances = 0;
+        if(upperLimit != 0) {
+            numberOfInstances = (activeMemberCount * predictedValue) / upperLimit;
+        }
         return (int) Math.ceil(numberOfInstances);
     }
 
@@ -108,50 +109,27 @@ public class RuleTasksDelegator {
             rifBasedRequiredInstances = numberOfInstancesReuquiredBasedOnRif;
         }
         if (mcReset) {
-            rifBasedRequiredInstances = numberOfInstancesReuquiredBasedOnMemoryConsumption;
+            mcBasedRequiredInstances = numberOfInstancesReuquiredBasedOnMemoryConsumption;
         }
         if (laReset) {
-            rifBasedRequiredInstances = numberOfInstancesReuquiredBasedOnLoadAverage;
+            laBasedRequiredInstances = numberOfInstancesReuquiredBasedOnLoadAverage;
         }
         numberOfInstances = Math.max(Math.max(numberOfInstancesReuquiredBasedOnMemoryConsumption, numberOfInstancesReuquiredBasedOnLoadAverage), numberOfInstancesReuquiredBasedOnRif);
         return numberOfInstances;
     }
 
-    public int getMemberCount(String clusterId, int scalingPara) {
-
-        int activeMemberCount = 0;
-        int memberCount = 0;
-        for (Service service : TopologyManager.getTopology().getServices()) {
-            if (service.clusterExists(clusterId)) {
-                Cluster cluster = service.getCluster(clusterId);
-
-                for (Member member : cluster.getMembers()) {
-                    if (member.isActive() || member.getStatus() == MemberStatus.Created || member.getStatus() == MemberStatus.Starting) {
-                        memberCount++;
-                        if (member.isActive()) {
-                            activeMemberCount++;
-                        }
-                    }
-                }
-            }
-        }
-        if (scalingPara == 1) {
-            return memberCount;
-        } else {
-            return activeMemberCount;
-        }
-
-
-    }
-
     public AutoscaleAlgorithm getAutoscaleAlgorithm(String partitionAlgorithm) {
+
         AutoscaleAlgorithm autoscaleAlgorithm = null;
         //FIXME to not parse for algo when partition is chosen by the parent
+
         if(partitionAlgorithm == null) {
+
+            //Send one after another as default
             partitionAlgorithm = Constants.ONE_AFTER_ANOTHER_ALGORITHM_ID;
         }
         if (log.isDebugEnabled()) {
-            log.debug(String.format("Partition algorithm is ", partitionAlgorithm));
+            log.debug(String.format("Retrieving partition algorithm [Partition algorithm]: ", partitionAlgorithm));
         }
         if (Constants.ROUND_ROBIN_ALGORITHM_ID.equals(partitionAlgorithm)) {
 

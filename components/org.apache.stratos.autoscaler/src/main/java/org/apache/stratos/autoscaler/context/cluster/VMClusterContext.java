@@ -43,6 +43,7 @@ import org.apache.stratos.messaging.domain.topology.MemberStatus;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /*
  * It holds the runtime data of a VM cluster
@@ -62,7 +63,7 @@ public class VMClusterContext extends AbstractClusterContext {
 
         super(clusterId, serviceId);
         this.deploymentPolicy = deploymentPolicy;
-        this.networkPartitionCtxts = new HashMap<String, ClusterLevelNetworkPartitionContext>();
+        this.networkPartitionCtxts = new ConcurrentHashMap<String, ClusterLevelNetworkPartitionContext>();
         this.autoscalePolicy = autoscalePolicy;
 
     }
@@ -316,34 +317,26 @@ public class VMClusterContext extends AbstractClusterContext {
                 memberContext.setMemberId(memberId);
                 memberContext.setInitTime(member.getInitTime());
                 memberContext.setPartition(partition);
-                //FIXME********memberContext.setProperties(convertMemberPropsToMemberContextProps(member.getProperties()));
+                memberContext.setProperties(AutoscalerUtil.toStubProperties(member.getProperties()));
 
                 if (MemberStatus.Activated.equals(member.getStatus())) {
-                    if (log.isDebugEnabled()) {
-                        String msg = String.format("Active member loaded from topology and added to active member list, %s", member.toString());
-                        log.debug(msg);
-                    }
                     clusterLevelPartitionContext.addActiveMember(memberContext);
-//                            networkPartitionContext.increaseMemberCountOfPartition(partition.getNetworkPartitionId(), 1);
-//                            partitionContext.incrementCurrentActiveMemberCount(1);
-
-                } else if (MemberStatus.Created.equals(member.getStatus()) || MemberStatus.Starting.equals(member.getStatus())) {
                     if (log.isDebugEnabled()) {
-                        String msg = String.format("Pending member loaded from topology and added to pending member list, %s", member.toString());
+                        String msg = String.format("Active member read from topology and added to active member list: %s", member.toString());
                         log.debug(msg);
                     }
+                } else if (MemberStatus.Created.equals(member.getStatus()) || MemberStatus.Starting.equals(member.getStatus())) {
                     clusterLevelPartitionContext.addPendingMember(memberContext);
-
-//                            networkPartitionContext.increaseMemberCountOfPartition(partition.getNetworkPartitionId(), 1);
-                } else if (MemberStatus.Suspended.equals(member.getStatus())) {
-//                            partitionContext.addFaultyMember(memberId);
+                    if (log.isDebugEnabled()) {
+                        String msg = String.format("Pending member read from topology and added to pending member list: %s", member.toString());
+                        log.debug(msg);
+                    }
                 }
                 clusterLevelPartitionContext.addMemberStatsContext(new MemberStatsContext(memberId));
                 if (log.isInfoEnabled()) {
-                    log.info(String.format("Member stat context has been added: [member] %s", memberId));
+                    log.info(String.format("Member stat context has been added: [member-id] %s", memberId));
                 }
             }
-
         }
     }
 
