@@ -124,6 +124,7 @@ public class MonitorFactory {
                 } else {
                     groupMonitor.setHasStartupDependents(false);
                 }
+	            groupMonitor.startScheduler();
             }
             
                        
