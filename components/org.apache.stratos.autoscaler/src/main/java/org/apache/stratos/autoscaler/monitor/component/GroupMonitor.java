@@ -67,36 +67,36 @@ import java.util.concurrent.TimeUnit;
  */
 public class GroupMonitor extends ParentComponentMonitor implements Runnable {
 
-    private static final Log log = LogFactory.getLog(GroupMonitor.class);
+	private static final Log log = LogFactory.getLog(GroupMonitor.class);
 
-    //Indicates whether groupScaling enabled or not
-    private boolean groupScalingEnabled;
-    //Network partition contexts
-    private Map<String, GroupLevelNetworkPartitionContext> networkPartitionCtxts;
+	//Indicates whether groupScaling enabled or not
+	private boolean groupScalingEnabled;
+	//Network partition contexts
+	private Map<String, GroupLevelNetworkPartitionContext> networkPartitionCtxts;
 
-	private Map<String,MonitorScalingEvent> mapScalingEvent;
+	private Map<String, MonitorScalingEvent> mapScalingEvent;
 
-    //Indicates whether the monitor is destroyed or not
-    private boolean isDestroyed;
-    //Monitoring interval of the monitor
-    private int monitoringIntervalMilliseconds = 60000;     //TODO get this from config file
+	//Indicates whether the monitor is destroyed or not
+	private boolean isDestroyed;
+	//Monitoring interval of the monitor
+	private int monitoringIntervalMilliseconds = 60000;     //TODO get this from config file
 
 	private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
-    /**
-     * Constructor of GroupMonitor
-     *
-     * @param group Takes the group from the Topology
-     * @throws DependencyBuilderException    throws when couldn't build the Topology
-     * @throws TopologyInConsistentException throws when topology is inconsistent
-     */
-    public GroupMonitor(Group group, String appId, List<String> parentInstanceId) throws DependencyBuilderException,
-            TopologyInConsistentException {
-        super(group);
-        this.appId = appId;
-        networkPartitionCtxts = new HashMap<String, GroupLevelNetworkPartitionContext>();
-	    mapScalingEvent=new HashMap<String, MonitorScalingEvent>();
-    }
+	/**
+	 * Constructor of GroupMonitor
+	 *
+	 * @param group Takes the group from the Topology
+	 * @throws DependencyBuilderException    throws when couldn't build the Topology
+	 * @throws TopologyInConsistentException throws when topology is inconsistent
+	 */
+	public GroupMonitor(Group group, String appId, List<String> parentInstanceId) throws DependencyBuilderException,
+	                                                                                     TopologyInConsistentException {
+		super(group);
+		this.appId = appId;
+		networkPartitionCtxts = new HashMap<String, GroupLevelNetworkPartitionContext>();
+		mapScalingEvent = new HashMap<String, MonitorScalingEvent>();
+	}
 
     @Override
     public void run() {
@@ -270,39 +270,39 @@ public class GroupMonitor extends ParentComponentMonitor implements Runnable {
         }
     }
 
-    @Override
-    public void onChildScalingEvent(MonitorScalingEvent scalingEvent) {
+	@Override
+	public void onChildScalingEvent(MonitorScalingEvent scalingEvent) {
 
-        if (hasGroupScalingDependent) {
+		if (hasGroupScalingDependent) {
 
-            //notify parent
-            parent.onChildScalingEvent(scalingEvent);
-        }
+			//notify parent
+			parent.onChildScalingEvent(scalingEvent);
+		}
 
-        if (log.isDebugEnabled()) {
-            log.debug("Child scaling event received to [group]: " + this.getId()
-                    + ", [network partition]: " + scalingEvent.getNetworkPartitionId()
-                    + ", [event] " + scalingEvent.getId() + ", [group instance] " + scalingEvent.getInstanceId());
-        }
+		if (log.isDebugEnabled()) {
+			log.debug("Child scaling event received to [group]: " + this.getId()
+			          + ", [network partition]: " + scalingEvent.getNetworkPartitionId()
+			          + ", [event] " + scalingEvent.getId() + ", [group instance] " + scalingEvent.getInstanceId());
+		}
 
-        //find the child context of this group,        
-        //Notifying children, if this group has scaling dependencies
-        if(scalingDependencies != null && !scalingDependencies.isEmpty()) {
-        	// has dependencies. Notify children
+		//find the child context of this group,
+		//Notifying children, if this group has scaling dependencies
+		if (scalingDependencies != null && !scalingDependencies.isEmpty()) {
+			// has dependencies. Notify children
 			if (aliasToActiveMonitorsMap != null
-			        && !aliasToActiveMonitorsMap.values().isEmpty()) {
+			    && !aliasToActiveMonitorsMap.values().isEmpty()) {
 				for (String dependent : scalingDependencies) {
 					Monitor monitor = aliasToActiveMonitorsMap.get(dependent);
 					if (monitor instanceof GroupMonitor || monitor instanceof ApplicationMonitor) {
-	                    monitor.onParentScalingEvent(scalingEvent);
-	                }
-                }				
+						monitor.onParentScalingEvent(scalingEvent);
+					}
+				}
 			}
-        }
-	    if (scalingEvent.getId().equals(appId)) {
-		    mapScalingEvent.put(scalingEvent.getInstanceId(), scalingEvent);
-	    }
-    }
+		}
+		if (scalingEvent.getId().equals(appId)) {
+			mapScalingEvent.put(scalingEvent.getInstanceId(), scalingEvent);
+		}
+	}
 
     @Override
     public void onParentScalingEvent(MonitorScalingEvent scalingEvent) {
