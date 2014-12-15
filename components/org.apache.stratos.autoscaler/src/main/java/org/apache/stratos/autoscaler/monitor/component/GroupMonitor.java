@@ -71,7 +71,7 @@ public class GroupMonitor extends ParentComponentMonitor implements Runnable {
 
 	//Indicates whether groupScaling enabled or not
 	private boolean groupScalingEnabled;
-	//Network partition contexts
+	//Network partition context
 	private Map<String, GroupLevelNetworkPartitionContext> networkPartitionCtxts;
 
 	private Map<String, MonitorScalingEvent> mapScalingEvent;
@@ -734,6 +734,7 @@ public class GroupMonitor extends ParentComponentMonitor implements Runnable {
     @Override
     public void destroy() {
         //TODO to stop all the drools
+	    stopScheduler();//Stop the scheduler
     }
 
 }
