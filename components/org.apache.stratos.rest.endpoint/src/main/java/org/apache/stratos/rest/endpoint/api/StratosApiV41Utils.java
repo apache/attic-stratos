@@ -248,8 +248,7 @@ public class StratosApiV41Utils {
 						cartridgeInfo = CloudControllerServiceClient.getServiceClient().getCartridgeInfo(cartridgeType);
 					} catch (Exception e) {
 						if (log.isWarnEnabled()) {
-							log.warn("Error when calling getCartridgeInfo for " + cartridgeType + ", Error: "
-							         + e.getMessage());
+							log.warn("Error when calling getCartridgeInfo for " + cartridgeType ,e);
 						}
 					}
 					if (cartridgeInfo == null) {
