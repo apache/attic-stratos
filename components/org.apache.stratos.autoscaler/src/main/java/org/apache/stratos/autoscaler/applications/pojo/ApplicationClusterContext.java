@@ -21,7 +21,11 @@ package org.apache.stratos.autoscaler.applications.pojo;
 
 import org.apache.stratos.common.Properties;
 
-public class ApplicationClusterContext {
+import java.io.Serializable;
+
+public class ApplicationClusterContext implements Serializable {
+
+    private static final long serialVersionUID = -7971548249412362885L;
 
     // cluster id
     private String clusterId;
@@ -42,11 +46,11 @@ public class ApplicationClusterContext {
     // properties
     private Properties properties;
 
-	private String[] dependencyCluterIds;
+	private String[] dependencyClusterIds;
 
     public ApplicationClusterContext (String cartridgeType, String clusterId, String hostName,
                                       String textPayload, String deploymentPolicyName, boolean isLbCluster,
-                                      String tenantRange, String[] dependencyCluterIds) {
+                                      String tenantRange, String[] dependencyClusterIds) {
 
         this.cartridgeType = cartridgeType;
         this.clusterId = clusterId;
@@ -55,7 +59,7 @@ public class ApplicationClusterContext {
         this.deploymentPolicyName = deploymentPolicyName;
         this.isLbCluster = isLbCluster;
         this.tenantRange = tenantRange;
-	    this.dependencyCluterIds=dependencyCluterIds;
+	    this.dependencyClusterIds = dependencyClusterIds;
     }
 
     public String getClusterId() {
@@ -150,11 +154,11 @@ public class ApplicationClusterContext {
         return this.cartridgeType.hashCode() + this.clusterId.hashCode();
     }
 
-	public String[] getDependencyCluterId() {
-		return dependencyCluterIds;
+	public String[] getDependencyClusterIds() {
+		return dependencyClusterIds;
 	}
 
-	public void setDependencyCluterId(String[] dependencyCluterIds) {
-		this.dependencyCluterIds = dependencyCluterIds;
+	public void setDependencyClusterIds(String[] dependencyClusterIds) {
+		this.dependencyClusterIds = dependencyClusterIds;
 	}
 }
