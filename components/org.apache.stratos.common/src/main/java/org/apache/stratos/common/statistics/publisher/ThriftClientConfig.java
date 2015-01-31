@@ -37,7 +37,7 @@ public class ThriftClientConfig {
 
     // Test configuration file path is used here
     // Main configuration file path can be found under "/products/stratos/conf/data-bridge/"
-    private static final String REPOSITORY_CONF = "/components/org.apache.stratos.common/src/test/resources/";
+    private static final String REPOSITORY_CONF = "/products/stratos/conf/data-bridge/";
 
     private static volatile ThriftClientConfig instance;
     private ThriftClientInfo thriftClientInfo;
