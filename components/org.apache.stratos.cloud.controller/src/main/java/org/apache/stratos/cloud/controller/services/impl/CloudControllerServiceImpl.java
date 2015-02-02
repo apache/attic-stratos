@@ -762,7 +762,6 @@ public class CloudControllerServiceImpl implements CloudControllerService {
         }
 
         String msg = "Could not find cartridge: [cartridge-type] " + cartridgeType;
-        log.error(msg);
         throw new CartridgeNotFoundException(msg);
     }
 
@@ -1050,7 +1049,7 @@ public class CloudControllerServiceImpl implements CloudControllerService {
 
 	        for (ApplicationClusterContext appClusterCtxt : appClustersContexts) {
 		        if(appClusterCtxt.getCartridgeType().equals("lb")) {
-			        String[] dependencyClusterIDs = appClusterCtxt.getDependencyCluterIds();
+			        String[] dependencyClusterIDs = appClusterCtxt.getDependencyClusterIds();
 			        if(dependencyClusterIDs!=null) {
 				        for (int i = 0; i < dependencyClusterIDs.length; i++) {
 					        Cartridge cartridge = CloudControllerContext.getInstance().getCartridge(
@@ -1089,9 +1088,6 @@ public class CloudControllerServiceImpl implements CloudControllerService {
                 CloudControllerContext.getInstance().addClusterContext(clusterContext);
 
 	            Cartridge cartridge=CloudControllerContext.getInstance().getCartridge(clusterContext.getCartridgeType());
-	            if(cartridge.getCategory().equals("lb")){
-
-	            }
 
                 // Create cluster object
                 Cluster cluster = new Cluster(appClusterCtxt.getCartridgeType(), appClusterCtxt.getClusterId(),

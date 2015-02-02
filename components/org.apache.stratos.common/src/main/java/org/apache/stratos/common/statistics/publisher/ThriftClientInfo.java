@@ -17,12 +17,47 @@
  * under the License.
  */
 
-package org.apache.stratos.messaging.util.bean.type.map;
+package org.apache.stratos.common.statistics.publisher;
 
-import java.util.ArrayList;
-import java.util.List;
+/**
+ * Thrift Client Info
+ */
+public class ThriftClientInfo {
+    private String username;
+    private String password;
+    private String ip;
+    private String port;
 
-public class MapType {
 
-    public List<MapEntryType> entry = new ArrayList<MapEntryType>();
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getIp() {
+        return ip;
+    }
+
+    public void setIp(String ip) {
+        this.ip = ip;
+    }
+
+    public String getPort() {
+        return port;
+    }
+
+    public void setPort(String port) {
+        this.port = port;
+    }
 }

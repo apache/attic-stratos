@@ -35,12 +35,15 @@ import java.util.UUID;
 /**
  * Messaging module utility class
  */
-public class Util {
-	private static final Log log = LogFactory.getLog(Util.class);
-	private static final int START_INDEX = 0;
-	private static final int MESSAGING_BEGIN_INDEX = 35;
+public class MessagingUtil {
+
+	private static final Log log = LogFactory.getLog(MessagingUtil.class);
+
+    private static final int START_INDEX = 0;
 	private static final String SLASH = "/";
 	private static final String DOT = ".";
+    private static final String HASH = "#";
+    private static final String GREATER_THAN = ">";
 	private static final String ORG_APACHE_STRATOS_MESSAGING_EVENT_PACKAGE = "org.apache.stratos.messaging.event.";
 	private static final String HYPHEN_MINUS = "-";
 	private static final String EMPTY_SPACE = "";
@@ -60,7 +63,7 @@ public class Util {
 	 */
 	public static enum Topics {
 		TOPOLOGY_TOPIC("topology/#"),
-		HEALTH_STAT_TOPIC("summarized-health-stats"),
+		HEALTH_STAT_TOPIC("summarized-health-stats/#"),
 		INSTANCE_STATUS_TOPIC("instance/status/#"),
 		INSTANCE_NOTIFIER_TOPIC("instance/notifier/#"),
 		APPLICATION_TOPIC("application/#"),
@@ -72,6 +75,9 @@ public class Util {
 		private String topicName;
 
 		private Topics(String topicName) {
+            if(getMessagingProtocol().equals(MessagingConstants.AMQP)) {
+                topicName = topicName.replace(SLASH, DOT).replace(HASH, GREATER_THAN);
+            }
 			this.topicName = topicName;
 		}
 
@@ -173,27 +179,13 @@ public class Util {
 	/**
 	 * Fetch value from system param
 	 *
-	 * @return Average ping interval
-	 */
-	public static int getAveragePingInterval() {
-		if (averagePingInterval <= 0) {
-			averagePingInterval =
-					Util.getNumericSystemProperty(DEFAULT_AVERAGE_PING_INTERVAL,
-					                              AVERAGE_PING_INTERVAL_PROPERTY);
-		}
-		return averagePingInterval;
-	}
-
-	/**
-	 * Fetch value from system param
-	 *
 	 * @return Fail over ping interval
 	 */
-	public static int getFailoverPingInterval() {
+	public static int getSubscriberFailoverInterval() {
 		if (failoverPingInterval <= 0) {
 			failoverPingInterval =
-					Util.getNumericSystemProperty(DEFAULT_FAILOVER_PING_INTERVAL,
-					                              FAILOVER_PING_INTERVAL_PROPERTY);
+					MessagingUtil.getNumericSystemProperty(DEFAULT_FAILOVER_PING_INTERVAL,
+                            FAILOVER_PING_INTERVAL_PROPERTY);
 		}
 		return failoverPingInterval;
 	}
@@ -213,6 +205,10 @@ public class Util {
 		}
 	}
 
+    public static String getMessagingProtocol() {
+        return System.getProperty(MessagingConstants.MESSAGING_TRANSPORT, MessagingConstants.AMQP);
+    }
+
 	/**
 	 * Get the Message topic name for event
 	 *
@@ -220,17 +216,26 @@ public class Util {
 	 * @return String topic name of the event
 	 */
 	public static String getMessageTopicName(Event event) {
-		return event.getClass().getName().substring(MESSAGING_BEGIN_INDEX).replace(DOT, SLASH);
+
+        String topicName = event.getClass().getName().substring(ORG_APACHE_STRATOS_MESSAGING_EVENT_PACKAGE.length());
+        if(getMessagingProtocol().equals(MessagingConstants.MQTT)) {
+            topicName = topicName.replace(DOT, SLASH);
+        }
+        return topicName;
 	}
 
-	/**
+    /**
 	 * Get the event name for topic
 	 *
 	 * @param topic topic Name
 	 * @return String Event name for topic
 	 */
-	public static String getEventNameForTopic(String topic) {
-		return ORG_APACHE_STRATOS_MESSAGING_EVENT_PACKAGE.concat(topic.replace(SLASH, DOT));
+	public static String getEventClassNameForTopic(String topic) {
+        String eventClassName = ORG_APACHE_STRATOS_MESSAGING_EVENT_PACKAGE.concat(topic);
+        if(getMessagingProtocol().equals(MessagingConstants.MQTT)) {
+            eventClassName = eventClassName.replace(SLASH, DOT);
+        }
+        return eventClassName;
 	}
 
 	/**

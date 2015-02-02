@@ -108,6 +108,8 @@ public class CloudControllerUtil {
         cartridge.setDefaultAutoscalingPolicy(config.getDefaultAutoscalingPolicy());
         cartridge.setDefaultDeploymentPolicy(config.getDefaultDeploymentPolicy());
         cartridge.setServiceGroup(config.getServiceGroup());
+	    cartridge.setMetadataKeys(config.getMetadataKeys());
+
         org.apache.stratos.common.Properties props = config.getProperties();
         if (props != null) {
             for (Property prop : props.getProperties()) {
@@ -237,6 +239,7 @@ public class CloudControllerUtil {
 		Property[] props = new Property[propList.size()];
 		
 		cartridgeInfo.setProperties(propList.toArray(props));
+	    cartridgeInfo.setMetadataKeys(cartridge.getMetadataKeys());
 
 		return cartridgeInfo;
 	}

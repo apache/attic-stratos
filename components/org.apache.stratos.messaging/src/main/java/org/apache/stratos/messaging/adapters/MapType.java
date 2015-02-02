@@ -17,24 +17,12 @@
  * under the License.
  */
 
-package org.apache.stratos.messaging.broker.connect.mqtt;
+package org.apache.stratos.messaging.adapters;
 
-import org.apache.stratos.messaging.util.Util;
+import java.util.ArrayList;
+import java.util.List;
 
-import java.io.File;
-import java.util.Properties;
+public class MapType {
 
-public class MqttConstants {
-
-    public static final String MQTT_URL_DEFAULT = "defaultValue";
-
-    /**
-     * Quality of Service for message delivery:
-     * Setting it to 2 to make sure that message is guaranteed to deliver once
-     * using two-phase acknowledgement across the network.
-     */
-    public static final int QOS = 2;
-    public static String CONFIG_FILE_LOCATION = System.getProperty("jndi.properties.dir");
-    public static Properties MQTT_PROPERTIES = Util.getProperties(CONFIG_FILE_LOCATION
-            + File.separator + "mqtttopic.properties");
+    public List<MapEntryType> entry = new ArrayList<MapEntryType>();
 }

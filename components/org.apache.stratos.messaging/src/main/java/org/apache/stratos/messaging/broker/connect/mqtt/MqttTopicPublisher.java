@@ -23,9 +23,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.stratos.messaging.broker.connect.TopicPublisher;
 import org.apache.stratos.messaging.domain.exception.MessagingException;
-import org.apache.stratos.messaging.util.Util;
+import org.apache.stratos.messaging.util.MessagingConstants;
 import org.eclipse.paho.client.mqttv3.*;
-import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 /**
  * Mqtt topic connector
@@ -52,7 +51,7 @@ public class MqttTopicPublisher extends MqttTopicConnector implements TopicPubli
             }
 
             MqttMessage mqttMessage = new MqttMessage(message.getBytes());
-            mqttMessage.setQos(MqttConstants.QOS);
+            mqttMessage.setQos(MessagingConstants.QOS);
             mqttClient.publish(topicName, mqttMessage);
         } catch (Exception e) {
             String errorMessage = "Could not publish message: " + message;
