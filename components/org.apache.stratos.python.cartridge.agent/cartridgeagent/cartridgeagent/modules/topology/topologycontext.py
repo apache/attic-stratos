@@ -213,14 +213,19 @@ class Cluster:
         """ :type : bool  """
         self.is_kubernetes_cluster = False
         """ :type : bool  """
-        self.status = None
-        """ :type : str  """
+        # self.status = None
+        # """ :type : str  """
         self.load_balancer_algorithm_name = None
         """ :type : str  """
         self.properties = {}
         """ :type : dict[str, str]  """
         self.member_list_json = None
         """ :type : str  """
+        self.app_id = ""
+        """ :type : str """
+        # Not relevant to cartridge agent
+        # self.instance_id_instance_context_map = {}
+        # """ :type : dict[str, ClusterInstance] """
 
     def add_hostname(self, hostname):
         self.hostnames.append(hostname)
@@ -323,12 +328,15 @@ class Member:
     Represents a member on a particular cluster
     """
 
-    def __init__(self, service_name="", cluster_id="", network_partition_id="", parition_id="", member_id=""):
+    def __init__(self, service_name="", cluster_id="", network_partition_id="", parition_id="", member_id="",
+                 cluster_instance_id=""):
         self.service_name = service_name
         """ :type : str  """
         self.cluster_id = cluster_id
         """ :type : str  """
         self.network_partition_id = network_partition_id
+        """ :type : str  """
+        self.cluster_instance_id = cluster_instance_id
         """ :type : str  """
         self.partition_id = parition_id
         """ :type : str  """
@@ -336,6 +344,8 @@ class Member:
         """ :type : str  """
         self.port_map = {}
         """ :type : dict[str, Port]  """
+        self.init_time = None
+        """ :type : int """
 
         self.member_public_ips = None
         """ :type : str  """
@@ -360,7 +370,7 @@ class Member:
         :return: True if active, False if otherwise
         :rtype: bool
         """
-        return self.status == MemberStatus.Activated
+        return self.status == MemberStatus.Active
 
     def get_ports(self):
         """
@@ -428,14 +438,14 @@ class MemberStatus:
     """
     MemberStatus enum
     """
-    Created = 1
-    Starting = 2
-    Activated = 3
-    In_Maintenance = 4
-    ReadyToShutDown = 5
-    Terminated = 6
-    Suspended = 0
-    ShuttingDown = 0
+    Created = "Created"
+    Initialized = "Initialized"
+    Starting = "Starting"
+    Active = "Active"
+    In_Maintenance = "In_Maintenance"
+    ReadyToShutDown = "ReadyToShutDown"
+    Suspended = "Suspended"
+    Terminated = "Terminated"
 
 
 class TopologyContext:
@@ -443,11 +453,9 @@ class TopologyContext:
     Handles and maintains a model of the topology provided by the Cloud Controller
     """
     topology = None
-    # TODO: read write locks, Lock() and RLock()
 
     @staticmethod
     def get_topology():
-        #TODO: thread-safety missing
         if TopologyContext.topology is None:
             TopologyContext.topology = Topology()
         return TopologyContext.topology

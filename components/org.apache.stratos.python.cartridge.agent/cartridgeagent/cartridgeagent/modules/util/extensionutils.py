@@ -58,14 +58,15 @@ def execute_instance_started_extension(env_params):
         log.exception("Could not execute instance started extension")
 
 
-def execute_instance_activated_extension():
+def execute_instance_activated_extension(env_params):
     try:
         log.debug("Executing instance activated extension")
         script_name = cartridge_agent_config.read_property(
             cartridgeagentconstants.INSTANCE_ACTIVATED_SCRIPT, False)
         command = prepare_command(script_name)
-
-        output, errors = execute_command(command)
+        env_params = add_payload_parameters(env_params)
+        env_params = clean_process_parameters(env_params)
+        output, errors = execute_command(command, env_params)
         log.debug("Instance activated script returned: %r" % output)
     except:
         log.exception("Could not execute instance activated extension")
@@ -269,7 +270,8 @@ def check_topology_consistency(service_name, cluster_id, member_id):
     if activated_member is None:
         log.error("Member id not found in topology [member] %r" % member_id)
         return False
-    if activated_member.status != "Initialized":
+
+    if activated_member.status != MemberStatus.Initialized:
         return False
 
     return True
