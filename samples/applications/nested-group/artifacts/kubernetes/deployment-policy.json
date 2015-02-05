@@ -1,5 +1,5 @@
 {
-    "applicationId": "myapp1265",
+    "applicationId": "nested-group-app",
     "applicationPolicy": {
         "networkPartition": [
             {

@@ -157,7 +157,7 @@ public class RestClient implements GenericRestClient {
     public void deployEntity(String serviceEndpoint, String entityBody, String entityName) {
         try {
             int responseCode = executePost(serviceEndpoint, entityBody);
-            if (responseCode == 201) {
+            if (responseCode >= 200 && responseCode < 300) {
                 System.out.println(String.format("Successfully added %s", entityName));
             }
         } catch (Exception e) {
@@ -170,9 +170,9 @@ public class RestClient implements GenericRestClient {
     public void undeployEntity(String serviceEndpoint, String entityName, String entityId) {
         try {
             int responseCode = executeDelete(serviceEndpoint, entityId);
-            if (responseCode == 404) {
+            if (responseCode >= 400 && responseCode < 500) {
                 System.out.println(String.format("%s not found", StringUtils.capitalize(entityName)));
-            } else if (responseCode == 204) {
+            } else if (responseCode >= 200 && responseCode < 300) {
                 System.out.println(String.format("Successfully un-deployed %s", entityName));
             }
         } catch (Exception e) {
@@ -185,9 +185,9 @@ public class RestClient implements GenericRestClient {
     public void updateEntity(String serviceEndpoint, String entityBody, String entityName) {
         try {
             int responseCode = executePut(serviceEndpoint, entityBody);
-            if (responseCode == 404) {
+            if (responseCode >= 400 && responseCode < 500) {
                 System.out.println(String.format("%s not found", StringUtils.capitalize(entityName)));
-            } else if (responseCode == 201) {
+            } else if (responseCode >= 200 && responseCode < 300 ) {
                 System.out.println(String.format("Successfully updated %s", entityName));
             }
         } catch (Exception e) {
@@ -200,9 +200,9 @@ public class RestClient implements GenericRestClient {
     public void deleteEntity(String serviceEndpoint, String identifier, String entityName) {
         try {
             int responseCode = executeDelete(serviceEndpoint, identifier);
-            if (responseCode == 404) {
+            if (responseCode >= 400 && responseCode < 500) {
                 System.out.println(String.format("%s not found", StringUtils.capitalize(entityName)));
-            } else if (responseCode == 200) {
+            } else if (responseCode >= 200 && responseCode < 300) {
                 System.out.println(String.format("Successfully deleted %s", entityName));
             }
         } catch (Exception e) {
