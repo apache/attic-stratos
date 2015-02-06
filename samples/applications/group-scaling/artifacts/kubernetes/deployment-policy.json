@@ -1,14 +1,14 @@
 {
-    "applicationId": "appscaling",
+    "applicationId": "group-scaling-app",
     "applicationPolicy": {
         "networkPartition": [
             {
-                "id":"network-p1",
+                "id":"network-partition-1",
                 "kubernetesClusterId":"kubernetes-cluster-1",
                 "activeByDefault": "true",
                 "partitions": [
                     {
-                        "id": "P1",
+                        "id": "partition-1",
                         "provider": "kubernetes",
                         "property": [
                             {
@@ -26,11 +26,11 @@
             "alias": "myc4",
             "networkPartition": [
                 {
-                    "id": "network-p1",
+                    "id": "network-partition-1",
                     "partitionAlgo": "one-after-another",
                     "partitions": [
                         {
-                            "id": "P1",
+                            "id": "partition-1",
                             "max": 2
                         }
                     ]
@@ -41,11 +41,11 @@
             "alias": "group1c1",
             "networkPartition": [
                 {
-                    "id": "network-p1",
+                    "id": "network-partition-1",
                     "partitionAlgo": "one-after-another",
                     "partitions": [
                         {
-                            "id": "P1",
+                            "id": "partition-1",
                             "max": 4
                         }
                     ]
@@ -56,11 +56,11 @@
             "alias": "mygroup2",
             "networkPartition": [
                 {
-                    "id": "network-p1",
+                    "id": "network-partition-1",
                     "partitionAlgo": "one-after-another",
                     "partitions": [
                         {
-                            "id": "P1",
+                            "id": "partition-1",
                             "max": 2
                         }
                     ]
