@@ -1,2 +1,1 @@
-org.apache.stratos.tenant.mgt_
-org.apache.stratos.tenant.mgt.core_
+org.apache.stratos.*

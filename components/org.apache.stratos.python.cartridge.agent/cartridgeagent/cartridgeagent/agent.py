@@ -18,7 +18,6 @@
 
 import threading
 import sys
-from cartridgeagent.cartridgeagent import modules
 
 from modules.exception.parameternotfoundexception import ParameterNotFoundException
 from modules.subscriber import eventsubscriber
@@ -51,6 +50,10 @@ class CartridgeAgent(threading.Thread):
             cartridgeagentconstants.TENANT_TOPIC,
             mb_ip,
             mb_port)
+        self.__application_event_subscriber = eventsubscriber.EventSubscriber(
+            cartridgeagentconstants.APPLICATION_SIGNUP,
+            mb_ip,
+            mb_port)
         self.__topology_event_subscriber = eventsubscriber.EventSubscriber(
             cartridgeagentconstants.TOPOLOGY_TOPIC,
             mb_ip,
@@ -76,6 +79,9 @@ class CartridgeAgent(threading.Thread):
 
         #Start tenant event receiver thread
         self.register_tenant_event_listeners()
+
+        #start application signup event listener
+        self.register_application_signup_event_listeners()
 
         #wait for member initialized event
         while not self.cartridge_agent_config.initialized:
@@ -282,10 +288,15 @@ class CartridgeAgent(threading.Thread):
         self.__tenant_event_subscriber.register_handler("SubscriptionDomainsRemovedEvent", self.on_subscription_domain_removed)
         self.__tenant_event_subscriber.register_handler("CompleteTenantEvent", self.on_complete_tenant)
         self.__tenant_event_subscriber.register_handler("TenantSubscribedEvent", self.on_tenant_subscribed)
-        self.__tenant_event_subscriber.register_handler("ApplicationSignUpRemovedEvent",self.on_application_signup_removed)
 
         self.__tenant_event_subscriber.start()
         self.log.info("Tenant event message receiver thread started")
+
+    def register_application_signup_event_listeners(self):
+        self.log.debug("Starting application signup event message receiver thread")
+        self.__application_event_subscriber.register_handler("ApplicationSignUpRemovedEvent",self.on_application_signup_removed)
+        self.__application_event_subscriber.start()
+        self.log.info("Application signup event message receiver thread started")
 
     def on_subscription_domain_added(self, msg):
         self.log.debug("Subscription domain added event received : %r" % msg.payload)
