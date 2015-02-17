@@ -80,9 +80,6 @@ public class TenantAwareLoadBalanceEndpoint extends org.apache.synapse.endpoints
     
     private final static Pattern LAST_INT_PATTERN = Pattern.compile("[^0-9]+([0-9]+)$");
 
-    /*  Define property name to get member_id*/
-    private static final String memberIDKey = "member_id";
-
     @Override
     public void init(SynapseEnvironment synapseEnvironment) {
         super.init(synapseEnvironment);
@@ -804,11 +801,11 @@ public class TenantAwareLoadBalanceEndpoint extends org.apache.synapse.endpoints
         private org.apache.axis2.clustering.Member currentMember;
         private Endpoint currentEp;
         private EndpointReference to;
-        private Map<String, Boolean> faultyMembersIds;
+        private Map<String, Boolean> faultyMemberIds;
 
 
         public TenantAwareLoadBalanceFaultHandler() {
-            faultyMembersIds = new HashMap<String, Boolean>();
+            faultyMemberIds = new HashMap<String, Boolean>();
         }
 
         @Override
@@ -852,7 +849,7 @@ public class TenantAwareLoadBalanceEndpoint extends org.apache.synapse.endpoints
                 }
 
                 // Add current member to faulty members
-                faultyMembersIds.put(currentMember.getProperties().getProperty(memberIDKey), true);
+                faultyMemberIds.put(currentMember.getProperties().getProperty(LoadBalancerConstants.MEMBER_ID), true);
 
                 currentMember = findNextMember(synCtx);
                 if (currentMember == null) {
@@ -862,7 +859,7 @@ public class TenantAwareLoadBalanceEndpoint extends org.apache.synapse.endpoints
                     }
                     throwSynapseException(synCtx, 404, msg);
                 }
-                if (faultyMembersIds.containsKey(currentMember.getProperties().getProperty(memberIDKey))) {
+                if (faultyMemberIds.containsKey(currentMember.getProperties().getProperty(LoadBalancerConstants.MEMBER_ID))) {
                     // This member has been identified as faulty previously. It implies that
                     // this request could not be served by any of the members in the cluster.
                     throwSynapseException(synCtx, 404, String.format("Requested resource could not be found"));
