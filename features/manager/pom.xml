@@ -24,11 +24,7 @@
     <parent>
         <groupId>org.apache.stratos</groupId>
         <artifactId>stratos-features-parent</artifactId>
-<<<<<<< HEAD
         <version>4.1.0-SNAPSHOT</version>
-=======
-        <version>3.0.0-incubating</version>
->>>>>>> FETCH_HEAD
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -52,10 +48,6 @@
         <module>metadata-service/org.apache.stratos.metadata.client.feature</module>
     </modules>
 
-<<<<<<< HEAD
-=======
-
->>>>>>> FETCH_HEAD
     <properties>
         <stratos.version>2.1.0</stratos.version>
         <synapse.version>2.1.0-wso2v6</synapse.version>

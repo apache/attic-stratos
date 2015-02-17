@@ -68,12 +68,6 @@
             <filtered>true</filtered>
             <fileMode>644</fileMode>
         </file>
-         <file>
-            <source>src/main/disclaimer/DISCLAIMER</source>
-            <outputDirectory>${pom.artifactId}-${pom.version}</outputDirectory>
-            <filtered>true</filtered>
-            <fileMode>644</fileMode>
-        </file>
     </files>
     <dependencySets>
         <dependencySet>

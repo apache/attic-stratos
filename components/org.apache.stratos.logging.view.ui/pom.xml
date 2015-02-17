@@ -25,11 +25,7 @@
     <parent>
         <groupId>org.apache.stratos</groupId>
         <artifactId>stratos-components-parent</artifactId>
-<<<<<<< HEAD
         <version>4.1.0-SNAPSHOT</version>
-=======
-        <version>3.0.0-incubating</version>
->>>>>>> FETCH_HEAD
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -78,13 +74,8 @@
         </dependency>
         <dependency>
             <groupId>org.apache.stratos</groupId>
-<<<<<<< HEAD
             <artifactId>org.apache.stratos.manager.stub</artifactId>
             <version>${project.version}</version>
-=======
-            <artifactId>org.apache.stratos.adc.mgt.stub</artifactId>
-            <version>3.0.0-incubating</version>
->>>>>>> FETCH_HEAD
         </dependency>
     </dependencies>
 </project>

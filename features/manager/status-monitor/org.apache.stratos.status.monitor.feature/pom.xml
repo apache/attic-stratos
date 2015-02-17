@@ -22,11 +22,7 @@
     <parent>
         <groupId>org.apache.stratos</groupId>
     	<artifactId>status-monitor-feature</artifactId>
-<<<<<<< HEAD
         <version>4.1.0-SNAPSHOT</version>
-=======
-        <version>3.0.0-incubating</version>
->>>>>>> FETCH_HEAD
 	<relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -49,11 +45,7 @@
         <dependency>
             <groupId>org.apache.stratos</groupId>
             <artifactId>org.apache.stratos.status.monitor.ui.feature</artifactId>
-<<<<<<< HEAD
             <version>${project.version}</version>
-=======
-            <version>3.0.0-incubating</version>
->>>>>>> FETCH_HEAD
             <type>zip</type>
         </dependency>
         <dependency>

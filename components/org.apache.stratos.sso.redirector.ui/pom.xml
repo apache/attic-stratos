@@ -17,7 +17,6 @@
   #  specific language governing permissions and limitations
   #  under the License.
   -->
-<<<<<<< HEAD
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
@@ -27,18 +26,6 @@
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-=======
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <parent>
-        <groupId>org.apache.stratos</groupId>
-        <artifactId>stratos-components-parent</artifactId>
-        <version>3.0.0-incubating</version>
-    </parent>
-
-    <modelVersion>4.0.0</modelVersion>
->>>>>>> FETCH_HEAD
     <artifactId>org.apache.stratos.sso.redirector.ui</artifactId>
     <packaging>bundle</packaging>
     <name>Apache Stratos - SSO redirector UI component</name>

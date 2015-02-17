@@ -22,14 +22,9 @@
 
     <parent>
         <groupId>org.apache.stratos</groupId>
-<<<<<<< HEAD
         <artifactId>cloud-controller-features</artifactId>
         <version>4.1.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
-=======
-        <artifactId>cloud-controller-feature</artifactId>
-        <version>3.0.0-incubating</version>
->>>>>>> FETCH_HEAD
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
