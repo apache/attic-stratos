@@ -27,8 +27,12 @@
 set -e
 product_list=$1
 export LOG=$log_path/stratos.log
+<<<<<<< HEAD
 
 profile="default"
+=======
+SLEEP=100
+>>>>>>> FETCH_HEAD
 
 if [[ -f ./conf/setup.conf ]]; then
     source "./conf/setup.conf"
@@ -76,6 +80,7 @@ do
         profile="default"
     fi
 done
+<<<<<<< HEAD
 
 stratos_extract_path=$stratos_extract_path"-"$profile
 
@@ -95,3 +100,48 @@ echo "Starting Stratos server ..." >> $LOG
 echo "$stratos_extract_path/bin/stratos.sh -Dprofile=$profile start"
 $stratos_extract_path/bin/stratos.sh -Dprofile=$profile start
 echo "Stratos server started" >> $LOG
+=======
+product_list=`echo $product_list | sed 's/^ *//g' | sed 's/ *$//g'`
+if [[ -z $product_list || $product_list = "" ]]; then
+    help
+    exit 1
+fi
+
+
+if [[ $cc = "true" ]]; then
+    echo ${cc_path}
+
+    echo "Starting CC server ..." >> $LOG
+    nohup ${cc_path}/bin/stratos.sh -DportOffset=$cc_port_offset &
+    echo "CC server started" >> $LOG
+    sleep $SLEEP
+fi
+
+if [[ $elb = "true" ]]; then
+    echo ${elb_path} 
+
+    echo "Starting ELB server ..." >> $LOG
+    nohup ${elb_path}/bin/stratos.sh -DportOffset=$elb_port_offset &
+    echo "ELB server started" >> $LOG
+    sleep $SLEEP
+fi
+
+if [[ $agent = "true" ]]; then
+    echo ${agent_path}
+
+    echo "Starting AGENT server ..." >> $LOG
+    nohup ${agent_path}/bin/stratos.sh -DportOffset=$agent_port_offset &
+    echo "AGENT server started" >> $LOG
+    sleep $SLEEP
+fi
+
+if [[ $sc = "true" ]]; then
+    
+    echo ${sc_path}
+
+    echo "Starting SC server ..." >> $LOG
+    nohup ${sc_path}/bin/stratos.sh -DportOffset=$sc_port_offset &
+    echo "SC server started" >> $LOG
+fi
+
+>>>>>>> FETCH_HEAD

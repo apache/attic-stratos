@@ -31,6 +31,7 @@ if [ -z "$STRATOS_URL" ]; then
     echo "STRATOS_URL environment variable is not set"
 fi
 
+<<<<<<< HEAD
 script_path="$( cd -P "$( dirname "$SOURCE" )" && pwd )/`dirname $0`"
 lib_path=${script_path}/../lib/
 class_path=`echo ${lib_path}/*.jar | tr ' ' ':'`
@@ -38,5 +39,8 @@ class_path=`echo ${lib_path}/*.jar | tr ' ' ':'`
 properties="-Dlog4j.configuration=file://${script_path}/../conf/log4j.properties"
 # Uncomment following line to enable remote debugging
 #debug="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005"
+=======
+java -jar $STRATOS_CLI_HOME/org.apache.stratos.cli-3.0.0-incubating-Tool.jar $*
+>>>>>>> FETCH_HEAD
 
 java -cp "${class_path}" ${properties} ${debug} org.apache.stratos.cli.Main $*

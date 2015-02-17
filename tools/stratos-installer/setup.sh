@@ -38,11 +38,20 @@ fi
 source "./conf/setup.conf"
 export LOG=$log_path/stratos-setup.log
 
+<<<<<<< HEAD
 profile="default"
 config_mb="true"
 mb_client_lib_path=""
 auto_start_servers="false"
 config_greg="true"
+=======
+cc="false"
+elb="false"
+agent="false"
+sc="false"
+product_list="cc;elb;agent;sc"
+enable_internal_git=false
+>>>>>>> FETCH_HEAD
 
 function help {
     echo ""
@@ -60,6 +69,7 @@ function help {
     echo ""
 }
 
+<<<<<<< HEAD
 # Check validity of IP
 function valid_ip()
 {
@@ -83,6 +93,82 @@ function valid_ip()
 function general_conf_validate() {
     if [[ ! -d $setup_path ]]; then
         echo "Please specify the setup_path folder which contains stratos setup"
+=======
+while getopts p:g: opts
+do
+  case $opts in
+    p)
+        product_list=${OPTARG}
+        ;;
+    g)
+        enable_internal_git=${OPTARG}
+        ;;
+    *)
+        help
+        exit 1
+        ;;
+  esac
+done
+
+
+arr=$(echo $product_list | tr " " "\n")
+
+for x in $arr
+do
+    if [[ $x = "cc" ]]; then
+        cc="true"
+    fi
+    if [[ $x = "elb" ]]; then
+        elb="true"
+    fi
+    if [[ $x = "agent" ]]; then
+        agent="true"
+    fi
+    if [[ $x = "sc" ]]; then
+        sc="true"
+    fi
+    if [[ $x = "all" ]]; then
+        cc="true"
+        elb="true"
+        agent="true"
+        sc="true"
+    fi
+done
+product_list=`echo $product_list | sed 's/^ *//g' | sed 's/ *$//g'`
+if [[ -z $product_list || $product_list = "" ]]; then
+    help
+    exit 1
+fi
+
+function helpsetup {
+    echo ""
+    echo "Set up the environment variables correctly in conf/setup.conf"
+    echo ""
+}
+
+echo "user provided in conf/setup.conf is $host_user. If you want to provide some other username please specify it at the prompt."
+echo "If you want to continue with $host_user just press enter to continue"
+read username
+if [[ $username != "" ]]; then
+    host_user=$username
+fi
+user=`id $host_user`
+if [[ $? = 1 ]]; then
+    echo "User $host_user does not exist. The system will create it."
+    adduser --home /home/$host_user $host_user
+fi
+
+echo "StrictHostKeyChecking no" > /home/$host_user/.ssh/config
+chmod 600 /home/$host_user/.ssh/config
+chown $host_user:$host_user /home/$host_user/.ssh/config
+export $enable_internal_git
+export $host_user
+export hostname=`hostname -f`
+
+function setup_validate {    
+    if [[ -z $hostname ]]; then
+        echo "Set up the hostname of the node"
+>>>>>>> FETCH_HEAD
         exit 1
     fi
     if [[ ! -d $stratos_packs ]]; then
@@ -103,6 +189,7 @@ function general_conf_validate() {
         echo "Please specify the stratos domain"
         exit 1
     fi
+<<<<<<< HEAD
     if [[ ! -f $stratos_pack_zip ]]; then
         echo "Please copy the stratos zip to the stratos pack folder"
         exit 1
@@ -110,6 +197,10 @@ function general_conf_validate() {
     if [[ -z $mb_port ]]; then
         echo "Please specify the port of MB"
         exit 1
+=======
+    if [[ -z $elb_hostname ]]; then
+        elb_hostname=$hostname
+>>>>>>> FETCH_HEAD
     fi
 
     if [[ $auto_start_servers != "true" ]]; then
@@ -136,10 +227,27 @@ function copy_mb_client_libs() {
 	mb_client_lib_path=$answer
 }
 
+<<<<<<< HEAD
 # Setup General
 function general_setup() {
 
     cp -f  $jndi_template_path $stratos_extract_path/repository/conf/
+=======
+    if [[ $sc = "true" ]]; then
+        if [[ $enable_internal_git = "true" ]]; then
+            if [[ -z $git_user ]]; then
+                echo "Please specify the git user, because it will be needed to create an internal git repo"
+            fi
+            
+            echo "$hostip    git.$stratos_domain" >> /etc/hosts
+        fi
+        if [[ ( -z $email|| -z $stratos_foundation_db_user || -z $stratos_foundation_db_pass || -z $hostname
+            || -z $sc_path ) ]]; then
+            helpsetup
+            exit 1
+        fi
+    fi
+>>>>>>> FETCH_HEAD
 
     if [[ -d $mb_client_lib_path ]]; then
 	cp -R $mb_client_lib_path/* $stratos_extract_path/repository/components/lib
@@ -244,15 +352,36 @@ function cc_setup() {
     if [[ $openstack_provider_enabled = true ]]; then
         ./openstack.sh $stratos_extract_path
     fi
+<<<<<<< HEAD
     if [[ $vcloud_provider_enabled = true ]]; then
         ./vcloud.sh $stratos_extract_path
+=======
+fi
+if [[ $elb = "true" ]]; then
+    if [[ ! -d $elb_path ]]; then
+        unzip $elb_pack -d $stratos_path
+>>>>>>> FETCH_HEAD
     fi
     if [[ $gce_provider_enabled = true ]]; then
         ./gce.sh $stratos_extract_path
     fi
+<<<<<<< HEAD
     if [[ $kubernetes_provider_enabled = true ]]; then
         ./kubernetes.sh $stratos_extract_path
     fi
+=======
+fi
+if [[ $agent = "true" ]]; then
+    if [[ ! -d $agent_path ]]; then
+        unzip $agent_pack -d $stratos_path
+    fi
+fi
+
+
+if [[ $sc = "true" ]]; then
+    ##
+#    mysql -u${userstore_db_user} -p${userstore_db_pass} -e "GRANT ALL PRIVILEGES ON *.* TO '${userstore_db_user}'@'%'   IDENTIFIED BY '${userstore_db_pass}' WITH GRANT OPTION;flush privileges;"
+>>>>>>> FETCH_HEAD
 
     pushd $stratos_extract_path
     
@@ -322,10 +451,39 @@ function as_conf_validate() {
     fi
 }
 
+<<<<<<< HEAD
 # Setup AS 
 function as_setup() {
     echo "Setup AS" >> $LOG
     echo "Configuring the Autoscaler"
+=======
+    cp -f repository/conf/cartridge-config.properties repository/conf/cartridge-config.properties.orig
+    cat repository/conf/cartridge-config.properties.orig | sed -e "s@SC_HOSTNAME:SC_HTTPS_PORT@$sc_ip:$sc_https_port@g" > repository/conf/cartridge-config.properties
+
+    cp -f repository/conf/cartridge-config.properties repository/conf/cartridge-config.properties.orig
+    cat repository/conf/cartridge-config.properties.orig | sed -e "s@STRATOS_FOUNDATION_DB_HOSTNAME:STRATOS_FOUNDATION_DB_PORT@$stratos_foundation_db_hostname:$stratos_foundation_db_port@g" > repository/conf/cartridge-config.properties
+
+    cp -f repository/conf/cartridge-config.properties repository/conf/cartridge-config.properties.orig
+    cat repository/conf/cartridge-config.properties.orig | sed -e "s@STRATOS_FOUNDATION_DB_USER@$stratos_foundation_db_user@g" > repository/conf/cartridge-config.properties
+
+    cp -f repository/conf/cartridge-config.properties repository/conf/cartridge-config.properties.orig
+    cat repository/conf/cartridge-config.properties.orig | sed -e "s@STRATOS_FOUNDATION_DB_PASS@$stratos_foundation_db_pass@g" > repository/conf/cartridge-config.properties
+
+    cp -f repository/conf/cartridge-config.properties repository/conf/cartridge-config.properties.orig
+    cat repository/conf/cartridge-config.properties.orig | sed -e "s@STRATOS_FOUNDATION_DB_SCHEMA@$stratos_foundation_db_schema@g" > repository/conf/cartridge-config.properties
+
+    cp -f repository/conf/cartridge-config.properties repository/conf/cartridge-config.properties.orig
+    cat repository/conf/cartridge-config.properties.orig | sed -e "s@MB_HOSTNAME:MB_LISTEN_PORT@$mb_hostname:$mb_listen_port@g" > repository/conf/cartridge-config.properties
+
+    cp -f repository/conf/cartridge-config.properties repository/conf/cartridge-config.properties.orig
+    cat repository/conf/cartridge-config.properties.orig | sed -e "s@ELB_IP@$elb_ip@g" > repository/conf/cartridge-config.properties
+
+    cp -f repository/conf/cartridge-config.properties repository/conf/cartridge-config.properties.orig
+    cat repository/conf/cartridge-config.properties.orig | sed -e "s@KEYPAIR_PATH@$keypair_path@g" > repository/conf/cartridge-config.properties
+
+    cp -f repository/conf/cartridge-config.properties repository/conf/cartridge-config.properties.orig
+    cat repository/conf/cartridge-config.properties.orig | sed -e "s@SCRIPT_PATH@$script_path@g" > repository/conf/cartridge-config.properties
+>>>>>>> FETCH_HEAD
 
     cp -f ./config/all/repository/conf/autoscaler.xml $stratos_extract_path/repository/conf/
 
@@ -420,6 +578,7 @@ function sm_setup() {
     cp -f ./config/all/repository/conf/datasources/master-datasources.xml $stratos_extract_path/repository/conf/datasources/
     cp -f $mysql_connector_jar $stratos_extract_path/repository/components/lib/
 
+<<<<<<< HEAD
     pushd $stratos_extract_path
 
     echo "In repository/conf/cartridge-config.properties"
@@ -435,6 +594,21 @@ function sm_setup() {
     ${SED} -i "s@USERSTORE_DB_SCHEMA@$userstore_db_schema@g" repository/conf/datasources/master-datasources.xml
     ${SED} -i "s@USERSTORE_DB_USER@$userstore_db_user@g" repository/conf/datasources/master-datasources.xml
     ${SED} -i "s@USERSTORE_DB_PASS@$userstore_db_pass@g" repository/conf/datasources/master-datasources.xml
+=======
+    cp -f repository/conf/datasources/stratos-datasources.xml repository/conf/datasources/stratos-datasources.xml.orig
+    cat repository/conf/datasources/stratos-datasources.xml.orig | sed -e "s@BILLING_PASSWORD@$billing_db_password@g" > repository/conf/datasources/stratos-datasources.xml
+    
+    cp -f repository/conf/axis2/axis2.xml repository/conf/axis2/axis2.xml.orig
+    cat repository/conf/axis2/axis2.xml.orig | sed -e "s@SC_HOSTNAME@${sc_hostname}@g" > repository/conf/axis2/axis2.xml
+    
+    cp -f repository/conf/axis2/axis2.xml repository/conf/axis2/axis2.xml.orig
+    cat repository/conf/axis2/axis2.xml.orig | sed -e "s@SC_CLUSTER_PORT@${sc_cluster_port}@g" > repository/conf/axis2/axis2.xml
+    
+    cp -f repository/conf/carbon.xml repository/conf/carbon.xml.orig
+    cat repository/conf/carbon.xml.orig | sed -e "s@SC_PORT_OFFSET@${sc_port_offset}@g" > repository/conf/carbon.xml
+    
+    popd # sc_path
+>>>>>>> FETCH_HEAD
 
     popd
 
@@ -442,11 +616,19 @@ function sm_setup() {
     # -----------------------------------------------
     echo "Create and configure MySql Databases" >> $LOG 
     echo "Creating userstore database"
+<<<<<<< HEAD
 
     pushd $resource_path
     ${SED} -i "s@USERSTORE_DB_SCHEMA@$userstore_db_schema@g" mysql.sql
     ${SED} -i "s@USERSTORE_DB_SCHEMA@$userstore_db_schema@g" security-mysql.sql
     ${SED} -i "s@USERSTORE_DB_SCHEMA@$userstore_db_schema@g" application-mysql.sql
+=======
+    mysql -u$userstore_db_user -p$userstore_db_pass < $resource_path/userstore.sql
+    
+    echo "Creating stratos_foundation database"
+    mysql -u$stratos_foundation_db_user -p$stratos_foundation_db_pass < $resource_path/stratos_foundation.sql
+
+>>>>>>> FETCH_HEAD
 
     popd
 
@@ -462,6 +644,7 @@ function cep_setup() {
     echo "Setup CEP" >> $LOG
     echo "Configuring the Complex Event Processor"
 
+<<<<<<< HEAD
     pushd $stratos_extract_path
 
     echo "In outputeventadaptors"
@@ -520,6 +703,28 @@ if [[ !(-z $profile_list || $profile_list = "") ]]; then
     echo "You have selected the profile : $profile"
 else 
     echo "You have not provided a profile : default profile will be selected."
+=======
+    if [[ $ec2_provider_enabled = "true" ]]; then
+        ./ec2.sh
+    fi
+    if [[ $openstack_provider_enabled = "true" ]]; then
+        ./openstack.sh
+    fi
+
+    pushd $cc_path
+    
+    cp -f repository/conf/cloud-controller.xml repository/conf/cloud-controller.xml.orig
+    cat repository/conf/cloud-controller.xml.orig | sed -e "s@MB_HOSTNAME:MB_LISTEN_PORT@$mb_hostname:$mb_listen_port@g" > repository/conf/cloud-controller.xml
+
+    echo "Set settings in cc/repository/conf/carbon.xml" >> $LOG
+    cp -f repository/conf/carbon.xml repository/conf/carbon.xml.orig
+    cat repository/conf/carbon.xml.orig | sed -e "s@CC_PORT_OFFSET@$cc_port_offset@g" > repository/conf/carbon.xml
+    #Before starting sc delete rm -rf tmp/ at mb root folder
+    rm -rf ./tmp
+
+    popd #cc_path
+    echo "End configuring the Cloud Controller"
+>>>>>>> FETCH_HEAD
 fi
 
 stratos_extract_path=$stratos_extract_path"-"$profile
@@ -572,6 +777,7 @@ if [[ ! -d $log_path ]]; then
     mkdir -p $log_path
 fi
 
+<<<<<<< HEAD
 # Extract stratos zip file
 if [[ !(-d $stratos_extract_path) ]]; then
     echo "Extracting Apache Stratos"
@@ -639,6 +845,37 @@ mv -f ./hosts.tmp /etc/hosts
 # ------------------------------------------------
 # Starting the servers
 # ------------------------------------------------
+=======
+# Configure cartridges
+# ---------------------------------------------------------
+if [[ $openstack_provider_enabled = "true" ]]; then
+    ./openstack-cartridge.sh
+fi
+if [[ $ec2_provider_enabled = "true" ]]; then
+    ./ec2-cartridge.sh
+fi
+
+
+# Map domain/host names of each product 
+# ---------------------------------------------------------------------------- 
+
+echo 'Updating /etc/hosts file with domain names' 
+cp -f /etc/hosts hosts.tmp 
+
+echo "" >> hosts.tmp 
+echo "# Apache Stratos" >> hosts.tmp 
+echo "$hostip $stratos_domain # stratos domain" >> hosts.tmp 
+echo "$mb_ip mb.$stratos_domain # message broker hostname" >> hosts.tmp 
+echo "$cc_ip cc.$stratos_domain # cloud controller hostname" >> hosts.tmp 
+echo "$sc_ip sc.$stratos_domain # stratos controller hostname" >> hosts.tmp 
+echo "$elb_ip elb.$stratos_domain # elastic load balancer hostname" >> hosts.tmp 
+echo "$agent_ip agent.$stratos_domain # agent hostname" >> hosts.tmp 
+
+mv -f ./hosts.tmp /etc/hosts
+
+# Starting the servers
+# ---------------------------------------------------------
+>>>>>>> FETCH_HEAD
 echo 'Changing owner of '$stratos_path' to '$host_user:$host_user
 chown -R $host_user:$host_user $stratos_path
 
@@ -647,6 +884,7 @@ cp -f ./config/all/repository/conf/security/application-authentication.xml $stra
 
 echo "Apache Stratos configuration completed successfully"
 
+<<<<<<< HEAD
 if [[ $auto_start_servers != "true" ]]; then
     read -p "Do you want to start the servers [y/n]? " answer
     if [[ $answer != y ]] ; then
@@ -654,6 +892,8 @@ if [[ $auto_start_servers != "true" ]]; then
     fi
 fi
 
+=======
+>>>>>>> FETCH_HEAD
 echo "Starting the servers" >> $LOG
 
 echo "Starting up servers. This may take time. Look at $LOG file for server startup details"

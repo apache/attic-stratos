@@ -40,7 +40,11 @@
     <!--
        Product Version
     -->
+<<<<<<< HEAD
     <version>4.0.0-SNAPSHOT</version>
+=======
+    <Version>3.0.0-incubating</Version>
+>>>>>>> FETCH_HEAD
 
     <!--
        Host name or IP address of the machine hosting this server

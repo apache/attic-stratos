@@ -75,6 +75,10 @@ set JAVA_ENDORSED="%JAVA_HOME%jre\lib\endorsed";"%JAVA_HOME%lib\endorsed"
 :end
 goto endlocal
 
+<<<<<<< HEAD
 :endlocal
 :END
+=======
+java -jar "org.apache.stratos.cli-3.0.0-incubating-Tool.jar" %*
+>>>>>>> FETCH_HEAD
 
