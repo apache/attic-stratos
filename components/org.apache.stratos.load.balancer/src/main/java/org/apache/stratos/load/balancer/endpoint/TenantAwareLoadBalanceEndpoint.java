@@ -803,7 +803,6 @@ public class TenantAwareLoadBalanceEndpoint extends org.apache.synapse.endpoints
         private EndpointReference to;
         private Map<String, Boolean> faultyMemberIds;
 
-
         public TenantAwareLoadBalanceFaultHandler() {
             faultyMemberIds = new HashMap<String, Boolean>();
         }
