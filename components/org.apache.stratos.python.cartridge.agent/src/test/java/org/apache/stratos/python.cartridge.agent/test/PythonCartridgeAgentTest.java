@@ -30,6 +30,8 @@ import org.apache.stratos.messaging.broker.publish.EventPublisherPool;
 import org.apache.stratos.messaging.domain.topology.*;
 import org.apache.stratos.messaging.event.Event;
 import org.apache.stratos.messaging.event.instance.notifier.ArtifactUpdatedEvent;
+import org.apache.stratos.messaging.event.instance.status.InstanceStartedEvent;
+import org.apache.stratos.messaging.event.instance.status.InstanceStatusEvent;
 import org.apache.stratos.messaging.event.topology.CompleteTopologyEvent;
 import org.apache.stratos.messaging.event.topology.MemberInitializedEvent;
 import org.apache.stratos.messaging.listener.instance.status.InstanceActivatedEventListener;
@@ -37,9 +39,9 @@ import org.apache.stratos.messaging.listener.instance.status.InstanceStartedEven
 import org.apache.stratos.messaging.message.receiver.instance.status.InstanceStatusEventReceiver;
 import org.apache.stratos.messaging.message.receiver.topology.TopologyEventReceiver;
 import org.apache.stratos.messaging.util.MessagingUtil;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -50,6 +52,7 @@ import java.util.concurrent.ExecutorService;
 
 import static junit.framework.Assert.assertTrue;
 
+@RunWith(Parameterized.class)
 public class PythonCartridgeAgentTest {
 
     private static final Log log = LogFactory.getLog(PythonCartridgeAgentTest.class);
@@ -66,20 +69,77 @@ public class PythonCartridgeAgentTest {
     private static final String PARTITION_ID = "partition-1";
     private static final String TENANT_ID = "-1234";
     private static final String SERVICE_NAME = "php";
+    public static final String REPO_CLONE_PATH = "/tmp/stratos-pca-test-app-path/";
 
     private static List<ServerSocket> serverSocketList;
     private static Map<String, Executor> executorList;
+    private final ArtifactUpdatedEvent artifactUpdatedEvent;
+    private final Boolean expectedResult;
+    private boolean instanceStarted;
+    private boolean instanceActivated;
+    private ByteArrayOutputStreamLocal outputStream;
+    private TopologyEventReceiver topologyEventReceiver;
+    private InstanceStatusEventReceiver instanceStatusEventReceiver;
+    private boolean eventReceiverInitiated = false;
 
-    @BeforeClass
-    public static void setUp() {
-        // Set jndi.properties.dir system property for initializing event publishers and receivers
-        System.setProperty("jndi.properties.dir", getResourcesFolderPath());
-        serverSocketList = new ArrayList<ServerSocket>();
-        executorList = new HashMap<String, Executor>();
+    public PythonCartridgeAgentTest(ArtifactUpdatedEvent artifactUpdatedEvent, Boolean expectedResult) {
+        this.artifactUpdatedEvent = artifactUpdatedEvent;
+        this.expectedResult = expectedResult;
     }
 
-    @AfterClass
-    public static void tearDown() {
+    @BeforeClass
+    public static void oneTimeSetUp() {
+        // Set jndi.properties.dir system property for initializing event publishers and receivers
+        System.setProperty("jndi.properties.dir", getResourcesFolderPath());
+    }
+
+    @Before
+    public void setup(){
+        serverSocketList = new ArrayList<ServerSocket>();
+        executorList = new HashMap<String, Executor>();
+
+        if (!this.eventReceiverInitiated) {
+            ExecutorService executorService = StratosThreadPool.getExecutorService("TEST_THREAD_POOL", 5);
+            topologyEventReceiver = new TopologyEventReceiver();
+            topologyEventReceiver.setExecutorService(executorService);
+            topologyEventReceiver.execute();
+
+            instanceStatusEventReceiver = new InstanceStatusEventReceiver();
+            instanceStatusEventReceiver.setExecutorService(executorService);
+            instanceStatusEventReceiver.execute();
+
+
+            this.instanceStarted = false;
+            instanceStatusEventReceiver.addEventListener(new InstanceStartedEventListener() {
+                @Override
+                protected void onEvent(Event event) {
+                    log.info("Instance started event received");
+                    instanceStarted = true;
+                }
+            });
+
+            this.instanceActivated = false;
+            instanceStatusEventReceiver.addEventListener(new InstanceActivatedEventListener() {
+                @Override
+                protected void onEvent(Event event) {
+                    log.info("Instance activated event received");
+                    instanceActivated = true;
+                }
+            });
+
+            this.eventReceiverInitiated = true;
+        }
+
+        String agentPath = setupPythonAgent();
+        log.info("Starting python cartridge agent...");
+        this.outputStream = executeCommand("python " + agentPath + "/agent.py");
+
+        // Simulate CEP server socket
+        startServerSocket(7711);
+    }
+
+    @After
+    public void tearDown() {
         for (Map.Entry<String, Executor> entry : executorList.entrySet()) {
             try {
                 String commandText = entry.getKey();
@@ -104,97 +164,118 @@ public class PythonCartridgeAgentTest {
             } catch (IOException ignore) {
             }
         }
+
+        try {
+            log.info("Deleting source checkout folder...");
+            FileUtils.deleteDirectory(new File(REPO_CLONE_PATH));
+        } catch (Exception ignore){
+
+        }
+
+        this.instanceStatusEventReceiver.terminate();
+        this.topologyEventReceiver.terminate();
+
+        this.instanceActivated = false;
+        this.instanceStarted = false;
+    }
+
+
+    @Parameterized.Parameters
+    public static Collection artifactUpdatedEvents(){
+        ArtifactUpdatedEvent publicRepoEvent = createTestArtifactUpdatedEvent();
+
+        ArtifactUpdatedEvent privateRepoEvent = createTestArtifactUpdatedEvent();
+        privateRepoEvent.setRepoURL("https://bitbucket.org/testapache2211/testrepo.git");
+        privateRepoEvent.setRepoUserName("testapache2211");
+        privateRepoEvent.setRepoPassword("iF7qT+BKKPE3PGV1TeDsJA==");
+
+        ArtifactUpdatedEvent privateRepoEvent2 = createTestArtifactUpdatedEvent();
+        privateRepoEvent2.setRepoURL("https://testapache2211@bitbucket.org/testapache2211/testrepo.git");
+        privateRepoEvent2.setRepoUserName("testapache2211");
+        privateRepoEvent2.setRepoPassword("iF7qT+BKKPE3PGV1TeDsJA==");
+
+        return Arrays.asList(new Object[][]{
+                {publicRepoEvent, true},
+                {privateRepoEvent, true},
+                {privateRepoEvent2, true}
+        });
+
+    }
+
+    private static ArtifactUpdatedEvent createTestArtifactUpdatedEvent() {
+        ArtifactUpdatedEvent publicRepoEvent = new ArtifactUpdatedEvent();
+        publicRepoEvent.setClusterId(CLUSTER_ID);
+        publicRepoEvent.setTenantId(TENANT_ID);
+        publicRepoEvent.setRepoURL("https://bitbucket.org/testapache2211/opentestrepo1.git");
+        return publicRepoEvent;
     }
 
     @Test(timeout = TIMEOUT)
     public void testPythonCartridgeAgent() {
-
-        ExecutorService executorService = StratosThreadPool.getExecutorService("TEST_THREAD_POOL", 5);
-        TopologyEventReceiver topologyEventReceiver = new TopologyEventReceiver();
-        topologyEventReceiver.setExecutorService(executorService);
-        topologyEventReceiver.execute();
-
-        InstanceStatusEventReceiver instanceStatusEventReceiver = new InstanceStatusEventReceiver();
-        instanceStatusEventReceiver.setExecutorService(executorService);
-        instanceStatusEventReceiver.execute();
-
-        final boolean[] instanceStarted = new boolean[1];
-        instanceStatusEventReceiver.addEventListener(new InstanceStartedEventListener() {
+        Thread communicatorThread = new Thread(new Runnable() {
             @Override
-            protected void onEvent(Event event) {
-                log.info("Instance started event received");
-                instanceStarted[0] = true;
-            }
-        });
-
-
-        final boolean[] instanceActivated = new boolean[1];
-        instanceStatusEventReceiver.addEventListener(new InstanceActivatedEventListener() {
-            @Override
-            protected void onEvent(Event event) {
-                log.info("Instance activated event received");
-                instanceActivated[0] = true;
-            }
-        });
-
-        // Simulate CEP server socket
-        startServerSocket(7711);
-
-        String agentPath = setupPythonAgent();
-        log.info("Starting python cartridge agent...");
-        ByteArrayOutputStreamLocal outputStream = executeCommand("python " + agentPath + "/agent.py");
-
-        List<String> outputLines = new ArrayList<String>();
-        while (!outputStream.isClosed()) {
-            List<String> newLines = getNewLines(outputLines, outputStream.toString());
-            if (newLines.size() > 0) {
-                for (String line : newLines) {
-                    if (line.contains("Subscribed to 'topology/#'")) {
-                        sleep(2000);
-                        // Send complete topology event
-                        log.info("Publishing complete topology event...");
-                        Topology topology = createTestTopology();
-                        CompleteTopologyEvent completeTopologyEvent = new CompleteTopologyEvent(topology);
-                        publishEvent(completeTopologyEvent);
-                        log.info("Complete topology event published");
-
-                        sleep(5000);
-                        // Publish member initialized event
-                        log.info("Publishing member initialized event...");
-                        MemberInitializedEvent memberInitializedEvent = new MemberInitializedEvent(
-                                SERVICE_NAME, CLUSTER_ID, CLUSTER_INSTANCE_ID, MEMBER_ID, NETWORK_PARTITION_ID, PARTITION_ID
-                        );
-                        publishEvent(memberInitializedEvent);
-                        log.info("Member initialized event published");
-
-                        // Simulate server socket
-                        startServerSocket(9080);
+            public void run() {
+                List<String> outputLines = new ArrayList<String>();
+                boolean streamDefined = false;
+                while (!outputStream.isClosed()) {
+                    List<String> newLines = getNewLines(outputLines, outputStream.toString());
+                    if (streamDefined){
+                        break;
                     }
-                    if (line.contains("Artifact repository found")) {
-                        // Send artifact updated event
-                        ArtifactUpdatedEvent artifactUpdatedEvent = new ArtifactUpdatedEvent();
-                        artifactUpdatedEvent.setClusterId(CLUSTER_ID);
-                        artifactUpdatedEvent.setTenantId(TENANT_ID);
-                        artifactUpdatedEvent.setRepoURL("https://github.com/imesh/stratos-php-applications.git");
-                        String topicName = MessagingUtil.getMessageTopicName(artifactUpdatedEvent);
-                        EventPublisher eventPublisher = EventPublisherPool.getPublisher(topicName);
-                        eventPublisher.publish(artifactUpdatedEvent);
+                    if (newLines.size() > 0) {
+                        for (String line : newLines) {
+                            if (line.contains("Subscribed to 'topology/#'")) {
+                                sleep(2000);
+                                // Send complete topology event
+                                log.info("Publishing complete topology event...");
+                                Topology topology = createTestTopology();
+                                CompleteTopologyEvent completeTopologyEvent = new CompleteTopologyEvent(topology);
+                                publishEvent(completeTopologyEvent);
+                                log.info("Complete topology event published");
+
+                                sleep(3000);
+                                // Publish member initialized event
+                                log.info("Publishing member initialized event...");
+                                MemberInitializedEvent memberInitializedEvent = new MemberInitializedEvent(
+                                        SERVICE_NAME, CLUSTER_ID, CLUSTER_INSTANCE_ID, MEMBER_ID, NETWORK_PARTITION_ID, PARTITION_ID
+                                );
+                                publishEvent(memberInitializedEvent);
+                                log.info("Member initialized event published");
+
+                                // Simulate server socket
+                                startServerSocket(9080);
+                            }
+                            if (line.contains("Artifact repository found")) {
+                                // Send artifact updated event
+                                publishEvent(artifactUpdatedEvent);
+                            }
+
+                            if (line.contains("Stream definition created:")){
+                                // Test good so far, should terminate.
+                                log.info("PCA is now trying to connect to the CEP");
+                                streamDefined = true;
+                            }
+
+//                            if (line.contains("Exception in thread") || line.contains("ERROR")) {
+//                                //throw new RuntimeException(line);
+//                            }
+                            log.info(line);
+                        }
                     }
-                    if (line.contains("Exception in thread") || line.contains("ERROR")) {
-                        //throw new RuntimeException(line);
-                    }
-                    log.info(line);
+                    sleep(100);
                 }
             }
+        });
 
-            if (instanceActivated[0]) {
-                break;
-            }
-            sleep(500);
+        communicatorThread.start();
+
+        while (!instanceActivated){
+            log.debug("Waiting until instance activated message is received.");
+            sleep(100);
         }
 
-        assertTrue("Instance started event was not received", instanceStarted[0]);
-        assertTrue("Instance activated event was not received", instanceActivated[0]);
+        assertTrue("Instance started event was not received", instanceStarted);
+        assertTrue("Instance activated event was not received", instanceActivated == this.expectedResult);
     }
 
     /**
