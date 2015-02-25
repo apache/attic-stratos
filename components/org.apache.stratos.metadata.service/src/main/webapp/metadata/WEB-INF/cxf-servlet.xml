@@ -18,9 +18,9 @@
   #  under the License.
   -->
 
-<beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:jaxrs="http://cxf.apache.org/jaxrs"
+       xmlns="http://www.springframework.org/schema/beans"
        xsi:schemaLocation="
          http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
          http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd">
@@ -32,25 +32,18 @@
 
         <jaxrs:providers>
             <ref bean="throwableExceptionHandler"/>
-			<ref bean="genericExceptionHandler"/>
-            <ref bean="jsonProvider"/>
+            <ref bean="genericExceptionHandler"/>
             <ref bean="exceptionHandler"/>
-	    <ref bean="OAuthFilter"/>
-            <ref bean="basicAuthenticationFilter"/>
-            <ref bean="sessionAuthenticationFilter"/>
-            <!--<ref bean="authorizationFilter"/>-->
+            <ref bean="jsonProvider"/>
+            <ref bean="OAuthFilter"/>
         </jaxrs:providers>
     </jaxrs:server>
 
     <bean id="stratosRestEndpointBean" class="org.apache.stratos.metadata.service.services.MetaDataAdmin"/>
-    <bean id="basicAuthenticationFilter" class="org.apache.stratos.metadata.service.handlers.StratosAuthenticationHandler"/>
-    <bean id="sessionAuthenticationFilter" class="org.apache.stratos.metadata.service.handlers.CookieBasedAuthenticationHandler"/>
-    <bean id="authorizationFilter" class="org.apache.stratos.metadata.service.handlers.StratosAuthorizingHandler">
-        <property name="securedObject" ref="stratosRestEndpointBean"/>
-    </bean>
     <bean id="exceptionHandler" class="org.apache.stratos.metadata.service.handlers.CustomExceptionMapper"/>
     <bean id="genericExceptionHandler" class="org.apache.stratos.metadata.service.handlers.GenericExceptionMapper"/>
-    <bean id="throwableExceptionHandler" class="org.apache.stratos.metadata.service.handlers.CustomThrowableExceptionMapper"/>
+    <bean id="throwableExceptionHandler"
+          class="org.apache.stratos.metadata.service.handlers.CustomThrowableExceptionMapper"/>
     <!--The below config enables OAuth based authentication/authorization for REST API-->
     <bean id="OAuthFilter" class="org.apache.stratos.metadata.service.handlers.OAuthHandler">
         <property name="password" value="admin"/>
@@ -60,7 +53,7 @@
     <bean id="jsonProvider" class="org.apache.cxf.jaxrs.provider.json.JSONProvider">
         <property name="supportUnwrapped" value="true"/>
         <property name="serializeAsArray" value="true"/>
-	<property name="dropRootElement" value="true" />
+        <property name="dropRootElement" value="true"/>
         <property name="arrayKeys">
             <list>
                 <value>partitions</value>

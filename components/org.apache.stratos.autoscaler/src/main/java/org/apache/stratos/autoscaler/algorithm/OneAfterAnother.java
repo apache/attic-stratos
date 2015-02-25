@@ -38,7 +38,13 @@ public class OneAfterAnother implements AutoscaleAlgorithm {
 
         for(PartitionContext partitionContext : partitionContexts) {
 
-            if(partitionContext.getActiveInstanceCount() < partitionContext.getMax()) {
+            if(partitionContext.getNonTerminatedMemberCount() < partitionContext.getMax()) {
+
+                if(log.isDebugEnabled()){
+                    log.debug(String.format("[one-after-another algorithm] [scale-up] [partition] %s has space to create " +
+                            "members. [non terminated count] %s [max] %s", partitionContext.getPartitionId(),
+                            partitionContext.getNonTerminatedMemberCount(), partitionContext.getMax()));
+                }
                 return partitionContext;
             }
         }
@@ -50,7 +56,14 @@ public class OneAfterAnother implements AutoscaleAlgorithm {
 
         for(int partitionIndex = partitionContexts.length - 1; partitionIndex >= 0; partitionIndex--) {
 
-            if(partitionContexts[partitionIndex].getActiveInstanceCount() > 0) {
+            if(partitionContexts[partitionIndex].getNonTerminatedMemberCount() > 0) {
+
+                if(log.isDebugEnabled()){
+                    log.debug(String.format("[one-after-another algorithm] [scale-down] [partition] %s has members that" +
+                            " can be removed. [non terminated count] %s",
+                            partitionContexts[partitionIndex].getPartitionId(),
+                            partitionContexts[partitionIndex].getNonTerminatedMemberCount()));
+                }
                 return partitionContexts[partitionIndex];
             }
         }

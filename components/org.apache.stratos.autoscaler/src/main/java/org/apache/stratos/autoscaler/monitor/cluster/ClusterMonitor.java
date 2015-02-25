@@ -517,7 +517,8 @@ public class ClusterMonitor extends Monitor implements Runnable {
                                     }
                                 }
 
-                                getScaleCheckKnowledgeSession().setGlobal("primaryMembers", primaryMemberListInClusterInstance);
+                                getMinCheckKnowledgeSession().setGlobal("primaryMemberCount",
+                                        primaryMemberListInClusterInstance.size());
                                 getMinCheckKnowledgeSession().setGlobal("clusterId", getClusterId());
                                 getMinCheckKnowledgeSession().setGlobal("isPrimary", hasPrimary);
                                 //FIXME when parent chosen the partition
@@ -593,6 +594,7 @@ public class ClusterMonitor extends Monitor implements Runnable {
                         Runnable monitoringRunnable = new Runnable() {
                             @Override
                             public void run() {
+                                getObsoleteCheckKnowledgeSession().setGlobal("clusterId", clusterId);
                                 obsoleteCheckFactHandle = AutoscalerRuleEvaluator.evaluate(
                                         getObsoleteCheckKnowledgeSession(), obsoleteCheckFactHandle, partitionContext);
                             }
