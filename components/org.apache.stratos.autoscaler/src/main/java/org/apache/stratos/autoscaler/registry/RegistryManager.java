@@ -118,19 +118,33 @@ public class RegistryManager {
     }
 
     public void persistAutoscalerPolicy(AutoscalePolicy autoscalePolicy) {
-        String resourcePath = AutoscalerConstants.AUTOSCALER_RESOURCE + AutoscalerConstants.AS_POLICY_RESOURCE + "/" + autoscalePolicy.getId();
-        persist(autoscalePolicy, resourcePath);
-        if (log.isDebugEnabled()) {
-            log.debug(String.format("Autoscaler policy written to registry: [id] %s [name] %s [description] %s",
-                    autoscalePolicy.getId(), autoscalePolicy.getDisplayName(), autoscalePolicy.getDescription()));
+        try {
+            String resourcePath = AutoscalerConstants.AUTOSCALER_RESOURCE +
+                    AutoscalerConstants.AS_POLICY_RESOURCE + "/" + autoscalePolicy.getId();
+
+            persist(autoscalePolicy, resourcePath);
+            if (log.isDebugEnabled()) {
+                log.debug(String.format("Autoscaler policy written to registry: [id] %s [name] %s [description] %s",
+                        autoscalePolicy.getId(), autoscalePolicy.getDisplayName(), autoscalePolicy.getDescription()));
+            }
+        } catch (Exception e) {
+            log.error((String.format("Unable to persist autoscaler policy [autoscaler-policy-id] %s",
+                    autoscalePolicy.getId())), e);
         }
     }
 
     public void persistDeploymentPolicy(DeploymentPolicy deploymentPolicy) {
-        String resourcePath = AutoscalerConstants.AUTOSCALER_RESOURCE + AutoscalerConstants.DEPLOYMENT_POLICY_RESOURCE + "/" + deploymentPolicy.getApplicationId();
-        persist(deploymentPolicy, resourcePath);
-        if (log.isDebugEnabled()) {
-            log.debug(String.format("Deployment policy written to registry: %s", deploymentPolicy.toString()));
+        try {
+            String resourcePath = AutoscalerConstants.AUTOSCALER_RESOURCE +
+                    AutoscalerConstants.DEPLOYMENT_POLICY_RESOURCE + "/" + deploymentPolicy.getApplicationId();
+
+            persist(deploymentPolicy, resourcePath);
+            if (log.isDebugEnabled()) {
+                log.debug(String.format("Deployment policy written to registry: %s", deploymentPolicy.toString()));
+            }
+        }catch(Exception e){
+            log.error((String.format("Unable to persist deployment policy [application-id] %s",
+                    deploymentPolicy.getApplicationId())), e);
         }
     }
 
