@@ -231,8 +231,6 @@ public class StratosApplication extends CommandLineApplication<StratosCommandCon
         command = new ListPartialSearchTenantsCommand();
         commands.put(command.getName(),command);
 
-<<<<<<< HEAD
-=======
         command = new AddDeploymentPolicyCommand();
         commands.put(command.getName(), command);
 
@@ -269,7 +267,6 @@ public class StratosApplication extends CommandLineApplication<StratosCommandCon
         command = new UpdateTenantCommand();
         commands.put(command.getName(), command);
 
->>>>>>> aa77d0bbfc15b2d972c2f98d495569dff758cf27
         command = new DescribeApplicationSignupCommand();
         commands.put(command.getName(),command);
 
