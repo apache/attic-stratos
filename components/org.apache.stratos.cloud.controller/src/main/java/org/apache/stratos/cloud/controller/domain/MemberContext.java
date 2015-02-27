@@ -24,7 +24,6 @@ import org.apache.stratos.common.domain.NameValuePair;
 
 import java.io.Serializable;
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * Holds information about a Member.
