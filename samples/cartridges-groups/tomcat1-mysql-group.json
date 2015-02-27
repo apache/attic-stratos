@@ -1,0 +1,15 @@
+{
+    "name": "tomcat1-mysql-group",
+    "groupScalingEnabled": "true",
+    "cartridges": [
+        "tomcat1",
+        "mysql"
+    ],
+    "dependencies": {
+        "startupOrders": [
+            "cartridge.my-tomcat1,cartridge.my-mysql"
+        ],
+        "terminationBehaviour": "terminate-all"
+    }
+}
+

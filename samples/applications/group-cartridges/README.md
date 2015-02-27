@@ -1,4 +1,4 @@
-single_group_v3
+group-cartridges-app
 ===============
 
 Application folder structure
