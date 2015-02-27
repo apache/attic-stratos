@@ -76,7 +76,7 @@ public class AddUserCommand implements Command<StratosCommandContext> {
         options.addOption(emailOption);
 
         Option profileNameOption = new Option(CliConstants.PROFILE_NAME_OPTION, CliConstants.PROFILE_NAME_LONG_OPTION, true,
-                "Tenant domain");
+                "Profile name");
         profileNameOption.setArgName("profileName");
         options.addOption(profileNameOption);
 
@@ -116,7 +116,7 @@ public class AddUserCommand implements Command<StratosCommandContext> {
                 commandLine = parser.parse(options, args);
 
                 if (logger.isDebugEnabled()) {
-                    logger.debug("Add tenant");
+                    logger.debug("Add user");
                 }
 
                 if (commandLine.hasOption(CliConstants.USERNAME_OPTION)) {

@@ -25,8 +25,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.stratos.autoscaler.stub.*;
 import org.apache.stratos.autoscaler.stub.autoscale.policy.AutoscalePolicy;
-import org.apache.stratos.autoscaler.stub.deployment.partition.NetworkPartition;
-import org.apache.stratos.autoscaler.stub.deployment.policy.DeploymentPolicy;
+import org.apache.stratos.autoscaler.stub.deployment.policy.ApplicationPolicy;
 import org.apache.stratos.autoscaler.stub.pojo.ApplicationContext;
 import org.apache.stratos.autoscaler.stub.pojo.ServiceGroup;
 import org.apache.stratos.common.constants.StratosConstants;
@@ -80,26 +79,6 @@ public class AutoscalerServiceClient {
         stub.removeServiceGroup(serviceGroupName);
     }
 
-    public void addNetworkPartition(NetworkPartition networkPartition) throws RemoteException {
-        stub.addNetworkPartition(networkPartition);
-    }
-
-    public NetworkPartition[] getNetworkPartitions() throws RemoteException {
-        return stub.getNetworkPartitions();
-    }
-
-    public NetworkPartition getNetworkPartition(String networkPartitionId) throws RemoteException {
-        return stub.getNetworkPartition(networkPartitionId);
-    }
-
-    public void removeNetworkPartition(String networkPartitionId) throws RemoteException {
-        stub.removeNetworkPartition(networkPartitionId);
-    }
-
-    public void updateNetworkPartition(NetworkPartition networkPartition) throws RemoteException {
-        stub.updateNetworkPartition(networkPartition);
-    }
-
     public org.apache.stratos.autoscaler.stub.autoscale.policy.AutoscalePolicy[] getAutoScalePolicies()
             throws RemoteException {
         return stub.getAutoScalingPolicies();
@@ -108,10 +87,6 @@ public class AutoscalerServiceClient {
     public org.apache.stratos.autoscaler.stub.autoscale.policy.AutoscalePolicy getAutoScalePolicy(
             String autoscalingPolicyId) throws RemoteException {
         return stub.getAutoscalingPolicy(autoscalingPolicyId);
-    }
-
-    public org.apache.stratos.autoscaler.stub.deployment.policy.DeploymentPolicy getDeploymentPolicy(String deploymentPolicyId) throws RemoteException {
-        return stub.getDeploymentPolicy(deploymentPolicyId);
     }
 
     public void addApplication(ApplicationContext applicationContext) throws AutoscalerServiceApplicationDefinitionExceptionException, RemoteException {
@@ -126,9 +101,18 @@ public class AutoscalerServiceClient {
         return stub.getApplications();
     }
 
-    public boolean deployApplication(String applicationId, DeploymentPolicy deploymentPolicy) throws RemoteException,
+    public boolean deployApplication(String applicationId, ApplicationPolicy ap) throws RemoteException,
             AutoscalerServiceInvalidPolicyExceptionException, AutoscalerServiceApplicationDefinitionExceptionException {
-        return stub.deployApplication(applicationId, deploymentPolicy);
+		return stub.deployApplication(applicationId, ap);
+    }
+    
+    public ApplicationPolicy getApplicationPolicy(String applicationId) throws RemoteException {
+    	return stub.getApplicationPolicy(applicationId);
+    }
+    
+    public String[] getApplicationNetworkPartitions(String applicationId) throws RemoteException, 
+    AutoscalerServiceAutoScalerExceptionException {
+    	return stub.getApplicationNetworkPartitions(applicationId);
     }
 
     public void undeployApplication(String applicationId) throws

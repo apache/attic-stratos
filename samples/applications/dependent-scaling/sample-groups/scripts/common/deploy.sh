@@ -23,6 +23,14 @@ echo ${artifacts_path}/autoscaling-policy.json
 echo "Adding autoscale policy..."
 curl -X POST -H "Content-Type: application/json" -d "@${artifacts_path}/autoscaling-policy.json" -k -v -u admin:admin https://${host_ip}:${host_port}/api/autoscalingPolicies
 
+echo "Adding network partitions..."
+curl -X POST -H "Content-Type: application/json" -d "@${artifacts_path}/network-partition.json" -k -v -u admin:admin https://${host_ip}:9443/api/networkPartitions
+curl -X POST -H "Content-Type: application/json" -d "@${artifacts_path}/network-partition-2.json" -k -v -u admin:admin https://${host_ip}:9443/api/networkPartitions
+
+echo "Adding deployment policy..."
+curl -X POST -H "Content-Type: application/json" -d "@${artifacts_path}/deployment-policy.json" -k -v -u admin:admin https://${host_ip}:${host_port}/api/deploymentPolicies
+
+
 echo "Adding tomcat cartridge..."
 curl -X POST -H "Content-Type: application/json" -d "@${cartridges_path}/tomcat.json" -k -v -u admin:admin https://${host_ip}:${host_port}/api/cartridges
 
@@ -43,4 +51,8 @@ curl -X POST -H "Content-Type: application/json" -d "@${artifacts_path}/applicat
 sleep 1
 
 echo "Deploying application..."
+<<<<<<< HEAD
 curl -X POST -H "Content-Type: application/json" -d "@${iaas_artifacts_path}/deployment-policy.json" -k -v -u admin:admin https://${host_ip}:${host_port}/api/applications/dependency-scaling-groups-app/deploy
+=======
+curl -X POST -H "Content-Type: application/json" -d "@${artifacts_path}/application-policy.json" -k -v -u admin:admin https://${host_ip}:${host_port}/api/applications/dependency-scaling-groups-app/deploy
+>>>>>>> aa77d0bbfc15b2d972c2f98d495569dff758cf27

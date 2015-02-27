@@ -22,14 +22,14 @@
 package org.apache.stratos.autoscaler.services;
 
 import org.apache.stratos.autoscaler.applications.pojo.ApplicationContext;
+import org.apache.stratos.autoscaler.exception.AutoScalerException;
 import org.apache.stratos.autoscaler.exception.InvalidArgumentException;
 import org.apache.stratos.autoscaler.exception.application.ApplicationDefinitionException;
 import org.apache.stratos.autoscaler.exception.kubernetes.InvalidServiceGroupException;
 import org.apache.stratos.autoscaler.exception.policy.InvalidPolicyException;
 import org.apache.stratos.autoscaler.pojo.ServiceGroup;
 import org.apache.stratos.autoscaler.pojo.policy.autoscale.AutoscalePolicy;
-import org.apache.stratos.autoscaler.pojo.policy.deployment.DeploymentPolicy;
-import org.apache.stratos.autoscaler.pojo.policy.deployment.partition.network.NetworkPartition;
+import org.apache.stratos.autoscaler.pojo.policy.deployment.ApplicationPolicy;
 import org.apache.stratos.common.Properties;
 
 public interface AutoscalerService {
@@ -92,10 +92,17 @@ public interface AutoscalerService {
     /**
      * Deploy an application in created state
      * @param applicationId
-     * @param deploymentPolicy
+     * @param applicationPolicy
      * @return
      */
-    public boolean deployApplication(String applicationId, DeploymentPolicy deploymentPolicy) throws ApplicationDefinitionException;
+    public boolean deployApplication(String applicationId, ApplicationPolicy applicationPolicy) throws ApplicationDefinitionException;
+    
+    /**
+     * Get application policy by application id
+     * @param applicationId the application id
+     * @return {@link ApplicationPolicy} used by the given application
+     */
+    public ApplicationPolicy getApplicationPolicy(String applicationId);
 
     /**
      * Undeploy an application in deployed state
@@ -109,13 +116,6 @@ public interface AutoscalerService {
      * @param applicationId
      */
     public void deleteApplication(String applicationId);
-
-    /**
-     * Returns a deployment policy of an application
-     * @param applicationId
-     * @return
-     */
-    public DeploymentPolicy getDeploymentPolicy(String applicationId);
 
     /**
      * Dynamically update the properties of an Autoscaling Cluster Monitor
@@ -145,41 +145,12 @@ public interface AutoscalerService {
     public ServiceGroup getServiceGroup(String name);
 
     /**
-     * Add network partition
-     * @param networkPartition
-     */
-    public void addNetworkPartition(NetworkPartition networkPartition);
-
-    /**
-     * Remove network partition
-     * @param networkPartitionId
-     */
-    public void removeNetworkPartition(String networkPartitionId);
-
-    /**
-     * Update network partition
-     * @param networkPartition
-     */
-    public void updateNetworkPartition(NetworkPartition networkPartition);
-
-    /**
-     * Get network partitions
-     * @return
-     */
-    public NetworkPartition[] getNetworkPartitions();
-
-    /**
-     * Get network partition by network partition id
-     * @param networkPartitionId
-     * @return
-     */
-    public NetworkPartition getNetworkPartition(String networkPartitionId);
-
-    /**
      * Find cluster id of an application by subscription alias.
      * @param applicationId
      * @param alias
      * @return
      */
     public String findClusterId(String applicationId, String alias);
+    
+    public String[] getApplicationNetworkPartitions(String applicationId) throws AutoScalerException;
 }

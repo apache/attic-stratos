@@ -25,14 +25,12 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.stratos.autoscaler.exception.AutoScalerException;
 import org.apache.stratos.autoscaler.exception.policy.InvalidPolicyException;
 import org.apache.stratos.autoscaler.pojo.policy.autoscale.AutoscalePolicy;
-import org.apache.stratos.autoscaler.pojo.policy.deployment.DeploymentPolicy;
+import org.apache.stratos.autoscaler.pojo.policy.deployment.ApplicationPolicy;
 import org.apache.stratos.autoscaler.registry.RegistryManager;
 import org.apache.stratos.autoscaler.util.ServiceReferenceHolder;
 import org.apache.stratos.common.clustering.DistributedObjectProvider;
 
 import java.util.Map;
-
-//import org.apache.stratos.autoscaler.pojo.policy.deployment.partition.PartitionManager;
 
 /**
  * Manager class for the purpose of managing Autoscale/Deployment policy definitions.
@@ -42,11 +40,11 @@ public class PolicyManager {
     private static final Log log = LogFactory.getLog(PolicyManager.class);
     
     private static final String AS_POLICY_ID_TO_AUTOSCALE_POLICY_MAP = "AS_POLICY_ID_TO_AUTOSCALE_POLICY_MAP";
-    private static final String DEPLOYMENT_POLICY_ID_TO_DEPLOYMENT_POLICY_MAP = "DEPLOYMENT_POLICY_ID_TO_DEPLOYMENT_POLICY_MAP";
+    private static final String APPLICATION_ID_TO_APPLICATION_POLICY_MAP = "APPLICATION_ID_TO_APPLICATION_POLICY_MAP";
     
-    private static Map<String, AutoscalePolicy> autoscalePolicyListMap; //= new HashMap<String, AutoscalePolicy>();
+    private static Map<String, AutoscalePolicy> autoscalePolicyListMap;
 
-    private static Map<String, DeploymentPolicy> deploymentPolicyListMap; //= new HashMap<String, DeploymentPolicy>();
+    private static Map<String, ApplicationPolicy> applicationPolicyListMap;
     
     /* An instance of a PolicyManager is created when the class is loaded. 
      * Since the class is loaded only once, it is guaranteed that an object of 
@@ -65,7 +63,7 @@ public class PolicyManager {
     	// Initialize distributed object provider
         DistributedObjectProvider distributedObjectProvider = ServiceReferenceHolder.getInstance().getDistributedObjectProvider();
         autoscalePolicyListMap = distributedObjectProvider.getMap(AS_POLICY_ID_TO_AUTOSCALE_POLICY_MAP);
-        deploymentPolicyListMap = distributedObjectProvider.getMap(DEPLOYMENT_POLICY_ID_TO_DEPLOYMENT_POLICY_MAP);
+        applicationPolicyListMap = distributedObjectProvider.getMap(APPLICATION_ID_TO_APPLICATION_POLICY_MAP);
     }
 
     // Add the policy to information model and persist.
@@ -108,36 +106,6 @@ public class PolicyManager {
 		return true;
 	}
 
-    /**
-     * Add deployment policy to in memory map and persist.
-     * @param policy
-     * @throws InvalidPolicyException
-     */
-    public void addDeploymentPolicy(DeploymentPolicy policy) throws InvalidPolicyException {
-        addDeploymentPolicyToPolicyListMap(policy);
-        RegistryManager.getInstance().persistDeploymentPolicy(policy);
-
-        if (log.isInfoEnabled()) {
-            log.info(String.format("Deployment policy is added successfully: [application-id] %s",
-                    policy.getApplicationId()));
-        }
-    }
-
-    /**
-     * Remove deployment policy from in memory map and registry.
-     * @param policy
-     * @throws InvalidPolicyException
-     */
-    public void removeDeploymentPolicy(DeploymentPolicy policy) {
-        removeDeploymentPolicyFromMap(policy.getApplicationId());
-        RegistryManager.getInstance().removeDeploymentPolicy(policy);
-
-        if (log.isInfoEnabled()) {
-            log.info(String.format("Deployment policy is removed successfully: [application-id] %s",
-                    policy.getApplicationId()));
-        }
-    }
-
     public void addASPolicyToInformationModel(AutoscalePolicy asPolicy) throws InvalidPolicyException {
         if (!autoscalePolicyListMap.containsKey(asPolicy.getId())) {
             if (log.isDebugEnabled()) {
@@ -171,6 +139,19 @@ public class PolicyManager {
 			throw new InvalidPolicyException("No such policy ID [" + policyID + "] exists");
 		}
 	}
+	
+	public void removeApplicationPolicyInInformationModel(String applicationId) throws InvalidPolicyException {
+		if (applicationPolicyListMap.containsKey(applicationId)) {
+			if (log.isDebugEnabled()) {
+				log.debug("Removing application policy [application-id] " + applicationId);
+			}
+			applicationPolicyListMap.remove(applicationId);
+		}
+		else{
+			throw new InvalidPolicyException("No such application id [" + applicationId + "] exists");
+		}
+	}
+	
     /**
      * Removes the specified policy
      *
@@ -208,93 +189,57 @@ public class PolicyManager {
         return autoscalePolicyListMap.get(id);
     }
 
-    private void addDeploymentPolicyToPolicyListMap(DeploymentPolicy policy) throws InvalidPolicyException {
-        if (StringUtils.isEmpty(policy.getApplicationId())) {
-            throw new RuntimeException("Application id is not found in the deployment policy");
-        }
-        if (!deploymentPolicyListMap.containsKey(policy.getApplicationId())) {
+	public void addApplicationPolicy(ApplicationPolicy applicationPolicy) throws InvalidPolicyException {
+		String applicationId = applicationPolicy.getApplicationId();
+		if (log.isInfoEnabled()) {
+			log.info(String.format("Adding application policy for application: [id] %s", applicationId));
+		}
+		this.addApplicationPolicyToInformationModel(applicationPolicy);
+		RegistryManager.getInstance().persistApplicationPolicy(applicationPolicy);
+
+		if (log.isInfoEnabled()) {
+			log.info(String
+			        .format("Application policy is added successfully: [application-id] %s",
+			                applicationId));
+		}
+
+	}
+	
+	public boolean removeApplicationPolicy(String applicationId) throws InvalidPolicyException {
+		if (StringUtils.isEmpty(applicationId)) {
+			throw new AutoScalerException("Application policy id cannot be empty");
+		}
+		this.removeApplicationPolicyInInformationModel(applicationId);
+		RegistryManager.getInstance().removeApplicationPolicy(applicationId);
+		if (log.isInfoEnabled()) {
+			log.info(String.format("Application policy is removed successfully: [id] %s", applicationId));
+		}
+		return true;
+	}
+
+	public void addApplicationPolicyToInformationModel(ApplicationPolicy applicationPolicy) throws InvalidPolicyException {
+		String applicationId = applicationPolicy.getApplicationId();
+        if (!applicationPolicyListMap.containsKey(applicationId)) {
             if (log.isDebugEnabled()) {
-                log.debug("Adding deployment policy: [application-id] " + policy.getApplicationId());
+                log.debug("Adding application policy for application Id: " + applicationId);
             }
-            deploymentPolicyListMap.put(policy.getApplicationId(), policy);
+            applicationPolicyListMap.put(applicationId, applicationPolicy);
         } else {
-        	String errMsg = "Deployment policy already exists: [application-id] " + policy.getApplicationId();
+        	String errMsg = "Application policy is already exists for appplication [" + applicationId + "] ";
         	log.error(errMsg);
             throw new InvalidPolicyException(errMsg);
         }
+	    
     }
-
-    private void removeDeploymentPolicyFromMap(String applicationId) {
-        if(deploymentPolicyListMap.containsKey(applicationId)) {
-            deploymentPolicyListMap.remove(applicationId);
-        }
-    }
-
-    public void updateDeploymentPolicyToInformationModel(DeploymentPolicy policy) throws InvalidPolicyException {
-        if (log.isDebugEnabled()) {
-            log.debug("Updating deployment policy: " + policy.getApplicationId());
-        }
-        deploymentPolicyListMap.put(policy.getApplicationId(), policy);
-    }
-
-    /**
-     * Removes the specified policy
-     *
-     * @param policy
-     * @throws InvalidPolicyException
-     */
-    public void undeployDeploymentPolicy(String policy) throws InvalidPolicyException {
-        if (deploymentPolicyListMap.containsKey(policy)) {
-            if (log.isDebugEnabled()) {
-                log.debug("Removing deployment policy :" + policy);
-            }
-            DeploymentPolicy depPolicy = this.getDeploymentPolicy(policy);
-            // undeploy network partitions this deployment policy.
-//            PartitionManager.getInstance().undeployNetworkPartitions(depPolicy);
-            // undeploy the deployment policy.
-            RegistryManager.getInstance().removeDeploymentPolicy(depPolicy);
-            // remove from the infromation model.
-            deploymentPolicyListMap.remove(policy);
-        } else {
-            throw new InvalidPolicyException("No such policy [" + policy + "] exists");
-        }
-    }
-
-    /**
-     * Returns an array of the Deployment policies contained in this manager.
-     *
-     * @return
-     */
-    public DeploymentPolicy[] getDeploymentPolicyList() {        
-        return deploymentPolicyListMap.values().toArray(new DeploymentPolicy[0]);
-    }
-
-    /**
-     * Returns the deployment policy to which the specified id is mapped or null
-     *
-     * @param id
-     * @return
-     */
-    public DeploymentPolicy getDeploymentPolicy(String id) {
-        return deploymentPolicyListMap.get(id);
-    }
-
-    public DeploymentPolicy getDeploymentPolicyByApplication(String appId) {
-        for(DeploymentPolicy deploymentPolicy : deploymentPolicyListMap.values()) {
-            if(deploymentPolicy.getApplicationId().equals(appId)) {
-                return deploymentPolicy;
-            }
-        }
-        return null;
-    }
-
-    public String getDeploymentPolicyIdByApplication(String appId) {
-        for(Map.Entry<String, DeploymentPolicy> entry : deploymentPolicyListMap.entrySet()) {
-            if(entry.getValue().getApplicationId().equals(appId)) {
-                return entry.getKey();
-            }
-        }
-        return null;
+	
+	/**
+	 * Retruns an ApplicationPolicy of a given application
+	 * 
+	 * @param applicationId
+	 * @return
+	 */
+    public ApplicationPolicy getApplicationPolicy(String applicationId) {
+        return applicationPolicyListMap.get(applicationId);
     }
 
 }

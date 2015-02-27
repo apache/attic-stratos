@@ -583,11 +583,6 @@ public class CloudControllerServiceImpl implements CloudControllerService {
                 if (cluster != null) {
                     Member member = cluster.getMember(memberId);
                     if (member != null) {
-                        // change member status if termination on a faulty member
-                        if (fixMemberStatus(member, topology)) {
-                            // set the time this member was added to ReadyToShutdown status
-                            memberContext.setObsoleteInitTime(System.currentTimeMillis());
-                        }
 
                         // check if ready to shutdown member is expired and send
                         // member terminated if it is.
@@ -638,45 +633,6 @@ public class CloudControllerServiceImpl implements CloudControllerService {
             // member detected faulty, calculate ready to shutdown waiting period
             long timeInReadyToShutdownStatus = System.currentTimeMillis() - initTime;
             return timeInReadyToShutdownStatus >= expiryTime;
-        }
-
-        return false;
-    }
-
-
-    /**
-     * Corrects the member status upon termination call if the member is in an Active state
-     *
-     * @param member   The {@link org.apache.stratos.messaging.domain.topology.Member} object that is being
-     *                 checked for status
-     * @param topology The {@link org.apache.stratos.messaging.domain.topology.Topology} object to update
-     *                 the topology if needed.
-     */
-    private boolean fixMemberStatus(Member member, Topology topology) {
-        if (member.getStatus() == MemberStatus.Active) {
-            MemberReadyToShutdownEvent memberReadyToShutdownEvent = new MemberReadyToShutdownEvent(
-                    member.getServiceName(),
-                    member.getClusterId(),
-                    member.getClusterInstanceId(), member.getMemberId(),
-                    member.getNetworkPartitionId(),
-                    member.getPartitionId());
-
-            member.setStatus(MemberStatus.ReadyToShutDown);
-            log.info("Member Ready to shut down event adding status started");
-
-            TopologyManager.updateTopology(topology);
-
-            TopologyEventPublisher.sendMemberReadyToShutdownEvent(memberReadyToShutdownEvent);
-            //publishing data
-            StatisticsDataPublisher.publish(member.getMemberId(),
-                    member.getPartitionId(),
-                    member.getNetworkPartitionId(),
-                    member.getClusterId(),
-                    member.getServiceName(),
-                    MemberStatus.ReadyToShutDown.toString(),
-                    null);
-
-            return true;
         }
 
         return false;
@@ -1369,7 +1325,111 @@ public class CloudControllerServiceImpl implements CloudControllerService {
         }
     }
 
+	@Override
+	public void addDeployementPolicy(DeploymentPolicy deploymentPolicy)
+			throws DeploymentPolicyAlreadyExistsException, InvalidDeploymentPolicyException {
+
+		CloudControllerServiceUtil.validateDeploymentPolicy(deploymentPolicy);
+
+		if (log.isInfoEnabled()) {
+			log.info("Adding deployment policy: [deployment-policy-id] " + deploymentPolicy.getDeploymentPolicyID());
+		}
+		if (log.isDebugEnabled()) {
+			log.debug("Deployment policy definition: " + deploymentPolicy.toString());
+		}
+
+		String deploymentPolicyID = deploymentPolicy.getDeploymentPolicyID();
+		if (cloudControllerContext.getDeploymentPolicy(deploymentPolicyID) != null) {
+			String message = "Deployment policy already exists: [deployment-policy-id] " + deploymentPolicyID;
+			log.error(message);
+			throw new DeploymentPolicyAlreadyExistsException(message);
+		}
+
+		// Add cartridge to the cloud controller context and persist
+		CloudControllerContext.getInstance().addDeploymentPolicy(deploymentPolicy);
+		CloudControllerContext.getInstance().persist();
+
+		if (log.isInfoEnabled()) {
+			log.info("Successfully added deployment policy: [deployment-policy-id] " + deploymentPolicyID);
+		}
+
+	}
+
+	@Override
+	public void updateDeployementPolicy(DeploymentPolicy deploymentPolicy)
+			throws DeploymentPolicyNotExistsException, InvalidDeploymentPolicyException {
+		
+		CloudControllerServiceUtil.validateDeploymentPolicy(deploymentPolicy);
+
+		if (log.isInfoEnabled()) {
+			log.info("Updating deployment policy: [deployment-policy-id] " + deploymentPolicy.getDeploymentPolicyID());
+		}
+		if (log.isDebugEnabled()) {
+			log.debug("Updating Deployment policy definition: " + deploymentPolicy.toString());
+		}
+
+		String deploymentPolicyID = deploymentPolicy.getDeploymentPolicyID();
+		if (cloudControllerContext.getDeploymentPolicy(deploymentPolicyID) == null) {
+			String message = "Deployment policy not exists: [deployment-policy-id] " + deploymentPolicyID;
+			log.error(message);
+			throw new DeploymentPolicyNotExistsException(message);
+		}
+
+		// Add cartridge to the cloud controller context and persist
+		CloudControllerContext.getInstance().addDeploymentPolicy(deploymentPolicy);
+		CloudControllerContext.getInstance().persist();
+
+		if (log.isInfoEnabled()) {
+			log.info("Successfully updated deployment policy: [deployment-policy-id] " + deploymentPolicyID);
+		}
+	}
+
+	@Override
+	public void removeDeployementPolicy(String deploymentPolicyID) throws DeploymentPolicyNotExistsException {
+		if (log.isInfoEnabled()) {
+			log.info("Removing deployment policy: [deployment-policy_id] " + deploymentPolicyID);
+		}
+		if (cloudControllerContext.getDeploymentPolicy(deploymentPolicyID) == null) {
+			String message = "Deployment policy not exists: [deployment-policy-id] " + deploymentPolicyID;
+			log.error(message);
+			throw new DeploymentPolicyNotExistsException(message);
+		}
+		CloudControllerContext.getInstance().removeDeploymentPolicy(deploymentPolicyID);
+		if (log.isInfoEnabled()) {
+			log.info("Successfully removed deployment policy: [deployment_policy_id] " + deploymentPolicyID);
+		}
+
+	}
+
+	@Override
+	public DeploymentPolicy getDeploymentPolicy(String deploymentPolicyID)
+			throws DeploymentPolicyNotExistsException {
+		if (log.isInfoEnabled()) {
+			log.info("Getting deployment policy: [deployment-policy_id] " + deploymentPolicyID);
+		}
+		if (cloudControllerContext.getDeploymentPolicy(deploymentPolicyID) == null) {
+			String message = "Deployment policy not exists: [deployment-policy-id] " + deploymentPolicyID;
+			log.error(message);
+			throw new DeploymentPolicyNotExistsException(message);
+		}
+		DeploymentPolicy deploymentPolicy =
+				CloudControllerContext.getInstance().getDeploymentPolicy(deploymentPolicyID);
+		return deploymentPolicy;
+	}
+	
     @Override
+    public DeploymentPolicy[] getDeploymentPolicies() {
+        try {
+            Collection<DeploymentPolicy> deploymentPolicies = cloudControllerContext.getDeploymentPolicies();
+            return deploymentPolicies.toArray(new DeploymentPolicy[deploymentPolicies.size()]);
+        } catch (Exception e) {
+            String message = "Could not get deployment policies";
+            log.error(message);
+            throw new CloudControllerException(message, e);
+        }
+    }
+
+	@Override
     public boolean updateKubernetesHost(KubernetesHost kubernetesHost) throws
             InvalidKubernetesHostException, NonExistingKubernetesHostException {
 
@@ -1406,6 +1466,160 @@ public class CloudControllerServiceImpl implements CloudControllerService {
             }
         }
         throw new NonExistingKubernetesHostException("Kubernetes host not found [id] " + kubernetesHost.getHostId());
+    }
+	
+    @Override
+    public void addNetworkPartition(NetworkPartition networkPartition) throws NetworkPartitionAlreadyExistsException {
+    	
+        try {
+        	handleNullObject(networkPartition, "Network Partition is null");
+        	handleNullObject(networkPartition.getId(), "Network Partition ID is null");
+
+        	if(log.isInfoEnabled()) {
+                log.info(String.format("Adding network partition: [network-partition-id] %s", networkPartition.getId()));
+            }
+            
+            String networkPartitionID = networkPartition.getId();
+            if (cloudControllerContext.getNetworkPartition(networkPartitionID) != null) {
+            	String message = "Network partition already exists: [network-partition-id] " + networkPartitionID;
+            	log.error(message);
+            	throw new NetworkPartitionAlreadyExistsException(message);
+            }
+            
+            if(networkPartition.getPartitions() != null) {
+                for(Partition partition : networkPartition.getPartitions()) {
+                    if(partition != null) {
+                        if(log.isInfoEnabled()) {
+                            log.info(String.format("Validating partition: [network-partition-id] %s [partition-id] %s",
+                                    networkPartition.getId(), partition.getId()));
+                        }
+                        validatePartition(partition);
+                        if(log.isInfoEnabled()) {
+                            log.info(String.format("Partition validated successfully: [network-partition-id] %s " +
+                                            "[partition-id] %s", networkPartition.getId(), partition.getId()));
+                        }
+                    }
+                }
+            }
+            
+            // overwrites partitions' kubernetes cluster ids with network partition's kubernetes cluster id
+            CloudControllerServiceUtil.overwritesPartitionsKubernetesClusterIdsWithNetworkPartitionKubernetesClusterId(networkPartition);
+            
+            // adding network partition to CC-Context
+            CloudControllerContext.getInstance().addNetworkPartition(networkPartition);
+            // persisting CC-Context
+            CloudControllerContext.getInstance().persist();
+            if(log.isInfoEnabled()) {
+                log.info(String.format("Network partition added successfully: [network-partition-id] %s",
+                        networkPartition.getId()));
+            }
+        } catch (Exception e) {
+            String message = "Could not add network partition";
+            log.error(message);
+            throw new CloudControllerException(message, e);
+        }
+    }
+
+    @Override
+    public void removeNetworkPartition(String networkPartitionId) throws NetworkPartitionNotExistsException{
+    	
+        try {
+            if(log.isInfoEnabled()) {
+                log.info(String.format("Removing network partition: [network-partition-id] %s", networkPartitionId));
+            }
+            handleNullObject(networkPartitionId, "Network Partition ID is null");
+            
+            if (cloudControllerContext.getNetworkPartition(networkPartitionId) == null) {
+            	String message = "Network partition not exists: [network-partiton-id] " + networkPartitionId;
+    			log.error(message);
+    			throw new NetworkPartitionNotExistsException(message);
+			}
+            // removing from CC-Context
+            CloudControllerContext.getInstance().removeNetworkPartition(networkPartitionId);
+            // persisting CC-Context
+            CloudControllerContext.getInstance().persist();
+            if(log.isInfoEnabled()) {
+                log.info(String.format("Network partition removed successfully: [network-partition-id] %s",
+                        networkPartitionId));
+            }
+        } catch (Exception e) {
+            String message = "Could not remove network partition";
+            log.error(message);
+            throw new CloudControllerException(message, e);
+        }
+    }
+
+    @Override
+    public void updateNetworkPartition(NetworkPartition networkPartition) throws NetworkPartitionNotExistsException{
+        try {
+        	handleNullObject(networkPartition, "Network Partition is null");
+        	handleNullObject(networkPartition.getId(), "Network Partition ID is null");
+
+        	if(log.isInfoEnabled()) {
+                log.info(String.format("Updating network partition: [network-partition-id] %s", networkPartition.getId()));
+            }
+            
+            String networkPartitionID = networkPartition.getId();
+            if (cloudControllerContext.getNetworkPartition(networkPartitionID) == null) {
+            	String message = "Network partition not exists: [network-partition-id] " + networkPartitionID;
+            	log.error(message);
+            	throw new NetworkPartitionNotExistsException(message);
+            }
+            
+            if(networkPartition.getPartitions() != null) {
+                for(Partition partition : networkPartition.getPartitions()) {
+                    if(partition != null) {
+                        if(log.isInfoEnabled()) {
+                            log.info(String.format("Validating partition: [network-partition-id] %s [partition-id] %s",
+                                    networkPartition.getId(), partition.getId()));
+                        }
+                        validatePartition(partition);
+                        if(log.isInfoEnabled()) {
+                            log.info(String.format("Partition validated successfully: [network-partition-id] %s " +
+                                            "[partition-id] %s", networkPartition.getId(), partition.getId()));
+                        }
+                    }
+                }
+            }
+            
+            // overriding network partition to CC-Context
+            CloudControllerContext.getInstance().addNetworkPartition(networkPartition);
+            // persisting CC-Context
+            CloudControllerContext.getInstance().persist();
+            if(log.isInfoEnabled()) {
+                log.info(String.format("Network partition updated successfully: [network-partition-id] %s",
+                        networkPartition.getId()));
+            }
+        } catch (Exception e) {
+            String message = String.format("Could not update network partition: [network-partition-id] %s",
+                    networkPartition.getId());
+            log.error(message);
+            throw new CloudControllerException(message, e);
+        }
+    }
+
+    @Override
+    public NetworkPartition[] getNetworkPartitions() {
+        try {
+            Collection<NetworkPartition> networkPartitionList = cloudControllerContext.getNetworkPartitions();
+            return networkPartitionList.toArray(new NetworkPartition[networkPartitionList.size()]);
+        } catch (Exception e) {
+            String message = "Could not get network partitions";
+            log.error(message);
+            throw new CloudControllerException(message, e);
+        }
+    }
+
+    @Override
+    public NetworkPartition getNetworkPartition(String networkPartitionId) {
+        try {
+            return CloudControllerContext.getInstance().getNetworkPartition(networkPartitionId);
+        } catch (Exception e) {
+            String message = String.format("Could not get network partition: [network-partition-id] %s",
+                    networkPartitionId);
+            log.error(message);
+            throw new CloudControllerException(message, e);
+        }
     }
 }
 

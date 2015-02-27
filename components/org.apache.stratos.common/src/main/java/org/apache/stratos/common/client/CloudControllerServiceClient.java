@@ -112,9 +112,30 @@ public class CloudControllerServiceClient {
     	return stub.getServiceGroup(name);
     }
 
+    public void terminateInstance(String memberId) throws Exception {
+		if (log.isInfoEnabled()) {
+			log.info(String.format("Terminating instance via cloud controller: [member] %s", memberId));
+		}
+		long startTime = System.currentTimeMillis();
+		stub.terminateInstance(memberId);
+		if (log.isDebugEnabled()) {
+			long endTime = System.currentTimeMillis();
+			log.debug(String.format("Service call terminateInstance() returned in %dms", (endTime - startTime)));
+		}
+    }
+    
     public void terminateAllInstances(String clusterId) throws RemoteException, 
-    CloudControllerServiceInvalidClusterExceptionException {
-		stub.terminateInstances(clusterId);
+    								CloudControllerServiceInvalidClusterExceptionException {
+    	if (log.isInfoEnabled()) {
+            log.info(String.format("Terminating all instances of cluster via cloud controller: [cluster] %s", clusterId));
+        }
+        long startTime = System.currentTimeMillis();
+        stub.terminateInstances(clusterId);
+        
+        if (log.isDebugEnabled()) {
+            long endTime = System.currentTimeMillis();
+            log.debug(String.format("Service call terminateInstances() returned in %dms", (endTime - startTime)));
+        }
 	}
 
 	public String[] getRegisteredCartridges() throws RemoteException {
@@ -184,8 +205,73 @@ public class CloudControllerServiceClient {
         return stub.updateKubernetesHost(kubernetesHost);
     }
 
-    public void validatePartition(Partition partition) throws RemoteException,
-            CloudControllerServiceInvalidPartitionExceptionException {
-        stub.validatePartition(partition);
+	public void addDeploymentPolicy(DeploymentPolicy deploymentPolicy)
+			throws CloudControllerServiceDeploymentPolicyAlreadyExistsExceptionException, RemoteException, 
+			CloudControllerServiceInvalidDeploymentPolicyExceptionException {
+		stub.addDeployementPolicy(deploymentPolicy);
+	}
+
+	public void updateDeploymentPolicy(DeploymentPolicy deploymentPolicy)
+			throws CloudControllerServiceDeploymentPolicyNotExistsExceptionException, RemoteException, 
+			CloudControllerServiceInvalidDeploymentPolicyExceptionException {
+		stub.updateDeployementPolicy(deploymentPolicy);
+	}
+
+	public void removeDeploymentPolicy(String deploymentPolicyID)
+			throws CloudControllerServiceDeploymentPolicyNotExistsExceptionException, RemoteException {
+		stub.removeDeployementPolicy(deploymentPolicyID);
+	}
+
+	public DeploymentPolicy getDeploymentPolicy(String deploymentPolicyID)
+			throws CloudControllerServiceDeploymentPolicyNotExistsExceptionException, RemoteException {
+		return stub.getDeploymentPolicy(deploymentPolicyID);
+	}
+	
+    public DeploymentPolicy[] getDeploymentPolicies() throws RemoteException{
+    	return stub.getDeploymentPolicies();
     }
+    
+    public void validateDeploymentPolicy(String cartridgeType, Partition[] partitions) 
+    		throws RemoteException, 
+    		CloudControllerServiceInvalidPartitionExceptionException, 
+    		CloudControllerServiceInvalidCartridgeTypeExceptionException {
+    	stub.validateDeploymentPolicy(cartridgeType, partitions);
+    }
+	
+    public void addNetworkPartition(NetworkPartition networkPartition) throws RemoteException, 
+    CloudControllerServiceNetworkPartitionAlreadyExistsExceptionException {
+    	stub.addNetworkPartition(networkPartition);
+    }
+
+    public void removeNetworkPartition(String networkPartitionId) throws RemoteException, 
+    CloudControllerServiceNetworkPartitionNotExistsExceptionException {
+    	stub.removeNetworkPartition(networkPartitionId);
+    }
+
+    public void updateNetworkPartition(NetworkPartition networkPartition) throws RemoteException, 
+    CloudControllerServiceNetworkPartitionNotExistsExceptionException {
+    	stub.updateNetworkPartition(networkPartition);
+    }
+
+    public NetworkPartition[] getNetworkPartitions() throws RemoteException{
+    	return stub.getNetworkPartitions();
+    }
+
+    public NetworkPartition getNetworkPartition(String networkPartitionId) throws RemoteException {
+    	return stub.getNetworkPartition(networkPartitionId);
+    }
+    
+	public void createClusterInstance(String serviceType, String clusterId,
+	        String alias, String instanceId, String partitionId,
+	        String networkPartitionId) throws RemoteException {
+		try {
+			stub.createClusterInstance(serviceType, clusterId, alias,
+			        instanceId, partitionId, networkPartitionId);
+
+		} catch (CloudControllerServiceClusterInstanceCreationExceptionException e) {
+			String msg = e.getFaultMessage().getClusterInstanceCreationException().getMessage();
+			log.error(msg, e);
+			throw new RuntimeException(msg, e);
+		}
+	}
 }

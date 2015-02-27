@@ -38,6 +38,8 @@ import org.apache.stratos.autoscaler.exception.cartridge.TerminationException;
 import org.apache.stratos.autoscaler.monitor.cluster.ClusterMonitor;
 import org.apache.stratos.autoscaler.util.AutoscalerConstants;
 import org.apache.stratos.cloud.controller.stub.domain.MemberContext;
+import org.apache.stratos.common.client.CloudControllerServiceClient;
+import org.apache.stratos.common.constants.StratosConstants;
 
 /**
  * This will have utility methods that need to be executed from rule file...
@@ -136,14 +138,14 @@ public class RuleTasksDelegator {
 
         if(partitionAlgorithm == null) {
             //Send one after another as default
-            partitionAlgorithm = AutoscalerConstants.ONE_AFTER_ANOTHER_ALGORITHM_ID;
+            partitionAlgorithm = StratosConstants.ONE_AFTER_ANOTHER_ALGORITHM_ID;
         }
         if (log.isDebugEnabled()) {
             log.debug(String.format("Retrieving partition algorithm [Partition algorithm]: ", partitionAlgorithm));
         }
-        if (AutoscalerConstants.ROUND_ROBIN_ALGORITHM_ID.equals(partitionAlgorithm)) {
+        if (StratosConstants.ROUND_ROBIN_ALGORITHM_ID.equals(partitionAlgorithm)) {
             autoscaleAlgorithm = new RoundRobin();
-        } else if (AutoscalerConstants.ONE_AFTER_ANOTHER_ALGORITHM_ID.equals(partitionAlgorithm)) {
+        } else if (StratosConstants.ONE_AFTER_ANOTHER_ALGORITHM_ID.equals(partitionAlgorithm)) {
             autoscaleAlgorithm = new OneAfterAnother();
         } else {
             if (log.isErrorEnabled()) {
@@ -298,12 +300,10 @@ public class RuleTasksDelegator {
 
     public void terminateObsoleteInstance(String memberId) {
         try {
-            CloudControllerClient.getInstance().terminateInstance(memberId);
+            CloudControllerServiceClient.getInstance().terminateInstance(memberId);
         } catch (Exception e) {
             log.error("Cannot terminate instance", e);
-        } catch (TerminationException e) {
-            log.error("Cannot terminate instance", e);
-        }
+        } 
     }
 
     //Grouping
@@ -312,15 +312,13 @@ public class RuleTasksDelegator {
             if (log.isDebugEnabled()) {
                 log.debug("delegateTerminateAll - begin");
             }
-            CloudControllerClient.getInstance().terminateInstances(clusterId);
+            CloudControllerServiceClient.getInstance().terminateAllInstances(clusterId);
             if (log.isDebugEnabled()) {
                 log.debug("delegateTerminateAll - done");
             }
         } catch (Exception e) {
             log.error("Cannot terminate instance", e);
-        } catch (TerminationException e) {
-            log.error("Cannot terminate instance", e);
-        }
+        } 
     }
 
     public int getPredictedReplicasForStat(int minReplicas, float statUpperLimit, float statPredictedValue) {

@@ -16,23 +16,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.apache.stratos.common.beans.policy.deployment;
 
-import org.apache.stratos.common.beans.partition.NetworkPartitionBean;
-
 import javax.xml.bind.annotation.XmlRootElement;
-import java.util.List;
+
+import org.apache.stratos.common.beans.partition.ApplicationPolicyNetworkPartitionReferenceBean;
 
 @XmlRootElement
 public class ApplicationPolicyBean {
 
-    private List<NetworkPartitionBean> networkPartition;
+    private ApplicationPolicyNetworkPartitionReferenceBean[] networkPartition;
 
-    public List<NetworkPartitionBean> getNetworkPartition() {
-        return networkPartition;
-    }
+	public ApplicationPolicyNetworkPartitionReferenceBean[] getNetworkPartition() {
+		return networkPartition;
+	}
 
-    public void setNetworkPartition(List<NetworkPartitionBean> networkPartition) {
-        this.networkPartition = networkPartition;
-    }
+	public void setNetworkPartition(ApplicationPolicyNetworkPartitionReferenceBean[] networkPartition) {
+		this.networkPartition = networkPartition;
+	}
+        
 }

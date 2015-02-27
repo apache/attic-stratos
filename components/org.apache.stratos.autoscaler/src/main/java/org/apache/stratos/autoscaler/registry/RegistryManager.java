@@ -28,8 +28,7 @@ import org.apache.stratos.autoscaler.applications.pojo.ApplicationContext;
 import org.apache.stratos.autoscaler.exception.AutoScalerException;
 import org.apache.stratos.autoscaler.pojo.ServiceGroup;
 import org.apache.stratos.autoscaler.pojo.policy.autoscale.AutoscalePolicy;
-import org.apache.stratos.autoscaler.pojo.policy.deployment.DeploymentPolicy;
-import org.apache.stratos.autoscaler.pojo.policy.deployment.partition.network.NetworkPartition;
+import org.apache.stratos.autoscaler.pojo.policy.deployment.ApplicationPolicy;
 import org.apache.stratos.autoscaler.util.AutoscalerConstants;
 import org.apache.stratos.autoscaler.util.Deserializer;
 import org.apache.stratos.autoscaler.util.Serializer;
@@ -123,150 +122,6 @@ public class RegistryManager {
         if (log.isDebugEnabled()) {
             log.debug(String.format("Autoscaler policy written to registry: [id] %s [name] %s [description] %s",
                     autoscalePolicy.getId(), autoscalePolicy.getDisplayName(), autoscalePolicy.getDescription()));
-        }
-    }
-
-    public void persistDeploymentPolicy(DeploymentPolicy deploymentPolicy) {
-        String resourcePath = AutoscalerConstants.AUTOSCALER_RESOURCE + AutoscalerConstants.DEPLOYMENT_POLICY_RESOURCE + "/" + deploymentPolicy.getApplicationId();
-        persist(deploymentPolicy, resourcePath);
-        if (log.isDebugEnabled()) {
-            log.debug(String.format("Deployment policy written to registry: %s", deploymentPolicy.toString()));
-        }
-    }
-
-    /**
-     * Persist network partition in the registry
-     * @param networkPartition
-     */
-    public void persistNetworkPartition(NetworkPartition networkPartition) {
-        String resourcePath = AutoscalerConstants.AUTOSCALER_RESOURCE + AutoscalerConstants.NETWORK_PARTITIONS_RESOURCE + "/" + networkPartition.getId();
-        persist(networkPartition, resourcePath);
-        if (log.isDebugEnabled()) {
-            log.debug(String.format("Network partition written to registry: %s", networkPartition.toString()));
-        }
-    }
-
-    /**
-     * Get network partition resource paths
-     * @return
-     */
-    private String[] getNetworkPartitionResourcePaths() {
-        try {
-            PrivilegedCarbonContext.startTenantFlow();
-            PrivilegedCarbonContext carbonContext = PrivilegedCarbonContext.getThreadLocalCarbonContext();
-            carbonContext.setTenantDomain(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
-            carbonContext.setTenantId(MultitenantConstants.SUPER_TENANT_ID);
-
-            Object obj = retrieve(AutoscalerConstants.AUTOSCALER_RESOURCE +
-                    AutoscalerConstants.NETWORK_PARTITIONS_RESOURCE);
-
-            if (obj != null) {
-                if (obj instanceof String[]) {
-                    return (String[]) obj;
-                } else {
-                    log.warn("Expected object type not found for network partitions in registry");
-                    return null;
-                }
-            }
-        } finally {
-            PrivilegedCarbonContext.endTenantFlow();
-        }
-        return null;
-    }
-
-    /**
-     * Get network partitions
-     * @return
-     */
-    public List<NetworkPartition> getNetworkPartitions() {
-        List<NetworkPartition> networkPartitions = new ArrayList<NetworkPartition>();
-        String[] networkPartitionResourcePaths = getNetworkPartitionResourcePaths();
-        if(networkPartitionResourcePaths != null) {
-            for (String resourcePath : networkPartitionResourcePaths) {
-                if(StringUtils.isNotBlank(resourcePath)) {
-                    NetworkPartition networkPartition = getNetworkPartitionByResourcePath(resourcePath);
-                    networkPartitions.add(networkPartition);
-                }
-            }
-        }
-        return networkPartitions;
-    }
-
-    /**
-     * Get network partition by network partition id
-     * @param networkPartitionId
-     * @return
-     */
-    public NetworkPartition getNetworkPartition(String networkPartitionId) {
-
-        try {
-            PrivilegedCarbonContext.startTenantFlow();
-            PrivilegedCarbonContext carbonContext = PrivilegedCarbonContext.getThreadLocalCarbonContext();
-            carbonContext.setTenantDomain(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
-            carbonContext.setTenantId(MultitenantConstants.SUPER_TENANT_ID);
-
-            String resourcePath = AutoscalerConstants.AUTOSCALER_RESOURCE +
-                    AutoscalerConstants.NETWORK_PARTITIONS_RESOURCE + "/" + networkPartitionId;
-            return getNetworkPartitionByResourcePath(resourcePath);
-        } finally {
-            PrivilegedCarbonContext.endTenantFlow();
-        }
-    }
-
-    /**
-     * Get network partition by resource path
-     * @param resourcePath
-     * @return
-     */
-    private NetworkPartition getNetworkPartitionByResourcePath(String resourcePath) {
-        Object obj = retrieve(resourcePath);
-        if (obj != null) {
-            try {
-                Object dataObj = Deserializer.deserializeFromByteArray((byte[]) obj);
-                if (dataObj instanceof NetworkPartition) {
-                    return (NetworkPartition) dataObj;
-                } else {
-                    return null;
-                }
-            } catch (Exception e) {
-                String msg = "Could not read network partition from registry: [resource-path] " + resourcePath;
-                log.warn(msg, e);
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Remove network partition from the registry
-     * @param networkPartitionId
-     */
-    public void removeNetworkPartition(String networkPartitionId) {
-        String resourcePath = AutoscalerConstants.AUTOSCALER_RESOURCE +
-                AutoscalerConstants.NETWORK_PARTITIONS_RESOURCE + "/" + networkPartitionId;
-        this.delete(resourcePath);
-        if (log.isDebugEnabled()) {
-            log.debug(String.format("Network partition deleted from registry: [id] %s", networkPartitionId));
-        }
-    }
-
-    /**
-     * Update network partition in the registry
-     * @param networkPartition
-     */
-    public void updateNetworkPartition(NetworkPartition networkPartition) {
-        try {
-            if (getNetworkPartition(networkPartition.getId()) == null) {
-                throw new AutoScalerException(String.format("Network partition does not exist: " +
-                        "[network-partition-id] %s", networkPartition.getId()));
-            }
-
-            persistNetworkPartition(networkPartition);
-            if (log.isDebugEnabled()) {
-                log.debug(String.format("Network partition updated successfully: %s", networkPartition.toString()));
-            }
-        } catch (Exception e) {
-            log.error((String.format("Unable to update network partition [network-partition-id] %s",
-                    networkPartition.getId())), e);
         }
     }
 
@@ -510,7 +365,7 @@ public class RegistryManager {
                             partition = (Partition) dataObj;
                             if (log.isDebugEnabled()) {
                                 log.debug(String.format("Partition read from registry: [id] %s [provider] %s [min] %d [max] %d",
-                                        partition.getId(), partition.getProvider(), partition.getPartitionMin(), partition.getPartitionMax()));
+                                        partition.getId(), partition.getProvider()));
                             }
                             partitionList.add(partition);
                         } else {
@@ -557,36 +412,37 @@ public class RegistryManager {
         }
         return asPolicyList;
     }
-
-    public List<DeploymentPolicy> retrieveDeploymentPolicies() {
-        List<DeploymentPolicy> depPolicyList = new ArrayList<DeploymentPolicy>();
+    
+    public List<ApplicationPolicy> retrieveApplicationPolicies() {
+        List<ApplicationPolicy> applicationPolicyList = new ArrayList<ApplicationPolicy>();
         RegistryManager registryManager = RegistryManager.getInstance();
-        String[] depPolicyResourceList = (String[]) registryManager.retrieve(AutoscalerConstants.AUTOSCALER_RESOURCE + AutoscalerConstants.DEPLOYMENT_POLICY_RESOURCE);
+        String[] applicationPoliciesResourceList = (String[]) registryManager.retrieve(
+        		AutoscalerConstants.AUTOSCALER_RESOURCE + AutoscalerConstants.APPLICATION_POLICY_RESOURCE);
 
-        if (depPolicyResourceList != null) {
-            DeploymentPolicy depPolicy;
-            for (String resourcePath : depPolicyResourceList) {
+        if (applicationPoliciesResourceList != null) {
+        	ApplicationPolicy applicationPolicy;
+            for (String resourcePath : applicationPoliciesResourceList) {
                 Object serializedObj = registryManager.retrieve(resourcePath);
                 if (serializedObj != null) {
                     try {
                         Object dataObj = Deserializer.deserializeFromByteArray((byte[]) serializedObj);
-                        if (dataObj instanceof DeploymentPolicy) {
-                            depPolicy = (DeploymentPolicy) dataObj;
+                        if (dataObj instanceof ApplicationPolicy) {
+                        	applicationPolicy = (ApplicationPolicy) dataObj;
                             if (log.isDebugEnabled()) {
-                                log.debug(depPolicy.toString());
+                                log.debug(String.format("Application policy read from registry %s", applicationPolicy.toString()));
                             }
-                            depPolicyList.add(depPolicy);
+                            applicationPolicyList.add(applicationPolicy);
                         } else {
                             return null;
                         }
                     } catch (Exception e) {
-                        String msg = "Unable to retrieve data from Registry. Hence, any historical deployment policies will not get reflected.";
+                        String msg = "Unable to retrieve data from Registry. Hence, any historical application policies will not get reflected.";
                         log.warn(msg, e);
                     }
                 }
             }
         }
-        return depPolicyList;
+        return applicationPolicyList;
     }
 
     public ServiceGroup getServiceGroup(String name) throws Exception {
@@ -674,14 +530,15 @@ public class RegistryManager {
         }
 
     }
-
-    public void removeDeploymentPolicy(DeploymentPolicy depPolicy) {
-        String resourcePath = AutoscalerConstants.AUTOSCALER_RESOURCE + AutoscalerConstants.DEPLOYMENT_POLICY_RESOURCE;
+    
+    public void removeApplicationPolicy(String applicationId) {
+        String resourcePath = AutoscalerConstants.AUTOSCALER_RESOURCE + AutoscalerConstants.APPLICATION_POLICY_RESOURCE + "/" +
+        		applicationId;
         this.delete(resourcePath);
         if (log.isDebugEnabled()) {
-            log.debug(String.format("Deployment policy deleted from registry: [id] %s",
-                    depPolicy.getApplicationId()));
+            log.debug(String.format("Application policy deleted from registry [application-id] %s", applicationId));
         }
+
     }
 
     private void delete(String resourcePath) {
@@ -701,5 +558,16 @@ public class RegistryManager {
             throw new AutoScalerException("Could not delete data in registry at " + resourcePath, e);
         }
 
+    }
+
+	public void persistApplicationPolicy(ApplicationPolicy applicationPolicy) {
+
+		String resourcePath = AutoscalerConstants.AUTOSCALER_RESOURCE + 
+				AutoscalerConstants.APPLICATION_POLICY_RESOURCE + "/" + applicationPolicy.getApplicationId();
+        persist(applicationPolicy, resourcePath);
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("Application policy written to registry"));
+        }
+	    
     }
 }

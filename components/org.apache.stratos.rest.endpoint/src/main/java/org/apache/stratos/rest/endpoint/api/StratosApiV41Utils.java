@@ -25,17 +25,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.stratos.autoscaler.stub.AutoscalerServiceApplicationDefinitionExceptionException;
 import org.apache.stratos.autoscaler.stub.AutoscalerServiceInvalidPolicyExceptionException;
-import org.apache.stratos.autoscaler.stub.deployment.partition.NetworkPartition;
-import org.apache.stratos.autoscaler.stub.deployment.policy.DeploymentPolicy;
+import org.apache.stratos.autoscaler.stub.deployment.policy.ApplicationPolicy;
 import org.apache.stratos.autoscaler.stub.pojo.ApplicationContext;
 import org.apache.stratos.autoscaler.stub.pojo.ServiceGroup;
 import org.apache.stratos.cloud.controller.stub.*;
-import org.apache.stratos.cloud.controller.stub.domain.CartridgeConfig;
-import org.apache.stratos.cloud.controller.stub.domain.CartridgeInfo;
-import org.apache.stratos.cloud.controller.stub.domain.Persistence;
-import org.apache.stratos.cloud.controller.stub.domain.Volume;
+import org.apache.stratos.cloud.controller.stub.domain.*;
 import org.apache.stratos.common.beans.PropertyBean;
 import org.apache.stratos.common.beans.application.ApplicationBean;
+import org.apache.stratos.common.beans.application.ApplicationNetworkPartitionIdListBean;
 import org.apache.stratos.common.beans.application.GroupBean;
 import org.apache.stratos.common.beans.application.GroupReferenceBean;
 import org.apache.stratos.common.beans.application.domain.mapping.ApplicationDomainMappingsBean;
@@ -51,6 +48,7 @@ import org.apache.stratos.common.beans.kubernetes.KubernetesHostBean;
 import org.apache.stratos.common.beans.kubernetes.KubernetesMasterBean;
 import org.apache.stratos.common.beans.partition.NetworkPartitionBean;
 import org.apache.stratos.common.beans.policy.autoscale.AutoscalePolicyBean;
+import org.apache.stratos.common.beans.policy.deployment.ApplicationPolicyBean;
 import org.apache.stratos.common.beans.policy.deployment.DeploymentPolicyBean;
 import org.apache.stratos.common.beans.topology.ApplicationInfoBean;
 import org.apache.stratos.common.beans.topology.ApplicationInstanceBean;
@@ -639,19 +637,6 @@ public class StratosApiV41Utils {
         return ObjectConverter.convertStubAutoscalePolicyToAutoscalePolicy(autoscalePolicy);
     }
 
-    public static DeploymentPolicyBean getDeploymentPolicy(String applicationId) throws RestAPIException {
-
-        try {
-            AutoscalerServiceClient autoscalerServiceClient = getAutoscalerServiceClient();
-            DeploymentPolicy deploymentPolicy = autoscalerServiceClient.getDeploymentPolicy(applicationId);
-            return ObjectConverter.convertStubDeploymentPolicyToDeploymentPolicy(deploymentPolicy);
-        } catch (RemoteException e) {
-            String errorMsg = "Could not read deployment policy: [application-id] " + applicationId;
-            log.error(errorMsg, e);
-            throw new RestAPIException(errorMsg, e);
-        }
-    }
-
     // Util methods for repo actions
 
     public static void notifyArtifactUpdatedEvent(GitNotificationPayloadBean payload) throws RestAPIException {
@@ -991,13 +976,13 @@ public class StratosApiV41Utils {
 	}
 
 	/**
-     * Deploy application with a deployment policy.
-     *
-     * @param applicationId
-     * @param deploymentPolicy
-     * @throws RestAPIException
-     */
-    public static void deployApplication(String applicationId, DeploymentPolicyBean deploymentPolicy)
+	 * Deploy application with an application policy.
+	 * 
+	 * @param applicationId
+	 * @param applicationPolicy
+	 * @throws RestAPIException
+	 */
+    public static void deployApplication(String applicationId, ApplicationPolicyBean applicationPolicy)
             throws RestAPIException {
 
         try {
@@ -1031,11 +1016,12 @@ public class StratosApiV41Utils {
                 log.error(message);
                 throw new RestAPIException(message);
             }
-
-            validateDeploymentPolicy(deploymentPolicy);
-            org.apache.stratos.autoscaler.stub.deployment.policy.DeploymentPolicy stubDeploymentPolicy =
-                    ObjectConverter.convetToASDeploymentPolicyPojo(applicationId, deploymentPolicy);
-            autoscalerServiceClient.deployApplication(applicationId, stubDeploymentPolicy);
+            
+            ApplicationPolicy ccStubApplicationPolicy = ObjectConverter.convertApplicationPolicyBeanToStubAppPolicy(applicationPolicy);
+            // setting the application id since application-policy.json doesn't have this attribute explicitly
+            // reason is deployApplication() api path is containing the application id
+            ccStubApplicationPolicy.setApplicationId(applicationId);
+			autoscalerServiceClient.deployApplication(applicationId, ccStubApplicationPolicy);
             if (log.isInfoEnabled()) {
                 log.info(String.format("Application deployed successfully: [application-id] %s", applicationId));
             }
@@ -1052,19 +1038,45 @@ public class StratosApiV41Utils {
             throw new RestAPIException(message, e);
         }
     }
+    
+    public static ApplicationPolicyBean getApplicationPolicy(String applicationId) {
+        try {
+            AutoscalerServiceClient serviceClient = AutoscalerServiceClient.getInstance();
+            ApplicationPolicy applicationPolicy = serviceClient.getApplicationPolicy(applicationId);
+            return ObjectConverter.convertASStubApplicationPolicyToApplicationPolicy(applicationPolicy);
+        } catch (Exception e) {
+            String message = String.format("Could not get application policy [application-id] %s", applicationId);
+            log.error(message);
+            throw new RuntimeException(message, e);
+        }
+    }
+    
+    public static ApplicationNetworkPartitionIdListBean getApplicationNetworkPartitions(String applicationId) {
+        try {
+            AutoscalerServiceClient serviceClient = AutoscalerServiceClient.getInstance();
+            String[] networkPartitions = serviceClient.getApplicationNetworkPartitions(applicationId);
+            ApplicationNetworkPartitionIdListBean appNetworkPartitionsBean = new ApplicationNetworkPartitionIdListBean();
+            appNetworkPartitionsBean.setNetworkPartitionIds(Arrays.asList(networkPartitions));
+            return appNetworkPartitionsBean;
+        } catch (Exception e) {
+            String message = String.format("Could not get application network partitions [application-id] %s", applicationId);
+            log.error(message);
+            throw new RuntimeException(message, e);
+        }
+    }
 
 	/**
 	 * Validate deployment policy
 	 * @param deploymentPolicy
 	 */
 	private static void validateDeploymentPolicy(DeploymentPolicyBean deploymentPolicy) throws RestAPIException {
-		if(deploymentPolicy.getApplicationPolicy().getNetworkPartition().size()==0){
-			String message="No network partitions specify with the policy";
+		if(StringUtils.isBlank(deploymentPolicy.getId())){
+			String message = "No deployment policy id specify with the policy";
 			log.error(message);
 			throw new RestAPIException(message);
 		}
-		if(deploymentPolicy.getChildPolicies().size()==0){
-			String message = "No child policies specify with the policy";
+		if(deploymentPolicy.getNetworkPartition().size()==0){
+			String message="No network partitions specify with the policy";
 			log.error(message);
 			throw new RestAPIException(message);
 		}
@@ -1788,8 +1800,8 @@ public class StratosApiV41Utils {
 
     public static void addNetworkPartition(NetworkPartitionBean networkPartitionBean) {
         try {
-            AutoscalerServiceClient serviceClient = AutoscalerServiceClient.getInstance();
-            serviceClient.addNetworkPartition(ObjectConverter.convertNetworkPartitionToStubNetworkPartition(networkPartitionBean));
+            CloudControllerServiceClient serviceClient = CloudControllerServiceClient.getInstance();
+            serviceClient.addNetworkPartition(ObjectConverter.convertNetworkPartitionToCCStubNetworkPartition(networkPartitionBean));
         } catch (Exception e) {
             String message = "Could not add network partition";
             log.error(message);
@@ -1799,9 +1811,9 @@ public class StratosApiV41Utils {
 
     public static NetworkPartitionBean[] getNetworkPartitions() {
         try {
-            AutoscalerServiceClient serviceClient = AutoscalerServiceClient.getInstance();
-            NetworkPartition[] networkPartitions = serviceClient.getNetworkPartitions();
-            return ObjectConverter.convertStubNetworkPartitionsToNetworkPartitions(networkPartitions);
+            CloudControllerServiceClient serviceClient = CloudControllerServiceClient.getInstance();
+            org.apache.stratos.cloud.controller.stub.domain.NetworkPartition[] networkPartitions = serviceClient.getNetworkPartitions();
+            return ObjectConverter.convertCCStubNetworkPartitionsToNetworkPartitions(networkPartitions);
         } catch (Exception e) {
             String message = "Could not get network partitions";
             log.error(message);
@@ -1811,7 +1823,7 @@ public class StratosApiV41Utils {
 
     public static void removeNetworkPartition(String networkPartitionId) {
         try {
-            AutoscalerServiceClient serviceClient = AutoscalerServiceClient.getInstance();
+            CloudControllerServiceClient serviceClient = CloudControllerServiceClient.getInstance();
             serviceClient.removeNetworkPartition(networkPartitionId);
         } catch (Exception e) {
             String message = String.format("Could not remove network partition: [network-partition-id] %s", networkPartitionId);
@@ -1822,9 +1834,9 @@ public class StratosApiV41Utils {
 
     public static NetworkPartitionBean getNetworkPartition(String networkPartitionId) {
         try {
-            AutoscalerServiceClient serviceClient = AutoscalerServiceClient.getInstance();
-            NetworkPartition networkPartition = serviceClient.getNetworkPartition(networkPartitionId);
-            return ObjectConverter.convertStubNetworkPartitionToNetworkPartition(networkPartition);
+            CloudControllerServiceClient serviceClient = CloudControllerServiceClient.getInstance();
+            org.apache.stratos.cloud.controller.stub.domain.NetworkPartition networkPartition = serviceClient.getNetworkPartition(networkPartitionId);
+            return ObjectConverter.convertCCStubNetworkPartitionToNetworkPartition(networkPartition);
         } catch (Exception e) {
             String message = String.format("Could not get network partition: [network-partition-id] %s", networkPartitionId);
             log.error(message);
@@ -1834,9 +1846,9 @@ public class StratosApiV41Utils {
 
     public static void updateNetworkPartition(NetworkPartitionBean networkPartition) {
         try {
-            AutoscalerServiceClient serviceClient = AutoscalerServiceClient.getInstance();
+            CloudControllerServiceClient serviceClient = CloudControllerServiceClient.getInstance();
             serviceClient.updateNetworkPartition(ObjectConverter.
-                    convertNetworkPartitionToStubNetworkPartition(networkPartition));
+                    convertNetworkPartitionToCCStubNetworkPartition(networkPartition));
         }catch (Exception e) {
             String message = String.format("Could not update network partition: [network-partition-id] %s,",
                     networkPartition.getId());
@@ -1845,4 +1857,128 @@ public class StratosApiV41Utils {
         }
     }
 
+	/**
+	 * Add deployment policy
+	 *
+	 * @param deployementPolicyDefinitionBean DeploymentPolicyBean
+	 */
+	public static void addDeploymentPolicy(DeploymentPolicyBean deployementPolicyDefinitionBean)
+			throws RestAPIException {
+		try {
+			if (log.isDebugEnabled()) {
+				log.debug(String.format("Adding deployment policy: [deployment-policy-id] %s ",
+				                        deployementPolicyDefinitionBean.getId()));
+			}
+
+			DeploymentPolicy deploymentPolicy =
+
+					ObjectConverter.convetToCCDeploymentPolicy(deployementPolicyDefinitionBean);
+			CloudControllerServiceClient cloudControllerServiceClient = CloudControllerServiceClient.getInstance();
+			cloudControllerServiceClient.addDeploymentPolicy(deploymentPolicy);
+
+			if (log.isDebugEnabled()) {
+				log.debug(String.format("Successfully added deploymentPolicy: [deployment-policy-id] %s ",
+				                        deployementPolicyDefinitionBean.getId()));
+			}
+		} catch (CloudControllerServiceDeploymentPolicyAlreadyExistsExceptionException e) {
+			String msg =
+					"Deployment policy already exist [Deployment-policy-id]" + deployementPolicyDefinitionBean.getId();
+			log.error(msg, e);
+			throw new RestAPIException(msg);
+		} catch (Exception e) {
+			String msg = "Could not add deployment policy";
+			log.error(msg, e);
+			throw new RestAPIException(msg);
+		}
+	}
+
+	/**
+	 * Get deployment policy by deployment policy id
+	 * @param deploymentPolicyID deployment policy id
+	 * @return {@link DeploymentPolicyBean}
+	 */
+	public static DeploymentPolicyBean getDeployementPolicy(String deploymentPolicyID) throws RestAPIException {
+
+		DeploymentPolicyBean deploymentPolicy = null;
+		try {
+			CloudControllerServiceClient cloudControllerServiceClient = CloudControllerServiceClient.getInstance();
+			deploymentPolicy = ObjectConverter
+					.convetCCStubDeploymentPolicytoDeploymentPolicy(cloudControllerServiceClient.getDeploymentPolicy
+							(deploymentPolicyID));
+		} catch (Exception e) {
+			String msg = "Could not find deployment policy deployment-policy-id " + deploymentPolicyID;
+			log.error(msg, e);
+			throw new RestAPIException(msg);
+		}
+
+		return deploymentPolicy;
+	}
+	
+	/**
+	 * Get deployment policies
+	 * @return array of {@link DeploymentPolicyBean}
+	 */
+	public static DeploymentPolicyBean[] getDeployementPolicies() {
+        try {
+            CloudControllerServiceClient serviceClient = CloudControllerServiceClient.getInstance();
+            DeploymentPolicy[] deploymentPolicies = serviceClient.getDeploymentPolicies();
+            return ObjectConverter.convertCCStubDeploymentPoliciesToDeploymentPolicies(deploymentPolicies);
+        } catch (Exception e) {
+            String message = "Could not get network partitions";
+            log.error(message);
+            throw new RuntimeException(message, e);
+        }
+    }
+
+	/**
+	 * Update deployement policy
+	 * @param deploymentPolicyDefinitionBean DeploymentPolicyBean
+	 * @throws RestAPIException
+	 */
+	public static void updateDeploymentPolicy(DeploymentPolicyBean deploymentPolicyDefinitionBean)
+			throws RestAPIException {
+		try {
+			if (log.isDebugEnabled()) {
+				log.debug(String.format("Adding deployment policy: [deployment-policy-id] %s ",
+				                        deploymentPolicyDefinitionBean.getId()));
+			}
+
+			DeploymentPolicy deploymentPolicy =
+					ObjectConverter.convetToCCDeploymentPolicy(deploymentPolicyDefinitionBean);
+			CloudControllerServiceClient cloudControllerServiceClient = CloudControllerServiceClient.getInstance();
+			cloudControllerServiceClient.updateDeploymentPolicy(deploymentPolicy);
+
+			if (log.isDebugEnabled()) {
+				log.debug(String.format("DeploymentPolicy updates successfully : [deployment-policy-id] %s ",
+				                        deploymentPolicyDefinitionBean.getId()));
+			}
+		} catch (CloudControllerServiceDeploymentPolicyNotExistsExceptionException e) {
+			String msg =
+					"Deployment policy already exist [Deployment-policy-id]" + deploymentPolicyDefinitionBean.getId();
+			log.error(msg, e);
+			throw new RestAPIException(msg);
+		} catch (Exception e) {
+			String msg = "Could not add deployment policy";
+			log.error(msg, e);
+			throw new RestAPIException(msg);
+		}
+	}
+
+	/**
+	 * Remove deployment policy
+	 * @param deploymentPolicyID Deployment policy ID
+	 * @throws RestAPIException
+	 */
+	public static void removeDeploymentPolicy(String deploymentPolicyID)
+			throws RestAPIException {
+		try {
+			CloudControllerServiceClient cloudControllerServiceClient = CloudControllerServiceClient.getInstance();
+			cloudControllerServiceClient.removeDeploymentPolicy(deploymentPolicyID);
+		}
+		catch(Exception e){
+			String msg = "Could not remove deployment policy";
+			log.error(msg, e);
+			throw new RestAPIException(msg);
+		}
+	}
 }

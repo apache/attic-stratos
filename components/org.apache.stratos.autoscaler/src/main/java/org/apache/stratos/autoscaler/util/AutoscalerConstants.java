@@ -44,11 +44,10 @@ public final class AutoscalerConstants {
 	 */
 	public static final String AUTOSCALER_RESOURCE = "/autoscaler";
 	public static final String PARTITION_RESOURCE = "/partitions";
-	public static final String NETWORK_PARTITIONS_RESOURCE = "/networkPartitions";
 	public static final String AS_POLICY_RESOURCE = "/policies/autoscalingPolicies";
-	public static final String DEPLOYMENT_POLICY_RESOURCE = "/policies/deploymentPolicies";
     public static final String APPLICATIONS_RESOURCE = "/applications";
     public static final String APPLICATION_CONTEXTS_RESOURCE = "/applicationContexts";
+    public static final String APPLICATION_POLICY_RESOURCE = "/policies/applicationPolicies";
 
     /**
      * Cluster monitoring  interval
@@ -75,8 +74,6 @@ public final class AutoscalerConstants {
     public static final String CLUSTER_MONITOR_SCHEDULER_ID = "cluster.monitor.scheduler";
     public static final String CLUSTER_MONITOR_THREAD_POOL_ID = "cluster.monitor.thread.pool";
     public static final String CLUSTER_MONITOR_THREAD_POOL_SIZE = "cluster.monitor.thread.pool.size";
-	public static final String ROUND_ROBIN_ALGORITHM_ID = "round-robin";
-	public static final String ONE_AFTER_ANOTHER_ALGORITHM_ID = "one-after-another";
 	public static final String MEMBER_FAULT_EVENT_NAME = "member_fault";
 	//scheduler
 	public static final int SCHEDULE_DEFAULT_INITIAL_DELAY = 30;
@@ -120,5 +117,5 @@ public final class AutoscalerConstants {
 	public static final String OAUTH_SERVICE_SFX = "services/OAuthAdminService";
 	public static final String IDENTITY_APPLICATION_SERVICE_SFX = "services/IdentityApplicationManagementService";
 	public static final String TOKEN_ENDPOINT_SFX = "oauth2/token";
-	public static final String TERMINATE_DEPENDENTS = "terminate-dependents";
+	public static final String TERMINATE_DEPENDENTS = "terminate-dependents";	
 }

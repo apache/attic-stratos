@@ -19,6 +19,14 @@
 
 package org.apache.stratos.autoscaler.util;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import javax.xml.namespace.QName;
+
 import org.apache.axiom.om.OMElement;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -26,7 +34,12 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.stratos.autoscaler.applications.dependency.context.ApplicationChildContext;
 import org.apache.stratos.autoscaler.applications.dependency.context.ClusterChildContext;
 import org.apache.stratos.autoscaler.applications.dependency.context.GroupChildContext;
+import org.apache.stratos.autoscaler.applications.pojo.ApplicationContext;
+import org.apache.stratos.autoscaler.applications.pojo.CartridgeContext;
+import org.apache.stratos.autoscaler.applications.pojo.ComponentContext;
+import org.apache.stratos.autoscaler.applications.pojo.GroupContext;
 import org.apache.stratos.autoscaler.context.AutoscalerContext;
+import org.apache.stratos.autoscaler.exception.AutoScalerException;
 import org.apache.stratos.autoscaler.exception.application.DependencyBuilderException;
 import org.apache.stratos.autoscaler.exception.application.TopologyInConsistentException;
 import org.apache.stratos.autoscaler.exception.policy.PolicyValidationException;
@@ -34,19 +47,17 @@ import org.apache.stratos.autoscaler.monitor.Monitor;
 import org.apache.stratos.autoscaler.monitor.MonitorFactory;
 import org.apache.stratos.autoscaler.monitor.component.ApplicationMonitor;
 import org.apache.stratos.autoscaler.registry.RegistryManager;
+import org.apache.stratos.cloud.controller.stub.domain.DeploymentPolicy;
+import org.apache.stratos.cloud.controller.stub.domain.NetworkPartitionRef;
 import org.apache.stratos.common.Properties;
 import org.apache.stratos.common.Property;
+import org.apache.stratos.common.client.CloudControllerServiceClient;
 import org.apache.stratos.messaging.domain.application.Application;
 import org.apache.stratos.messaging.domain.application.Applications;
 import org.apache.stratos.messaging.domain.application.ClusterDataHolder;
 import org.apache.stratos.messaging.domain.topology.Service;
 import org.apache.stratos.messaging.domain.topology.Topology;
 import org.apache.stratos.messaging.message.receiver.topology.TopologyManager;
-
-import javax.xml.namespace.QName;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Map;
 
 
 /**
@@ -356,5 +367,188 @@ public class AutoscalerUtil {
             }
         }
         return "*";
+    }
+    
+    /**
+     * Get network partition ids referred in an application. Network partition ids are not referred directly.
+     * Cartridge or cartridge group can refer deployment policy which has network partition references.
+     * @param applicationId the application id
+     * @return list of network partition ids
+     */
+    public static List<String> getNetworkPartitionIdsReferedInApplication(String applicationId) {
+    	
+    	List<String> deploymentPolicyIdsReferedInApplication = getDeploymentPolicyIdsReferedInApplication(applicationId);
+    	if (deploymentPolicyIdsReferedInApplication == null) {
+			return null;
+		}
+    	
+    	List<String> networkPartitionIds = new ArrayList<String>();
+    	for (String deploymentPolicyId : deploymentPolicyIdsReferedInApplication) {
+			try {
+				DeploymentPolicy deploymentPolicy = CloudControllerServiceClient.getInstance().getDeploymentPolicy(deploymentPolicyId);
+				if (deploymentPolicy != null) {
+						for (NetworkPartitionRef networkPartitionRef : deploymentPolicy.getNetworkPartitionsRef()) {
+							if (networkPartitionRef !=  null) {
+								if (!networkPartitionIds.contains(networkPartitionRef.getId())) {
+									networkPartitionIds.add(networkPartitionRef.getId());
+								}
+							}
+						}
+					}
+				}
+				catch (Exception e) {
+					String msg = String.format("Error while getting deployment policy from cloud controller [deployment-policy-id] %s ", deploymentPolicyId);
+					log.error(msg, e);
+					throw new AutoScalerException(msg, e);
+				} 
+		}
+    	return networkPartitionIds;
+	}    
+    
+    /**
+     * Get deployment policy ids referred in an application.
+     * @param applicationId the application id
+     * @return list of deployment policy ids
+     */
+    private static List<String> getDeploymentPolicyIdsReferedInApplication(String applicationId) {
+    	
+    	Map<String, String> aliasToDeploymentPolicyIdMap = getAliasToDeploymentPolicyIdMapOfApplication(applicationId);
+    	if (aliasToDeploymentPolicyIdMap == null) {
+			return null;
+		}
+    	
+    	List<String> deploymentPolicyIds = new ArrayList<String>();
+
+		for (Map.Entry<String, String> entry : aliasToDeploymentPolicyIdMap.entrySet()) {
+			System.out.println(entry.getKey() + "/" + entry.getValue());
+			if (!deploymentPolicyIds.contains(entry.getValue())) {
+				deploymentPolicyIds.add(entry.getValue());
+			}
+		}
+
+		return deploymentPolicyIds;
+    }
+    
+    /**
+     * Get deployment policy id of an alias in the given application
+     * @param applicationId the application id
+     * @param alias the cartridge or cartridge-group alias
+     * @return the deployment policy id if found, null otherwise
+     */
+    public static String getDeploymentPolicyIdByAlias(String applicationId, String alias) {
+    	
+    	if (alias == null || alias.isEmpty()) {
+			return null;
+		}
+    	
+    	Map<String, String> aliasToDeploymentPolicyIdMap = getAliasToDeploymentPolicyIdMapOfApplication(applicationId);
+    	
+    	if (aliasToDeploymentPolicyIdMap == null) {
+			return null;
+		}
+    	
+    	return aliasToDeploymentPolicyIdMap.get(alias);
+    }
+    
+    /**
+     * Get alias to deployment policy id map in the given application.
+     * @param applicationId the application id
+     * @return alias to deployment policy map
+     */
+    private static Map<String, String> getAliasToDeploymentPolicyIdMapOfApplication(String applicationId) {
+    	
+    	Map<String, String> aliasToDeploymentPolicyIdMap = new HashMap<String, String>();
+    	
+    	ApplicationContext applicationContext = RegistryManager.getInstance().getApplicationContext(applicationId);
+    	if (applicationContext == null) {
+			return null;
+		}
+    	
+    	ComponentContext componentContext = applicationContext.getComponents();
+    	if (componentContext == null) {
+			return null;
+		}
+    	
+    	CartridgeContext[] cartridgeContexts = componentContext.getCartridgeContexts();
+    	if (cartridgeContexts != null && cartridgeContexts.length != 0) {
+    		getAliasToDeployloymentPolicyIdMapFromChildCartridgeContexts(aliasToDeploymentPolicyIdMap, cartridgeContexts);
+		}
+    	
+    	GroupContext[] groupContexts = componentContext.getGroupContexts();
+    	if (groupContexts != null && groupContexts.length != 0) {
+    		getAliasToDeployloymentPolicyIdMapFromChildGroupContexts(aliasToDeploymentPolicyIdMap, groupContexts);
+		}
+    	
+    	return aliasToDeploymentPolicyIdMap;
+    }
+    
+    private static void getAliasToDeployloymentPolicyIdMapFromChildCartridgeContexts(
+    		Map<String, String> aliasToDeploymentPolicyIdMap, CartridgeContext[] cartridgeContexts) {
+    	
+    	if (cartridgeContexts != null && cartridgeContexts.length != 0) {
+			for (CartridgeContext cartridgeContext : cartridgeContexts) {
+				if (cartridgeContext != null) {
+					aliasToDeploymentPolicyIdMap.put(
+							cartridgeContext.getSubscribableInfoContext().getAlias(), 
+							cartridgeContext.getSubscribableInfoContext().getDeploymentPolicy());
+				}
+			}
+		}
+    }
+    
+    private static void getAliasToDeployloymentPolicyIdMapFromChildGroupContexts(
+    		Map<String, String> aliasToDeploymentPolicyIdMap, GroupContext[] groupContexts) {
+    	
+    	if (groupContexts != null && groupContexts.length != 0) {
+			for (GroupContext groupContext : groupContexts) {
+				if (groupContext != null) {
+					if (groupContext.getDeploymentPolicy() == null || groupContext.getDeploymentPolicy().isEmpty()) {
+						// if group does not have a deployment policy, children should have
+						getAliasToDeployloymentPolicyIdMapFromChildCartridgeContexts(aliasToDeploymentPolicyIdMap, groupContext.getCartridgeContexts());
+						getAliasToDeployloymentPolicyIdMapFromChildGroupContexts(aliasToDeploymentPolicyIdMap, groupContext.getGroupContexts());
+					} else {
+						// if group have a deployment policy, it is the same for all the children
+						String deploymentPolicyId = groupContext.getDeploymentPolicy();
+						aliasToDeploymentPolicyIdMap.put(groupContext.getAlias(), deploymentPolicyId);
+						if (groupContext.getCartridgeContexts() != null && groupContext.getCartridgeContexts().length != 0) {
+							setDeploymentPolicyIdToChildCartridgeContexts(aliasToDeploymentPolicyIdMap, deploymentPolicyId, groupContext.getCartridgeContexts());
+						}
+						if (groupContext.getGroupContexts() != null && groupContext.getGroupContexts().length != 0) {
+							setDeploymentPolicyIdToChildGroupContexts(aliasToDeploymentPolicyIdMap, deploymentPolicyId, groupContext.getGroupContexts());
+						}
+						
+					}
+				}
+			}
+		}
+    }
+    
+    private static void setDeploymentPolicyIdToChildCartridgeContexts(
+    		Map<String, String> aliasToDeploymentPolicyIdMap, String deploymentPolicyId, CartridgeContext[] cartridgeContexts) {
+    	
+    	if (cartridgeContexts != null && cartridgeContexts.length != 0) {
+    		for (CartridgeContext cartridgeContext : cartridgeContexts) {
+				if (cartridgeContext != null) {
+					aliasToDeploymentPolicyIdMap.put(cartridgeContext.getSubscribableInfoContext().getAlias(), deploymentPolicyId);
+				}
+			}
+		}
+    }
+
+    private static void setDeploymentPolicyIdToChildGroupContexts(
+    		Map<String, String> aliasToDeploymentPolicyIdMap, String deploymentPolicyId, GroupContext[] groupContexts) {
+    	
+    	if (groupContexts != null && groupContexts.length != 0) {
+    		for (GroupContext groupContext : groupContexts) {
+				if (groupContext != null) {
+					if (groupContext.getCartridgeContexts() != null && groupContext.getCartridgeContexts().length != 0) {
+						setDeploymentPolicyIdToChildCartridgeContexts(aliasToDeploymentPolicyIdMap, deploymentPolicyId, groupContext.getCartridgeContexts());
+					}
+					if (groupContext.getGroupContexts() != null && groupContext.getGroupContexts().length != 0) {
+						setDeploymentPolicyIdToChildGroupContexts(aliasToDeploymentPolicyIdMap, deploymentPolicyId, groupContext.getGroupContexts());
+					}
+				}
+			}
+		}
     }
 }
