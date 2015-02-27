@@ -51,8 +51,5 @@ curl -X POST -H "Content-Type: application/json" -d "@${artifacts_path}/applicat
 sleep 1
 
 echo "Deploying application..."
-<<<<<<< HEAD
 curl -X POST -H "Content-Type: application/json" -d "@${iaas_artifacts_path}/deployment-policy.json" -k -v -u admin:admin https://${host_ip}:${host_port}/api/applications/dependency-scaling-groups-app/deploy
-=======
 curl -X POST -H "Content-Type: application/json" -d "@${artifacts_path}/application-policy.json" -k -v -u admin:admin https://${host_ip}:${host_port}/api/applications/dependency-scaling-groups-app/deploy
->>>>>>> aa77d0bbfc15b2d972c2f98d495569dff758cf27
