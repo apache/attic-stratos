@@ -688,7 +688,7 @@ $(document).ready(function(){
         var appJSON = generateJsplumbTree(applicationJson, jsPlumb.getConnections());
         var btn = $(this);
         var formtype = 'applications';
-        btn.html("<i class='fa fa-spinner fa-spin'></i> Deploying...");
+        btn.html("<i class='fa fa-spinner fa-spin'></i> Adding...");
         $.ajax({
             type: "POST",
             url: caramel.context + "/controllers/applications/application_requests.jag",
@@ -708,7 +708,7 @@ $(document).ready(function(){
             }
         })
             .always(function () {
-                btn.html('Deploy Application Definition');
+                btn.html('Add New Application Definition');
             });
 
     });

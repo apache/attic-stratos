@@ -31,18 +31,6 @@ include('/controllers/login/validator.jag');
 
 try {
     switch (formtype) {
-        case "groups":
-            formSubmit = util.RESTCalls.deployGroupDefinition(formPayload);
-            break;
-        case "deletegroups":
-            formSubmit = util.RESTCalls.deleteGroup(formPayload);
-            break;
-        case "applicationpolicies":
-            formSubmit = util.RESTCalls.deployApplicationPolicyDefinition(formPayload);
-            break;
-        case "deleteapppolicy":
-            formSubmit = util.RESTCalls.deleteApplicationPolicyDefinition(formPayload);
-            break;
         case "applications":
             formSubmit = util.RESTCalls.deployApplicationDefinition(formPayload);
             break;
