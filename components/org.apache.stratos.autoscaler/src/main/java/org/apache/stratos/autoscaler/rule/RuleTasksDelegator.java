@@ -34,9 +34,7 @@ import org.apache.stratos.autoscaler.context.member.MemberStatsContext;
 import org.apache.stratos.autoscaler.context.partition.ClusterLevelPartitionContext;
 import org.apache.stratos.autoscaler.context.partition.network.ClusterLevelNetworkPartitionContext;
 import org.apache.stratos.autoscaler.event.publisher.InstanceNotificationPublisher;
-import org.apache.stratos.autoscaler.exception.cartridge.TerminationException;
 import org.apache.stratos.autoscaler.monitor.cluster.ClusterMonitor;
-import org.apache.stratos.autoscaler.util.AutoscalerConstants;
 import org.apache.stratos.cloud.controller.stub.domain.MemberContext;
 import org.apache.stratos.common.client.CloudControllerServiceClient;
 import org.apache.stratos.common.constants.StratosConstants;
@@ -46,8 +44,6 @@ import org.apache.stratos.common.constants.StratosConstants;
  */
 public class RuleTasksDelegator {
 
-    public static final double SCALE_UP_FACTOR = 0.8;   //get from config
-    public static final double SCALE_DOWN_FACTOR = 0.2;
     private static boolean arspiIsSet = false;
 
     private static final Log log = LogFactory.getLog(RuleTasksDelegator.class);
@@ -65,7 +61,8 @@ public class RuleTasksDelegator {
     }
 
 
-    public int getNumberOfInstancesRequiredBasedOnRif(float rifPredictedValue, float requestsServedPerInstance, float averageRequestsServedPerInstance, boolean arspiReset) {
+    public int getNumberOfInstancesRequiredBasedOnRif(float rifPredictedValue, float requestsServedPerInstance, float
+            averageRequestsServedPerInstance, boolean arspiReset) {
 
 
         float requestsInstanceCanHandle = requestsServedPerInstance;
@@ -88,12 +85,12 @@ public class RuleTasksDelegator {
     public int getNumberOfInstancesRequiredBasedOnMemoryConsumption(float threshold, double predictedValue,
                                                                     int min, int max) {
         double numberOfAdditionalInstancesRequired = 0;
-        if(predictedValue != threshold) {
+        if (predictedValue != threshold) {
 
             float scalingRange = 100 - threshold;
             int instanceRange = max - min;
 
-            if(instanceRange != 0){
+            if (instanceRange != 0) {
 
                 float gradient = scalingRange / instanceRange;
                 numberOfAdditionalInstancesRequired = (predictedValue - threshold) / gradient;
@@ -107,7 +104,7 @@ public class RuleTasksDelegator {
                                                               int min) {
 
         double numberOfInstances;
-        if(threshold != 0) {
+        if (threshold != 0) {
 
             numberOfInstances = (min * predictedValue) / threshold;
             return (int) Math.ceil(numberOfInstances);
@@ -133,7 +130,8 @@ public class RuleTasksDelegator {
         if (laReset) {
             laBasedRequiredInstances = numberOfInstancesReuquiredBasedOnLoadAverage;
         }
-        numberOfInstances = Math.max(Math.max(numberOfInstancesRequiredBasedOnMemoryConsumption, numberOfInstancesReuquiredBasedOnLoadAverage), numberOfInstancesRequiredBasedOnRif);
+        numberOfInstances = Math.max(Math.max(numberOfInstancesRequiredBasedOnMemoryConsumption,
+                numberOfInstancesReuquiredBasedOnLoadAverage), numberOfInstancesRequiredBasedOnRif);
         return numberOfInstances;
     }
 
@@ -142,7 +140,7 @@ public class RuleTasksDelegator {
         PartitionAlgorithm autoscaleAlgorithm = null;
         //FIXME to not parse for algo when partition is chosen by the parent
 
-        if(partitionAlgorithm == null) {
+        if (partitionAlgorithm == null) {
             //Send one after another as default
             partitionAlgorithm = StratosConstants.PARTITION_ONE_AFTER_ANOTHER_ALGORITHM_ID;
         }
@@ -174,10 +172,11 @@ public class RuleTasksDelegator {
 
     /**
      * Invoked from drools to start an instance.
+     *
      * @param clusterMonitorPartitionContext Cluster monitor partition context
-     * @param clusterId Cluster id
-     * @param clusterInstanceId Instance id
-     * @param isPrimary Is a primary member
+     * @param clusterId                      Cluster id
+     * @param clusterInstanceId              Instance id
+     * @param isPrimary                      Is a primary member
      */
     public void delegateSpawn(ClusterLevelPartitionContext clusterMonitorPartitionContext, String clusterId,
                               String clusterInstanceId, boolean isPrimary) {
@@ -186,10 +185,11 @@ public class RuleTasksDelegator {
             String nwPartitionId = clusterMonitorPartitionContext.getNetworkPartitionId();
 
             // Calculate accumulation of minimum counts of all the partition of current network partition
-            int minimumCountOfNetworkPartition = 0;
-            ClusterMonitor clusterMonitor = (ClusterMonitor) AutoscalerContext.getInstance().getClusterMonitor(clusterId);
+            int minimumCountOfNetworkPartition;
+            ClusterMonitor clusterMonitor = AutoscalerContext.getInstance().getClusterMonitor(clusterId);
             ClusterContext clusterContext = (ClusterContext) clusterMonitor.getClusterContext();
-            ClusterLevelNetworkPartitionContext clusterLevelNetworkPartitionContext = clusterContext.getNetworkPartitionCtxt(nwPartitionId);
+            ClusterLevelNetworkPartitionContext clusterLevelNetworkPartitionContext =
+                    clusterContext.getNetworkPartitionCtxt(nwPartitionId);
             ClusterInstanceContext clusterInstanceContext =
                     (ClusterInstanceContext) clusterLevelNetworkPartitionContext.
                             getInstanceContext(clusterInstanceId);
@@ -227,7 +227,7 @@ public class RuleTasksDelegator {
     public void delegateScalingDependencyNotification(String clusterId, String networkPartitionId, String instanceId,
                                                       int requiredInstanceCount, int minimumInstanceCount) {
 
-        if(log.isDebugEnabled()) {
+        if (log.isDebugEnabled()) {
             log.debug("Scaling dependent notification is going to the [parentInstance] " + instanceId);
         }
         //Notify parent for checking scaling dependencies
@@ -241,7 +241,7 @@ public class RuleTasksDelegator {
     }
 
     public void delegateScalingOverMaxNotification(String clusterId, String networkPartitionId, String instanceId) {
-        if(log.isDebugEnabled()) {
+        if (log.isDebugEnabled()) {
             log.debug("Scaling max out notification is going to the [parentInstance] " + instanceId);
         }
         //Notify parent for checking scaling dependencies
@@ -254,7 +254,7 @@ public class RuleTasksDelegator {
     }
 
     public void delegateScalingDownBeyondMinNotification(String clusterId, String networkPartitionId, String instanceId) {
-        if(log.isDebugEnabled()) {
+        if (log.isDebugEnabled()) {
             log.debug("Scaling down lower min notification is going to the [parentInstance] " + instanceId);
         }
         //Notify parent for checking scaling dependencies
@@ -272,15 +272,17 @@ public class RuleTasksDelegator {
             //Moving member to pending termination list
             if (clusterMonitorPartitionContext.activeMemberAvailable(memberId)) {
 
-                log.info(String.format("[scale-down] Moving active member to termination pending list [member id] %s [partition] %s " +
-                                "[network partition] %s" , memberId, clusterMonitorPartitionContext.getPartitionId(),
+                log.info(String.format("[scale-down] Moving active member to termination pending list [member id] %s " +
+                                "[partition] %s [network partition] %s", memberId,
+                        clusterMonitorPartitionContext.getPartitionId(),
                         clusterMonitorPartitionContext.getNetworkPartitionId()));
                 clusterMonitorPartitionContext.moveActiveMemberToTerminationPendingMembers(memberId);
                 clusterMonitorPartitionContext.removeMemberStatsContext(memberId);
             } else if (clusterMonitorPartitionContext.pendingMemberAvailable(memberId)) {
 
-                log.info(String.format("[scale-down] Moving pending member to termination pending list [member id] %s [partition] %s " +
-                                "[network partition] %s" , memberId, clusterMonitorPartitionContext.getPartitionId(),
+                log.info(String.format("[scale-down] Moving pending member to termination pending list [member id] %s " +
+                                "[partition] %s [network partition] %s", memberId,
+                        clusterMonitorPartitionContext.getPartitionId(),
                         clusterMonitorPartitionContext.getNetworkPartitionId()));
                 clusterMonitorPartitionContext.movePendingMemberToObsoleteMembers(memberId);
                 clusterMonitorPartitionContext.removeMemberStatsContext(memberId);
@@ -309,7 +311,7 @@ public class RuleTasksDelegator {
             CloudControllerServiceClient.getInstance().terminateInstance(memberId);
         } catch (Exception e) {
             log.error("Cannot terminate instance", e);
-        } 
+        }
     }
 
     //Grouping
@@ -324,7 +326,7 @@ public class RuleTasksDelegator {
             }
         } catch (Exception e) {
             log.error("Cannot terminate instance", e);
-        } 
+        }
     }
 
     public int getPredictedReplicasForStat(int minReplicas, float statUpperLimit, float statPredictedValue) {
@@ -345,10 +347,13 @@ public class RuleTasksDelegator {
                 float memberGredientLoadAverage = memberStatsContext.getLoadAverage().getGradient();
                 float memberSecondDerivativeLoadAverage = memberStatsContext.getLoadAverage().getSecondDerivative();
 
-                double memberPredictedLoadAverage = getPredictedValueForNextMinute(memberAverageLoadAverage, memberGredientLoadAverage, memberSecondDerivativeLoadAverage, 1);
+                double memberPredictedLoadAverage = getPredictedValueForNextMinute(memberAverageLoadAverage,
+                        memberGredientLoadAverage, memberSecondDerivativeLoadAverage, 1);
 
-                log.debug("Member ID : " + memberStatsContext.getMemberId() + " : Predicted Load Average : " + memberPredictedLoadAverage);
-
+                if (log.isDebugEnabled()) {
+                    log.debug(String.format("[member-id] $s [predicted load average] $s ", memberStatsContext.getMemberId()
+                            , memberPredictedLoadAverage));
+                }
                 loadAveragePredicted += memberPredictedLoadAverage;
                 ++totalMemberCount;
             }
@@ -372,10 +377,13 @@ public class RuleTasksDelegator {
                 float memberMemoryConsumptionGredient = memberStatsContext.getMemoryConsumption().getGradient();
                 float memberMemoryConsumptionSecondDerivative = memberStatsContext.getMemoryConsumption().getSecondDerivative();
 
-                double memberPredictedMemoryConsumption = getPredictedValueForNextMinute(memberMemoryConsumptionAverage, memberMemoryConsumptionGredient, memberMemoryConsumptionSecondDerivative, 1);
+                double memberPredictedMemoryConsumption = getPredictedValueForNextMinute(memberMemoryConsumptionAverage,
+                        memberMemoryConsumptionGredient, memberMemoryConsumptionSecondDerivative, 1);
 
-                log.debug("Member ID : " + memberStatsContext.getMemberId() + " : Predicted Memory Consumption : " + memberPredictedMemoryConsumption);
-
+                if (log.isDebugEnabled()) {
+                    log.debug(String.format("[member-id] $s [predicted memory consumption] $s ", memberStatsContext.getMemberId()
+                            , memberPredictedMemoryConsumption));
+                }
                 memoryConsumptionPredicted += memberPredictedMemoryConsumption;
                 ++totalMemberCount;
             }
