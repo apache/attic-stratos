@@ -117,7 +117,6 @@ public class CliUtils {
 
             while (line != null) {
                 sb.append(line);
-                sb.append(System.lineSeparator());
                 sb.append(LINE_SEPARATOR);
                 line = br.readLine();
             }
