@@ -430,14 +430,18 @@ public class CloudControllerServiceImpl implements CloudControllerService {
             iaas.setDynamicPayload(iaasProvider.getPayload());
 
             if (clusterContext.isVolumeRequired()) {
-                if (clusterContext.getVolumes() != null) {
-                    for (Volume volume : clusterContext.getVolumes()) {
-                        if (volume.getId() == null) {
+                
+                Volume[] volumes = clusterContext.getVolumes();
+                if (volumes != null) {
+                    for (int i = 0; i < volumes.length; i++) {
+
+                        if (volumes[i].getId() == null) {
                             // Create a new volume
-                            createVolumeAndSetInClusterContext(volume, iaasProvider);
+                            volumes[i] = createVolumeAndSetInClusterContext(volumes[i], iaasProvider);
                         }
                     }
                 }
+                clusterContext.setVolumes(volumes);
             }
 
             // Handle member created event
@@ -480,7 +484,7 @@ public class CloudControllerServiceImpl implements CloudControllerService {
         return memberContext;
     }
 
-    private void createVolumeAndSetInClusterContext(Volume volume,
+    private Volume createVolumeAndSetInClusterContext(Volume volume,
                                                     IaasProvider iaasProvider) {
         // iaas cannot be null at this state #startInstance method
         Iaas iaas = iaasProvider.getIaas();
@@ -498,6 +502,8 @@ public class CloudControllerServiceImpl implements CloudControllerService {
         }
 
         volume.setIaasType(iaasProvider.getType());
+
+        return volume;
     }
 
 
@@ -1040,6 +1046,10 @@ public class CloudControllerServiceImpl implements CloudControllerService {
                         appClusterCtxt.getTextPayload(), appClusterCtxt.getHostName(),
                         appClusterCtxt.isLbCluster(), appClusterCtxt.getProperties());
 
+                if(appClusterCtxt.isVolumeRequired()){
+                    clusterContext.setVolumeRequired(true);
+                    clusterContext.setVolumes(appClusterCtxt.getVolumes());
+                }
                 CloudControllerContext.getInstance().addClusterContext(clusterContext);
 
 	            Cartridge cartridge = CloudControllerContext.getInstance().getCartridge(clusterContext.getCartridgeType());
@@ -1392,19 +1402,11 @@ public class CloudControllerServiceImpl implements CloudControllerService {
 	}
 
 	@Override
-	public DeploymentPolicy getDeploymentPolicy(String deploymentPolicyID)
-			throws DeploymentPolicyNotExistsException {
-		if (log.isInfoEnabled()) {
-			log.info("Getting deployment policy: [deployment-policy_id] " + deploymentPolicyID);
+	public DeploymentPolicy getDeploymentPolicy(String deploymentPolicyID) {
+		if (log.isDebugEnabled()) {
+			log.debug("Getting deployment policy: [deployment-policy_id] " + deploymentPolicyID);
 		}
-		if (cloudControllerContext.getDeploymentPolicy(deploymentPolicyID) == null) {
-			String message = "Deployment policy not exists: [deployment-policy-id] " + deploymentPolicyID;
-			log.error(message);
-			throw new DeploymentPolicyNotExistsException(message);
-		}
-		DeploymentPolicy deploymentPolicy =
-				CloudControllerContext.getInstance().getDeploymentPolicy(deploymentPolicyID);
-		return deploymentPolicy;
+        return CloudControllerContext.getInstance().getDeploymentPolicy(deploymentPolicyID);
 	}
 	
     @Override

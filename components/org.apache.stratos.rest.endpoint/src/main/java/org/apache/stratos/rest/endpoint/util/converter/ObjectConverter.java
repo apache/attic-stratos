@@ -63,6 +63,10 @@ public class ObjectConverter {
 
     public static CartridgeConfig convertCartridgeBeanToStubCartridgeConfig(
             CartridgeBean cartridgeBean) {
+    	
+    	if (cartridgeBean == null) {
+			return null;
+		}
 
         CartridgeConfig cartridgeConfig = new CartridgeConfig();
 
@@ -110,6 +114,10 @@ public class ObjectConverter {
     }
 
     private static PortMapping[] convertPortMappingBeansToStubPortMappings(List<PortMappingBean> portMappingBeans) {
+    	
+    	if (portMappingBeans == null) {
+			return null;
+		}
 
         //convert to an array
         PortMappingBean[] portMappingBeanArray = new PortMappingBean[portMappingBeans.size()];
@@ -128,6 +136,10 @@ public class ObjectConverter {
     }
 
     private static IaasConfig[] convertIaasProviderBeansToStubIaasConfig(List<IaasProviderBean> iaasProviderBeans) {
+    	
+    	if (iaasProviderBeans == null) {
+    		return null;
+		}
 
         //convert to an array
         IaasProviderBean[] iaasProviderBeansArray = new IaasProviderBean[iaasProviderBeans.size()];
@@ -162,8 +174,13 @@ public class ObjectConverter {
 
     public static Persistence convertPersistenceBeanToStubPersistence(
             org.apache.stratos.common.beans.cartridge.PersistenceBean persistenceBean) {
+    	
+    	if (persistenceBean == null) {
+			return null;
+		}
+    	
         Persistence persistence = new Persistence();
-        persistence.setPersistanceRequired(persistenceBean.isRequired());
+        persistence.setPersistenceRequired(true);
         VolumeBean[] volumeBean = new VolumeBean[persistenceBean.getVolume().size()];
         persistenceBean.getVolume().toArray(volumeBean);
         Volume[] volumes = new Volume[persistenceBean.getVolume().size()];
@@ -189,6 +206,11 @@ public class ObjectConverter {
 
     public static Properties convertPropertyBeansToProperties(
             List<org.apache.stratos.common.beans.cartridge.PropertyBean> propertyBeans) {
+    	
+    	if (propertyBeans == null) {
+			return null;
+		}
+    	
         org.apache.stratos.common.beans.cartridge.PropertyBean[] propertyBeansArray
                 = new org.apache.stratos.common.beans.cartridge.PropertyBean[propertyBeans.size()];
         propertyBeans.toArray(propertyBeansArray);
@@ -208,6 +230,7 @@ public class ObjectConverter {
 
     public static org.apache.stratos.cloud.controller.stub.Properties convertPropertyBeansToCCStubProperties(
             List<org.apache.stratos.common.beans.cartridge.PropertyBean> propertyBeans) {
+    	
         if (propertyBeans == null) {
             return null;
         }
@@ -235,6 +258,7 @@ public class ObjectConverter {
 
     public static org.apache.stratos.cloud.controller.stub.Properties convertProperyBeansToStubProperties(
             List<org.apache.stratos.common.beans.cartridge.PropertyBean> propertyBeans) {
+    	
         if (propertyBeans == null || propertyBeans.isEmpty()) {
             return null;
         }
@@ -260,6 +284,11 @@ public class ObjectConverter {
 
     private static NetworkInterfaces convertNetworkInterfaceBeansToNetworkInterfaces(
             List<NetworkInterfaceBean> networkInterfaceBeans) {
+    	
+    	if (networkInterfaceBeans == null) {
+			return null;
+		}
+    	
         NetworkInterface[] networkInterfacesArray = new NetworkInterface[networkInterfaceBeans.size()];
 
         int i = 0;
@@ -283,6 +312,10 @@ public class ObjectConverter {
 
     private static FloatingNetworks convertFloatingNetworkBeansToFloatingNetworks(
             List<FloatingNetworkBean> floatingNetworkBeans) {
+    	
+    	if (floatingNetworkBeans == null) {
+			return null;
+		}
 
         FloatingNetwork[] floatingNetworksArray = new FloatingNetwork[floatingNetworkBeans.size()];
 
@@ -302,6 +335,10 @@ public class ObjectConverter {
 
     public static PartitionRef convertStubPartitionToPartitionRef
             (PartitionRefBean partition) {
+    	
+    	if (partition == null) {
+			return null;
+		}
 
         org.apache.stratos.cloud.controller.stub.domain.PartitionRef stubPartition = new
                 org.apache.stratos.cloud.controller.stub.domain.PartitionRef();
@@ -314,6 +351,10 @@ public class ObjectConverter {
 
     public static org.apache.stratos.autoscaler.stub.autoscale.policy.AutoscalePolicy convertToCCAutoscalerPojo(
             AutoscalePolicyBean autoscalePolicyBean) {
+    	
+    	if (autoscalePolicyBean == null) {
+			return null;
+		}
 
         org.apache.stratos.autoscaler.stub.autoscale.policy.AutoscalePolicy autoscalePolicy = new
                 org.apache.stratos.autoscaler.stub.autoscale.policy.AutoscalePolicy();
@@ -357,6 +398,10 @@ public class ObjectConverter {
 
     public static org.apache.stratos.cloud.controller.stub.domain.DeploymentPolicy convetToCCDeploymentPolicy(
             DeploymentPolicyBean deploymentPolicyBean) {
+    	
+    	if (deploymentPolicyBean == null) {
+			return null;
+		}
 
         org.apache.stratos.cloud.controller.stub.domain.DeploymentPolicy deploymentPolicy =
                 new org.apache.stratos.cloud.controller.stub.domain.DeploymentPolicy();
@@ -437,6 +482,10 @@ public class ObjectConverter {
     }
 
     public static Partition convertPartitionToCCPartitionPojo(PartitionBean partitionBean) {
+    	
+    	if (partitionBean == null) {
+			return null;
+		}
 
         Partition partition = new Partition();
         partition.setId(partitionBean.getId());
@@ -452,6 +501,7 @@ public class ObjectConverter {
     }
 
     public static org.apache.stratos.autoscaler.stub.Properties getASProperties(List<PropertyBean> propertyBeans) {
+    	
         if (propertyBeans == null || propertyBeans.isEmpty()) {
             return null;
         }
@@ -476,6 +526,7 @@ public class ObjectConverter {
 
     public static org.apache.stratos.autoscaler.stub.Properties getASPropertiesFromCommonProperties(
             List<org.apache.stratos.common.beans.PropertyBean> propertyBeans) {
+    	
         if (propertyBeans == null || propertyBeans.isEmpty()) {
             return null;
         }
@@ -500,6 +551,7 @@ public class ObjectConverter {
     }
 
     public static org.apache.stratos.cloud.controller.stub.Properties getCCProperties(List<PropertyBean> propertyBeans) {
+    	
         if (propertyBeans == null || propertyBeans.isEmpty()) {
             return null;
         }
@@ -524,6 +576,7 @@ public class ObjectConverter {
     }
 
     private static PartitionBean convertCCStubPartitionToPartition(Partition stubPartition) {
+    	
         if (stubPartition == null) {
             return null;
         }
@@ -546,19 +599,6 @@ public class ObjectConverter {
         return partition;
     }
 
-
-    private static org.apache.stratos.common.beans.cartridge.PropertyBean convertStubPropertyToPropertyBean(
-            org.apache.stratos.autoscaler.stub.Property stubProperty) {
-        if ((stubProperty == null) || (!(stubProperty.getValue() instanceof String))) {
-            return null;
-        }
-
-        org.apache.stratos.common.beans.cartridge.PropertyBean propertyBean
-                = new org.apache.stratos.common.beans.cartridge.PropertyBean();
-        propertyBean.setName(stubProperty.getName());
-        propertyBean.setValue(String.valueOf(stubProperty.getValue()));
-        return propertyBean;
-    }
 
     public static org.apache.stratos.cloud.controller.stub.domain.NetworkPartition convertNetworkPartitionToCCStubNetworkPartition(
             NetworkPartitionBean networkPartitionBean) {
@@ -1317,10 +1357,10 @@ public class ObjectConverter {
             PersistenceContext persistenceContext = subscribableInfoContext.getPersistenceContext();
 
             PersistenceBean persistenceBean = new PersistenceBean();
-            persistenceBean.setRequired(persistenceContext.getPersistanceRequired());
+            persistenceBean.setRequired(true);
             persistenceBean.setVolume(convertStubVolumeToVolume(persistenceContext.getVolumes()));
 
-            subscribableInfo.setPersistenceBean(persistenceBean);
+            subscribableInfo.setPersistence(persistenceBean);
         }
         return subscribableInfo;
     }
@@ -1365,6 +1405,10 @@ public class ObjectConverter {
 
     private static CartridgeContext[] convertCartridgeReferenceBeansToStubCartridgeContexts(
             List<CartridgeReferenceBean> cartridges) {
+    	
+    	if (cartridges == null) {
+			return null;
+		}
 
         CartridgeContext[] cartridgeContextArray = new CartridgeContext[cartridges.size()];
         int i = 0;
@@ -1381,6 +1425,10 @@ public class ObjectConverter {
     }
 
     private static SubscribableInfoContext convertSubscribableInfo(SubscribableInfo subscribableInfo) {
+    	
+    	if (subscribableInfo == null) {
+			return null;
+		}
 
         SubscribableInfoContext infoContext = new SubscribableInfoContext();
         infoContext.setAlias(subscribableInfo.getAlias());
@@ -1402,18 +1450,24 @@ public class ObjectConverter {
             infoContext.setArtifactRepositoryContext(artifactRepositoryContext);
         }
 
-        if (subscribableInfo.getPersistenceBean() != null){
-            PersistenceBean persistenceBean = subscribableInfo.getPersistenceBean();
+        if (subscribableInfo.getPersistence() != null){
+            PersistenceBean persistenceBean = subscribableInfo.getPersistence();
 
             PersistenceContext persistenceContext = new PersistenceContext();
-            persistenceContext.setPersistanceRequired(persistenceBean.isRequired());
+            persistenceContext.setPersistenceRequired(true);
             persistenceContext.setVolumes(convertVolumeToStubVolume(persistenceBean.getVolume()));
+
+            infoContext.setPersistenceContext(persistenceContext);
         }
         infoContext.setProperties(convertPropertyBeansToStubProperties(subscribableInfo.getProperty()));
         return infoContext;
     }
 
     private static VolumeContext[] convertVolumeToStubVolume(List<VolumeBean> volumes) {
+    	
+    	if (volumes == null) {
+			return null;
+		}
 
         List<VolumeContext> volumeContexts = new ArrayList<VolumeContext>();
         for(VolumeBean volumeBean: volumes){
@@ -1429,7 +1483,7 @@ public class ObjectConverter {
 
             volumeContexts.add(volumeContext);
         }
-        return (VolumeContext[]) volumeContexts.toArray();
+        return volumeContexts.toArray(new VolumeContext[volumeContexts.size()]);
     }
 
     private static org.apache.stratos.autoscaler.stub.Properties convertPropertyBeansToStubProperties(
@@ -1448,6 +1502,11 @@ public class ObjectConverter {
 
 
     private static DependencyContext convertDependencyDefinitionsToDependencyContexts(DependencyBean dependencyDefinitions) {
+    	
+    	if (dependencyDefinitions == null) {
+			return null;
+		}
+    	
         DependencyContext dependencyContext = new DependencyContext();
         dependencyContext.setTerminationBehaviour(dependencyDefinitions.getTerminationBehaviour());
 
@@ -1468,6 +1527,10 @@ public class ObjectConverter {
 
     private static org.apache.stratos.autoscaler.stub.pojo.GroupContext[]
     convertGroupDefinitionsToStubGroupContexts(List<GroupReferenceBean> groupDefinitions) {
+    	
+    	if (groupDefinitions == null) {
+			return null;
+		}
 
         GroupContext[] groupContexts = new GroupContext[groupDefinitions.size()];
         int i = 0;
@@ -1484,16 +1547,19 @@ public class ObjectConverter {
             if (groupDefinition.getGroups() != null) {
                 groupContext.setGroupContexts(convertGroupDefinitionsToStubGroupContexts(groupDefinition.getGroups()));
             }
-
-            groupContext.setCartridgeContexts(convertCartridgeReferenceBeansToStubCartridgeContexts(groupDefinition.getCartridges()));
+            
+            // Cartridges
+            if (groupDefinition.getCartridges() != null) {
+            	groupContext.setCartridgeContexts(convertCartridgeReferenceBeansToStubCartridgeContexts(groupDefinition.getCartridges()));
+			}
             groupContexts[i++] = groupContext;
         }
-
         return groupContexts;
     }
 
 
     public static ApplicationInfoBean convertApplicationToApplicationBean(Application application) {
+    	
         if (application == null) {
             return null;
         }
@@ -1509,6 +1575,7 @@ public class ObjectConverter {
     }
 
     public static ApplicationInfoBean convertApplicationToApplicationInstanceBean(Application application) {
+    	
         if (application == null) {
             return null;
         }
@@ -1527,6 +1594,11 @@ public class ObjectConverter {
 
     private static List<ApplicationInstanceBean> convertApplicationInstancesToApplicationInstances(
             Application application) {
+    	
+    	if (application == null) {
+			return null;
+		}
+    	
         List<ApplicationInstanceBean> applicationInstanceList = new ArrayList<ApplicationInstanceBean>();
         Collection<ApplicationInstance> applicationInstancesInTopology =
                 application.getInstanceIdToInstanceContextMap().values();
@@ -1584,6 +1656,11 @@ public class ObjectConverter {
     }
 
     private static List<InstanceBean> convertGroupInstancesToInstances(Group group) {
+    	
+    	if (group == null) {
+			return null;
+		}
+    	
         List<InstanceBean> instanceList = new ArrayList<InstanceBean>();
         Collection<GroupInstance> instancesInTopology = group.getInstanceIdToInstanceContextMap().values();
         if (instancesInTopology != null) {
@@ -1644,8 +1721,12 @@ public class ObjectConverter {
 
     public static ServiceGroup convertServiceGroupDefinitionToASStubServiceGroup(GroupBean serviceGroupDefinition)
             throws ServiceGroupDefinitionException {
+    	
+    	if (serviceGroupDefinition == null) {
+			return null;
+		}
+    	
         ServiceGroup servicegroup = new ServiceGroup();
-
         // implement conversion (mostly List -> Array)
         servicegroup.setGroupscalingEnabled(serviceGroupDefinition.isGroupScalingEnabled());
         List<GroupBean> groupsDef = serviceGroupDefinition.getGroups();
@@ -1766,6 +1847,10 @@ public class ObjectConverter {
     }
 
     public static ApplicationSignUp convertApplicationSignUpBeanToStubApplicationSignUp(ApplicationSignUpBean applicationSignUpBean) {
+    	
+    	if (applicationSignUpBean == null) {
+			return null;
+		}
         ApplicationSignUp applicationSignUp = new ApplicationSignUp();
 
         if (applicationSignUpBean.getArtifactRepositories() != null) {
@@ -1789,6 +1874,10 @@ public class ObjectConverter {
     }
 
     public static ApplicationSignUpBean convertStubApplicationSignUpToApplicationSignUpBean(ApplicationSignUp applicationSignUp) {
+    	
+    	if (applicationSignUp == null) {
+			return null;
+		}
         ApplicationSignUpBean applicationSignUpBean = new ApplicationSignUpBean();
 
         if (applicationSignUp.getArtifactRepositories() != null) {
@@ -1812,6 +1901,11 @@ public class ObjectConverter {
     }
 
     public static DomainMapping convertDomainMappingBeanToStubDomainMapping(DomainMappingBean domainMappingBean) {
+    	
+    	if (domainMappingBean == null) {
+			return null;
+		}
+    	
         DomainMapping domainMapping = new DomainMapping();
         domainMapping.setDomainName(domainMappingBean.getDomainName());
         domainMapping.setContextPath(domainMappingBean.getContextPath());
@@ -1819,6 +1913,11 @@ public class ObjectConverter {
     }
 
     public static DomainMappingBean convertStubDomainMappingToDomainMappingBean(DomainMapping domainMapping) {
+    	
+    	if (domainMapping == null) {
+			return null;
+		}
+    	
         DomainMappingBean domainMappingBean = new DomainMappingBean();
         domainMappingBean.setDomainName(domainMapping.getDomainName());
         domainMappingBean.setContextPath(domainMapping.getContextPath());
@@ -1826,6 +1925,11 @@ public class ObjectConverter {
     }
 
     public static DeploymentPolicyBean convetCCStubDeploymentPolicytoDeploymentPolicy(DeploymentPolicy deploymentPolicy) {
+    	
+    	if (deploymentPolicy == null) {
+			return null;
+		}
+    	
         DeploymentPolicyBean deploymentPolicyBean = new DeploymentPolicyBean();
         deploymentPolicyBean.setId(deploymentPolicy.getDeploymentPolicyID());
         deploymentPolicyBean.setNetworkPartitions(convertCCStubNetwotkPartitionRefsToNetworkPartitionRefs(

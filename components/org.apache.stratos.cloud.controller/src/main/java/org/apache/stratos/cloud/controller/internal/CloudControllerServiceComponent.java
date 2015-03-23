@@ -1,4 +1,3 @@
-package org.apache.stratos.cloud.controller.internal;
 /*
  *
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -20,19 +19,23 @@ package org.apache.stratos.cloud.controller.internal;
  *
 */
 
+package org.apache.stratos.cloud.controller.internal;
+
 import com.hazelcast.core.HazelcastInstance;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.stratos.cloud.controller.context.CloudControllerContext;
 import org.apache.stratos.cloud.controller.exception.CloudControllerException;
-import org.apache.stratos.cloud.controller.messaging.publisher.TopologySynchronizerTask;
-import org.apache.stratos.cloud.controller.messaging.publisher.TopologySynchronizerTaskScheduler;
+import org.apache.stratos.cloud.controller.messaging.publisher.TopologyEventSynchronizer;
 import org.apache.stratos.cloud.controller.messaging.receiver.application.ApplicationEventReceiver;
 import org.apache.stratos.cloud.controller.messaging.receiver.cluster.status.ClusterStatusTopicReceiver;
 import org.apache.stratos.cloud.controller.messaging.receiver.instance.status.InstanceStatusTopicReceiver;
 import org.apache.stratos.cloud.controller.services.CloudControllerService;
 import org.apache.stratos.cloud.controller.services.impl.CloudControllerServiceImpl;
-import org.apache.stratos.common.clustering.DistributedObjectProvider;
+import org.apache.stratos.common.Component;
+import org.apache.stratos.common.services.ComponentActivationEventListener;
+import org.apache.stratos.common.services.ComponentStartUpSynchronizer;
+import org.apache.stratos.common.services.DistributedObjectProvider;
 import org.apache.stratos.common.threading.StratosThreadPool;
 import org.apache.stratos.messaging.broker.publish.EventPublisherPool;
 import org.apache.stratos.messaging.util.MessagingUtil;
@@ -45,6 +48,8 @@ import org.wso2.carbon.registry.core.session.UserRegistry;
 import org.wso2.carbon.utils.ConfigurationContextService;
 
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Registering Cloud Controller Service.
@@ -52,8 +57,10 @@ import java.util.concurrent.ExecutorService;
  * @scr.component name="org.apache.stratos.cloud.controller" immediate="true"
  * @scr.reference name="hazelcast.instance.service" interface="com.hazelcast.core.HazelcastInstance"
  *                cardinality="0..1"policy="dynamic" bind="setHazelcastInstance" unbind="unsetHazelcastInstance"
- * @scr.reference name="distributedObjectProvider" interface="org.apache.stratos.common.clustering.DistributedObjectProvider"
+ * @scr.reference name="distributedObjectProvider" interface="org.apache.stratos.common.services.DistributedObjectProvider"
  *                cardinality="1..1" policy="dynamic" bind="setDistributedObjectProvider" unbind="unsetDistributedObjectProvider"
+ * @scr.reference name="componentStartUpSynchronizer" interface="org.apache.stratos.common.services.ComponentStartUpSynchronizer"
+ *                cardinality="1..1" policy="dynamic" bind="setComponentStartUpSynchronizer" unbind="unsetComponentStartUpSynchronizer"
  * @scr.reference name="ntask.component" interface="org.wso2.carbon.ntask.core.service.TaskService"
  *                cardinality="1..1" policy="dynamic" bind="setTaskService" unbind="unsetTaskService"
  * @scr.reference name="registry.service" interface="org.wso2.carbon.registry.core.service.RegistryService"
@@ -65,47 +72,68 @@ public class CloudControllerServiceComponent {
 
 	private static final Log log = LogFactory.getLog(CloudControllerServiceComponent.class);
 
+    private static final String CLOUD_CONTROLLER_COORDINATOR_LOCK = "cloud.controller.coordinator.lock";
+    private static final String THREAD_POOL_ID = "cloud.controller.thread.pool";
+    private static final String SCHEDULER_THREAD_POOL_ID = "cloud.controller.scheduler.thread.pool";
+    private static final int THREAD_POOL_SIZE = 10;
+    private static final int SCHEDULER_THREAD_POOL_SIZE = 5;
+
 	private ClusterStatusTopicReceiver clusterStatusTopicReceiver;
 	private InstanceStatusTopicReceiver instanceStatusTopicReceiver;
 	private ApplicationEventReceiver applicationEventReceiver;
     private ExecutorService executorService;
+    private ScheduledExecutorService scheduler;
 
-	private static final String DEFAULT_IDENTIFIER = "Cloud-Controller";
-	private static final int THREAD_POOL_SIZE = 10;
-    private static final String CLOUD_CONTROLLER_COORDINATOR_LOCK = "CLOUD_CONTROLLER_COORDINATOR_LOCK";
-
-    protected void activate(ComponentContext context) {
+    protected void activate(final ComponentContext context) {
 		try {
-			executorService = StratosThreadPool.getExecutorService(DEFAULT_IDENTIFIER, THREAD_POOL_SIZE);
+            executorService = StratosThreadPool.getExecutorService(THREAD_POOL_ID, THREAD_POOL_SIZE);
+            scheduler = StratosThreadPool.getScheduledExecutorService(SCHEDULER_THREAD_POOL_ID,
+                    SCHEDULER_THREAD_POOL_SIZE);
 
-			// Register cloud controller service
-			BundleContext bundleContext = context.getBundleContext();
-			bundleContext.registerService(CloudControllerService.class.getName(),
-			                              new CloudControllerServiceImpl(), null);
+            Runnable cloudControllerActivator = new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        ComponentStartUpSynchronizer componentStartUpSynchronizer =
+                                ServiceReferenceHolder.getInstance().getComponentStartUpSynchronizer();
 
-            if(CloudControllerContext.getInstance().isClustered()) {
-                Thread coordinatorElectorThread = new Thread() {
-                    @Override
-                    public void run() {
-                        ServiceReferenceHolder.getInstance().getHazelcastInstance()
-                                .getLock(CLOUD_CONTROLLER_COORDINATOR_LOCK).lock();
+                        // Register cloud controller service
+                        BundleContext bundleContext = context.getBundleContext();
+                        bundleContext.registerService(CloudControllerService.class.getName(),
+                                new CloudControllerServiceImpl(), null);
 
-                        String localMemberId = ServiceReferenceHolder.getInstance().getHazelcastInstance()
-                                .getCluster().getLocalMember().getUuid();
-                        log.info("Elected this member [" + localMemberId + "] " +
-                                "as the cloud controller coordinator for the cluster");
+                        if(CloudControllerContext.getInstance().isClustered()) {
+                            Thread coordinatorElectorThread = new Thread() {
+                                @Override
+                                public void run() {
+                                    ServiceReferenceHolder.getInstance().getHazelcastInstance()
+                                            .getLock(CLOUD_CONTROLLER_COORDINATOR_LOCK).lock();
 
-                        CloudControllerContext.getInstance().setCoordinator(true);
-                        executeCoordinatorTasks();
+                                    String localMemberId = ServiceReferenceHolder.getInstance().getHazelcastInstance()
+                                            .getCluster().getLocalMember().getUuid();
+                                    log.info("Elected member [" + localMemberId + "] " +
+                                            "as the cloud controller coordinator of the cluster");
+
+                                    CloudControllerContext.getInstance().setCoordinator(true);
+                                    executeCoordinatorTasks();
+                                }
+                            };
+                            coordinatorElectorThread.setName("Cloud controller coordinator elector thread");
+                            executorService.submit(coordinatorElectorThread);
+                        } else {
+                            executeCoordinatorTasks();
+                        }
+
+                        componentStartUpSynchronizer.waitForWebServiceActivation("CloudControllerService");
+                        componentStartUpSynchronizer.setComponentStatus(Component.CloudController, true);
+                        log.info("Cloud controller service component activated");
+                    } catch (Exception e) {
+                        log.error("Could not activate cloud controller service component", e);
                     }
-                };
-                coordinatorElectorThread.setName("Cloud controller coordinator elector thread");
-                executorService.submit(coordinatorElectorThread);
-            } else {
-                executeCoordinatorTasks();
-            }
-
-            log.info("Cloud controller service component activated");
+                }
+            };
+            Thread cloudControllerActivatorThread = new Thread(cloudControllerActivator);
+            cloudControllerActivatorThread.start();
 		} catch (Exception e) {
 			log.error("Could not activate cloud controller service component", e);
         }
@@ -139,10 +167,18 @@ public class CloudControllerServiceComponent {
         if (log.isInfoEnabled()) {
             log.info("Scheduling topology synchronizer task");
         }
-        TopologySynchronizerTaskScheduler.schedule(ServiceReferenceHolder.getInstance().getTaskService());
-        // Execute topology synchronizer at the server startup
-        TopologySynchronizerTask topologySynchronizerTask = new TopologySynchronizerTask();
-        topologySynchronizerTask.execute();
+
+        ComponentStartUpSynchronizer componentStartUpSynchronizer =
+                ServiceReferenceHolder.getInstance().getComponentStartUpSynchronizer();
+        componentStartUpSynchronizer.addEventListener(new ComponentActivationEventListener() {
+            @Override
+            public void activated(Component component) {
+                if(component == Component.StratosManager) {
+                    Runnable topologySynchronizer = new TopologyEventSynchronizer();
+                    scheduler.scheduleAtFixedRate(topologySynchronizer, 0, 1, TimeUnit.MINUTES);
+                }
+            }
+        });
     }
 
     protected void setTaskService(TaskService taskService) {
@@ -206,6 +242,14 @@ public class CloudControllerServiceComponent {
         ServiceReferenceHolder.getInstance().setDistributedObjectProvider(null);
     }
 
+    protected void setComponentStartUpSynchronizer(ComponentStartUpSynchronizer componentStartUpSynchronizer) {
+        ServiceReferenceHolder.getInstance().setComponentStartUpSynchronizer(componentStartUpSynchronizer);
+    }
+
+    protected void unsetComponentStartUpSynchronizer(ComponentStartUpSynchronizer componentStartUpSynchronizer) {
+        ServiceReferenceHolder.getInstance().setComponentStartUpSynchronizer(null);
+    }
+
 	protected void deactivate(ComponentContext ctx) {
         // Close event publisher connections to message broker
         try {
@@ -215,12 +259,31 @@ public class CloudControllerServiceComponent {
         }
 
         // Shutdown executor service
-        if(executorService != null) {
-            try {
-                executorService.shutdownNow();
-            } catch (Exception e) {
-                log.warn("An error occurred while shutting down cloud controller executor service", e);
-            }
-        }
+        shutdownExecutorService(THREAD_POOL_ID);
+
+        // Shutdown scheduler
+        shutdownScheduledExecutorService(SCHEDULER_THREAD_POOL_ID);
 	}
+
+    private void shutdownExecutorService(String executorServiceId) {
+        ExecutorService executorService = StratosThreadPool.getExecutorService(executorServiceId, 1);
+        if(executorService != null) {
+            shutdownExecutorService(executorService);
+        }
+    }
+
+    private void shutdownScheduledExecutorService(String executorServiceId) {
+        ExecutorService executorService = StratosThreadPool.getScheduledExecutorService(executorServiceId, 1);
+        if(executorService != null) {
+            shutdownExecutorService(executorService);
+        }
+    }
+
+    private void shutdownExecutorService(ExecutorService executorService) {
+        try {
+            executorService.shutdownNow();
+        } catch (Exception e) {
+            log.warn("An error occurred while shutting down executor service", e);
+        }
+    }
 }

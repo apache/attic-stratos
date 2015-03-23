@@ -18,24 +18,24 @@
  */
 package org.apache.stratos.manager.internal;
 
-import java.util.concurrent.ExecutorService;
-
+import com.hazelcast.core.HazelcastInstance;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.stratos.common.clustering.DistributedObjectProvider;
+import org.apache.stratos.common.Component;
+import org.apache.stratos.common.services.ComponentActivationEventListener;
+import org.apache.stratos.common.services.ComponentStartUpSynchronizer;
+import org.apache.stratos.common.services.DistributedObjectProvider;
 import org.apache.stratos.common.threading.StratosThreadPool;
 import org.apache.stratos.manager.context.StratosManagerContext;
 import org.apache.stratos.manager.messaging.publisher.TenantEventPublisher;
-import org.apache.stratos.manager.messaging.publisher.synchronizer.ApplicationSignUpSynchronizerTask;
-import org.apache.stratos.manager.messaging.publisher.synchronizer.SynchronizerTaskScheduler;
-import org.apache.stratos.manager.messaging.publisher.synchronizer.TenantSynzhronizerTask;
+import org.apache.stratos.manager.messaging.publisher.synchronizer.ApplicationSignUpEventSynchronizer;
+import org.apache.stratos.manager.messaging.publisher.synchronizer.TenantEventSynchronizer;
 import org.apache.stratos.manager.messaging.receiver.StratosManagerApplicationEventReceiver;
 import org.apache.stratos.manager.messaging.receiver.StratosManagerInstanceStatusEventReceiver;
 import org.apache.stratos.manager.messaging.receiver.StratosManagerTopologyEventReceiver;
 import org.apache.stratos.manager.user.management.TenantUserRoleManager;
 import org.apache.stratos.manager.user.management.exception.UserManagerException;
 import org.apache.stratos.manager.utils.CartridgeConfigFileReader;
-import org.apache.stratos.manager.utils.StratosManagerConstants;
 import org.apache.stratos.manager.utils.UserRoleCreator;
 import org.apache.stratos.messaging.broker.publish.EventPublisherPool;
 import org.apache.stratos.messaging.util.MessagingUtil;
@@ -48,7 +48,9 @@ import org.wso2.carbon.user.core.UserStoreException;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.utils.ConfigurationContextService;
 
-import com.hazelcast.core.HazelcastInstance;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @scr.component name="org.wso2.carbon.hosting.mgt.internal.StratosManagerServiceComponent"
@@ -71,63 +73,93 @@ import com.hazelcast.core.HazelcastInstance;
  * @scr.reference name="ntask.component" interface="org.wso2.carbon.ntask.core.service.TaskService"
  *                cardinality="1..1" policy="dynamic" bind="setTaskService"
  *                unbind="unsetTaskService"
- * @scr.reference name="distributedObjectProvider" interface="org.apache.stratos.common.clustering.DistributedObjectProvider"
+ * @scr.reference name="distributedObjectProvider" interface="org.apache.stratos.common.services.DistributedObjectProvider"
  *                cardinality="1..1" policy="dynamic" bind="setDistributedObjectProvider" unbind="unsetDistributedObjectProvider"
+ * @scr.reference name="componentStartUpSynchronizer" interface="org.apache.stratos.common.services.ComponentStartUpSynchronizer"
+ *                cardinality="1..1" policy="dynamic" bind="setComponentStartUpSynchronizer" unbind="unsetComponentStartUpSynchronizer"
  */
 public class StratosManagerServiceComponent {
 
 	private static final Log log = LogFactory.getLog(StratosManagerServiceComponent.class);
-	private static final String THREAD_EXECUTOR_ID = "stratos.manager.thread.pool";
-    private static final String STRATOS_MANAGER_COORDINATOR_LOCK = "STRATOS_MANAGER_COORDINATOR_LOCK";
+
+    private static final String THREAD_POOL_ID = "stratos.manager.thread.pool";
+    private static final String SCHEDULER_THREAD_POOL_ID = "stratos.manager.scheduler.thread.pool";
+    private static final String STRATOS_MANAGER_COORDINATOR_LOCK = "stratos.manager.coordinator.lock";
     private static final int THREAD_POOL_SIZE = 20;
+    private static final int SCHEDULER_THREAD_POOL_SIZE = 5;
 
     private StratosManagerTopologyEventReceiver topologyEventReceiver;
     private StratosManagerInstanceStatusEventReceiver instanceStatusEventReceiver;
     private StratosManagerApplicationEventReceiver applicationEventReceiver;
 	private ExecutorService executorService;
+    private ScheduledExecutorService scheduler;
 
     protected void activate(final ComponentContext componentContext) throws Exception {
 		try {
-			CartridgeConfigFileReader.readProperties();
-			executorService = StratosThreadPool.getExecutorService(THREAD_EXECUTOR_ID, THREAD_POOL_SIZE);
+            executorService = StratosThreadPool.getExecutorService(THREAD_POOL_ID, THREAD_POOL_SIZE);
+            scheduler = StratosThreadPool.getScheduledExecutorService(SCHEDULER_THREAD_POOL_ID,
+                    SCHEDULER_THREAD_POOL_SIZE);
 
-            if(StratosManagerContext.getInstance().isClustered()) {
-                Thread coordinatorElectorThread = new Thread() {
-                    @Override
-                    public void run() {
-                        try {
-                            ServiceReferenceHolder.getInstance().getHazelcastInstance()
-                                    .getLock(STRATOS_MANAGER_COORDINATOR_LOCK).lock();
+            Runnable stratosManagerActivator = new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        ComponentStartUpSynchronizer componentStartUpSynchronizer =
+                                ServiceReferenceHolder.getInstance().getComponentStartUpSynchronizer();
 
-                            String localMemberId = ServiceReferenceHolder.getInstance().getHazelcastInstance()
-                                    .getCluster().getLocalMember().getUuid();
-                            log.info("Elected this member [" + localMemberId + "] " +
-                                    "as the stratos manager coordinator for the cluster");
+                        // Wait for cloud controller and autoscaler components to start
+                        componentStartUpSynchronizer.waitForComponentActivation(Component.StratosManager,
+                                Component.CloudController);
+                        componentStartUpSynchronizer.waitForComponentActivation(Component.StratosManager,
+                                Component.Autoscaler);
 
-                            StratosManagerContext.getInstance().setCoordinator(true);
+                        CartridgeConfigFileReader.readProperties();
+                        if (StratosManagerContext.getInstance().isClustered()) {
+                            Thread coordinatorElectorThread = new Thread() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        ServiceReferenceHolder.getInstance().getHazelcastInstance()
+                                                .getLock(STRATOS_MANAGER_COORDINATOR_LOCK).lock();
+
+                                        String localMemberId = ServiceReferenceHolder.getInstance().getHazelcastInstance()
+                                                .getCluster().getLocalMember().getUuid();
+                                        log.info("Elected this member [" + localMemberId + "] " +
+                                                "as the stratos manager coordinator for the cluster");
+
+                                        StratosManagerContext.getInstance().setCoordinator(true);
+                                        executeCoordinatorTasks(componentContext);
+                                    } catch (Exception e) {
+                                        if (log.isErrorEnabled()) {
+                                            log.error("Could not execute coordinator tasks", e);
+                                        }
+                                    }
+                                }
+                            };
+                            coordinatorElectorThread.setName("Stratos manager coordinator elector thread");
+                            executorService.submit(coordinatorElectorThread);
+                        } else {
                             executeCoordinatorTasks(componentContext);
-                        } catch (Exception e) {
-                            if(log.isErrorEnabled()) {
-                                log.error("Could not execute coordinator tasks", e);
-                            }
                         }
+
+                        // Initialize topology event receiver
+                        initializeTopologyEventReceiver();
+
+                        // Initialize application event receiver
+                        initializeApplicationEventReceiver();
+
+                        componentStartUpSynchronizer.waitForWebServiceActivation("StratosManagerService");
+                        componentStartUpSynchronizer.setComponentStatus(Component.StratosManager, true);
+                        if (log.isInfoEnabled()) {
+                            log.info("Stratos manager component is activated");
+                        }
+                    } catch (Exception e) {
+                        log.error("Could not activate stratos manager service component", e);
                     }
-                };
-                coordinatorElectorThread.setName("Stratos manager coordinator elector thread");
-                executorService.submit(coordinatorElectorThread);
-            } else {
-                executeCoordinatorTasks(componentContext);
-            }
-
-            // Initialize topology event receiver
-            initializeTopologyEventReceiver();
-
-            // Initialize application event receiver
-            initializeApplicationEventReceiver();
-
-            if(log.isInfoEnabled()) {
-                log.info("Stratos manager component is activated");
-            }
+                }
+            };
+            Thread stratosManagerActivatorThread = new Thread(stratosManagerActivator);
+            stratosManagerActivatorThread.start();
 		} catch (Exception e) {
             log.error("Could not activate stratos manager service component", e);
 		}
@@ -142,11 +174,9 @@ public class StratosManagerServiceComponent {
     private void executeCoordinatorTasks(ComponentContext componentContext) throws UserStoreException,
             UserManagerException {
 
-        // Initialize tenant event publisher
         initializeTenantEventPublisher(componentContext);
-
-        // Initialize instance status receiver
         initializeInstanceStatusEventReceiver();
+        registerComponentStartUpEventListeners();
 
         // Create internal/user Role at server start-up
         createInternalUserRole(componentContext);
@@ -202,31 +232,34 @@ public class StratosManagerServiceComponent {
      * @param componentContext
      */
     private void initializeTenantEventPublisher(ComponentContext componentContext) {
-        // Schedule complete tenant event synchronizer
-        if(log.isDebugEnabled()) {
-            log.debug("Scheduling tenant synchronizer task...");
-        }
-        SynchronizerTaskScheduler.schedule(StratosManagerConstants.TENANT_SYNC_TASK_TYPE,
-                StratosManagerConstants.TENANT_SYNC_TASK_NAME, TenantSynzhronizerTask.class);
-
-        // Schedule complete application signup event synchronizer
-        if(log.isDebugEnabled()) {
-            log.debug("Scheduling application signup synchronizer task...");
-        }
-        SynchronizerTaskScheduler.schedule(StratosManagerConstants.APPLICATION_SIGNUP_SYNC_TASK_TYPE,
-                StratosManagerConstants.APPLICATION_SIGNUP_SYNC_TASK_NAME, ApplicationSignUpSynchronizerTask.class);
-
         // Register tenant event publisher
         if(log.isDebugEnabled()) {
             log.debug("Initializing tenant event publisher...");
         }
-        TenantEventPublisher tenantEventPublisher = new TenantEventPublisher();
+        final TenantEventPublisher tenantEventPublisher = new TenantEventPublisher();
         componentContext.getBundleContext().registerService(
                 org.apache.stratos.common.listeners.TenantMgtListener.class.getName(),
                 tenantEventPublisher, null);
         if(log.isInfoEnabled()) {
             log.info("Tenant event publisher initialized");
         }
+    }
+
+    private void registerComponentStartUpEventListeners() {
+        ComponentStartUpSynchronizer componentStartUpSynchronizer =
+                ServiceReferenceHolder.getInstance().getComponentStartUpSynchronizer();
+        componentStartUpSynchronizer.addEventListener(new ComponentActivationEventListener() {
+            @Override
+            public void activated(Component component) {
+                if(component == Component.StratosManager) {
+                    Runnable tenantSynchronizer = new TenantEventSynchronizer();
+                    scheduler.scheduleAtFixedRate(tenantSynchronizer, 0, 1, TimeUnit.MINUTES);
+
+                    Runnable applicationSignUpSynchronizer = new ApplicationSignUpEventSynchronizer();
+                    scheduler.scheduleAtFixedRate(applicationSignUpSynchronizer, 0, 1, TimeUnit.MINUTES);
+                }
+            }
+        });
     }
 
     protected void setConfigurationContextService(ConfigurationContextService contextService) {
@@ -290,11 +323,42 @@ public class StratosManagerServiceComponent {
         ServiceReferenceHolder.getInstance().setDistributedObjectProvider(null);
     }
 
+    protected void setComponentStartUpSynchronizer(ComponentStartUpSynchronizer componentStartUpSynchronizer) {
+        ServiceReferenceHolder.getInstance().setComponentStartUpSynchronizer(componentStartUpSynchronizer);
+    }
+
+    protected void unsetComponentStartUpSynchronizer(ComponentStartUpSynchronizer componentStartUpSynchronizer) {
+        ServiceReferenceHolder.getInstance().setComponentStartUpSynchronizer(null);
+    }
+
     protected void deactivate(ComponentContext context) {
         // Close event publisher connections to message broker
         EventPublisherPool.close(MessagingUtil.Topics.INSTANCE_NOTIFIER_TOPIC.getTopicName());
         EventPublisherPool.close(MessagingUtil.Topics.TENANT_TOPIC.getTopicName());
 
-	    executorService.shutdownNow();
+        shutdownExecutorService(THREAD_POOL_ID);
+        shutdownScheduledExecutorService(SCHEDULER_THREAD_POOL_ID);
+    }
+
+    private void shutdownExecutorService(String executorServiceId) {
+        ExecutorService executorService = StratosThreadPool.getExecutorService(executorServiceId, 1);
+        if(executorService != null) {
+            shutdownExecutorService(executorService);
+        }
+    }
+
+    private void shutdownScheduledExecutorService(String executorServiceId) {
+        ExecutorService executorService = StratosThreadPool.getScheduledExecutorService(executorServiceId, 1);
+        if(executorService != null) {
+            shutdownExecutorService(executorService);
+        }
+    }
+
+    private void shutdownExecutorService(ExecutorService executorService) {
+        try {
+            executorService.shutdownNow();
+        } catch (Exception e) {
+            log.warn("An error occurred while shutting down executor service", e);
+        }
     }
 }

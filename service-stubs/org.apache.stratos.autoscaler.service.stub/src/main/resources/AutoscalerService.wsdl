@@ -66,10 +66,28 @@
                     <xs:element maxOccurs="unbounded" minOccurs="0" name="dependencyClusterIds" nillable="true" type="xs:string"/>
                     <xs:element minOccurs="0" name="deploymentPolicyName" nillable="true" type="xs:string"/>
                     <xs:element minOccurs="0" name="hostName" nillable="true" type="xs:string"/>
-                    <xs:element minOccurs="0" name="lbCluster" type="xs:boolean"/>
+                    <xs:element minOccurs="0" name="persistenceContext" nillable="true" type="ax25:PersistenceContext"/>
                     <xs:element minOccurs="0" name="properties" nillable="true" type="ax26:Properties"/>
                     <xs:element minOccurs="0" name="tenantRange" nillable="true" type="xs:string"/>
                     <xs:element minOccurs="0" name="textPayload" nillable="true" type="xs:string"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="PersistenceContext">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="persistenceRequired" type="xs:boolean"/>
+                    <xs:element maxOccurs="unbounded" minOccurs="0" name="volumes" nillable="true" type="ax25:VolumeContext"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="VolumeContext">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="device" nillable="true" type="xs:string"/>
+                    <xs:element minOccurs="0" name="iaasType" nillable="true" type="xs:string"/>
+                    <xs:element minOccurs="0" name="id" nillable="true" type="xs:string"/>
+                    <xs:element minOccurs="0" name="mappingPath" nillable="true" type="xs:string"/>
+                    <xs:element minOccurs="0" name="removeOntermination" type="xs:boolean"/>
+                    <xs:element minOccurs="0" name="size" type="xs:int"/>
+                    <xs:element minOccurs="0" name="snapshotId" nillable="true" type="xs:string"/>
+                    <xs:element minOccurs="0" name="volumeId" nillable="true" type="xs:string"/>
                 </xs:sequence>
             </xs:complexType>
             <xs:complexType name="CartridgeContext">
@@ -100,24 +118,6 @@
                     <xs:element minOccurs="0" name="repoPassword" nillable="true" type="xs:string"/>
                     <xs:element minOccurs="0" name="repoUrl" nillable="true" type="xs:string"/>
                     <xs:element minOccurs="0" name="repoUsername" nillable="true" type="xs:string"/>
-                </xs:sequence>
-            </xs:complexType>
-            <xs:complexType name="PersistenceContext">
-                <xs:sequence>
-                    <xs:element minOccurs="0" name="persistanceRequired" type="xs:boolean"/>
-                    <xs:element maxOccurs="unbounded" minOccurs="0" name="volumes" nillable="true" type="ax25:VolumeContext"/>
-                </xs:sequence>
-            </xs:complexType>
-            <xs:complexType name="VolumeContext">
-                <xs:sequence>
-                    <xs:element minOccurs="0" name="device" nillable="true" type="xs:string"/>
-                    <xs:element minOccurs="0" name="iaasType" nillable="true" type="xs:string"/>
-                    <xs:element minOccurs="0" name="id" nillable="true" type="xs:string"/>
-                    <xs:element minOccurs="0" name="mappingPath" nillable="true" type="xs:string"/>
-                    <xs:element minOccurs="0" name="removeOntermination" type="xs:boolean"/>
-                    <xs:element minOccurs="0" name="size" type="xs:int"/>
-                    <xs:element minOccurs="0" name="snapshotId" nillable="true" type="xs:string"/>
-                    <xs:element minOccurs="0" name="volumeId" nillable="true" type="xs:string"/>
                 </xs:sequence>
             </xs:complexType>
             <xs:complexType name="DependencyContext">
@@ -182,27 +182,6 @@
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
-            <xs:element name="getApplication">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element minOccurs="0" name="applicationId" nillable="true" type="xs:string"/>
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
-            <xs:element name="getApplicationResponse">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element minOccurs="0" name="return" nillable="true" type="ax27:ApplicationContext"/>
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
-            <xs:element name="deleteApplication">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element minOccurs="0" name="applicationId" nillable="true" type="xs:string"/>
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
             <xs:element name="getApplications">
                 <xs:complexType>
                     <xs:sequence/>
@@ -254,6 +233,27 @@
                 <xs:complexType>
                     <xs:sequence>
                         <xs:element minOccurs="0" name="return" nillable="true" type="ax212:AutoscalePolicy"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="getApplication">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="applicationId" nillable="true" type="xs:string"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="getApplicationResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="return" nillable="true" type="ax27:ApplicationContext"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="deleteApplication">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="applicationId" nillable="true" type="xs:string"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -658,14 +658,14 @@
     <wsdl:message name="AutoscalerServiceInvalidServiceGroupException">
         <wsdl:part name="parameters" element="ns:AutoscalerServiceInvalidServiceGroupException"/>
     </wsdl:message>
+    <wsdl:message name="deleteApplicationRequest">
+        <wsdl:part name="parameters" element="ns:deleteApplication"/>
+    </wsdl:message>
     <wsdl:message name="getServiceGroupRequest">
         <wsdl:part name="parameters" element="ns:getServiceGroup"/>
     </wsdl:message>
     <wsdl:message name="getServiceGroupResponse">
         <wsdl:part name="parameters" element="ns:getServiceGroupResponse"/>
-    </wsdl:message>
-    <wsdl:message name="deleteApplicationRequest">
-        <wsdl:part name="parameters" element="ns:deleteApplication"/>
     </wsdl:message>
     <wsdl:message name="undeployServiceGroupRequest">
         <wsdl:part name="parameters" element="ns:undeployServiceGroup"/>
@@ -776,12 +776,12 @@
             <wsdl:input message="ns:addServiceGroupRequest" wsaw:Action="urn:addServiceGroup"/>
             <wsdl:fault message="ns:AutoscalerServiceInvalidServiceGroupException" name="AutoscalerServiceInvalidServiceGroupException" wsaw:Action="urn:addServiceGroupAutoscalerServiceInvalidServiceGroupException"/>
         </wsdl:operation>
+        <wsdl:operation name="deleteApplication">
+            <wsdl:input message="ns:deleteApplicationRequest" wsaw:Action="urn:deleteApplication"/>
+        </wsdl:operation>
         <wsdl:operation name="getServiceGroup">
             <wsdl:input message="ns:getServiceGroupRequest" wsaw:Action="urn:getServiceGroup"/>
             <wsdl:output message="ns:getServiceGroupResponse" wsaw:Action="urn:getServiceGroupResponse"/>
-        </wsdl:operation>
-        <wsdl:operation name="deleteApplication">
-            <wsdl:input message="ns:deleteApplicationRequest" wsaw:Action="urn:deleteApplication"/>
         </wsdl:operation>
         <wsdl:operation name="undeployServiceGroup">
             <wsdl:input message="ns:undeployServiceGroupRequest" wsaw:Action="urn:undeployServiceGroup"/>
@@ -964,12 +964,6 @@
                 <soap:fault use="literal" name="AutoscalerServiceInvalidServiceGroupException"/>
             </wsdl:fault>
         </wsdl:operation>
-        <wsdl:operation name="deleteApplication">
-            <soap:operation soapAction="urn:deleteApplication" style="document"/>
-            <wsdl:input>
-                <soap:body use="literal"/>
-            </wsdl:input>
-        </wsdl:operation>
         <wsdl:operation name="getServiceGroup">
             <soap:operation soapAction="urn:getServiceGroup" style="document"/>
             <wsdl:input>
@@ -978,6 +972,12 @@
             <wsdl:output>
                 <soap:body use="literal"/>
             </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="deleteApplication">
+            <soap:operation soapAction="urn:deleteApplication" style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
         </wsdl:operation>
         <wsdl:operation name="undeployServiceGroup">
             <soap:operation soapAction="urn:undeployServiceGroup" style="document"/>
@@ -1213,12 +1213,6 @@
                 <soap12:fault use="literal" name="AutoscalerServiceInvalidServiceGroupException"/>
             </wsdl:fault>
         </wsdl:operation>
-        <wsdl:operation name="deleteApplication">
-            <soap12:operation soapAction="urn:deleteApplication" style="document"/>
-            <wsdl:input>
-                <soap12:body use="literal"/>
-            </wsdl:input>
-        </wsdl:operation>
         <wsdl:operation name="getServiceGroup">
             <soap12:operation soapAction="urn:getServiceGroup" style="document"/>
             <wsdl:input>
@@ -1227,6 +1221,12 @@
             <wsdl:output>
                 <soap12:body use="literal"/>
             </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="deleteApplication">
+            <soap12:operation soapAction="urn:deleteApplication" style="document"/>
+            <wsdl:input>
+                <soap12:body use="literal"/>
+            </wsdl:input>
         </wsdl:operation>
         <wsdl:operation name="undeployServiceGroup">
             <soap12:operation soapAction="urn:undeployServiceGroup" style="document"/>
@@ -1426,12 +1426,6 @@
                 <mime:content type="text/xml" part="parameters"/>
             </wsdl:input>
         </wsdl:operation>
-        <wsdl:operation name="deleteApplication">
-            <http:operation location="deleteApplication"/>
-            <wsdl:input>
-                <mime:content type="text/xml" part="parameters"/>
-            </wsdl:input>
-        </wsdl:operation>
         <wsdl:operation name="getServiceGroup">
             <http:operation location="getServiceGroup"/>
             <wsdl:input>
@@ -1440,6 +1434,12 @@
             <wsdl:output>
                 <mime:content type="text/xml" part="parameters"/>
             </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="deleteApplication">
+            <http:operation location="deleteApplication"/>
+            <wsdl:input>
+                <mime:content type="text/xml" part="parameters"/>
+            </wsdl:input>
         </wsdl:operation>
         <wsdl:operation name="undeployServiceGroup">
             <http:operation location="undeployServiceGroup"/>

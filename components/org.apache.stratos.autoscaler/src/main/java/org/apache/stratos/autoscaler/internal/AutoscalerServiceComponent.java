@@ -18,11 +18,12 @@
  */
 package org.apache.stratos.autoscaler.internal;
 
+import com.hazelcast.core.HazelcastInstance;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.stratos.autoscaler.algorithms.networkpartition.NetworkPartitionAlgorithmContext;
-import org.apache.stratos.autoscaler.applications.ApplicationSynchronizerTaskScheduler;
+import org.apache.stratos.autoscaler.applications.ApplicationEventSynchronizer;
 import org.apache.stratos.autoscaler.context.AutoscalerContext;
 import org.apache.stratos.autoscaler.event.receiver.health.AutoscalerHealthStatEventReceiver;
 import org.apache.stratos.autoscaler.event.receiver.topology.AutoscalerTopologyEventReceiver;
@@ -37,7 +38,10 @@ import org.apache.stratos.autoscaler.status.processor.group.GroupStatusProcessor
 import org.apache.stratos.autoscaler.util.AutoscalerConstants;
 import org.apache.stratos.autoscaler.util.ConfUtil;
 import org.apache.stratos.autoscaler.util.ServiceReferenceHolder;
-import org.apache.stratos.common.clustering.DistributedObjectProvider;
+import org.apache.stratos.common.Component;
+import org.apache.stratos.common.services.ComponentActivationEventListener;
+import org.apache.stratos.common.services.ComponentStartUpSynchronizer;
+import org.apache.stratos.common.services.DistributedObjectProvider;
 import org.apache.stratos.common.threading.StratosThreadPool;
 import org.osgi.service.component.ComponentContext;
 import org.wso2.carbon.ntask.core.service.TaskService;
@@ -45,11 +49,11 @@ import org.wso2.carbon.registry.api.RegistryException;
 import org.wso2.carbon.registry.core.service.RegistryService;
 import org.wso2.carbon.utils.ConfigurationContextService;
 
-import com.hazelcast.core.HazelcastInstance;
-
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @scr.component name=org.apache.stratos.autoscaler.internal.AutoscalerServiceComponent" immediate="true"
@@ -59,8 +63,10 @@ import java.util.concurrent.ExecutorService;
  * 				  cardinality="1..1" policy="dynamic" bind="setTaskService" unbind="unsetTaskService"
  * @scr.reference name="hazelcast.instance.service" interface="com.hazelcast.core.HazelcastInstance"
  *                cardinality="0..1"policy="dynamic" bind="setHazelcastInstance" unbind="unsetHazelcastInstance"
- * @scr.reference name="distributedObjectProvider" interface="org.apache.stratos.common.clustering.DistributedObjectProvider"
+ * @scr.reference name="distributedObjectProvider" interface="org.apache.stratos.common.services.DistributedObjectProvider"
  *                cardinality="1..1" policy="dynamic" bind="setDistributedObjectProvider" unbind="unsetDistributedObjectProvider"
+ * @scr.reference name="componentStartUpSynchronizer" interface="org.apache.stratos.common.services.ComponentStartUpSynchronizer"
+ *                cardinality="1..1" policy="dynamic" bind="setComponentStartUpSynchronizer" unbind="unsetComponentStartUpSynchronizer"
  * @scr.reference name="config.context.service" interface="org.wso2.carbon.utils.ConfigurationContextService"
  *                cardinality="1..1" policy="dynamic" bind="setConfigurationContextService" unbind="unsetConfigurationContextService"
  */
@@ -74,48 +80,72 @@ public class AutoscalerServiceComponent {
 	private AutoscalerTopologyEventReceiver asTopologyReceiver;
 	private AutoscalerHealthStatEventReceiver autoscalerHealthStatEventReceiver;
 	private ExecutorService executorService;
+    private ScheduledExecutorService scheduler;
 
 	protected void activate(ComponentContext componentContext) throws Exception {
 		try {
-			
-			XMLConfiguration conf = ConfUtil.getInstance(AutoscalerConstants.COMPONENTS_CONFIG).getConfiguration();
+            XMLConfiguration conf = ConfUtil.getInstance(AutoscalerConstants.COMPONENTS_CONFIG).getConfiguration();
             int threadPoolSize = conf.getInt(AutoscalerConstants.THREAD_POOL_SIZE_KEY,
                     AutoscalerConstants.AUTOSCALER_THREAD_POOL_SIZE);
-			executorService = StratosThreadPool.getExecutorService(AutoscalerConstants.AUTOSCALER_THREAD_POOL_ID,
+            executorService = StratosThreadPool.getExecutorService(AutoscalerConstants.AUTOSCALER_THREAD_POOL_ID,
                     threadPoolSize);
 
-            ServiceReferenceHolder.getInstance().setExecutorService(executorService);
-			
-			if(AutoscalerContext.getInstance().isClustered()) {
-                Thread coordinatorElectorThread = new Thread() {
-                    @Override
-                    public void run() {
-                        ServiceReferenceHolder.getInstance().getHazelcastInstance()
-                                .getLock(AUTOSCALER_COORDINATOR_LOCK).lock();
+            int schedulerThreadPoolSize = conf.getInt(AutoscalerConstants.SCHEDULER_THREAD_POOL_SIZE_KEY,
+                    AutoscalerConstants.AUTOSCALER_SCHEDULER_THREAD_POOL_SIZE);
+            scheduler = StratosThreadPool.getScheduledExecutorService(AutoscalerConstants.AUTOSCALER_SCHEDULER_ID,
+                    schedulerThreadPoolSize);
 
-                        log.info("Elected this member [" + ServiceReferenceHolder.getInstance().getHazelcastInstance()
-                                .getCluster().getLocalMember().getUuid() + "] " +
-                                "as the autoscaler coordinator for the cluster");
+            Runnable autoscalerActivator = new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        ComponentStartUpSynchronizer componentStartUpSynchronizer =
+                                ServiceReferenceHolder.getInstance().getComponentStartUpSynchronizer();
+                        // Wait for cloud controller component to start
+                        componentStartUpSynchronizer.waitForComponentActivation(Component.Autoscaler,
+                                Component.CloudController);
 
-                        AutoscalerContext.getInstance().setCoordinator(true);
-                        try {
-                        	executeCoordinatorTasks();
-                        } catch (Exception e) {
-                			log.error("Error in activating the autoscaler component ", e);
+                        ServiceReferenceHolder.getInstance().setExecutorService(executorService);
+
+                        if (AutoscalerContext.getInstance().isClustered()) {
+                            Thread coordinatorElectorThread = new Thread() {
+                                @Override
+                                public void run() {
+                                    ServiceReferenceHolder.getInstance().getHazelcastInstance()
+                                            .getLock(AUTOSCALER_COORDINATOR_LOCK).lock();
+
+                                    log.info("Elected this member [" + ServiceReferenceHolder.getInstance().getHazelcastInstance()
+                                            .getCluster().getLocalMember().getUuid() + "] " +
+                                            "as the autoscaler coordinator for the cluster");
+
+                                    AutoscalerContext.getInstance().setCoordinator(true);
+                                    try {
+                                        executeCoordinatorTasks();
+                                    } catch (Exception e) {
+                                        log.error("Error in activating the autoscaler component ", e);
+                                    }
+                                }
+                            };
+                            coordinatorElectorThread.setName("Autoscaler coordinator elector thread");
+                            executorService.submit(coordinatorElectorThread);
+                        } else {
+                            executeCoordinatorTasks();
                         }
-                    }
-                };
-                coordinatorElectorThread.setName("Autoscaler coordinator elector thread");
-                executorService.submit(coordinatorElectorThread);
-            } else {
-            	executeCoordinatorTasks();
-            }
 
-			if (log.isInfoEnabled()) {
-				log.info("Autoscaler service component activated");
-			}
+                        componentStartUpSynchronizer.waitForWebServiceActivation("AutoscalerService");
+                        componentStartUpSynchronizer.setComponentStatus(Component.Autoscaler, true);
+                        if (log.isInfoEnabled()) {
+                            log.info("Autoscaler service component activated");
+                        }
+                    } catch (Exception e) {
+                        log.error("Error in activating autoscaler service component ", e);
+                    }
+                }
+            };
+            Thread autoscalerActivatorThread = new Thread(autoscalerActivator);
+            autoscalerActivatorThread.start();
 		} catch (Exception e) {
-			log.error("Error in activating the autoscaler service component ", e);
+			log.error("Error in activating autoscaler service component ", e);
 		}
 	}
 	
@@ -173,28 +203,41 @@ public class AutoscalerServiceComponent {
 			log.info("Scheduling tasks to publish applications");
 		}
 
-		ApplicationSynchronizerTaskScheduler
-				.schedule(ServiceReferenceHolder.getInstance()
-				                                .getTaskService());
+        ComponentStartUpSynchronizer componentStartUpSynchronizer =
+                ServiceReferenceHolder.getInstance().getComponentStartUpSynchronizer();
+        componentStartUpSynchronizer.addEventListener(new ComponentActivationEventListener() {
+            @Override
+            public void activated(Component component) {
+                if(component == Component.StratosManager) {
+                    Runnable applicationSynchronizer = new ApplicationEventSynchronizer();
+                    scheduler.scheduleAtFixedRate(applicationSynchronizer, 0, 1, TimeUnit.MINUTES);
+                }
+            }
+        });
 	}
 
     protected void deactivate(ComponentContext context) {
-        try {
-            asTopologyReceiver.terminate();
-        } catch (Exception e) {
-            log.warn("An error occurred while terminating autoscaler topology event receiver", e);
+        if(asTopologyReceiver != null) {
+            try {
+                asTopologyReceiver.terminate();
+            } catch (Exception e) {
+                log.warn("An error occurred while terminating autoscaler topology event receiver", e);
+            }
         }
 
-        try {
-            autoscalerHealthStatEventReceiver.terminate();
-        } catch (Exception e) {
-            log.warn("An error occurred while terminating autoscaler health statistics event receiver", e);
+        if(autoscalerHealthStatEventReceiver != null) {
+            try {
+                autoscalerHealthStatEventReceiver.terminate();
+            } catch (Exception e) {
+                log.warn("An error occurred while terminating autoscaler health statistics event receiver", e);
+            }
         }
 
         // Shutdown executor service
-        if(executorService != null) {
-            shutdownExecutorService(executorService);
-        }
+        shutdownExecutorService(AutoscalerConstants.AUTOSCALER_THREAD_POOL_ID);
+
+        // Shutdown scheduler
+        shutdownScheduledExecutorService(AutoscalerConstants.AUTOSCALER_SCHEDULER_ID);
 
         // Shutdown application monitor executor service
         shutdownExecutorService(AutoscalerConstants.APPLICATION_MONITOR_THREAD_POOL_ID);
@@ -288,6 +331,14 @@ public class AutoscalerServiceComponent {
 
     protected void unsetDistributedObjectProvider(DistributedObjectProvider distributedObjectProvider) {
         ServiceReferenceHolder.getInstance().setDistributedObjectProvider(null);
+    }
+
+    protected void setComponentStartUpSynchronizer(ComponentStartUpSynchronizer componentStartUpSynchronizer) {
+        ServiceReferenceHolder.getInstance().setComponentStartUpSynchronizer(componentStartUpSynchronizer);
+    }
+
+    protected void unsetComponentStartUpSynchronizer(ComponentStartUpSynchronizer componentStartUpSynchronizer) {
+        ServiceReferenceHolder.getInstance().setComponentStartUpSynchronizer(null);
     }
 }
 
