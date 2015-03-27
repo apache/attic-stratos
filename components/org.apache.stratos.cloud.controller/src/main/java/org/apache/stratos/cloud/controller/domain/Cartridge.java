@@ -19,13 +19,14 @@
 package org.apache.stratos.cloud.controller.domain;
 
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.stratos.common.domain.LoadBalancingIPType;
+import org.apache.stratos.common.*;
+import org.apache.stratos.common.Properties;
 
 import java.io.Serializable;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Holds information regarding a Cartridge.
@@ -45,30 +46,23 @@ public class Cartridge implements Serializable{
     private String version;
     private boolean multiTenant;
     private String tenantPartitions;
-    private List<PortMapping> portMappings;
+    private PortMapping[] portMappings;
     private Persistence persistence;
-    private List<AppType> appTypeMappings;
-    private LoadBalancingIPType loadBalancingIPType;
+    private AppType[] appTypeMappings;
+    private String loadBalancingIPType;
 	private String[] metadataKeys;
 
-    /**
-     * Property map of this Cartridge.
-     */
-    private Map<String, String> properties;
-    
-    /**
-     * A Cartridge can have 1..n {@link IaasProvider}s
-     */
-    private List<IaasProvider> iaases;
-    private List<String> deploymentDirs;
-    private IaasProvider lastlyUsedIaas;
-    private String[] exportingProperties;
+    private boolean isPublic;
 
     /**
-     * Key - partition id
-     * Value - Corresponding IaasProvider.
+     * Property of this Cartridge.
      */
-    private Map<String, IaasProvider> partitionToIaasProvider;
+    private org.apache.stratos.common.Properties properties;
+
+    private String[] deploymentDirs;
+    private String[] exportingProperties;
+
+    private IaasConfig[] iaasConfigs;
 
     public Cartridge(){
     	init();
@@ -84,14 +78,8 @@ public class Cartridge implements Serializable{
     }
     
     private void init() {
-    	partitionToIaasProvider = new ConcurrentHashMap<String, IaasProvider>();
-    	portMappings = new ArrayList<PortMapping>();
-    	portMappings = new ArrayList<PortMapping>();
-    	appTypeMappings = new ArrayList<AppType>();
-    	properties = new HashMap<String, String>();
-    	iaases = new ArrayList<IaasProvider>();
-    	deploymentDirs = new ArrayList<String>();
         tenantPartitions = "*";
+        properties = new Properties();
     }
 
     public String getType() {
@@ -102,79 +90,23 @@ public class Cartridge implements Serializable{
         this.type = type;
     }
     
-    public void addIaasProvider(String partitionId, IaasProvider iaasProvider) {
-        partitionToIaasProvider.put(partitionId, iaasProvider);
-    }
-    
-    public void addIaasProviders(Map<String, IaasProvider> map) {
-        for (Iterator<String> iterator = map.keySet().iterator(); iterator.hasNext();) {
-            String key = iterator.next();
-            IaasProvider value = map.get(key);
-            
-            partitionToIaasProvider.put(key, value);
-            if(log.isDebugEnabled()) {
-            	log.debug("Partition map updated for the Cartridge: "+this.hashCode()+". "
-            			+ "Current Partition List: "+partitionToIaasProvider.keySet().toString());
-            }
-        }
-    }
-    
-    public IaasProvider getIaasProviderOfPartition(String partitionId) {
-    	if(log.isDebugEnabled()) {
-        	log.debug("Retrieving partition: "+partitionId+" for the Cartridge: "+this.hashCode()+". "
-        			+ "Current Partition List: "+partitionToIaasProvider.keySet().toString());
-        }
-        return partitionToIaasProvider.get(partitionId);
-    }
-    
     public void addProperty(String key, String val) {
         if (key != null && val != null) {
-            properties.put(key, val);
+            Property property = new Property();
+            property.setName(key);
+            property.setValue(val);
+            properties.addProperty(property);
         }
     }
 
-    public Map<String, String> getProperties() {
+    public org.apache.stratos.common.Properties getProperties() {
         return properties;
     }
-    
-    public String getProperty(String key) {
-        return properties.get(key);
-    }
 
-    public void setProperties(Map<String, String> properties) {
+    public void setProperties(org.apache.stratos.common.Properties properties) {
         this.properties = properties;
     }
-    
-    public void addIaasProvider(IaasProvider iaas) {
-        for (IaasProvider anIaas : iaases) {
-            if(anIaas.equals(iaas)){
-                int idx = iaases.indexOf(anIaas);
-                iaases.remove(idx);
-                iaases.add(idx, iaas);
-                return;
-            }
-        }
-        this.iaases.add(iaas);
-    }
-    
-    public IaasProvider getIaasProvider(String iaasType){
-    	for (IaasProvider iaas : iaases) {
-	        if(iaas.getType().equals(iaasType)){
-	        	return iaas;
-	        }
-        }
-    	
-    	return null;
-    }
 
-    public List<IaasProvider> getIaases() {
-        return iaases;
-    }
-
-	public void setIaases(List<IaasProvider> iaases) {
-        this.iaases = iaases;
-    }
-    
 	public boolean equals(Object obj) {
 		if (obj instanceof Cartridge) {
 			return this.type.equals(((Cartridge)obj).getType());
@@ -186,14 +118,6 @@ public class Cartridge implements Serializable{
         return new HashCodeBuilder(17, 31). // two randomly chosen prime numbers
             append(type).
             toHashCode();
-    }
-
-    public IaasProvider getLastlyUsedIaas() {
-        return lastlyUsedIaas;
-    }
-
-    public void setLastlyUsedIaas(IaasProvider lastlyUsedIaas) {
-        this.lastlyUsedIaas = lastlyUsedIaas;
     }
 
 	public String getDisplayName() {
@@ -223,25 +147,34 @@ public class Cartridge implements Serializable{
 	public void reset(){
 	}
 
-	public List<String> getDeploymentDirs() {
+	public String[] getDeploymentDirs() {
 	    return deploymentDirs;
     }
 
-	public void setDeploymentDirs(List<String> deploymentDirs) {
+	public void setDeploymentDirs(String[] deploymentDirs) {
 	    this.deploymentDirs = deploymentDirs;
     }
-	
-	public void addDeploymentDir(String dir){
-		deploymentDirs.add(dir);
-	}
-	
-	public void addPortMapping(PortMapping mapping){
-		portMappings.add(mapping);
-	}
-	
-	public void addAppType(AppType type){
-		appTypeMappings.add(type);
-	}
+
+    public void addDeploymentDir(String dir) {
+        List<String> deploymentDirList = null;
+        if (dir != null) {
+            deploymentDirList = Arrays.asList(dir);
+        }
+        deploymentDirList.add(dir);
+        deploymentDirs = deploymentDirList.toArray(new String[deploymentDirList.size()]);
+    }
+
+    public void addPortMapping(PortMapping mapping) {
+        List<PortMapping> portMappingList = Arrays.asList(mapping);
+        portMappingList.add(mapping);
+        portMappingList.toArray(this.portMappings);
+    }
+
+    public void addAppType(AppType type) {
+        List<AppType> appTypeList = Arrays.asList(type);
+        appTypeList.add(type);
+        appTypeList.toArray(this.appTypeMappings);
+    }
 
 	public String getProvider() {
 	    return provider;
@@ -275,28 +208,20 @@ public class Cartridge implements Serializable{
 	    this.baseDir = baseDir;
     }
 
-	public List<PortMapping> getPortMappings() {
+	public PortMapping[] getPortMappings() {
 	    return portMappings;
     }
 
-	public void setPortMappings(List<PortMapping> portMappings) {
+	public void setPortMappings(PortMapping[] portMappings) {
 	    this.portMappings = portMappings;
     }
 
-	public List<AppType> getAppTypeMappings() {
+	public AppType[] getAppTypeMappings() {
     	return appTypeMappings;
     }
 
-	public void setAppTypeMappings(List<AppType> appTypeMappings) {
+	public void setAppTypeMappings(AppType[] appTypeMappings) {
     	this.appTypeMappings = appTypeMappings;
-    }
-
-    public Map<String, IaasProvider> getPartitionToIaasProvider() {
-        return partitionToIaasProvider;
-    }
-
-    public void setPartitionToIaasProvider(Map<String, IaasProvider> partitionToIaasProvider) {
-        this.partitionToIaasProvider = partitionToIaasProvider;
     }
 
     /**
@@ -307,7 +232,7 @@ public class Cartridge implements Serializable{
     }
 
     /**
-	 * @param persistence the peristanceMappings to set
+	 * @param persistence the persistenceMappings to set
 	 */
     public void setPersistence(Persistence persistence) {
         this.persistence = persistence;
@@ -345,12 +270,28 @@ public class Cartridge implements Serializable{
 		this.metadataKeys = metadataKeys;
 	}
 
-    public LoadBalancingIPType getLoadBalancingIPType() {
+    public String getLoadBalancingIPType() {
         return loadBalancingIPType;
     }
 
-    public void setLoadBalancingIPType(LoadBalancingIPType loadBalancingIPType) {
+    public void setLoadBalancingIPType(String loadBalancingIPType) {
         this.loadBalancingIPType = loadBalancingIPType;
+    }
+
+    public IaasConfig[] getIaasConfigs() {
+        return iaasConfigs;
+    }
+
+    public void setIaasConfigs(IaasConfig[] iaasConfigs) {
+        this.iaasConfigs = ArrayUtils.clone(iaasConfigs);
+    }
+
+    public boolean getIsPublic() {
+        return isPublic;
+    }
+
+    public void setIsPublic(boolean isPublic) {
+        this.isPublic = isPublic;
     }
 
     @Override
@@ -361,6 +302,6 @@ public class Cartridge implements Serializable{
                 + ", version=" + version
                 + ", multiTenant=" + multiTenant
                 + ", properties=" + properties
-                + ", partitionToIaasProvider=" + partitionToIaasProvider + "]";
+                + "]";
     }
 }

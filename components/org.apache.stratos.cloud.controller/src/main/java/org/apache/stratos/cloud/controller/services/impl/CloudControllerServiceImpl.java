@@ -68,7 +68,7 @@ public class CloudControllerServiceImpl implements CloudControllerService {
 
     }
 
-    public void addCartridge(CartridgeConfig cartridgeConfig) throws InvalidCartridgeDefinitionException,
+    public void addCartridge(Cartridge cartridgeConfig) throws InvalidCartridgeDefinitionException,
             InvalidIaasProviderException, CartridgeAlreadyExistsException {
 
         handleNullObject(cartridgeConfig, "Cartridge definition is null");
@@ -111,7 +111,7 @@ public class CloudControllerServiceImpl implements CloudControllerService {
     }
 
 	@Override
-	public void updateCartridge(CartridgeConfig cartridgeConfig) throws InvalidCartridgeDefinitionException,
+	public void updateCartridge(Cartridge cartridgeConfig) throws InvalidCartridgeDefinitionException,
 	                                                                    InvalidIaasProviderException,
 	                                                                    CartridgeDefinitionNotExistsException {
 
@@ -159,8 +159,9 @@ public class CloudControllerServiceImpl implements CloudControllerService {
     private void copyIaasProviders(Cartridge destCartridge,
                                    Cartridge sourceCartridge) {
 
-        List<IaasProvider> newIaasProviders = destCartridge.getIaases();
-        Map<String, IaasProvider> iaasProviderMap = sourceCartridge.getPartitionToIaasProvider();
+        List<IaasProvider> newIaasProviders = CloudControllerContext.getInstance().getIaases(destCartridge.getType());
+
+        Map<String, IaasProvider> iaasProviderMap = CloudControllerContext.getInstance().getPartitionToIaasProvider(sourceCartridge.getType());
 
         for (Entry<String, IaasProvider> entry : iaasProviderMap.entrySet()) {
             if (entry == null) {
@@ -173,7 +174,8 @@ public class CloudControllerServiceImpl implements CloudControllerService {
                     log.debug("Copying partition from the cartridge that is undeployed, to the new cartridge: "
                             + "[partition-id] " + partitionId + " [cartridge-type] " + destCartridge.getType());
                 }
-                destCartridge.addIaasProvider(partitionId, newIaasProviders.get(newIaasProviders.indexOf(iaasProvider)));
+                CloudControllerContext.getInstance().addIaasProvider(destCartridge.getType(), partitionId,
+                        newIaasProviders.get(newIaasProviders.indexOf(iaasProvider)));
             }
         }
     }
@@ -380,12 +382,12 @@ public class CloudControllerServiceImpl implements CloudControllerService {
             }
 
             // Validate iaas provider
-            IaasProvider iaasProvider = cartridge.getIaasProviderOfPartition(partitionId);
+            IaasProvider iaasProvider = CloudControllerContext.getInstance().getIaasProviderOfPartition(cartridge.getType(), partitionId);
             if (iaasProvider == null) {
                 String msg = String.format("Could not start instance, " +
                                 "IaaS provider not found in cartridge %s for partition %s, " +
                                 "partitions found: %s ", cartridgeType, partitionId,
-                        cartridge.getPartitionToIaasProvider().keySet().toString());
+                       CloudControllerContext.getInstance().getPartitionToIaasProvider(cartridge.getType()).keySet().toString());
                 log.error(msg);
                 throw new InvalidIaasProviderException(msg);
             }
@@ -396,7 +398,7 @@ public class CloudControllerServiceImpl implements CloudControllerService {
             // Create member context
             String applicationId = clusterContext.getApplicationId();
             MemberContext memberContext = createMemberContext(applicationId, cartridgeType, memberId,
-                    cartridge.getLoadBalancingIPType(), instanceContext);
+                    CloudControllerUtil.getLoadBalancingIPTypeEnumFromString(cartridge.getLoadBalancingIPType()), instanceContext);
 
             // Prepare payload
             StringBuilder payload = new StringBuilder(clusterContext.getPayload());
@@ -716,10 +718,10 @@ public class CloudControllerServiceImpl implements CloudControllerService {
     }
 
     @Override
-    public CartridgeInfo getCartridgeInfo(String cartridgeType) throws CartridgeNotFoundException {
+    public Cartridge getCartridge(String cartridgeType) throws CartridgeNotFoundException {
         Cartridge cartridge = CloudControllerContext.getInstance().getCartridge(cartridgeType);
         if (cartridge != null) {
-            return CloudControllerUtil.toCartridgeInfo(cartridge);
+            return cartridge;
         }
 
         String msg = "Could not find cartridge: [cartridge-type] " + cartridgeType;
@@ -733,7 +735,7 @@ public class CloudControllerServiceImpl implements CloudControllerService {
         ClusterContext ctxt = CloudControllerContext.getInstance().getClusterContext(clusterId_);
         handleNullObject(ctxt, "Service unregistration failed. Invalid cluster id: " + clusterId);
 
-        String cartridgeType = ctxt.getCartridgeType();
+        final String cartridgeType = ctxt.getCartridgeType();
         Cartridge cartridge = CloudControllerContext.getInstance().getCartridge(cartridgeType);
 
         if (cartridge == null) {
@@ -823,11 +825,11 @@ public class CloudControllerServiceImpl implements CloudControllerService {
                             lock = CloudControllerContext.getInstance().acquireCartridgesWriteLock();
 
                             Cartridge cartridge = CloudControllerContext.getInstance().getCartridge(ctxt.getCartridgeType());
-                            if (cartridge != null && cartridge.getIaases() != null && ctxt.getVolumes() != null) {
+                            if (cartridge != null && CloudControllerContext.getInstance().getIaases(cartridge.getType()) != null && ctxt.getVolumes() != null) {
                                 for (Volume volume : ctxt.getVolumes()) {
                                     if (volume.getId() != null) {
                                         String iaasType = volume.getIaasType();
-                                        Iaas iaas = cartridge.getIaasProvider(iaasType).getIaas();
+                                        Iaas iaas = CloudControllerContext.getInstance().getIaasProvider(cartridge.getType(), iaasType).getIaas();
                                         if (iaas != null) {
                                             try {
                                                 // delete the volumes if remove on unsubscription is true.
@@ -937,7 +939,7 @@ public class CloudControllerServiceImpl implements CloudControllerService {
             }
 
             // if and only if the deployment policy valid
-            cartridge.addIaasProviders(partitionToIaasProviders);
+            CloudControllerContext.getInstance().addIaasProviders(cartridgeType, partitionToIaasProviders);
             CloudControllerContext.getInstance().updateCartridge(cartridge);
 
             // persist data
@@ -1016,7 +1018,7 @@ public class CloudControllerServiceImpl implements CloudControllerService {
 					        Cartridge cartridge = CloudControllerContext.getInstance().getCartridge(
 							        appClusterCtxt.getCartridgeType());
 					        List<String> accessUrlPerCluster = new ArrayList();
-					        List<PortMapping> portMappings = cartridge.getPortMappings();
+					        List<PortMapping> portMappings = Arrays.asList(cartridge.getPortMappings());
 					        for (PortMapping portMap : portMappings) {
                                 try {
                                     if (portMap.isKubernetesServicePortMapping()) {
@@ -1615,4 +1617,3 @@ public class CloudControllerServiceImpl implements CloudControllerService {
         }
     }
 }
-

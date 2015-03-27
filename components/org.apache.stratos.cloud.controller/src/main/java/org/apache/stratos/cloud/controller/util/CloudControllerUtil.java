@@ -77,7 +77,7 @@ public class CloudControllerUtil {
         }
     }
 
-    public static Cartridge toCartridge(CartridgeConfig config) {
+    public static Cartridge toCartridge(Cartridge config) {
         if (config == null) {
             return null;
         }
@@ -89,16 +89,14 @@ public class CloudControllerUtil {
 	    cartridge.setDescription(config.getDescription());
 	    cartridge.setHostName(config.getHostName());
 	    String[] deploymentDirs = config.getDeploymentDirs();
-	    if ((deploymentDirs != null) && (deploymentDirs.length > 0)) {
-		    cartridge.setDeploymentDirs(Arrays.asList(deploymentDirs));
-	    }
+	    cartridge.setDeploymentDirs(deploymentDirs);
 	    cartridge.setProvider(config.getProvider());
 	    cartridge.setCategory(config.getCategory());
 	    cartridge.setVersion(config.getVersion());
 	    cartridge.setBaseDir(config.getBaseDir());
         
         if (config.getPortMappings() != null) {
-			cartridge.setPortMappings(Arrays.asList(config.getPortMappings()));
+			cartridge.setPortMappings(config.getPortMappings());
 		}
         
         if(config.getPersistence() != null){
@@ -106,10 +104,10 @@ public class CloudControllerUtil {
         }
         cartridge.setMultiTenant(config.isMultiTenant());
         cartridge.setTenantPartitions(config.getTenantPartitions());
-        cartridge.setLoadBalancingIPType(LoadBalancingIPType.Private);
+        cartridge.setLoadBalancingIPType(getLoadBalancingIPTypeStringFromEnum(LoadBalancingIPType.Private));
         if(StringUtils.isNotBlank(config.getLoadBalancingIPType())) {
             if(config.getLoadBalancingIPType().equals("public")) {
-                cartridge.setLoadBalancingIPType(LoadBalancingIPType.Public);
+                cartridge.setLoadBalancingIPType(getLoadBalancingIPTypeStringFromEnum(LoadBalancingIPType.Public));
             }
         }
 
@@ -195,7 +193,7 @@ public class CloudControllerUtil {
                         iaasProvider.setNetworkInterfaces(networkInterfaces.getNetworkInterfaces());
                     }
 
-                    cartridge.addIaasProvider(iaasProvider);
+                    CloudControllerContext.getInstance().addIaasProvider(cartridge.getType(), iaasProvider);
                 }
             }
         }
@@ -206,43 +204,6 @@ public class CloudControllerUtil {
 
         return cartridge;
     }
-	  
-    public static CartridgeInfo toCartridgeInfo(Cartridge cartridge) {
-
-		CartridgeInfo cartridgeInfo = new CartridgeInfo();
-		cartridgeInfo.setType(cartridge.getType());
-		cartridgeInfo.setDisplayName(cartridge.getDisplayName());
-		cartridgeInfo.setDescription(cartridge.getDescription());
-		cartridgeInfo.setHostName(cartridge.getHostName());
-		cartridgeInfo.setDeploymentDirs(cartridge.getDeploymentDirs());
-		cartridgeInfo.setProvider(cartridge.getProvider());
-	    cartridgeInfo.setCategory(cartridge.getCategory());
-		cartridgeInfo.setVersion(cartridge.getVersion());
-		cartridgeInfo.setMultiTenant(cartridge.isMultiTenant());
-		cartridgeInfo.setBaseDir(cartridge.getBaseDir());
-        cartridgeInfo.setTenantPartitions(cartridge.getTenantPartitions());
-		cartridgeInfo.setPortMappings(cartridge.getPortMappings()
-                .toArray(new PortMapping[cartridge.getPortMappings().size()]));
-		cartridgeInfo.setAppTypes(cartridge.getAppTypeMappings()
-                .toArray(new AppType[cartridge.getAppTypeMappings().size()]));
-
-		List<Property> propList = new ArrayList<Property>();
-        cartridgeInfo.setPersistence(cartridge.getPersistence());
-		
-		for (Iterator<?> iterator = cartridge.getProperties().entrySet().iterator(); iterator.hasNext();) {
-	        @SuppressWarnings("unchecked")
-            Map.Entry<String, String> entry = (Entry<String, String>) iterator.next();
-	        
-	        Property prop = new Property(entry.getKey(), entry.getValue());
-	        propList.add(prop);
-        }
-		Property[] props = new Property[propList.size()];
-		
-		cartridgeInfo.setProperties(propList.toArray(props));
-	    cartridgeInfo.setMetadataKeys(cartridge.getMetadataKeys());
-
-		return cartridgeInfo;
-	}
 
     public static void sleep(long time){
     	try {
@@ -465,5 +426,25 @@ public class CloudControllerUtil {
         } catch (InvalidKubernetesHostException e) {
             throw new InvalidKubernetesMasterException(e.getMessage());
         }
+    }
+
+    public static String getLoadBalancingIPTypeStringFromEnum(LoadBalancingIPType loadBalancingIPType) {
+        if (loadBalancingIPType == LoadBalancingIPType.Private) {
+            return CloudControllerConstants.LOADBALANCING_IP_TYPE_PRIVATE;
+        }
+        else if (loadBalancingIPType == LoadBalancingIPType.Public) {
+            return CloudControllerConstants.LOADBALANCING_IP_TYPE_PUBLIE;
+        }
+        return null;
+    }
+
+    public static LoadBalancingIPType getLoadBalancingIPTypeEnumFromString(String loadBalancingIPType) {
+        if(loadBalancingIPType.equals(CloudControllerConstants.LOADBALANCING_IP_TYPE_PUBLIE)) {
+            return LoadBalancingIPType.Public;
+        }
+        else if(loadBalancingIPType.equals(CloudControllerConstants.LOADBALANCING_IP_TYPE_PRIVATE)) {
+            return LoadBalancingIPType.Private;
+        }
+        return null;
     }
 }
