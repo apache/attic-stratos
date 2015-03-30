@@ -38,8 +38,6 @@ import org.apache.stratos.messaging.domain.instance.GroupInstance;
 import org.apache.stratos.messaging.domain.topology.Cluster;
 import org.apache.stratos.messaging.domain.topology.Service;
 import org.apache.stratos.messaging.message.receiver.topology.TopologyManager;
-import org.wso2.carbon.base.MultitenantConstants;
-import org.wso2.carbon.context.PrivilegedCarbonContext;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -183,26 +181,24 @@ public class ApplicationBuilder {
 
     public static void handleApplicationInstanceTerminatingEvent(String appId, String instanceId) {
         if (log.isDebugEnabled()) {
-            log.debug("Handling application Terminating event: [application-id] " + appId +
+            log.debug("Handling application terminating event: [application-id] " + appId +
                     " [instance] " + instanceId);
         }
 
         Applications applications = ApplicationHolder.getApplications();
         Application application = applications.getApplication(appId);
-        //update the status of the Group
+        // update the status of the Group
         if (application == null) {
-            log.warn(String.format("Application does not exist: [application-id] %s",
-                    appId));
+            log.warn(String.format("Application does not exist: [application-id] %s", appId));
             return;
         }
 
         ApplicationStatus status = ApplicationStatus.Terminating;
         ApplicationInstance applicationInstance = application.getInstanceContexts(instanceId);
         if (applicationInstance.isStateTransitionValid(status)) {
-            //setting the status, persist and publish
+            // setting the status, persist and publish
             application.setStatus(status, instanceId);
-            updateApplicationMonitor(appId, status, applicationInstance.getNetworkPartitionId(),
-                    instanceId);
+            updateApplicationMonitor(appId, status, applicationInstance.getNetworkPartitionId(), instanceId);
             ApplicationHolder.persistApplication(application);
             ApplicationsEventPublisher.sendApplicationInstanceInactivatedEvent(appId, instanceId);
         } else {
@@ -248,6 +244,7 @@ public class ApplicationBuilder {
                 appClusterDataToSend.add(newClusterData);
             }
 
+            AutoscalerContext.getInstance().removeApplicationContext(appId);
             ApplicationHolder.removeApplication(appId);
 
         } finally {
@@ -257,34 +254,34 @@ public class ApplicationBuilder {
         ApplicationsEventPublisher.sendApplicationDeletedEvent(appId, appClusterDataToSend);
     }
 
-    public static void handleApplicationInstanceTerminatedEvent(String appId, String instanceId) {
+    public static void handleApplicationInstanceTerminatedEvent(String applicationId, String instanceId) {
         if (log.isDebugEnabled()) {
-            log.debug("Handling application terminated event: [application-id] " + appId +
+            log.debug("Handling application terminated event: [application-id] " + applicationId +
                     " [instance] " + instanceId);
         }
 
-        Applications applications = ApplicationHolder.getApplications();
+        Application application = ApplicationHolder.getApplications().getApplication(applicationId);
+        ApplicationContext applicationContext = AutoscalerContext.getInstance().getApplicationContext(applicationId);
 
-        if (!applications.applicationExists(appId)) {
-            log.warn("Application does not exist: [application-id] " + appId);
+        if ((application == null) || (applicationContext == null)) {
+            log.warn("Application does not exist: [application-id] " + applicationId);
         } else {
-            Application application = applications.getApplication(appId);
             ApplicationInstance applicationInstance = application.getInstanceContexts(instanceId);
             ApplicationStatus status = ApplicationStatus.Terminated;
             if (applicationInstance.isStateTransitionValid(status)) {
                 //setting the status, persist and publish
                 applicationInstance.setStatus(status);
-                updateApplicationMonitor(appId, status, applicationInstance.getNetworkPartitionId(),
+                updateApplicationMonitor(applicationId, status, applicationInstance.getNetworkPartitionId(),
                                         instanceId);
                 ApplicationMonitor applicationMonitor = AutoscalerContext.getInstance().
-                        getAppMonitor(appId);
+                        getAppMonitor(applicationId);
                 NetworkPartitionContext networkPartitionContext = applicationMonitor.
                         getNetworkPartitionContext(applicationInstance.
                         getNetworkPartitionId());
                 networkPartitionContext.removeInstanceContext(instanceId);
                 applicationMonitor.removeInstance(instanceId);
                 application.removeInstance(instanceId);
-                ApplicationsEventPublisher.sendApplicationInstanceTerminatedEvent(appId, instanceId);
+                ApplicationsEventPublisher.sendApplicationInstanceTerminatedEvent(applicationId, instanceId);
 
                 //removing the monitor
                 if (application.getInstanceContextCount() == 0 &&
@@ -296,33 +293,26 @@ public class ApplicationBuilder {
                             monitor1.destroy();
                         }
                     }
-                    //stopping application thread
+                    // stopping application thread
                     applicationMonitor.destroy();
-                    AutoscalerContext.getInstance().removeAppMonitor(appId);
-                    log.info("Application run time is removed: [application-id] " + appId);
-                    //Removing the application from memory and registry
-                    PrivilegedCarbonContext.startTenantFlow();
-                    try {
-                        PrivilegedCarbonContext.getThreadLocalCarbonContext().
-                                setTenantDomain(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
-                        PrivilegedCarbonContext.getThreadLocalCarbonContext().
-                                setTenantId(MultitenantConstants.SUPER_TENANT_ID);
-                    } finally {
-                        PrivilegedCarbonContext.endTenantFlow();
-                    }
-                    //removing the clusters and persisted application
-//                    handleApplicationRemoval(appId);
+                    AutoscalerContext.getInstance().removeAppMonitor(applicationId);
+
+                    // update application status in application context
+                    applicationContext.setStatus(ApplicationContext.STATUS_CREATED);
+                    AutoscalerContext.getInstance().updateApplicationContext(applicationContext);
+
+                    log.info("Application undeployed successfully: [application-id] " + applicationId);
                 }
             } else {
                 log.warn(String.format("Application state transition is not valid: [application-id] %s " +
-                                " [current-status] %s [status-requested] %s", appId,
+                                " [current-status] %s [status-requested] %s", applicationId,
                         application.getInstanceContexts(instanceId).getStatus(),
                         status));
             }
         }
     }
 
-    public static boolean handleApplicationUndeployed(String applicationId) {
+    public static boolean handleApplicationUnDeployedEvent(String applicationId) {
         if (log.isDebugEnabled()) {
             log.debug("Handling application terminating event: [application-id] " + applicationId);
         }

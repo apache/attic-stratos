@@ -32,16 +32,11 @@ import java.util.List;
  * This is to contain the dependency tree of an application/group
  */
 public class DependencyTree {
+
     private static final Log log = LogFactory.getLog(DependencyTree.class);
 
     private List<ApplicationChildContext> primaryApplicationContextList;
-
     private TerminationBehavior terminationBehavior;
-
-    private boolean startupOder;
-
-    private boolean reverseStartupOrder;
-
     private String id;
 
     public DependencyTree(String id) {
@@ -120,7 +115,7 @@ public class DependencyTree {
         for (ApplicationChildContext context : contexts) {
             //TODO check for the status
             if (context.getId().equals(id)) {
-                return parent;
+                return context;
             }
         }
         //if not found in the top level search recursively
