@@ -87,7 +87,7 @@ public class AutoscalerServiceImpl implements AutoscalerService {
 			return PolicyManager.getInstance().removeAutoscalePolicy(autoscalePolicyId);
 		}
 		else{
-			throw new InvalidPolicyException("This auto-scalar policy cannot remove, since it is used in applications.");
+			throw new InvalidPolicyException("This autoscaler policy cannot be removed, since it is used in applications.");
 		}
 	}
 
@@ -548,7 +548,8 @@ public class AutoscalerServiceImpl implements AutoscalerService {
         try {
             Application application = ApplicationManager.getApplications().getApplication(applicationId);
             if(application != null) {
-                ClusterDataHolder clusterData = application.getClusterData(alias);
+
+                ClusterDataHolder clusterData = application.getClusterDataHolderRecursivelyByAlias(alias);
                 if(clusterData != null) {
                     return clusterData.getClusterId();
                 }
