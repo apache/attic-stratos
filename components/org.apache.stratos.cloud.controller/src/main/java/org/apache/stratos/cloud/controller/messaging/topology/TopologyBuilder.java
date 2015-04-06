@@ -1047,7 +1047,7 @@ public class TopologyBuilder {
             ClusterStatus status = ClusterStatus.Terminating;
             if(context.isStateTransitionValid(status)) {
                 context.setStatus(status);
-                log.info("Cluster Terminating adding status started for" + cluster.getClusterId());
+                log.info("Cluster Terminating adding status started for " + cluster.getClusterId());
                 TopologyManager.updateTopology(topology);
                 //publishing data
                 ClusterInstanceTerminatingEvent clusterTerminaingEvent = new ClusterInstanceTerminatingEvent(event.getAppId(),
@@ -1059,7 +1059,6 @@ public class TopologyBuilder {
                                 " [instance-id] %s [current-status] %s [status-requested] %s",
                         event.getClusterId(), event.getInstanceId(),
                         context.getStatus(), status));
-                return;
             }
         } finally {
             TopologyManager.releaseWriteLock();

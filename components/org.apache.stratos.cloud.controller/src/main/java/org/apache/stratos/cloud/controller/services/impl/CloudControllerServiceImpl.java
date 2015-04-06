@@ -428,8 +428,8 @@ public class CloudControllerServiceImpl implements CloudControllerService {
                 log.debug("Payload: " + payload.toString());
             }
 
-            iaasProvider.setPayload(payload.toString().getBytes());
-            iaas.setDynamicPayload(iaasProvider.getPayload());
+//            iaasProvider.setPayload(payload.toString().getBytes());
+//            iaas.setDynamicPayload(iaasProvider.getPayload());
 
             if (clusterContext.isVolumeRequired()) {
                 
@@ -459,7 +459,7 @@ public class CloudControllerServiceImpl implements CloudControllerService {
                         "[member] %s", instanceContext.getClusterId(), instanceContext.getClusterInstanceId(),
                         memberId));
             }
-            executorService.execute(new InstanceCreator(memberContext, iaasProvider));
+            executorService.execute(new InstanceCreator(memberContext, iaasProvider, payload.toString().getBytes()));
 
             return memberContext;
         } catch (Exception e) {
@@ -482,6 +482,7 @@ public class CloudControllerServiceImpl implements CloudControllerService {
         memberContext.setProperties(instanceContext.getProperties());
         memberContext.setLoadBalancingIPType(loadBalancingIPType);
         memberContext.setInitTime(System.currentTimeMillis());
+        memberContext.setObsoleteExpiryTime(instanceContext.getObsoleteExpiryTime());
 
         return memberContext;
     }
@@ -545,6 +546,29 @@ public class CloudControllerServiceImpl implements CloudControllerService {
     private String generateMemberId(String clusterId) {
         UUID memberId = UUID.randomUUID();
         return clusterId + memberId.toString();
+    }
+
+    public void terminateInstanceForcefully(String memberId)  {
+
+        log.info(String.format("Starting to forcefully terminate the member " + memberId));
+        boolean memberTerminated = true;
+        try {
+            this.terminateInstance(memberId);
+        } catch (InvalidMemberException e) {
+            memberTerminated = false;
+        } catch (CloudControllerException e){
+            memberTerminated = false;
+        } catch (InvalidCartridgeTypeException e) {
+            memberTerminated = false;
+        }
+
+        if(memberTerminated){
+            log.info(String.format("Member terminated [member-id] %s ", memberId));
+        }else{
+            log.warn(String.format("Stratos could not terminate the member [member-id] %s. This may due to a issue in the underlying IaaS, Please terminate the member manually", memberId));
+            MemberContext memberContext = CloudControllerContext.getInstance().getMemberContextOfMemberId(memberId);
+            CloudControllerServiceUtil.executeMemberTerminationPostProcess(memberContext);
+        }
     }
 
     @Override

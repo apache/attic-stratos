@@ -41,10 +41,12 @@ public class InstanceCreator implements Runnable {
 
     private MemberContext memberContext;
     private IaasProvider iaasProvider;
+    private byte[] payload;
 
-    public InstanceCreator(MemberContext memberContext, IaasProvider iaasProvider) {
+    public InstanceCreator(MemberContext memberContext, IaasProvider iaasProvider, byte[] payload) {
         this.memberContext = memberContext;
         this.iaasProvider = iaasProvider;
+        this.payload = payload;
     }
 
     @Override
@@ -58,7 +60,12 @@ public class InstanceCreator implements Runnable {
             ClusterContext clusterContext = CloudControllerContext.getInstance().getClusterContext(clusterId);
             Iaas iaas = iaasProvider.getIaas();
 
-            memberContext = startInstance(iaas, memberContext);
+            if(log.isDebugEnabled()){
+
+                log.debug(String.format("Payload passed to instance created, [member] %s [payload] %s",
+                        memberContext.getMemberId(),  new String(payload)));
+            }
+            memberContext = startInstance(iaas, memberContext, payload);
 
             if (log.isInfoEnabled()) {
                 log.info(String.format("Instance started successfully: [cartridge-type] %s [cluster-id] %s [instance-id] %s " +
@@ -98,8 +105,8 @@ public class InstanceCreator implements Runnable {
         }
     }
 
-    private MemberContext startInstance(Iaas iaas, MemberContext memberContext) throws CartridgeNotFoundException {
-        memberContext = iaas.startInstance(memberContext);
+    private MemberContext startInstance(Iaas iaas, MemberContext memberContext, byte[] payload) throws CartridgeNotFoundException {
+        memberContext = iaas.startInstance(memberContext, payload);
 
         // Validate instance id
         String instanceId = memberContext.getInstanceId();
