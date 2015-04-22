@@ -90,8 +90,14 @@ public class AutoscalerServiceClient {
         return stub.getAutoscalingPolicy(autoscalingPolicyId);
     }
 
-    public void addApplication(ApplicationContext applicationContext) throws AutoscalerServiceApplicationDefinitionExceptionException, RemoteException {
+    public void addApplication(ApplicationContext applicationContext)
+                throws AutoscalerServiceApplicationDefinitionExceptionException, RemoteException {
         stub.addApplication(applicationContext);
+    }
+
+    public void updateApplication(ApplicationContext applicationContext)
+                throws AutoscalerServiceApplicationDefinitionExceptionException, RemoteException {
+        stub.updateApplication(applicationContext);
     }
 
     public ApplicationContext getApplication(String applicationId) throws RemoteException {
@@ -197,7 +203,7 @@ public class AutoscalerServiceClient {
             AutoscalerServiceDeploymentPolicyNotExistsExceptionException,
             AutoscalerServiceInvalidDeploymentPolicyExceptionException, AutoscalerServiceRemoteExceptionException,
             AutoscalerServiceInvalidPolicyExceptionException {
-        stub.updateDeployementPolicy(deploymentPolicy);
+        stub.updateDeploymentPolicy(deploymentPolicy);
     }
 
     public void removeDeploymentPolicy(String deploymentPolicyID) throws RemoteException,

@@ -88,6 +88,15 @@ public interface AutoscalerService {
     public void addApplication(ApplicationContext applicationContext) throws ApplicationDefinitionException;
 
     /**
+     * update an application
+     *
+     * @param applicationContext {@link org.apache.stratos.autoscaler.applications.pojo.ApplicationContext}
+     * @throws ApplicationDefinitionException if an error occurs
+     */
+    public void updateApplication(ApplicationContext applicationContext) throws ApplicationDefinitionException;
+
+
+    /**
      * Get an application
      *
      * @param applicationId
@@ -226,7 +235,7 @@ public interface AutoscalerService {
      * @param deploymentPolicy DeployementPolicy
      * @throws IllegalArgumentException if the provided argument is not valid.
      */
-    public void updateDeployementPolicy(DeploymentPolicy deploymentPolicy) throws DeploymentPolicyNotExistsException, InvalidDeploymentPolicyException, RemoteException, InvalidPolicyException;
+    public void updateDeploymentPolicy(DeploymentPolicy deploymentPolicy) throws DeploymentPolicyNotExistsException, InvalidDeploymentPolicyException, RemoteException, InvalidPolicyException;
 
     /**
      * Remove deployment policy
