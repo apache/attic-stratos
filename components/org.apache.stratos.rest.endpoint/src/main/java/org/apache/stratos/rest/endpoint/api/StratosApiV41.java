@@ -293,7 +293,7 @@ public class StratosApiV41 extends AbstractApi {
     @AuthorizationAction("/permission/admin/manage/getCartridge")
     public Response getCartridges()
             throws RestAPIException {
-        List<CartridgeBean> cartridges = StratosApiV41Utils.getAvailableCartridges(null, null, getConfigContext());
+        List<CartridgeBean> cartridges = StratosApiV41Utils.getAllCartridges();
         if (cartridges == null ||  cartridges.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }

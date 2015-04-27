@@ -367,7 +367,7 @@ public class StratosApiV40Utils {
         try {
             Pattern searchPattern = getSearchStringPattern(cartridgeSearchString);
 
-            String[] availableCartridges = CloudControllerServiceClient.getInstance().getRegisteredCartridges();
+            String[] availableCartridges = CloudControllerServiceClient.getInstance().getCartridges();
 
             if (availableCartridges != null) {
                 for (String cartridgeType : availableCartridges) {

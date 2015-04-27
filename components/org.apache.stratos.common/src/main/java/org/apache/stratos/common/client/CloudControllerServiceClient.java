@@ -145,7 +145,7 @@ public class CloudControllerServiceClient {
         }
     }
 
-    public String[] getRegisteredCartridges() throws RemoteException {
+    public String[] getCartridges() throws RemoteException {
         return stub.getCartridges();
     }
 
