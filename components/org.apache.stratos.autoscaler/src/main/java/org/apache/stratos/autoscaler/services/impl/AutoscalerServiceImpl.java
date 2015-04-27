@@ -18,6 +18,7 @@
  */
 package org.apache.stratos.autoscaler.services.impl;
 
+import org.apache.axis2.AxisFault;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -28,7 +29,12 @@ import org.apache.stratos.autoscaler.applications.parser.DefaultApplicationParse
 import org.apache.stratos.autoscaler.applications.pojo.*;
 import org.apache.stratos.autoscaler.applications.topic.ApplicationBuilder;
 import org.apache.stratos.autoscaler.context.AutoscalerContext;
+import org.apache.stratos.autoscaler.context.InstanceContext;
+import org.apache.stratos.autoscaler.context.cluster.ClusterInstanceContext;
+import org.apache.stratos.autoscaler.context.partition.ClusterLevelPartitionContext;
+import org.apache.stratos.autoscaler.context.partition.network.ClusterLevelNetworkPartitionContext;
 import org.apache.stratos.autoscaler.exception.AutoScalerException;
+import org.apache.stratos.autoscaler.exception.CloudControllerConnectionException;
 import org.apache.stratos.autoscaler.exception.InvalidArgumentException;
 import org.apache.stratos.autoscaler.exception.application.ApplicationDefinitionException;
 import org.apache.stratos.autoscaler.exception.application.InvalidApplicationPolicyException;
@@ -45,11 +51,16 @@ import org.apache.stratos.autoscaler.pojo.policy.deployment.DeploymentPolicy;
 import org.apache.stratos.autoscaler.registry.RegistryManager;
 import org.apache.stratos.autoscaler.services.AutoscalerService;
 import org.apache.stratos.autoscaler.util.AutoscalerUtil;
+import org.apache.stratos.cloud.controller.stub.CloudControllerServiceInvalidCartridgeTypeExceptionException;
+import org.apache.stratos.cloud.controller.stub.CloudControllerServiceInvalidPartitionExceptionException;
+import org.apache.stratos.cloud.controller.stub.domain.MemberContext;
+import org.apache.stratos.cloud.controller.stub.exception.CloudControllerException;
 import org.apache.stratos.common.Properties;
 import org.apache.stratos.common.client.CloudControllerServiceClient;
 import org.apache.stratos.common.client.StratosManagerServiceClient;
 import org.apache.stratos.common.constants.StratosConstants;
 import org.apache.stratos.common.partition.NetworkPartition;
+import org.apache.stratos.common.partition.Partition;
 import org.apache.stratos.common.util.CommonUtil;
 import org.apache.stratos.manager.service.stub.domain.application.signup.ApplicationSignUp;
 import org.apache.stratos.manager.service.stub.domain.application.signup.ArtifactRepository;
@@ -158,13 +169,13 @@ public class AutoscalerServiceImpl implements AutoscalerService {
                     applicationContext.getApplicationId()));
         }
 
-        if(AutoscalerContext.getInstance().getApplicationContext(applicationId) == null) {
+        if (AutoscalerContext.getInstance().getApplicationContext(applicationId) == null) {
             String msg = "Application is not found as ApplicationContext. Please add application before updating it";
             log.error(msg);
             throw new ApplicationDefinitionException(msg);
         }
 
-        if(ApplicationHolder.getApplications().getApplication(applicationId) == null) {
+        if (ApplicationHolder.getApplications().getApplication(applicationId) == null) {
             String msg = "Application is not found as Application. Please add application before updating it";
             log.error(msg);
             throw new ApplicationDefinitionException(msg);
@@ -836,7 +847,7 @@ public class AutoscalerServiceImpl implements AutoscalerService {
         }
     }
 
-    private boolean validateDeploymentPolicy(DeploymentPolicy deploymentPolicy) throws DeploymentPolicyNotExistsException,
+    private void validateDeploymentPolicy(DeploymentPolicy deploymentPolicy) throws DeploymentPolicyNotExistsException,
             InvalidDeploymentPolicyException, RemoteException {
 
         // deployment policy can't be null
@@ -917,13 +928,11 @@ public class AutoscalerServiceImpl implements AutoscalerService {
             }
 
         }
-        return true;
-
     }
 
     @Override
     public void updateDeploymentPolicy(DeploymentPolicy deploymentPolicy) throws RemoteException,
-            InvalidDeploymentPolicyException, DeploymentPolicyNotExistsException, InvalidPolicyException {
+            InvalidDeploymentPolicyException, DeploymentPolicyNotExistsException, InvalidPolicyException, CloudControllerConnectionException {
 
         validateDeploymentPolicy(deploymentPolicy);
 
@@ -945,10 +954,117 @@ public class AutoscalerServiceImpl implements AutoscalerService {
         PolicyManager.getInstance().updateDeploymentPolicy(deploymentPolicy);
         //        PolicyManager.getInstance().persist();
 
+
+        updateClusterMonitors(deploymentPolicy);
+
         if (log.isInfoEnabled()) {
             log.info("Successfully updated deployment policy: [deployment-policy-id] " + deploymentPolicyID);
         }
+    }
 
+    private void updateClusterMonitors(DeploymentPolicy deploymentPolicy) throws InvalidDeploymentPolicyException,
+            CloudControllerConnectionException {
+
+        for (ClusterMonitor clusterMonitor : AutoscalerContext.getInstance().getClusterMonitors().values()) {
+
+            //Following if statement checks the relevant clusters for the updated deployment policy
+            if (deploymentPolicy.getDeploymentPolicyID().equals(clusterMonitor.getDeploymentPolicyId())) {
+
+                for (NetworkPartition networkPartition : deploymentPolicy.getNetworkPartitions()) {
+
+                    ClusterLevelNetworkPartitionContext clusterLevelNetworkPartitionContext
+                            = clusterMonitor.getClusterContext().getNetworkPartitionCtxt(networkPartition.getId());
+
+                    try {
+
+                        addNewPartitionsToClusterMonitor(clusterLevelNetworkPartitionContext, networkPartition,
+                                deploymentPolicy.getDeploymentPolicyID(), clusterMonitor.getClusterContext().getServiceId());
+                    } catch (RemoteException e) {
+
+                        String message = "Connection to cloud controller failed, Cluster monitor update failed for" +
+                                " [deployment-policy] " + deploymentPolicy.getDeploymentPolicyID();
+                        log.error(message);
+                        throw new CloudControllerConnectionException(message, e);
+                    } catch (CloudControllerServiceInvalidPartitionExceptionException e) {
+
+                        String message = "Invalid partition, Cluster monitor update failed for [deployment-policy] "
+                                + deploymentPolicy.getDeploymentPolicyID();
+                        log.error(message);
+                        throw new InvalidDeploymentPolicyException(message, e);
+                    } catch (CloudControllerServiceInvalidCartridgeTypeExceptionException e) {
+
+                        String message = "Invalid cartridge type, Cluster monitor update failed for [deployment-policy] "
+                                + deploymentPolicy.getDeploymentPolicyID() + " [cartridge] "
+                                + clusterMonitor.getClusterContext().getServiceId();
+                        log.error(message);
+                        throw new InvalidDeploymentPolicyException(message, e);
+                    }
+                    removeOldPartitionsFromClusterMonitor(clusterLevelNetworkPartitionContext, networkPartition);
+                }
+            }
+        }
+    }
+
+    private void removeOldPartitionsFromClusterMonitor(ClusterLevelNetworkPartitionContext clusterLevelNetworkPartitionContext,
+                                                       NetworkPartition networkPartition) {
+
+        for (InstanceContext instanceContext : clusterLevelNetworkPartitionContext.getInstanceIdToInstanceContextMap().values()) {
+
+            ClusterInstanceContext clusterInstanceContext = (ClusterInstanceContext) instanceContext;
+
+            for (ClusterLevelPartitionContext clusterLevelPartitionContext : clusterInstanceContext.getPartitionCtxts()) {
+
+                if (null == networkPartition.getPartition(clusterLevelPartitionContext.getPartitionId())) {
+
+                    //It has found that this partition context which is in cluster monitor is removed in updated policy
+                    clusterLevelPartitionContext.setIsObsoletePartition(true);
+                    Iterator<MemberContext> memberContextIterator = clusterLevelPartitionContext.getActiveMembers().iterator();
+                    while (memberContextIterator.hasNext()) {
+
+                        clusterLevelPartitionContext.moveActiveMemberToTerminationPendingMembers(
+                                memberContextIterator.next().getMemberId());
+                    }
+
+                    memberContextIterator = clusterLevelPartitionContext.getPendingMembers().iterator();
+                    while (memberContextIterator.hasNext()) {
+
+                        clusterLevelPartitionContext.movePendingMemberToObsoleteMembers(
+                                memberContextIterator.next().getMemberId());
+                    }
+                }
+            }
+        }
+    }
+
+    private void addNewPartitionsToClusterMonitor(ClusterLevelNetworkPartitionContext clusterLevelNetworkPartitionContext,
+                                                  NetworkPartition networkPartition, String deploymentPolicyID,
+                                                  String cartridgeType) throws RemoteException,
+            CloudControllerServiceInvalidPartitionExceptionException,
+            CloudControllerServiceInvalidCartridgeTypeExceptionException {
+
+        boolean validationOfNetworkPartitionRequired = false;
+        for (Partition partition : networkPartition.getPartitions()) {
+
+            //Iterating through instances
+            for (InstanceContext instanceContext : clusterLevelNetworkPartitionContext.getInstanceIdToInstanceContextMap().values()) {
+
+                ClusterInstanceContext clusterInstanceContext = (ClusterInstanceContext) instanceContext;
+                if (null == clusterInstanceContext.getPartitionCtxt(partition.getId())) {
+
+                    //It has found that this partition which is in deployment policy/network partition is new
+                    ClusterLevelPartitionContext clusterLevelPartitionContext = new ClusterLevelPartitionContext(
+                            partition, networkPartition.getId(), deploymentPolicyID);
+                    validationOfNetworkPartitionRequired = true;
+                    clusterInstanceContext.addPartitionCtxt(clusterLevelPartitionContext);
+                }
+            }
+        }
+
+        if (validationOfNetworkPartitionRequired) {
+
+            CloudControllerServiceClient.getInstance().validateNetworkPartitionOfDeploymentPolicy(cartridgeType,
+                    clusterLevelNetworkPartitionContext.getId());
+        }
     }
 
     @Override

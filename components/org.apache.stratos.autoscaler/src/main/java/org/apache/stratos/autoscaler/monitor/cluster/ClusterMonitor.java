@@ -24,7 +24,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.stratos.autoscaler.context.AutoscalerContext;
 import org.apache.stratos.autoscaler.context.InstanceContext;
-import org.apache.stratos.autoscaler.context.cluster.AbstractClusterContext;
 import org.apache.stratos.autoscaler.context.cluster.ClusterContext;
 import org.apache.stratos.autoscaler.context.cluster.ClusterContextFactory;
 import org.apache.stratos.autoscaler.context.cluster.ClusterInstanceContext;
@@ -95,7 +94,7 @@ public class ClusterMonitor extends Monitor implements Runnable {
     protected FactHandle dependentScaleCheckFactHandle;
     protected boolean hasFaultyMember = false;
     protected boolean stop = false;
-    protected AbstractClusterContext clusterContext;
+    protected ClusterContext clusterContext;
     protected StatefulKnowledgeSession minCheckKnowledgeSession;
     protected StatefulKnowledgeSession maxCheckKnowledgeSession;
     protected StatefulKnowledgeSession obsoleteCheckKnowledgeSession;
@@ -113,9 +112,7 @@ public class ClusterMonitor extends Monitor implements Runnable {
     private boolean groupScalingEnabledSubtree;
 
     private static final Log log = LogFactory.getLog(ClusterMonitor.class);
-    private Map<String, ClusterLevelNetworkPartitionContext> networkPartitionIdToClusterLevelNetworkPartitionCtxts;
     private boolean hasPrimary;
-    private float scalingFactorBasedOnDependencies = 1.0f;
     private String deploymentPolicyId;
 
 
@@ -127,7 +124,6 @@ public class ClusterMonitor extends Monitor implements Runnable {
         executorService = StratosThreadPool.getExecutorService(
                 AutoscalerConstants.CLUSTER_MONITOR_THREAD_POOL_ID, threadPoolSize);
 
-        networkPartitionIdToClusterLevelNetworkPartitionCtxts = new HashMap<String, ClusterLevelNetworkPartitionContext>();
         readConfigurations();
         autoscalerRuleEvaluator = new AutoscalerRuleEvaluator();
         autoscalerRuleEvaluator.parseAndBuildKnowledgeBaseForDroolsFile(StratosConstants.OBSOLETE_CHECK_DROOL_FILE);
@@ -349,11 +345,11 @@ public class ClusterMonitor extends Monitor implements Runnable {
         this.dependentScaleCheckKnowledgeSession = dependentScaleCheckKnowledgeSession;
     }
 
-    public AbstractClusterContext getClusterContext() {
+    public ClusterContext getClusterContext() {
         return clusterContext;
     }
 
-    public void setClusterContext(AbstractClusterContext clusterContext) {
+    public void setClusterContext(ClusterContext clusterContext) {
         this.clusterContext = clusterContext;
     }
 
@@ -393,14 +389,6 @@ public class ClusterMonitor extends Monitor implements Runnable {
         }
 
 
-    }
-
-    public void addClusterLevelNWPartitionContext(ClusterLevelNetworkPartitionContext clusterLevelNWPartitionCtxt) {
-        networkPartitionIdToClusterLevelNetworkPartitionCtxts.put(clusterLevelNWPartitionCtxt.getId(), clusterLevelNWPartitionCtxt);
-    }
-
-    public ClusterLevelNetworkPartitionContext getClusterLevelNWPartitionContext(String nwPartitionId) {
-        return networkPartitionIdToClusterLevelNetworkPartitionCtxts.get(nwPartitionId);
     }
 
     public void handleAverageLoadAverageEvent(
@@ -608,6 +596,13 @@ public class ClusterMonitor extends Monitor implements Runnable {
                                 getObsoleteCheckKnowledgeSession().setGlobal("clusterId", clusterId);
                                 obsoleteCheckFactHandle = AutoscalerRuleEvaluator.evaluate(
                                         getObsoleteCheckKnowledgeSession(), obsoleteCheckFactHandle, partitionContext);
+
+                                if (partitionContext.isObsoletePartition()
+                                        && partitionContext.getTerminationPendingMembers().size() == 0
+                                        && partitionContext.getObsoletedMembers().size() == 0) {
+
+                                    instanceContext.removePartitionCtxt(partitionContext.getPartition().getId());
+                                }
                             }
                         };
                         executorService.execute(monitoringRunnable);
@@ -691,8 +686,7 @@ public class ClusterMonitor extends Monitor implements Runnable {
                 + ", [event] " + scalingEvent.getId() + ", [group instance] " + scalingEvent.getInstanceId()
                 + ", [factor] " + scalingEvent.getFactor());
 
-
-        this.scalingFactorBasedOnDependencies = scalingEvent.getFactor();
+        float scalingFactorBasedOnDependencies = scalingFactorBasedOnDependencies = scalingEvent.getFactor();
         ClusterContext vmClusterContext = (ClusterContext) clusterContext;
         String instanceId = scalingEvent.getInstanceId();
 
@@ -1401,9 +1395,8 @@ public class ClusterMonitor extends Monitor implements Runnable {
             throw new RuntimeException("Network partition context not found: [network-partition-id] " +
                     networkPartitionId);
         }
-        ClusterInstanceContext instanceContext = (ClusterInstanceContext) networkPartitionContext.
-                getInstanceContext(instanceId);
-        return instanceContext;
+
+        return (ClusterInstanceContext) networkPartitionContext.getInstanceContext(instanceId);
     }
 
     public Collection<ClusterLevelNetworkPartitionContext> getNetworkPartitionCtxts() {
