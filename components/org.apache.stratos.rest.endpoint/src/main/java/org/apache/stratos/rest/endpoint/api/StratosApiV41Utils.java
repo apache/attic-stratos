@@ -60,6 +60,8 @@ import org.apache.stratos.common.client.StratosManagerServiceClient;
 import org.apache.stratos.common.exception.InvalidEmailException;
 import org.apache.stratos.common.util.ClaimsMgtUtil;
 import org.apache.stratos.common.util.CommonUtil;
+import org.apache.stratos.manager.exception.ApplicationSignUpException;
+import org.apache.stratos.manager.service.stub.StratosManagerServiceApplicationSignUpExceptionException;
 import org.apache.stratos.manager.service.stub.StratosManagerServiceDomainMappingExceptionException;
 import org.apache.stratos.manager.service.stub.domain.application.signup.ApplicationSignUp;
 import org.apache.stratos.manager.service.stub.domain.application.signup.ArtifactRepository;
@@ -1881,10 +1883,6 @@ public class StratosApiV41Utils {
             } catch (RemoteException e) {
                 log.error(e.getMessage(), e);
                 throw new RestAPIException(e.getMessage(), e);
-            } catch (CloudControllerServiceInvalidKubernetesClusterExceptionException e) {
-                String message = e.getFaultMessage().getInvalidKubernetesClusterException().getMessage();
-                log.error(message, e);
-                throw new RestAPIException(message, e);
             }
         }
         return false;
@@ -2273,16 +2271,16 @@ public class StratosApiV41Utils {
      */
     public static ApplicationSignUpBean getApplicationSignUp(String applicationId) throws RestAPIException {
         if (StringUtils.isBlank(applicationId)) {
-            throw new RestAPIException("Application id is null");
+            throw new ApplicationSignUpRestAPIException("Application id is null");
         }
 
         ApplicationBean application = getApplication(applicationId);
         if (application == null) {
-            throw new RestAPIException("Application does not exist: [application-id] " + applicationId);
+            throw new ApplicationSignUpRestAPIException("Application does not exist: [application-id] " + applicationId);
         }
 
         if (!application.isMultiTenant()) {
-            throw new RestAPIException("Application singups not available for single-tenant applications");
+            throw new ApplicationSignUpRestAPIException("Application sign ups not available for single-tenant applications");
         }
 
         int tenantId = CarbonContext.getThreadLocalCarbonContext().getTenantId();
@@ -2294,7 +2292,7 @@ public class StratosApiV41Utils {
                 return ObjectConverter.convertStubApplicationSignUpToApplicationSignUpBean(applicationSignUp);
             }
             return null;
-        } catch (Exception e) {
+        } catch (RemoteException e) {
             String message = String.format("Could not get application signup: [application-id] %s [tenant-id] %d",
                     applicationId, tenantId);
             log.error(message, e);
@@ -2437,7 +2435,7 @@ public class StratosApiV41Utils {
         }
     }
 
-<<<<<<< HEAD
+
     /**
      * Get Application Domain Mappings
      *
@@ -2569,7 +2567,7 @@ public class StratosApiV41Utils {
     public static void addDeploymentPolicy(DeploymentPolicyBean deployementPolicyDefinitionBean)
             throws RestAPIException,
             AutoscalerServiceDeploymentPolicyAlreadyExistsExceptionException,
-            AutoscalerServiceInvalidDeploymentPolicyExceptionException{
+            AutoscalerServiceInvalidDeploymentPolicyExceptionException {
         try {
             if (log.isDebugEnabled()) {
                 log.debug(String.format("Adding deployment policy: [deployment-policy-id] %s ",
