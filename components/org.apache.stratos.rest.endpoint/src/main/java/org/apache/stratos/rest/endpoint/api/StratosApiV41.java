@@ -312,8 +312,13 @@ public class StratosApiV41 extends AbstractApi {
     @AuthorizationAction("/permission/admin/manage/getCartridge")
     public Response getCartridges()
             throws RestAPIException {
+<<<<<<< HEAD
+        List<CartridgeBean> cartridges = StratosApiV41Utils.getAllCartridges();
+        if (cartridges == null ||  cartridges.isEmpty()) {
+=======
         List<CartridgeBean> cartridges = StratosApiV41Utils.getAvailableCartridges(null, null, getConfigContext());
         if (cartridges == null || cartridges.isEmpty()) {
+>>>>>>> upstream/master
             return Response.status(Response.Status.NOT_FOUND).build();
         }
         CartridgeBean[] cartridgeArray = cartridges.toArray(new CartridgeBean[cartridges.size()]);
