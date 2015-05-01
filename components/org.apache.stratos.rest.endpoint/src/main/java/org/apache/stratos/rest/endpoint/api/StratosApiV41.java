@@ -68,7 +68,7 @@ import java.util.List;
  */
 @Path("/")
 public class StratosApiV41 extends AbstractApi {
-    private static Log log = LogFactory.getLog(StratosApiV41.class);
+    private static final Log log = LogFactory.getLog(StratosApiV41.class);
 
     @Context
     HttpServletRequest httpServletRequest;
@@ -136,12 +136,12 @@ public class StratosApiV41 extends AbstractApi {
             String msg = String.format("Cartridge already exists: [cartridge-type] %s", cartridgeType);
             log.warn(msg);
             return Response.status(Response.Status.CONFLICT)
-                    .entity(new ErrorResponseBean(Response.Status.CONFLICT.getStatusCode(), msg)).build();
+                    .entity(new StatusResponseBean(Response.Status.CONFLICT.getStatusCode(), msg)).build();
         }
 
         StratosApiV41Utils.addCartridge(cartridgeDefinitionBean);
         URI url = uriInfo.getAbsolutePathBuilder().path(cartridgeType).build();
-        return Response.created(url).entity(new SuccessResponseBean(Response.Status.CREATED.getStatusCode(),
+        return Response.created(url).entity(new StatusResponseBean(Response.Status.CREATED.getStatusCode(),
                 String.format("Cartridge added successfully: [cartridge-type] %s", cartridgeType))).build();
     }
 
@@ -172,7 +172,7 @@ public class StratosApiV41 extends AbstractApi {
             return Response.status(Response.Status.CONFLICT).build();
         }
         URI url = uriInfo.getAbsolutePathBuilder().path(deploymentPolicyID).build();
-        return Response.created(url).entity(new SuccessResponseBean(Response.Status.CREATED.getStatusCode(),
+        return Response.created(url).entity(new StatusResponseBean(Response.Status.CREATED.getStatusCode(),
                 String.format("Deployment policy added successfully: " + "[deployment-policy-id] %s",
                         deploymentPolicyID))).build();
     }
@@ -246,7 +246,7 @@ public class StratosApiV41 extends AbstractApi {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
         URI url = uriInfo.getAbsolutePathBuilder().path(deploymentPolicyID).build();
-        return Response.ok(url).entity(new SuccessResponseBean(Response.Status.OK.getStatusCode(),
+        return Response.ok(url).entity(new StatusResponseBean(Response.Status.OK.getStatusCode(),
                 String.format("Deployment policy updated successfully: " + "[deployment-policy-id] %s",
                         deploymentPolicyID))).build();
     }
@@ -272,7 +272,7 @@ public class StratosApiV41 extends AbstractApi {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
         URI url = uriInfo.getAbsolutePathBuilder().path(deploymentPolicyID).build();
-        return Response.ok(url).entity(new SuccessResponseBean(Response.Status.OK.getStatusCode(),
+        return Response.ok(url).entity(new StatusResponseBean(Response.Status.OK.getStatusCode(),
                 String.format("Deployment policy removed successfully: " + "[deployment-policy-id] %s",
                         deploymentPolicyID))).build();
     }
@@ -294,7 +294,7 @@ public class StratosApiV41 extends AbstractApi {
         StratosApiV41Utils.updateCartridge(cartridgeDefinitionBean);
         URI url = uriInfo.getAbsolutePathBuilder().path(cartridgeDefinitionBean.getType()).build();
         return Response.ok(url)
-                .entity(new SuccessResponseBean(Response.Status.OK.getStatusCode(), "Cartridge updated successfully"))
+                .entity(new StatusResponseBean(Response.Status.OK.getStatusCode(), "Cartridge updated successfully"))
                 .build();
 
     }
@@ -312,7 +312,7 @@ public class StratosApiV41 extends AbstractApi {
     @AuthorizationAction("/permission/admin/manage/getCartridge")
     public Response getCartridges()
             throws RestAPIException {
-        List<CartridgeBean> cartridges = StratosApiV41Utils.getAvailableCartridges(null, null, getConfigContext());
+        List<CartridgeBean> cartridges = StratosApiV41Utils.getAvailableCartridges(null, false, getConfigContext());
         if (cartridges == null || cartridges.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
@@ -409,7 +409,7 @@ public class StratosApiV41 extends AbstractApi {
     public Response removeCartridge(
             @PathParam("cartridgeType") String cartridgeType) throws RestAPIException {
         StratosApiV41Utils.removeCartridge(cartridgeType);
-        return Response.ok().entity(new SuccessResponseBean(Response.Status.OK.getStatusCode(),
+        return Response.ok().entity(new StatusResponseBean(Response.Status.OK.getStatusCode(),
                 String.format("Cartridge deleted successfully: [cartridge-type] %s", cartridgeType))).build();
 
     }
@@ -434,7 +434,7 @@ public class StratosApiV41 extends AbstractApi {
         try {
             StratosApiV41Utils.addServiceGroup(serviceGroupDefinition);
             URI url = uriInfo.getAbsolutePathBuilder().path(serviceGroupDefinition.getName()).build();
-            return Response.created(url).entity(new SuccessResponseBean(Response.Status.CREATED.getStatusCode(),
+            return Response.created(url).entity(new StatusResponseBean(Response.Status.CREATED.getStatusCode(),
                     String.format("Service Group added successfully: [service-group] %s",
                             serviceGroupDefinition.getName()))).build();
         } catch (RestAPIException e) {
@@ -512,7 +512,7 @@ public class StratosApiV41 extends AbstractApi {
             @PathParam("groupDefinitionName") String groupDefinitionName) throws RestAPIException {
 
         StratosApiV41Utils.removeServiceGroup(groupDefinitionName);
-        return Response.ok().entity(new SuccessResponseBean(Response.Status.OK.getStatusCode(),
+        return Response.ok().entity(new StatusResponseBean(Response.Status.OK.getStatusCode(),
                 String.format("Service Group deleted successfully: [service-group] %s", groupDefinitionName)))
                 .build();
     }
@@ -538,11 +538,11 @@ public class StratosApiV41 extends AbstractApi {
             StratosApiV41Utils.addNetworkPartition(networkPartitionBean);
         } catch (CloudControllerServiceNetworkPartitionAlreadyExistsExceptionException e) {
             return Response.status(Response.Status.CONFLICT)
-                    .entity(new ErrorResponseBean(Response.Status.CONFLICT.getStatusCode(), e.getLocalizedMessage()))
+                    .entity(new StatusResponseBean(Response.Status.CONFLICT.getStatusCode(), e.getLocalizedMessage()))
                     .build();
         }
         URI url = uriInfo.getAbsolutePathBuilder().path(networkPartitionId).build();
-        return Response.created(url).entity(new SuccessResponseBean(Response.Status.CREATED.getStatusCode(),
+        return Response.created(url).entity(new StatusResponseBean(Response.Status.CREATED.getStatusCode(),
                 String.format("Network partition added successfully: [network-partition] %s", networkPartitionId)))
                 .build();
     }
@@ -607,7 +607,7 @@ public class StratosApiV41 extends AbstractApi {
         } catch (CloudControllerServiceNetworkPartitionNotExistsExceptionException e) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        return Response.ok().entity(new SuccessResponseBean(Response.Status.OK.getStatusCode(),
+        return Response.ok().entity(new StatusResponseBean(Response.Status.OK.getStatusCode(),
                 String.format("Network Partition deleted successfully: [network-partition] %s",
                         networkPartitionId))).build();
     }
@@ -631,7 +631,7 @@ public class StratosApiV41 extends AbstractApi {
             StratosApiV41Utils.addApplication(applicationDefinition, getConfigContext(), getUsername(), getTenantDomain());
 
             URI url = uriInfo.getAbsolutePathBuilder().path(applicationDefinition.getApplicationId()).build();
-            return Response.created(url).entity(new SuccessResponseBean(Response.Status.CREATED.getStatusCode(),
+            return Response.created(url).entity(new StatusResponseBean(Response.Status.CREATED.getStatusCode(),
                     String.format("Application added successfully: [application] %s",
                             applicationDefinition.getApplicationId()))).build();
         } catch (ApplicationAlreadyExistException e) {
@@ -660,7 +660,7 @@ public class StratosApiV41 extends AbstractApi {
             StratosApiV41Utils.updateApplication(applicationDefinition, getConfigContext(), getUsername(), getTenantDomain());
 
             URI url = uriInfo.getAbsolutePathBuilder().path(applicationDefinition.getApplicationId()).build();
-            return Response.created(url).entity(new SuccessResponseBean(Response.Status.CREATED.getStatusCode(),
+            return Response.created(url).entity(new StatusResponseBean(Response.Status.CREATED.getStatusCode(),
                     String.format("Application added successfully: [application] %s",
                             applicationDefinition.getApplicationId()))).build();
         } catch (RestAPIException e) {
@@ -732,7 +732,7 @@ public class StratosApiV41 extends AbstractApi {
             @PathParam("applicationPolicyId") String applicationPolicyId) throws RestAPIException {
         try {
             StratosApiV41Utils.deployApplication(applicationId, applicationPolicyId);
-            return Response.accepted().entity(new SuccessResponseBean(Response.Status.ACCEPTED.getStatusCode(),
+            return Response.accepted().entity(new StatusResponseBean(Response.Status.ACCEPTED.getStatusCode(),
                     String.format("Application deployed successfully: [application] %s", applicationId))).build();
         } catch (ApplicationAlreadyDeployedException e) {
 
@@ -761,7 +761,7 @@ public class StratosApiV41 extends AbstractApi {
         try {
             StratosApiV41Utils.addApplicationPolicy(applicationPolicy);
             URI url = uriInfo.getAbsolutePathBuilder().path(applicationPolicy.getId()).build();
-            return Response.created(url).entity(new SuccessResponseBean(Response.Status.CREATED.getStatusCode(),
+            return Response.created(url).entity(new StatusResponseBean(Response.Status.CREATED.getStatusCode(),
                     String.format("Application policy added successfully: [application-policy] %s",
                             applicationPolicy.getId()))).build();
         } catch (RestAPIException e) {
@@ -834,15 +834,15 @@ public class StratosApiV41 extends AbstractApi {
             @PathParam("applicationPolicyId") String applicationPolicyId) throws RestAPIException {
         try {
             StratosApiV41Utils.removeApplicationPolicy(applicationPolicyId);
-            return Response.ok().entity(new SuccessResponseBean(Response.Status.OK.getStatusCode(),
+            return Response.ok().entity(new StatusResponseBean(Response.Status.OK.getStatusCode(),
                     String.format("Application policy deleted successfully: [application-policy] %s",
                             applicationPolicyId))).build();
         } catch (ApplicationPolicyIdIsEmptyException e) {
-            return Response.status(Response.Status.BAD_REQUEST).entity(new ErrorResponseBean(
+            return Response.status(Response.Status.BAD_REQUEST).entity(new StatusResponseBean(
                     Response.Status.BAD_REQUEST.getStatusCode(), "Autoscaling policy id is empty"))
                     .build();
         } catch (AutoscalerServiceInvalidPolicyExceptionException e) {
-            return Response.status(Response.Status.BAD_REQUEST).entity(new ErrorResponseBean(
+            return Response.status(Response.Status.BAD_REQUEST).entity(new StatusResponseBean(
                     Response.Status.BAD_REQUEST.getStatusCode(), "Autoscaling policy is invalid"))
                     .build();
         }
@@ -866,15 +866,15 @@ public class StratosApiV41 extends AbstractApi {
         try {
             StratosApiV41Utils.updateApplicationPolicy(applicationPolicy);
         } catch (AutoscalerServiceInvalidApplicationPolicyExceptionException e) {
-            return Response.status(Response.Status.BAD_REQUEST).entity(new ErrorResponseBean(
+            return Response.status(Response.Status.BAD_REQUEST).entity(new StatusResponseBean(
                     Response.Status.BAD_REQUEST.getStatusCode(), "Invalid application policy"))
                     .build();
         } catch (AutoscalerServiceApplicatioinPolicyNotExistsExceptionException e) {
-            return Response.status(Response.Status.NOT_FOUND).entity(new ErrorResponseBean(
+            return Response.status(Response.Status.NOT_FOUND).entity(new StatusResponseBean(
                     Response.Status.NOT_FOUND.getStatusCode(), "Application policy does not exist"))
                     .build();
         }
-        return Response.ok().entity(new SuccessResponseBean(Response.Status.OK.getStatusCode(),
+        return Response.ok().entity(new StatusResponseBean(Response.Status.OK.getStatusCode(),
                 String.format("Application policy updated successfully: [application-policy] %s",
                         applicationPolicy.getId()))).build();
     }
@@ -897,7 +897,7 @@ public class StratosApiV41 extends AbstractApi {
         if (appNetworkPartitionsBean == null ||
                 (appNetworkPartitionsBean.getNetworkPartitionIds().size() == 1 &&
                         appNetworkPartitionsBean.getNetworkPartitionIds().get(0) == null)) {
-            return Response.status(Response.Status.NOT_FOUND).entity(new ErrorResponseBean(
+            return Response.status(Response.Status.NOT_FOUND).entity(new StatusResponseBean(
                     Response.Status.NOT_FOUND.getStatusCode(), "No network partitions used in the application"))
                     .build();
         }
@@ -923,7 +923,7 @@ public class StratosApiV41 extends AbstractApi {
             throws RestAPIException {
         StratosApiV41Utils.addApplicationSignUp(applicationId, applicationSignUpBean);
         URI url = uriInfo.getAbsolutePathBuilder().path(applicationId).build();
-        return Response.created(url).entity(new SuccessResponseBean(Response.Status.CREATED.getStatusCode(),
+        return Response.created(url).entity(new StatusResponseBean(Response.Status.CREATED.getStatusCode(),
                 String.format("Successfully signed up for: [application] %s", applicationId))).build();
     }
 
@@ -946,14 +946,14 @@ public class StratosApiV41 extends AbstractApi {
         try {
             applicationSignUpBean = StratosApiV41Utils.getApplicationSignUp(applicationId);
             if (applicationSignUpBean == null) {
-                return Response.status(Response.Status.NOT_FOUND).entity(new ErrorResponseBean(
+                return Response.status(Response.Status.NOT_FOUND).entity(new StatusResponseBean(
                         Response.Status.NOT_FOUND.getStatusCode(), "No Application sign ups found for application"))
                         .build();
             }
 
             return Response.ok(applicationSignUpBean).build();
         } catch (ApplicationSignUpRestAPIException e) {
-            return Response.status(Response.Status.BAD_REQUEST).entity(new ErrorResponseBean(
+            return Response.status(Response.Status.BAD_REQUEST).entity(new StatusResponseBean(
                     Response.Status.BAD_REQUEST.getStatusCode(), "Incorrect request to get application sign ups"))
                     .build();
         }
@@ -996,7 +996,7 @@ public class StratosApiV41 extends AbstractApi {
         try {
             StratosApiV41Utils.addApplicationDomainMappings(applicationId, domainMappingsBean);
         } catch (StratosManagerServiceDomainMappingExceptionException e) {
-            return Response.status(Response.Status.BAD_REQUEST).entity(new ErrorResponseBean(
+            return Response.status(Response.Status.BAD_REQUEST).entity(new StatusResponseBean(
                     Response.Status.BAD_REQUEST.getStatusCode(), "Incorrect request to add domain mapping for " +
                     "application")).build();
         }
@@ -1006,7 +1006,7 @@ public class StratosApiV41 extends AbstractApi {
             domainMappingList.add(domainMappingBean.getDomainName());
         }
         URI url = uriInfo.getAbsolutePathBuilder().path(applicationId).build();
-        return Response.created(url).entity(new SuccessResponseBean(Response.Status.CREATED.getStatusCode(),
+        return Response.created(url).entity(new StatusResponseBean(Response.Status.CREATED.getStatusCode(),
                 String.format("Domain Mappings added successfully: [domain-mappings] %s", domainMappingList)))
                 .build();
     }
@@ -1030,7 +1030,7 @@ public class StratosApiV41 extends AbstractApi {
         try {
             StratosApiV41Utils.removeApplicationDomainMappings(applicationId, domainMapppingsBean);
         } catch (StratosManagerServiceDomainMappingExceptionException e) {
-            return Response.status(Response.Status.BAD_REQUEST).entity(new ErrorResponseBean(
+            return Response.status(Response.Status.BAD_REQUEST).entity(new StatusResponseBean(
                     Response.Status.BAD_REQUEST.getStatusCode(), "Incorrect request to delete domain mapping of " +
                     "application")).build();
         }
@@ -1039,7 +1039,7 @@ public class StratosApiV41 extends AbstractApi {
         for (DomainMappingBean domainMappingBean : mappings) {
             domainMappingList.add(domainMappingBean.getDomainName());
         }
-        return Response.ok().entity(new SuccessResponseBean(Response.Status.OK.getStatusCode(),
+        return Response.ok().entity(new StatusResponseBean(Response.Status.OK.getStatusCode(),
                 String.format("Domain Mappings deleted successfully: [domain-mappings] %s", domainMappingList)))
                 .build();
     }
@@ -1062,12 +1062,12 @@ public class StratosApiV41 extends AbstractApi {
         try {
             domainMappingsBeanList = StratosApiV41Utils.getApplicationDomainMappings(applicationId);
             if (domainMappingsBeanList == null || domainMappingsBeanList.isEmpty()) {
-                return Response.status(Response.Status.NOT_FOUND).entity(new ErrorResponseBean(
+                return Response.status(Response.Status.NOT_FOUND).entity(new StatusResponseBean(
                         Response.Status.NOT_FOUND.getStatusCode(), "No domain mappings found for the application"))
                         .build();
             }
         } catch (StratosManagerServiceDomainMappingExceptionException e) {
-            return Response.status(Response.Status.BAD_REQUEST).entity(new ErrorResponseBean(
+            return Response.status(Response.Status.BAD_REQUEST).entity(new StatusResponseBean(
                     Response.Status.BAD_REQUEST.getStatusCode(), "Incorrect request to get domain mapping of application"))
                     .build();
         }
@@ -1098,18 +1098,18 @@ public class StratosApiV41 extends AbstractApi {
         if (applicationDefinition == null) {
             String msg = String.format("Application does not exist [application-id] %s", applicationId);
             log.info(msg);
-            return Response.status(Response.Status.NOT_FOUND).entity(new ErrorResponseBean(
+            return Response.status(Response.Status.NOT_FOUND).entity(new StatusResponseBean(
                     Response.Status.NOT_FOUND.getStatusCode(), msg)).build();
         }
         if (!applicationDefinition.getStatus().equalsIgnoreCase(StratosApiV41Utils.APPLICATION_STATUS_DEPLOYED)) {
             String message = String.format("Could not undeploy since application is not in DEPLOYED status " +
                     "[application-id] %s [current status] %S", applicationId, applicationDefinition.getStatus());
             log.info(message);
-            return Response.status(Response.Status.CONFLICT).entity(new ErrorResponseBean(
+            return Response.status(Response.Status.CONFLICT).entity(new StatusResponseBean(
                     Response.Status.CONFLICT.getStatusCode(), message)).build();
         }
         StratosApiV41Utils.undeployApplication(applicationId, force);
-        return Response.accepted().entity(new SuccessResponseBean(Response.Status.ACCEPTED.getStatusCode(),
+        return Response.accepted().entity(new StatusResponseBean(Response.Status.ACCEPTED.getStatusCode(),
                 String.format("Application undeployed successfully: [application] %s", applicationId))).build();
     }
 
@@ -1130,7 +1130,7 @@ public class StratosApiV41 extends AbstractApi {
             @PathParam("applicationId") String applicationId) throws RestAPIException {
         ApplicationInfoBean applicationRuntime = StratosApiV41Utils.getApplicationRuntime(applicationId);
         if (applicationRuntime == null) {
-            return Response.status(Response.Status.NOT_FOUND).entity(new ErrorResponseBean(
+            return Response.status(Response.Status.NOT_FOUND).entity(new StatusResponseBean(
                     Response.Status.NOT_FOUND.getStatusCode(), "Application runtime not found")).build();
         } else {
             return Response.ok().entity(applicationRuntime).build();
@@ -1155,18 +1155,18 @@ public class StratosApiV41 extends AbstractApi {
             @PathParam("applicationId") String applicationId) throws RestAPIException {
         ApplicationBean applicationDefinition = StratosApiV41Utils.getApplication(applicationId);
         if (applicationDefinition == null) {
-            return Response.status(Response.Status.NOT_FOUND).entity(new ErrorResponseBean(
+            return Response.status(Response.Status.NOT_FOUND).entity(new StatusResponseBean(
                     Response.Status.NOT_FOUND.getStatusCode(), "Application not found")).build();
         }
 
         if (!applicationDefinition.getStatus().equalsIgnoreCase(StratosApiV41Utils.APPLICATION_STATUS_CREATED)) {
-            return Response.status(Response.Status.CONFLICT).entity(new SuccessResponseBean(Response.Status.CONFLICT.
+            return Response.status(Response.Status.CONFLICT).entity(new StatusResponseBean(Response.Status.CONFLICT.
                     getStatusCode(), String.format("Could not delete since application is not in CREATED state :" +
                     " [application] %s [current-status] %S", applicationId, applicationDefinition.getStatus()))).build();
         }
 
         StratosApiV41Utils.removeApplication(applicationId);
-        return Response.ok().entity(new SuccessResponseBean(Response.Status.OK.getStatusCode(),
+        return Response.ok().entity(new StatusResponseBean(Response.Status.OK.getStatusCode(),
                 String.format("Application deleted successfully: [application] %s", applicationId))).build();
     }
 
@@ -1187,7 +1187,7 @@ public class StratosApiV41 extends AbstractApi {
             throws RestAPIException {
         AutoscalePolicyBean[] autoScalePolicies = StratosApiV41Utils.getAutoScalePolicies();
         if (autoScalePolicies == null || autoScalePolicies.length == 0) {
-            return Response.status(Response.Status.NOT_FOUND).entity(new ErrorResponseBean(
+            return Response.status(Response.Status.NOT_FOUND).entity(new StatusResponseBean(
                     Response.Status.NOT_FOUND.getStatusCode(), "No Autoscaling policies found")).build();
         }
 
@@ -1210,7 +1210,7 @@ public class StratosApiV41 extends AbstractApi {
             @PathParam("autoscalePolicyId") String autoscalePolicyId) throws RestAPIException {
         AutoscalePolicyBean autoScalePolicy = StratosApiV41Utils.getAutoScalePolicy(autoscalePolicyId);
         if (autoScalePolicy == null) {
-            return Response.status(Response.Status.NOT_FOUND).entity(new ErrorResponseBean(
+            return Response.status(Response.Status.NOT_FOUND).entity(new StatusResponseBean(
                     Response.Status.NOT_FOUND.getStatusCode(), "Autoscaling policy not found")).build();
         }
         return Response.ok().entity(autoScalePolicy).build();
@@ -1234,14 +1234,14 @@ public class StratosApiV41 extends AbstractApi {
         try {
             StratosApiV41Utils.addAutoscalingPolicy(autoscalePolicy);
             URI url = uriInfo.getAbsolutePathBuilder().path(autoscalePolicy.getId()).build();
-            return Response.created(url).entity(new SuccessResponseBean(Response.Status.CREATED.getStatusCode(),
+            return Response.created(url).entity(new StatusResponseBean(Response.Status.CREATED.getStatusCode(),
                     String.format("Autoscaling policy added successfully: [autoscale-policy] %s",
                             autoscalePolicy.getId()))).build();
         } catch (AutoscalerServiceInvalidPolicyExceptionException e) {
-            return Response.status(Response.Status.BAD_REQUEST).entity(new ErrorResponseBean(
+            return Response.status(Response.Status.BAD_REQUEST).entity(new StatusResponseBean(
                     Response.Status.BAD_REQUEST.getStatusCode(), "Provided Autoscaling policy is invalid")).build();
         } catch (AutoscalerServiceAutoScalingPolicyAlreadyExistExceptionException e) {
-            return Response.status(Response.Status.CONFLICT).entity(new ErrorResponseBean(
+            return Response.status(Response.Status.CONFLICT).entity(new StatusResponseBean(
                     Response.Status.CONFLICT.getStatusCode(), "Autoscaling policy already exists")).build();
         } catch (RestAPIException e) {
             throw e;
@@ -1266,10 +1266,10 @@ public class StratosApiV41 extends AbstractApi {
         try {
             StratosApiV41Utils.updateAutoscalingPolicy(autoscalePolicy);
         } catch (AutoscalerServiceInvalidPolicyExceptionException e) {
-            return Response.status(Response.Status.BAD_REQUEST).entity(new ErrorResponseBean(
+            return Response.status(Response.Status.BAD_REQUEST).entity(new StatusResponseBean(
                     Response.Status.BAD_REQUEST.getStatusCode(), "Autoscaling policy is invalid")).build();
         }
-        return Response.ok().entity(new SuccessResponseBean(Response.Status.OK.getStatusCode(),
+        return Response.ok().entity(new StatusResponseBean(Response.Status.OK.getStatusCode(),
                 String.format("Autoscaling policy updated successfully: [autoscale-policy] %s",
                         autoscalePolicy.getId()))).build();
     }
@@ -1292,10 +1292,10 @@ public class StratosApiV41 extends AbstractApi {
         try {
             StratosApiV41Utils.updateNetworkPartition(networkPartition);
         } catch (CloudControllerServiceNetworkPartitionNotExistsExceptionException e) {
-            return Response.status(Response.Status.NOT_FOUND).entity(new ErrorResponseBean(
+            return Response.status(Response.Status.NOT_FOUND).entity(new StatusResponseBean(
                     Response.Status.NOT_FOUND.getStatusCode(), "Network partition not found")).build();
         }
-        return Response.ok().entity(new SuccessResponseBean(Response.Status.OK.getStatusCode(),
+        return Response.ok().entity(new StatusResponseBean(Response.Status.OK.getStatusCode(),
                 String.format("Network Partition updated successfully: [network-partition] %s",
                         networkPartition.getId()))).build();
     }
@@ -1318,13 +1318,13 @@ public class StratosApiV41 extends AbstractApi {
         try {
             StratosApiV41Utils.removeAutoscalingPolicy(autoscalingPolicyId);
         } catch (AutoscalerServiceUnremovablePolicyExceptionException e) {
-            return Response.status(Response.Status.BAD_REQUEST).entity(new ErrorResponseBean(
+            return Response.status(Response.Status.BAD_REQUEST).entity(new StatusResponseBean(
                     Response.Status.BAD_REQUEST.getStatusCode(), "Autoscaling policy is in use")).build();
         } catch (AutoscalerServicePolicyDoesNotExistExceptionException e) {
-            return Response.status(Response.Status.NOT_FOUND).entity(new ErrorResponseBean(
+            return Response.status(Response.Status.NOT_FOUND).entity(new StatusResponseBean(
                     Response.Status.NOT_FOUND.getStatusCode(), "Autoscaling policy not found")).build();
         }
-        return Response.ok().entity(new SuccessResponseBean(Response.Status.OK.getStatusCode(),
+        return Response.ok().entity(new StatusResponseBean(Response.Status.OK.getStatusCode(),
                 String.format("Autoscaling policy deleted successfully: [autoscale-policy] %s",
                         autoscalingPolicyId))).build();
     }
@@ -1347,7 +1347,7 @@ public class StratosApiV41 extends AbstractApi {
         try {
             ClusterBean clusterBean = StratosApiV41Utils.getClusterInfo(clusterId);
             if (clusterBean == null) {
-                return Response.status(Response.Status.NOT_FOUND).entity(new ErrorResponseBean(
+                return Response.status(Response.Status.NOT_FOUND).entity(new StatusResponseBean(
                         Response.Status.NOT_FOUND.getStatusCode(), "Cluster not found")).build();
             } else {
                 return Response.ok().entity(clusterBean).build();
@@ -1380,15 +1380,15 @@ public class StratosApiV41 extends AbstractApi {
             StratosApiV41Utils.addTenant(tenantInfoBean);
 
         } catch (InvalidEmailException e) {
-            Response.status(Response.Status.BAD_REQUEST).entity(new ErrorResponseBean(
+            Response.status(Response.Status.BAD_REQUEST).entity(new StatusResponseBean(
                     Response.Status.BAD_REQUEST.getStatusCode(), "Invalid email")).build();
         } catch (InvalidDomainException e) {
-            Response.status(Response.Status.BAD_REQUEST).entity(new ErrorResponseBean(
+            Response.status(Response.Status.BAD_REQUEST).entity(new StatusResponseBean(
                     Response.Status.BAD_REQUEST.getStatusCode(), "Invalid domain")).build();
         }
         URI url = uriInfo.getAbsolutePathBuilder().path(tenantInfoBean.getTenantDomain()).build();
         return Response.created(url).entity(
-                new SuccessResponseBean(Response.Status.CREATED.getStatusCode(), String.format(
+                new StatusResponseBean(Response.Status.CREATED.getStatusCode(), String.format(
                         "Tenant added successfully: [tenant] %s", tenantInfoBean.getTenantDomain()))).build();
     }
 
@@ -1410,10 +1410,10 @@ public class StratosApiV41 extends AbstractApi {
         try {
             StratosApiV41Utils.updateExistingTenant(tenantInfoBean);
         } catch (TenantNotFoundException ex) {
-            Response.status(Response.Status.NOT_FOUND).entity(new ErrorResponseBean(
+            Response.status(Response.Status.NOT_FOUND).entity(new StatusResponseBean(
                     Response.Status.NOT_FOUND.getStatusCode(), "Tenant not found")).build();
         } catch (InvalidEmailException e) {
-            Response.status(Response.Status.BAD_REQUEST).entity(new ErrorResponseBean(
+            Response.status(Response.Status.BAD_REQUEST).entity(new StatusResponseBean(
                     Response.Status.BAD_REQUEST.getStatusCode(), "Invalid email")).build();
         } catch (Exception e) {
             String msg = "Error in updating tenant " + tenantInfoBean.getTenantDomain();
@@ -1421,7 +1421,7 @@ public class StratosApiV41 extends AbstractApi {
             throw new RestAPIException(msg);
         }
 
-        return Response.ok().entity(new SuccessResponseBean(Response.Status.OK.getStatusCode(),
+        return Response.ok().entity(new StatusResponseBean(Response.Status.OK.getStatusCode(),
                 String.format("Tenant updated successfully: [tenant] %s", tenantInfoBean.getTenantDomain())))
                 .build();
     }
@@ -1446,7 +1446,7 @@ public class StratosApiV41 extends AbstractApi {
         try {
             TenantInfoBean tenantInfo = StratosApiV41Utils.getTenantByDomain(tenantDomain);
             if (tenantInfo == null) {
-                return Response.status(Response.Status.NOT_FOUND).entity(new ErrorResponseBean(
+                return Response.status(Response.Status.NOT_FOUND).entity(new StatusResponseBean(
                         Response.Status.NOT_FOUND.getStatusCode(), "Tenant information not found")).build();
             }
 
@@ -1474,7 +1474,7 @@ public class StratosApiV41 extends AbstractApi {
             @PathParam("tenantDomain") String tenantDomain) throws RestAPIException {
 
         return Response.status(Response.Status.NOT_ACCEPTABLE)
-                .entity(new ErrorResponseBean(Response.Status.NOT_ACCEPTABLE.getStatusCode(),
+                .entity(new StatusResponseBean(Response.Status.NOT_ACCEPTABLE.getStatusCode(),
                         "Please use the tenant deactivate method")).build();
 
     }
@@ -1556,7 +1556,7 @@ public class StratosApiV41 extends AbstractApi {
             @PathParam("tenantDomain") String tenantDomain) throws RestAPIException {
 
         StratosApiV41Utils.activateTenant(tenantDomain);
-        return Response.ok().entity(new SuccessResponseBean(Response.Status.OK.getStatusCode(),
+        return Response.ok().entity(new StatusResponseBean(Response.Status.OK.getStatusCode(),
                 String.format("Tenant activated successfully: [tenant] %s", tenantDomain))).build();
     }
 
@@ -1577,7 +1577,7 @@ public class StratosApiV41 extends AbstractApi {
             @PathParam("tenantDomain") String tenantDomain) throws RestAPIException {
 
         StratosApiV41Utils.deactivateTenant(tenantDomain);
-        return Response.ok().entity(new SuccessResponseBean(Response.Status.OK.getStatusCode(),
+        return Response.ok().entity(new StatusResponseBean(Response.Status.OK.getStatusCode(),
                 String.format("Tenant deactivated successfully: [tenant] %s", tenantDomain))).build();
     }
 
@@ -1602,7 +1602,7 @@ public class StratosApiV41 extends AbstractApi {
         }
 
         StratosApiV41Utils.notifyArtifactUpdatedEvent(payload);
-        return Response.ok().entity(new SuccessResponseBean(Response.Status.OK.getStatusCode(),
+        return Response.ok().entity(new StatusResponseBean(Response.Status.OK.getStatusCode(),
                 String.format("Repository notificaton sent successfully"))).build();
     }
 
@@ -1626,7 +1626,7 @@ public class StratosApiV41 extends AbstractApi {
         StratosApiV41Utils.addUser(userInfoBean);
         log.info("Successfully added an user with Username " + userInfoBean.getUserName());
         URI url = uriInfo.getAbsolutePathBuilder().path(userInfoBean.getUserName()).build();
-        return Response.created(url).entity(new SuccessResponseBean(Response.Status.CREATED.getStatusCode(),
+        return Response.created(url).entity(new StatusResponseBean(Response.Status.CREATED.getStatusCode(),
                 String.format("User added successfully: [user] %s", userInfoBean.getUserName()))).build();
     }
 
@@ -1647,7 +1647,7 @@ public class StratosApiV41 extends AbstractApi {
 
         StratosApiV41Utils.removeUser(userName);
         log.info("Successfully removed user: [username] " + userName);
-        return Response.ok().entity(new SuccessResponseBean(Response.Status.OK.getStatusCode(),
+        return Response.ok().entity(new StatusResponseBean(Response.Status.OK.getStatusCode(),
                 String.format("User deleted successfully: [user] %s", userName))).build();
     }
 
@@ -1668,7 +1668,7 @@ public class StratosApiV41 extends AbstractApi {
 
         StratosApiV41Utils.updateUser(userInfoBean);
         log.info("Successfully updated an user with Username " + userInfoBean.getUserName());
-        return Response.ok().entity(new SuccessResponseBean(Response.Status.OK.getStatusCode(),
+        return Response.ok().entity(new StatusResponseBean(Response.Status.OK.getStatusCode(),
                 String.format("User updated successfully: [user] %s", userInfoBean.getUserName()))).build();
     }
 
@@ -1711,16 +1711,16 @@ public class StratosApiV41 extends AbstractApi {
         try {
             StratosApiV41Utils.addKubernetesCluster(kubernetesCluster);
             URI url = uriInfo.getAbsolutePathBuilder().path(kubernetesCluster.getClusterId()).build();
-            return Response.created(url).entity(new SuccessResponseBean(Response.Status.CREATED.getStatusCode(),
+            return Response.created(url).entity(new StatusResponseBean(Response.Status.CREATED.getStatusCode(),
                     String.format("Kubernetes Host Cluster added successfully: [kub-host-cluster] %s",
                             kubernetesCluster.getClusterId()))).build();
         } catch (RestAPIException e) {
             throw e;
         } catch (CloudControllerServiceKubernetesClusterAlreadyExistsExceptionException e) {
-            return Response.status(Response.Status.CONFLICT).entity(new ErrorResponseBean(
+            return Response.status(Response.Status.CONFLICT).entity(new StatusResponseBean(
                     Response.Status.CONFLICT.getStatusCode(), "Kubernetes cluster already exists")).build();
         } catch (CloudControllerServiceInvalidKubernetesClusterExceptionException e) {
-            return Response.status(Response.Status.BAD_REQUEST).entity(new ErrorResponseBean(
+            return Response.status(Response.Status.BAD_REQUEST).entity(new StatusResponseBean(
                     Response.Status.BAD_REQUEST.getStatusCode(), "Kubernetes cluster is invalid")).build();
         }
     }
@@ -1744,7 +1744,7 @@ public class StratosApiV41 extends AbstractApi {
 
         StratosApiV41Utils.addKubernetesHost(kubernetesClusterId, kubernetesHost);
         URI url = uriInfo.getAbsolutePathBuilder().path(kubernetesHost.getHostId()).build();
-        return Response.created(url).entity(new SuccessResponseBean(Response.Status.CREATED.getStatusCode(),
+        return Response.created(url).entity(new StatusResponseBean(Response.Status.CREATED.getStatusCode(),
                 String.format("Kubernetes Host added successfully: [kub-host] %s", kubernetesHost.getHostId())))
                 .build();
     }
@@ -1766,11 +1766,11 @@ public class StratosApiV41 extends AbstractApi {
         try {
             StratosApiV41Utils.updateKubernetesMaster(kubernetesMaster);
             URI url = uriInfo.getAbsolutePathBuilder().path(kubernetesMaster.getHostId()).build();
-            return Response.ok(url).entity(new SuccessResponseBean(Response.Status.OK.getStatusCode(),
+            return Response.ok(url).entity(new StatusResponseBean(Response.Status.OK.getStatusCode(),
                     String.format("Kubernetes Master updated successfully: [kub-master] %s",
                             kubernetesMaster.getHostId()))).build();
         } catch (RestAPIException e) {
-            return Response.status(Response.Status.NOT_FOUND).entity(new ErrorResponseBean(
+            return Response.status(Response.Status.NOT_FOUND).entity(new StatusResponseBean(
                     Response.Status.NOT_FOUND.getStatusCode(), "Kubernetes cluster not found")).build();
         }
     }
@@ -1786,11 +1786,11 @@ public class StratosApiV41 extends AbstractApi {
         try {
             StratosApiV41Utils.updateKubernetesHost(kubernetesHost);
             URI url = uriInfo.getAbsolutePathBuilder().path(kubernetesHost.getHostId()).build();
-            return Response.ok(url).entity(new SuccessResponseBean(Response.Status.OK.getStatusCode(),
+            return Response.ok(url).entity(new StatusResponseBean(Response.Status.OK.getStatusCode(),
                     String.format("Kubernetes Host updated successfully: [kub-host] %s",
                             kubernetesHost.getHostId()))).build();
         } catch (RestAPIException e) {
-            return Response.status(Response.Status.NOT_FOUND).entity(new ErrorResponseBean(
+            return Response.status(Response.Status.NOT_FOUND).entity(new StatusResponseBean(
                     Response.Status.NOT_FOUND.getStatusCode(), "Kubernetes host not found")).build();
         }
     }
@@ -1810,7 +1810,7 @@ public class StratosApiV41 extends AbstractApi {
             throws RestAPIException {
         KubernetesClusterBean[] availableKubernetesClusters = StratosApiV41Utils.getAvailableKubernetesClusters();
         if (availableKubernetesClusters == null || availableKubernetesClusters.length == 0) {
-            return Response.status(Response.Status.NOT_FOUND).entity(new ErrorResponseBean(
+            return Response.status(Response.Status.NOT_FOUND).entity(new StatusResponseBean(
                     Response.Status.NOT_FOUND.getStatusCode(), "Kubernetes cluster not found")).build();
         }
 
@@ -1834,7 +1834,7 @@ public class StratosApiV41 extends AbstractApi {
         try {
             return Response.ok().entity(StratosApiV41Utils.getKubernetesCluster(kubernetesClusterId)).build();
         } catch (RestAPIException e) {
-            return Response.status(Response.Status.NOT_FOUND).entity(new ErrorResponseBean(
+            return Response.status(Response.Status.NOT_FOUND).entity(new StatusResponseBean(
                     Response.Status.NOT_FOUND.getStatusCode(), "Kubernetes cluster not found")).build();
         }
     }
@@ -1856,7 +1856,7 @@ public class StratosApiV41 extends AbstractApi {
         try {
             return Response.ok().entity(StratosApiV41Utils.getKubernetesHosts(kubernetesClusterId)).build();
         } catch (RestAPIException e) {
-            return Response.status(Response.Status.NOT_FOUND).entity(new ErrorResponseBean(
+            return Response.status(Response.Status.NOT_FOUND).entity(new StatusResponseBean(
                     Response.Status.NOT_FOUND.getStatusCode(), "Kubernetes hosts not found")).build();
         }
     }
@@ -1878,7 +1878,7 @@ public class StratosApiV41 extends AbstractApi {
         try {
             return Response.ok().entity(StratosApiV41Utils.getKubernetesMaster(kubernetesClusterId)).build();
         } catch (RestAPIException e) {
-            return Response.status(Response.Status.NOT_FOUND).entity(new ErrorResponseBean(
+            return Response.status(Response.Status.NOT_FOUND).entity(new StatusResponseBean(
                     Response.Status.NOT_FOUND.getStatusCode(), "Kubernetes cluster not found")).build();
         }
     }
@@ -1901,11 +1901,11 @@ public class StratosApiV41 extends AbstractApi {
             StratosApiV41Utils.removeKubernetesCluster(kubernetesClusterId);
         } catch (RestAPIException e) {
             return Response.status(Response.Status.NOT_FOUND)
-                    .entity(new SuccessResponseBean(Response.Status.NOT_FOUND.getStatusCode(),
+                    .entity(new StatusResponseBean(Response.Status.NOT_FOUND.getStatusCode(),
                             String.format("Could not find specified Kubernetes cluster: [kub-cluster] %s",
                                     kubernetesClusterId))).build();
         }
-        return Response.ok().entity(new SuccessResponseBean(Response.Status.OK.getStatusCode(),
+        return Response.ok().entity(new StatusResponseBean(Response.Status.OK.getStatusCode(),
                 String.format("Kubernetes Cluster removed successfully: [kub-cluster] %s", kubernetesClusterId)))
                 .build();
     }
@@ -1928,10 +1928,10 @@ public class StratosApiV41 extends AbstractApi {
         try {
             StratosApiV41Utils.removeKubernetesHost(kubernetesHostId);
         } catch (RestAPIException e) {
-            return Response.status(Response.Status.NOT_FOUND).entity(new ErrorResponseBean(
+            return Response.status(Response.Status.NOT_FOUND).entity(new StatusResponseBean(
                     Response.Status.NOT_FOUND.getStatusCode(), "Kubernetes cluster not found")).build();
         }
-        return Response.ok().entity(new SuccessResponseBean(Response.Status.OK.getStatusCode(),
+        return Response.ok().entity(new StatusResponseBean(Response.Status.OK.getStatusCode(),
                 String.format("Kubernetes Host removed successfully: [kub-host] %s", kubernetesHostId)))
                 .build();
     }
