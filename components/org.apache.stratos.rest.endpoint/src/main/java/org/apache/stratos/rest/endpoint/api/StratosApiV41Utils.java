@@ -968,6 +968,7 @@ public class StratosApiV41Utils {
      * Add a Service Group
      *
      * @param serviceGroupDefinition serviceGroupDefinition
+     * @throws InvalidCartridgeGroupDefinitionException
      * @throws RestAPIException
      */
     public static void addServiceGroup(GroupBean serviceGroupDefinition)
@@ -3205,7 +3206,7 @@ public class StratosApiV41Utils {
      * This method is to validate the cartridge duplication in the group definition recursively for group within groups
      *
      * @param groupBean - cartridge group definition
-     * @throws RestAPIException - throws the rest api exception when the group definition is invalid
+     * @throws InvalidCartridgeGroupDefinitionException - throws when the group definition is invalid
      */
     private static void validateCartridgeDuplicationInGroupDefinition(GroupBean groupBean)
             throws InvalidCartridgeGroupDefinitionException {
@@ -3231,7 +3232,7 @@ public class StratosApiV41Utils {
      * This method is to validate the duplication of cartridges from the given list
      *
      * @param cartridges - list of strings which holds the cartridgeTypes values
-     * @throws RestAPIException - throws the rest api exception when the cartridges are duplicated
+     * @throws InvalidCartridgeGroupDefinitionException - throws when the cartridges are duplicated
      */
     private static void validateCartridgeDuplicationInGroup(List<String> cartridges)
             throws InvalidCartridgeGroupDefinitionException {
@@ -3254,7 +3255,7 @@ public class StratosApiV41Utils {
      *
      * @param groupBean    - cartridge group definition
      * @param parentGroups - list of string which holds the parent group names (all parents in the hierarchy)
-     * @throws RestAPIException - throws the rest api exception when the group definition is invalid
+     * @throws InvalidCartridgeGroupDefinitionException - throws when the group definition is invalid
      */
     private static void validateGroupDuplicationInGroupDefinition(GroupBean groupBean, List<String> parentGroups)
             throws InvalidCartridgeGroupDefinitionException {
@@ -3285,7 +3286,7 @@ public class StratosApiV41Utils {
      *
      * @param groups       - cartridge group definition
      * @param parentGroups - list of string which holds the parent group names (all parents in the hierarchy)
-     * @throws RestAPIException - throws the rest api exception when group duplicate or when cyclic behaviour occurs
+     * @throws InvalidCartridgeGroupDefinitionException - throws when group duplicate or when cyclic behaviour occurs
      */
     private static void validateGroupDuplicationInGroup(List<String> groups, List<String> parentGroups)
             throws InvalidCartridgeGroupDefinitionException {
