@@ -69,11 +69,10 @@ import org.apache.stratos.messaging.message.receiver.topology.TopologyManager;
 import org.wso2.carbon.registry.api.RegistryException;
 
 import java.rmi.RemoteException;
-import java.text.MessageFormat;
 import java.util.*;
 
 /**
- * Auto Scaler Service API is responsible getting Partitions and Policies.
+ * Autoscaler Service API is responsible getting Partitions and Policies.
  */
 public class AutoscalerServiceImpl implements AutoscalerService {
 
@@ -169,17 +168,18 @@ public class AutoscalerServiceImpl implements AutoscalerService {
         }
 
         if (AutoscalerContext.getInstance().getApplicationContext(applicationId) == null) {
-            String msg = "Application is not found as ApplicationContext. Please add application before updating it";
+            String msg = "Application is not found as ApplicationContext. Please add application before updating it: " +
+                    "[application-id] " + applicationId;
             log.error(msg);
             throw new ApplicationDefinitionException(msg);
         }
 
         if (ApplicationHolder.getApplications().getApplication(applicationId) == null) {
-            String msg = "Application is not found as Application. Please add application before updating it";
+            String msg = "Application is not found as Application. Please add application before updating it: " +
+                    "[application-id] " + applicationId;
             log.error(msg);
             throw new ApplicationDefinitionException(msg);
         }
-
 
         ApplicationParser applicationParser = new DefaultApplicationParser();
         Application application = applicationParser.parse(applicationContext);
@@ -270,7 +270,7 @@ public class AutoscalerServiceImpl implements AutoscalerService {
             applicationContext.setStatus(ApplicationContext.STATUS_DEPLOYED);
             AutoscalerContext.getInstance().updateApplicationContext(applicationContext);
 
-            log.info("Waiting for application clusters to be created: [application] " + applicationId);
+            log.info("Waiting for application clusters to be created: [application-id] " + applicationId);
             return true;
         } catch (Exception e) {
             ApplicationContext applicationContext = RegistryManager.getInstance().
@@ -280,7 +280,7 @@ public class AutoscalerServiceImpl implements AutoscalerService {
                 applicationContext.setStatus(ApplicationContext.STATUS_CREATED);
                 AutoscalerContext.getInstance().updateApplicationContext(applicationContext);
             }
-            String message = "Application deployment failed";
+            String message = "Application deployment failed: [application-id] " + applicationId;
             log.error(message, e);
             throw new RuntimeException(message, e);
         }
@@ -354,7 +354,7 @@ public class AutoscalerServiceImpl implements AutoscalerService {
                 }
             }
         } catch (Exception e) {
-            String message = "Could not add application signup";
+            String message = "Could not add application signup: [application-id] " + applicationContext.getApplicationId();
             log.error(message, e);
             throw new RuntimeException(message, e);
         }
@@ -402,7 +402,7 @@ public class AutoscalerServiceImpl implements AutoscalerService {
             }
 
         } catch (Exception e) {
-            String message = "Could not remove application signup(s)";
+            String message = "Could not remove application signup(s): [application-id] " + applicationContext.getApplicationId();
             log.error(message, e);
             throw new RuntimeException(message, e);
         }
@@ -418,7 +418,7 @@ public class AutoscalerServiceImpl implements AutoscalerService {
         if (applicationSignUp.getArtifactRepositories() != null) {
             for (ArtifactRepository artifactRepository : applicationSignUp.getArtifactRepositories()) {
                 String repoPassword = artifactRepository.getRepoPassword();
-                if ((artifactRepository != null) && (StringUtils.isNotBlank(repoPassword))) {
+                if ((StringUtils.isNotBlank(repoPassword))) {
                     String encryptedRepoPassword = CommonUtil.encryptPassword(repoPassword,
                             applicationKey);
                     artifactRepository.setRepoPassword(encryptedRepoPassword);
@@ -467,7 +467,7 @@ public class AutoscalerServiceImpl implements AutoscalerService {
             return false;
         }
         if (!force) {
-            // Gracefull undeployment flow
+            // Graceful undeployment flow
             if (appMonitor.isTerminating()) {
                 log.info("Application monitor is already in terminating, graceful undeployment is has already been attempted thus not invoking again");
                 return false;
@@ -476,14 +476,16 @@ public class AutoscalerServiceImpl implements AutoscalerService {
                 undeployApplicationGracefully(applicationId);
             }
         } else {
-            // force undeployment flow
+            // Forceful undeployment flow
             if (appMonitor.isTerminating()) {
 
                 if (appMonitor.isForce()) {
-                    log.warn("Force undeployment is already in progress, hence not invoking again");
+                    log.warn(String.format("Force undeployment is already in progress, hence not invoking again: " +
+                            "[application-id] %s", applicationId));
                     return false;
                 } else {
-                    log.info(String.format("Previous gracefull undeployment is in progress for [application-id] %s , thus  terminating instances directly", applicationId));
+                    log.info(String.format("Previous graceful undeployment is in progress for [application-id] %s , " +
+                            "thus  terminating instances directly", applicationId));
                     appMonitor.setForce(true);
                     terminateAllApplicationMembersForcefully(applicationId);
                 }
@@ -570,7 +572,7 @@ public class AutoscalerServiceImpl implements AutoscalerService {
 
     public boolean updateClusterMonitor(String clusterId, Properties properties) throws InvalidArgumentException {
         if (log.isDebugEnabled()) {
-            log.debug(String.format("Updating Cluster monitor [Cluster id] %s ", clusterId));
+            log.debug(String.format("Updating Cluster monitor [cluster-id] %s", clusterId));
         }
         AutoscalerContext asCtx = AutoscalerContext.getInstance();
         ClusterMonitor monitor = asCtx.getClusterMonitor(clusterId);
@@ -578,7 +580,7 @@ public class AutoscalerServiceImpl implements AutoscalerService {
         if (monitor != null) {
             monitor.handleDynamicUpdates(properties);
         } else {
-            log.debug(String.format("Updating Cluster monitor failed: Cluster monitor [Cluster id] %s not found.",
+            log.debug(String.format("Updating Cluster monitor failed: Cluster monitor [cluster-id] %s not found.",
                     clusterId));
         }
         return true;
@@ -587,7 +589,7 @@ public class AutoscalerServiceImpl implements AutoscalerService {
     public boolean addServiceGroup(ServiceGroup servicegroup) throws InvalidServiceGroupException {
 
         if (servicegroup == null || StringUtils.isEmpty(servicegroup.getName())) {
-            String msg = "Cartridge group can not be null service name can not be empty.";
+            String msg = "Cartridge group cannot be null or cartridge name cannot be empty.";
             log.error(msg);
             throw new IllegalArgumentException(msg);
         }
@@ -598,11 +600,11 @@ public class AutoscalerServiceImpl implements AutoscalerService {
 
         String groupName = servicegroup.getName();
         if (RegistryManager.getInstance().serviceGroupExist(groupName)) {
-            throw new InvalidServiceGroupException("Cartridge group with the name " + groupName + " already exists.");
+            throw new InvalidServiceGroupException(String.format("Cartridge group already exist: [group-name] %s", groupName));
         }
 
         if (log.isDebugEnabled()) {
-            log.debug(MessageFormat.format("Adding cartridge group {0}", servicegroup.getName()));
+            log.debug(String.format("Adding cartridge group: [group-name] %s", servicegroup.getName()));
         }
 
         String[] subGroups = servicegroup.getCartridges();
@@ -773,7 +775,7 @@ public class AutoscalerServiceImpl implements AutoscalerService {
         String applicationPolicyId = applicationPolicy.getId();
         ApplicationPolicy existingApplicationPolicy = PolicyManager.getInstance().getApplicationPolicy(applicationPolicyId);
         if (existingApplicationPolicy == null) {
-            String msg = String.format("No such application poliicy found [application-policy-id] %s", applicationPolicyId);
+            String msg = String.format("No such application policy found [application-policy-id] %s", applicationPolicyId);
             log.error(msg);
             throw new ApplicatioinPolicyNotExistsException(msg);
         }
@@ -793,7 +795,7 @@ public class AutoscalerServiceImpl implements AutoscalerService {
 
     private void terminateAllApplicationMembersForcefully(String applicationId) {
         if (StringUtils.isEmpty(applicationId)) {
-            throw new IllegalArgumentException("Application Id can not be empty");
+            throw new IllegalArgumentException("Application Id cannot be empty");
         }
 
         Application application;
@@ -801,7 +803,8 @@ public class AutoscalerServiceImpl implements AutoscalerService {
             ApplicationManager.acquireReadLockForApplication(applicationId);
             application = ApplicationManager.getApplications().getApplication(applicationId);
             if (application == null) {
-                log.warn(String.format("Could not find application, thus no members to be terminated [application-id] %s", applicationId));
+                log.warn(String.format("Could not find application, thus no members to be terminated [application-id] %s",
+                        applicationId));
                 return;
             }
         } finally {
@@ -810,7 +813,6 @@ public class AutoscalerServiceImpl implements AutoscalerService {
 
 
         Set<ClusterDataHolder> allClusters = application.getClusterDataRecursively();
-        //CloudControllerServiceClient cloudControllerServiceClient = CloudControllerServiceClient.getInstance().ter
         for (ClusterDataHolder clusterDataHolder : allClusters) {
             String serviceType = clusterDataHolder.getServiceType();
             String clusterId = clusterDataHolder.getClusterId();
@@ -830,10 +832,12 @@ public class AutoscalerServiceImpl implements AutoscalerService {
 
             for (String memberIdToTerminate : memberListToTerminate) {
                 try {
-                    log.info(String.format("Terminating member forcefully [member-id] %s of the cluster [cluster-id] %s [application-id] %s", memberIdToTerminate, clusterId, application));
+                    log.info(String.format("Terminating member forcefully [member-id] %s of the cluster [cluster-id] %s " +
+                            "[application-id] %s", memberIdToTerminate, clusterId, application));
                     CloudControllerServiceClient.getInstance().terminateInstanceForcefully(memberIdToTerminate);
                 } catch (Exception e) {
-                    log.error(String.format("Forcefull termination of member %s is failed, but continuing forcefull deletion of other members", memberIdToTerminate));
+                    log.error(String.format("Forceful termination of member %s is failed, but continuing forceful " +
+                            "deletion of other members", memberIdToTerminate));
                 }
             }
         }
@@ -853,9 +857,9 @@ public class AutoscalerServiceImpl implements AutoscalerService {
             log.debug("Deployment policy definition: " + deploymentPolicy.toString());
         }
 
-        String deploymentPolicyID = deploymentPolicy.getDeploymentPolicyID();
-        if (PolicyManager.getInstance().getDeploymentPolicy(deploymentPolicyID) != null) {
-            String message = "Deployment policy already exists: [deployment-policy-id] " + deploymentPolicyID;
+        String deploymentPolicyId = deploymentPolicy.getDeploymentPolicyID();
+        if (PolicyManager.getInstance().getDeploymentPolicy(deploymentPolicyId) != null) {
+            String message = "Deployment policy already exists: [deployment-policy-id] " + deploymentPolicyId;
             log.error(message);
             throw new DeploymentPolicyAlreadyExistsException(message);
         }
@@ -865,7 +869,7 @@ public class AutoscalerServiceImpl implements AutoscalerService {
         //        PolicyManager.getInstance().persist();
 
         if (log.isInfoEnabled()) {
-            log.info("Successfully added deployment policy: [deployment-policy-id] " + deploymentPolicyID);
+            log.info("Successfully added deployment policy: [deployment-policy-id] " + deploymentPolicyId);
         }
         return true;
     }
