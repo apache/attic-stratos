@@ -3230,8 +3230,8 @@ public class StratosApiV41Utils {
     /**
      * This method is to validate the cartridge duplication in the group definition recursively for group within groups
      *
-     * @param groupBean - cartridge group definition
-     * @throws InvalidCartridgeGroupDefinitionException - throws when the group definition is invalid
+     * @param groupBean cartridge group definition
+     * @throws InvalidCartridgeGroupDefinitionException throws when the group definition is invalid
      */
     private static void validateCartridgeDuplicationInGroupDefinition(GroupBean groupBean)
             throws InvalidCartridgeGroupDefinitionException {
@@ -3256,8 +3256,8 @@ public class StratosApiV41Utils {
     /**
      * This method is to validate the duplication of cartridges from the given list
      *
-     * @param cartridges - list of strings which holds the cartridgeTypes values
-     * @throws InvalidCartridgeGroupDefinitionException - throws when the cartridges are duplicated
+     * @param cartridges list of strings which holds the cartridgeTypes values
+     * @throws InvalidCartridgeGroupDefinitionException throws when the cartridges are duplicated
      */
     private static void validateCartridgeDuplicationInGroup(List<String> cartridges)
             throws InvalidCartridgeGroupDefinitionException {
@@ -3277,9 +3277,9 @@ public class StratosApiV41Utils {
 
 
     /**
-     * This is a wrapper method to invoke validateGroupDuplicationInGroupDefinition with a new arraylist of string
+     * This is a wrapper method to invoke validateGroupDuplicationInGroupDefinition with a new ArrayList of String
      *
-     * @param groupBean     - cartridge group definition
+     * @param groupBean cartridge group definition
      * @throws InvalidCartridgeGroupDefinitionException
      */
     private static void validateGroupDuplicationInGroupDefinition(GroupBean groupBean)
@@ -3290,9 +3290,9 @@ public class StratosApiV41Utils {
         /**
          * This is to validate the group duplication in the group definition recursively for group within groups
          *
-         * @param groupBean    - cartridge group definition
-         * @param parentGroups - list of string which holds the parent group names (all parents in the hierarchy)
-         * @throws InvalidCartridgeGroupDefinitionException - throws when the group definition is invalid
+         * @param groupBean cartridge group definition
+         * @param parentGroups list of string which holds the parent group names (all parents in the hierarchy)
+         * @throws InvalidCartridgeGroupDefinitionException throws when the group definition is invalid
          */
     private static void validateGroupDuplicationInGroupDefinition(GroupBean groupBean, List<String> parentGroups)
             throws InvalidCartridgeGroupDefinitionException {
@@ -3321,9 +3321,9 @@ public class StratosApiV41Utils {
     /**
      * This method is to validate the duplication of groups in the same level and to validate cyclic behaviour of groups
      *
-     * @param groups       - cartridge group definition
-     * @param parentGroups - list of string which holds the parent group names (all parents in the hierarchy)
-     * @throws InvalidCartridgeGroupDefinitionException - throws when group duplicate or when cyclic behaviour occurs
+     * @param groups cartridge group definition
+     * @param parentGroups list of string which holds the parent group names (all parents in the hierarchy)
+     * @throws InvalidCartridgeGroupDefinitionException throws when group duplicate or when cyclic behaviour occurs
      */
     private static void validateGroupDuplicationInGroup(List<String> groups, List<String> parentGroups)
             throws InvalidCartridgeGroupDefinitionException {
