@@ -1,7 +1,7 @@
 {
     "type": "php",
     "provider": "apache",
-    "category": "data",
+    "category": "framework",
     "host": "php.stratos.org",
     "displayName": "php",
     "description": "php Cartridge",
@@ -27,7 +27,6 @@
             "imageId": "stratos-base-v1",
             "networkInterfaces": [
                 {
-                    "name": "network-non-routable",
                     "networkUuid": "stratos-network"
                 }
             ],

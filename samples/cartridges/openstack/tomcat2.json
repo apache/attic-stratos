@@ -1,7 +1,7 @@
 {
     "type": "tomcat2",
     "provider": "apache",
-    "category": "data",
+    "category": "framework",
     "host": "tomcat2.stratos.org",
     "displayName": "tomcat2",
     "description": "tomcat2 Cartridge",
@@ -22,7 +22,6 @@
             "imageId": "RegionOne/4c812285-d761-4208-b4b3-d453eace5aff",
             "networkInterfaces":[
     	        {
-        	       "name":"network-non-routable",
                	       "networkUuid":"b55f009a-1cc6-4b17-924f-4ae0ee18db5e"
 	        }
               ],

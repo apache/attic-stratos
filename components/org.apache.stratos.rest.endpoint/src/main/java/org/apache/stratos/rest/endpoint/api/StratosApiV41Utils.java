@@ -34,7 +34,9 @@ import org.apache.stratos.cloud.controller.stub.domain.Volume;
 import org.apache.stratos.common.beans.PropertyBean;
 import org.apache.stratos.common.beans.TenantInfoBean;
 import org.apache.stratos.common.beans.UserInfoBean;
-import org.apache.stratos.common.beans.application.*;
+import org.apache.stratos.common.beans.application.ApplicationBean;
+import org.apache.stratos.common.beans.application.ApplicationNetworkPartitionIdListBean;
+import org.apache.stratos.common.beans.application.ComponentBean;
 import org.apache.stratos.common.beans.application.domain.mapping.ApplicationDomainMappingsBean;
 import org.apache.stratos.common.beans.application.domain.mapping.DomainMappingBean;
 import org.apache.stratos.common.beans.application.signup.ApplicationSignUpBean;
@@ -306,7 +308,7 @@ public class StratosApiV41Utils {
                 configurationContext);
         List<CartridgeBean> lbCartridges = new ArrayList<CartridgeBean>();
         for (CartridgeBean cartridge : cartridges) {
-            if ("loadbalancer".equalsIgnoreCase(cartridge.getCategory())) {
+            if (Constants.FILTER_LOAD_BALANCER.equalsIgnoreCase(cartridge.getCategory())) {
                 lbCartridges.add(cartridge);
             }
         }

@@ -22,15 +22,17 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.stratos.autoscaler.stub.*;
 import org.apache.stratos.cloud.controller.stub.*;
-import org.apache.stratos.common.beans.*;
+import org.apache.stratos.common.beans.ResponseMessageBean;
+import org.apache.stratos.common.beans.TenantInfoBean;
+import org.apache.stratos.common.beans.UserInfoBean;
 import org.apache.stratos.common.beans.application.ApplicationBean;
 import org.apache.stratos.common.beans.application.ApplicationNetworkPartitionIdListBean;
-import org.apache.stratos.common.beans.cartridge.CartridgeGroupBean;
 import org.apache.stratos.common.beans.application.domain.mapping.ApplicationDomainMappingsBean;
 import org.apache.stratos.common.beans.application.domain.mapping.DomainMappingBean;
 import org.apache.stratos.common.beans.application.signup.ApplicationSignUpBean;
 import org.apache.stratos.common.beans.artifact.repository.GitNotificationPayloadBean;
 import org.apache.stratos.common.beans.cartridge.CartridgeBean;
+import org.apache.stratos.common.beans.cartridge.CartridgeGroupBean;
 import org.apache.stratos.common.beans.kubernetes.KubernetesClusterBean;
 import org.apache.stratos.common.beans.kubernetes.KubernetesHostBean;
 import org.apache.stratos.common.beans.kubernetes.KubernetesMasterBean;
@@ -485,7 +487,7 @@ public class StratosApiV41 extends AbstractApi {
             StratosApiV41Utils.updateServiceGroup(cartridgeGroup);
             URI url = uriInfo.getAbsolutePathBuilder().path(cartridgeGroup.getName()).build();
 
-            return Response.created(url).entity(new ResponseMessageBean(ResponseMessageBean.SUCCESS,
+            return Response.ok(url).entity(new ResponseMessageBean(ResponseMessageBean.SUCCESS,
                     String.format("Cartridge group updated successfully: [cartridge-group] %s",
                             cartridgeGroup.getName()))).build();
 
