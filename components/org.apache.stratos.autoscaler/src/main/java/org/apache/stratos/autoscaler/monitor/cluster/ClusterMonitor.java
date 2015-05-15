@@ -85,7 +85,7 @@ public class ClusterMonitor extends Monitor {
 
     private final ScheduledExecutorService scheduler;
     private final ExecutorService executorService;
-
+    private static final String NOT_DEFINED = "not-defined";
 
     protected boolean hasFaultyMember = false;
     protected ClusterContext clusterContext;
@@ -819,14 +819,42 @@ public class ClusterMonitor extends Monitor {
             log.debug(String.format("Average Rif event: [cluster] %s [network-partition] %s [value] %s",
                     clusterId, networkPartitionId, value));
         }
-        ClusterInstanceContext clusterLevelNetworkPartitionContext = getClusterInstanceContext(
-                networkPartitionId, clusterInstanceId);
-        if (null != clusterLevelNetworkPartitionContext) {
-            clusterLevelNetworkPartitionContext.setAverageRequestsInFlight(value);
+        if (clusterInstanceId.equals(NOT_DEFINED)) {
+
+            ClusterLevelNetworkPartitionContext networkPartitionContext = getNetworkPartitionContext(networkPartitionId);
+
+            if (null != networkPartitionContext) {
+
+                int totalActiveMemberCount = 0;
+                for (InstanceContext clusterInstanceContext : networkPartitionContext.getActiveInstances()) {
+                    if (clusterInstanceContext instanceof ClusterInstanceContext) {
+                        totalActiveMemberCount += ((ClusterInstanceContext) clusterInstanceContext).getActiveMemberCount();
+                    }
+                }
+                for (InstanceContext instanceContext : networkPartitionContext.getActiveInstances()) {
+                    if (instanceContext instanceof ClusterInstanceContext) {
+                        ClusterInstanceContext clusterInstanceContext = ((ClusterInstanceContext) instanceContext);
+                        clusterInstanceContext.setAverageRequestsInFlight(
+                                value * clusterInstanceContext.getActiveMemberCount() / totalActiveMemberCount);
+                    }
+                }
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug(String.format("Network partition context is not available for :" +
+                            " [network partition] %s", networkPartitionId));
+                }
+            }
         } else {
-            if (log.isDebugEnabled()) {
-                log.debug(String.format("Network partition context is not available for :" +
-                        " [network partition] %s", networkPartitionId));
+            ClusterInstanceContext clusterInstanceContext = getClusterInstanceContext(
+                    networkPartitionId, clusterInstanceId);
+
+            if (null != clusterInstanceContext) {
+                clusterInstanceContext.setAverageRequestsInFlight(value);
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug(String.format("Cluster instance context is not available for :" +
+                            " [cluster instance id] %s", clusterInstanceId));
+                }
             }
         }
     }
@@ -838,18 +866,47 @@ public class ClusterMonitor extends Monitor {
         String clusterId = gradientOfRequestsInFlightEvent.getClusterId();
         String clusterInstanceId = gradientOfRequestsInFlightEvent.getClusterInstanceId();
         float value = gradientOfRequestsInFlightEvent.getValue();
+
         if (log.isDebugEnabled()) {
             log.debug(String.format("Gradient of Rif event: [cluster] %s [network-partition] %s [value] %s",
                     clusterId, networkPartitionId, value));
         }
-        ClusterInstanceContext clusterLevelNetworkPartitionContext = getClusterInstanceContext(
-                networkPartitionId, clusterInstanceId);
-        if (null != clusterLevelNetworkPartitionContext) {
-            clusterLevelNetworkPartitionContext.setRequestsInFlightGradient(value);
+        if (clusterInstanceId.equals(NOT_DEFINED)) {
+
+            ClusterLevelNetworkPartitionContext networkPartitionContext = getNetworkPartitionContext(networkPartitionId);
+
+            if (null != networkPartitionContext) {
+
+                int totalActiveMemberCount = 0;
+                for (InstanceContext clusterInstanceContext : networkPartitionContext.getActiveInstances()) {
+                    if (clusterInstanceContext instanceof ClusterInstanceContext) {
+                        totalActiveMemberCount += ((ClusterInstanceContext) clusterInstanceContext).getActiveMemberCount();
+                    }
+                }
+                for (InstanceContext instanceContext : networkPartitionContext.getActiveInstances()) {
+                    if (instanceContext instanceof ClusterInstanceContext) {
+                        ClusterInstanceContext clusterInstanceContext = ((ClusterInstanceContext) instanceContext);
+                        clusterInstanceContext.setRequestsInFlightGradient(
+                                value * clusterInstanceContext.getActiveMemberCount() / totalActiveMemberCount);
+                    }
+                }
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug(String.format("Network partition context is not available for :" +
+                            " [network partition] %s", networkPartitionId));
+                }
+            }
         } else {
-            if (log.isDebugEnabled()) {
-                log.debug(String.format("Network partition context is not available for :" +
-                        " [network partition] %s", networkPartitionId));
+
+            ClusterInstanceContext clusterLevelNetworkPartitionContext = getClusterInstanceContext(
+                    networkPartitionId, clusterInstanceId);
+            if (null != clusterLevelNetworkPartitionContext) {
+                clusterLevelNetworkPartitionContext.setRequestsInFlightGradient(value);
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug(String.format("Network partition context is not available for :" +
+                            " [network partition] %s", networkPartitionId));
+                }
             }
         }
     }
@@ -865,14 +922,43 @@ public class ClusterMonitor extends Monitor {
             log.debug(String.format("Second derivative of Rif event: [cluster] %s "
                     + "[network-partition] %s [value] %s", clusterId, networkPartitionId, value));
         }
-        ClusterInstanceContext clusterLevelNetworkPartitionContext = getClusterInstanceContext(
-                networkPartitionId, clusterInstanceId);
-        if (null != clusterLevelNetworkPartitionContext) {
-            clusterLevelNetworkPartitionContext.setRequestsInFlightSecondDerivative(value);
+
+        if (clusterInstanceId.equals(NOT_DEFINED)) {
+
+            ClusterLevelNetworkPartitionContext networkPartitionContext = getNetworkPartitionContext(networkPartitionId);
+
+            if (null != networkPartitionContext) {
+
+                int totalActiveMemberCount = 0;
+                for (InstanceContext clusterInstanceContext : networkPartitionContext.getActiveInstances()) {
+                    if (clusterInstanceContext instanceof ClusterInstanceContext) {
+                        totalActiveMemberCount += ((ClusterInstanceContext) clusterInstanceContext).getActiveMemberCount();
+                    }
+                }
+                for (InstanceContext instanceContext : networkPartitionContext.getActiveInstances()) {
+                    if (instanceContext instanceof ClusterInstanceContext) {
+                        ClusterInstanceContext clusterInstanceContext = ((ClusterInstanceContext) instanceContext);
+                        clusterInstanceContext.setRequestsInFlightSecondDerivative(
+                                value * clusterInstanceContext.getActiveMemberCount() / totalActiveMemberCount);
+                    }
+                }
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug(String.format("Network partition context is not available for :" +
+                            " [network partition] %s", networkPartitionId));
+                }
+            }
         } else {
-            if (log.isDebugEnabled()) {
-                log.debug(String.format("Network partition context is not available for :" +
-                        " [network partition] %s", networkPartitionId));
+
+            ClusterInstanceContext clusterLevelNetworkPartitionContext = getClusterInstanceContext(
+                    networkPartitionId, clusterInstanceId);
+            if (null != clusterLevelNetworkPartitionContext) {
+                clusterLevelNetworkPartitionContext.setRequestsInFlightSecondDerivative(value);
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug(String.format("Network partition context is not available for :" +
+                            " [network partition] %s", networkPartitionId));
+                }
             }
         }
     }
@@ -1290,6 +1376,23 @@ public class ClusterMonitor extends Monitor {
         }
 
         return (ClusterInstanceContext) networkPartitionContext.getInstanceContext(instanceId);
+    }
+
+    public ClusterLevelNetworkPartitionContext getNetworkPartitionContext(String networkPartitionId) {
+        Map<String,
+                ClusterLevelNetworkPartitionContext> clusterLevelNetworkPartitionContextMap =
+                (this.clusterContext).getNetworkPartitionCtxts();
+        if (StringUtils.isBlank(networkPartitionId)) {
+            throw new RuntimeException("Network partition id is null");
+        }
+        ClusterLevelNetworkPartitionContext networkPartitionContext =
+                clusterLevelNetworkPartitionContextMap.get(networkPartitionId);
+        if (networkPartitionContext == null) {
+            throw new RuntimeException("Network partition context not found: [network-partition-id] " +
+                    networkPartitionId);
+        }
+
+        return networkPartitionContext;
     }
 
     public Collection<ClusterLevelNetworkPartitionContext> getNetworkPartitionCtxts() {
