@@ -749,7 +749,6 @@ public class CloudControllerServiceImpl implements CloudControllerService {
             throw new CartridgeNotFoundException(msg);
         }
 
-        TopologyBuilder.handleClusterCreated(registrant);
         CloudControllerContext.getInstance().persist();
 
         log.info("Successfully registered service: " + registrant);
