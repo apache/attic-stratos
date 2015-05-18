@@ -593,10 +593,18 @@ public class StratosApiV41 extends AbstractApi {
         try {
             StratosApiV41Utils.addNetworkPartition(networkPartitionBean);
         } catch (CloudControllerServiceNetworkPartitionAlreadyExistsExceptionException e) {
+
             return Response.status(Response.Status.CONFLICT)
                     .entity(new ResponseMessageBean(ResponseMessageBean.ERROR, e.getMessage()))
                     .build();
 
+        } catch (CloudControllerServiceInvalidNetworkPartitionExceptionException e) {
+
+            //This message is taken following way since the Axis2 does not return the message in e.getMessage method
+            String backendErrorMessage = e.getFaultMessage().getInvalidNetworkPartitionException().getMessage();
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(new ResponseMessageBean(ResponseMessageBean.ERROR, backendErrorMessage))
+                    .build();
         }
         URI url = uriInfo.getAbsolutePathBuilder().path(networkPartitionId).build();
         return Response.created(url).entity(new ResponseMessageBean(ResponseMessageBean.SUCCESS,
