@@ -163,8 +163,9 @@ public class StratosApiV41 extends AbstractApi {
         try {
             StratosApiV41Utils.addDeploymentPolicy(deploymentPolicyDefinitionBean);
         } catch (AutoscalerServiceInvalidDeploymentPolicyExceptionException e) {
+            String backendErrorMessage = e.getFaultMessage().getInvalidDeploymentPolicyException().getMessage();
             return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseMessageBean(
-                    ResponseMessageBean.ERROR, "Deployment policy is not valid")).build();
+                    ResponseMessageBean.ERROR, backendErrorMessage)).build();
         } catch (AutoscalerServiceDeploymentPolicyAlreadyExistsExceptionException e) {
             return Response.status(Response.Status.CONFLICT).entity(new ResponseMessageBean(
                     ResponseMessageBean.ERROR, "Deployment policy already exists")).build();
@@ -593,17 +594,13 @@ public class StratosApiV41 extends AbstractApi {
         try {
             StratosApiV41Utils.addNetworkPartition(networkPartitionBean);
         } catch (CloudControllerServiceNetworkPartitionAlreadyExistsExceptionException e) {
-
             return Response.status(Response.Status.CONFLICT)
                     .entity(new ResponseMessageBean(ResponseMessageBean.ERROR, e.getMessage()))
                     .build();
 
         } catch (CloudControllerServiceInvalidNetworkPartitionExceptionException e) {
-
-            //This message is taken following way since the Axis2 does not return the message in e.getMessage method
-            String backendErrorMessage = e.getFaultMessage().getInvalidNetworkPartitionException().getMessage();
             return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(new ResponseMessageBean(ResponseMessageBean.ERROR, backendErrorMessage))
+                    .entity(new ResponseMessageBean(ResponseMessageBean.ERROR, e.getMessage()))
                     .build();
         }
         URI url = uriInfo.getAbsolutePathBuilder().path(networkPartitionId).build();
@@ -1438,18 +1435,19 @@ public class StratosApiV41 extends AbstractApi {
 
         try {
             StratosApiV41Utils.addTenant(tenantInfoBean);
+            URI url = uriInfo.getAbsolutePathBuilder().path(tenantInfoBean.getTenantDomain()).build();
+            return Response.created(url).entity(
+                    new ResponseMessageBean(ResponseMessageBean.SUCCESS, String.format(
+                            "Tenant added successfully: [tenant] %s", tenantInfoBean.getTenantDomain()))).build();
 
         } catch (InvalidEmailException e) {
-            Response.status(Response.Status.BAD_REQUEST).entity(new ResponseMessageBean(
-                    ResponseMessageBean.ERROR, "Invalid email")).build();
+            return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseMessageBean(
+                    ResponseMessageBean.ERROR, String.format("Invalid email: [email] %s", tenantInfoBean.getEmail()))).build();
         } catch (InvalidDomainException e) {
-            Response.status(Response.Status.BAD_REQUEST).entity(new ResponseMessageBean(
-                    ResponseMessageBean.ERROR, "Invalid domain")).build();
+            return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseMessageBean(
+                    ResponseMessageBean.ERROR, String.format("Invalid domain: [domain] %s", tenantInfoBean.getTenantDomain()))).build();
         }
-        URI url = uriInfo.getAbsolutePathBuilder().path(tenantInfoBean.getTenantDomain()).build();
-        return Response.created(url).entity(
-                new ResponseMessageBean(ResponseMessageBean.SUCCESS, String.format(
-                        "Tenant added successfully: [tenant] %s", tenantInfoBean.getTenantDomain()))).build();
+
     }
 
     /**
@@ -1469,20 +1467,20 @@ public class StratosApiV41 extends AbstractApi {
 
         try {
             StratosApiV41Utils.updateExistingTenant(tenantInfoBean);
+            return Response.ok().entity(new ResponseMessageBean(ResponseMessageBean.SUCCESS,
+                    String.format("Tenant updated successfully: [tenant] %s", tenantInfoBean.getTenantDomain()))).build();
         } catch (TenantNotFoundException ex) {
-            Response.status(Response.Status.NOT_FOUND).entity(new ResponseMessageBean(
+            return Response.status(Response.Status.NOT_FOUND).entity(new ResponseMessageBean(
                     ResponseMessageBean.ERROR, "Tenant not found")).build();
         } catch (InvalidEmailException e) {
-            Response.status(Response.Status.BAD_REQUEST).entity(new ResponseMessageBean(
-                    ResponseMessageBean.ERROR, "Invalid email")).build();
+            return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseMessageBean(
+                    ResponseMessageBean.ERROR, String.format("Invalid email [email] %s", tenantInfoBean.getEmail()))).build();
         } catch (Exception e) {
             String msg = "Error in updating tenant " + tenantInfoBean.getTenantDomain();
             log.error(msg, e);
             throw new RestAPIException(msg);
         }
 
-        return Response.ok().entity(new ResponseMessageBean(ResponseMessageBean.SUCCESS,
-                String.format("Tenant updated successfully: [tenant] %s", tenantInfoBean.getTenantDomain()))).build();
     }
 
     /**
@@ -1614,7 +1612,13 @@ public class StratosApiV41 extends AbstractApi {
     public Response activateTenant(
             @PathParam("tenantDomain") String tenantDomain) throws RestAPIException {
 
-        StratosApiV41Utils.activateTenant(tenantDomain);
+        try {
+            StratosApiV41Utils.activateTenant(tenantDomain);
+        } catch (InvalidDomainException e) {
+            return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseMessageBean(
+                    ResponseMessageBean.ERROR, "Invalid domain")).build();
+        }
+
         return Response.ok().entity(new ResponseMessageBean(ResponseMessageBean.SUCCESS,
                 String.format("Tenant activated successfully: [tenant] %s", tenantDomain))).build();
     }
@@ -1635,7 +1639,13 @@ public class StratosApiV41 extends AbstractApi {
     public Response deactivateTenant(
             @PathParam("tenantDomain") String tenantDomain) throws RestAPIException {
 
-        StratosApiV41Utils.deactivateTenant(tenantDomain);
+        try {
+            StratosApiV41Utils.deactivateTenant(tenantDomain);
+        } catch (InvalidDomainException e) {
+            return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseMessageBean(
+                    ResponseMessageBean.ERROR, "Invalid domain")).build();
+        }
+
         return Response.ok().entity(new ResponseMessageBean(ResponseMessageBean.SUCCESS,
                 String.format("Tenant deactivated successfully: [tenant] %s", tenantDomain))).build();
     }
