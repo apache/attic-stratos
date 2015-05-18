@@ -18,21 +18,17 @@
  */
 package org.apache.stratos.cloud.controller.exception;
 
-
-/**
- * Throws when a {@link org.apache.stratos.cloud.controller.domain.Partition} is evaluated to be invalid.
- */
-public class InvalidPartitionException extends Exception {
+public class InvalidNetworkPartitionException extends Exception {
 
     private static final long serialVersionUID = 5403224496111965638L;
     private String message;
 
-    public InvalidPartitionException(String msg) {
+    public InvalidNetworkPartitionException(String msg) {
         super(msg);
         this.setMessage(msg);
     }
 
-    public InvalidPartitionException(String msg, Exception ex) {
+    public InvalidNetworkPartitionException(String msg, Exception ex) {
         super(msg, ex);
         this.setMessage(msg);
     }
