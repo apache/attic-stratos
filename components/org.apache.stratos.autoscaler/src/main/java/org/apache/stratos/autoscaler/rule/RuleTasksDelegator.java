@@ -61,25 +61,17 @@ public class RuleTasksDelegator {
     }
 
 
-    public int getNumberOfInstancesRequiredBasedOnRif(float rifPredictedValue, float requestsServedPerInstance, float
-            averageRequestsServedPerInstance, boolean arspiReset) {
+    public int getNumberOfInstancesRequiredBasedOnRif(float rifPredictedValue, float rifThreshold) {
 
+        if (rifThreshold != 0) {
 
-        float requestsInstanceCanHandle = requestsServedPerInstance;
-
-        if (arspiReset && averageRequestsServedPerInstance != 0) {
-            requestsInstanceCanHandle = averageRequestsServedPerInstance;
-
-        }
-        float numberOfInstances = 0;
-        if (requestsInstanceCanHandle != 0) {
-            numberOfInstances = rifPredictedValue / requestsInstanceCanHandle;
-            arspiReset = true;
-
+            float requiredNumberOfInstances = rifPredictedValue / rifThreshold;
+            return (int) Math.ceil(requiredNumberOfInstances);
         } else {
-            arspiReset = false;
+            log.error("Request in flight threshold is Zero");
+            return 0;
         }
-        return (int) Math.ceil(numberOfInstances);
+
     }
 
     public int getNumberOfInstancesRequiredBasedOnMemoryConsumption(float threshold, double predictedValue,
@@ -357,7 +349,7 @@ public class RuleTasksDelegator {
                         memberGredientLoadAverage, memberSecondDerivativeLoadAverage, 1);
 
                 if (log.isDebugEnabled()) {
-                    log.debug(String.format("[member-id] $s [predicted load average] $s ", memberStatsContext.getMemberId()
+                    log.debug(String.format("[member-id] %s [predicted load average] %s ", memberStatsContext.getMemberId()
                             , memberPredictedLoadAverage));
                 }
                 loadAveragePredicted += memberPredictedLoadAverage;
@@ -387,7 +379,7 @@ public class RuleTasksDelegator {
                         memberMemoryConsumptionGredient, memberMemoryConsumptionSecondDerivative, 1);
 
                 if (log.isDebugEnabled()) {
-                    log.debug(String.format("[member-id] $s [predicted memory consumption] $s ", memberStatsContext.getMemberId()
+                    log.debug(String.format("[member-id] %s [predicted memory consumption] %s ", memberStatsContext.getMemberId()
                             , memberPredictedMemoryConsumption));
                 }
                 memoryConsumptionPredicted += memberPredictedMemoryConsumption;
