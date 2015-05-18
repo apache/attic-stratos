@@ -28,12 +28,14 @@ import org.apache.axis2.description.TransportOutDescription;
 import org.apache.axis2.transport.http.HttpTransportProperties;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
+import org.apache.http.auth.MalformedChallengeException;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.stratos.cli.exception.CommandException;
 import org.apache.stratos.cli.exception.ExceptionMapper;
 import org.apache.stratos.cli.utils.CliConstants;
 import org.apache.stratos.cli.utils.CliUtils;
 import org.apache.stratos.cli.utils.RowMapper;
+import org.apache.stratos.common.beans.ResponseMessageBean;
 import org.apache.stratos.common.beans.TenantInfoBean;
 import org.apache.stratos.common.beans.UserInfoBean;
 import org.apache.stratos.common.beans.application.ApplicationBean;
@@ -214,7 +216,7 @@ public class RestCommandLineService {
                     if (responseCode == 200) {
                         return true;
                     } else {
-                        System.out.println("Invalid STRATOS_URL");
+                        System.out.println("Invalid value is set for STRATOS_URL");
                     }
                 }
                 return false;
@@ -231,6 +233,11 @@ public class RestCommandLineService {
             printError(message, e);
             return false;
         } catch (Exception e) {
+            if (e.getCause() instanceof MalformedChallengeException) {
+                String message = "Authentication failed. Please check your username/password";
+                printError(message, e);
+                return false;
+            }
             String message = "An unknown error occurred: " + e.getMessage();
             printError(message, e);
             return false;
@@ -501,10 +508,12 @@ public class RestCommandLineService {
                     + ENDPOINT_ADD_TENANT, jsonString);
 
             int responseCode = response.getStatusLine().getStatusCode();
-            if (responseCode < 200 || responseCode >= 300) {
-                CliUtils.printError(response);
-            } else {
+            if (responseCode ==201) {
                 System.out.println("Tenant added successfully: " + domain);
+            } else {
+                String resultString = CliUtils.getHttpResponseString(response);
+                String errorMsg= gson.fromJson(resultString, ResponseMessageBean.class).getMessage();
+                System.out.println(errorMsg);
             }
         } catch (Exception e) {
             String message = "Could not add tenant: " + domain;
@@ -825,8 +834,8 @@ public class RestCommandLineService {
                 return;
             } else {
                 String resultString = CliUtils.getHttpResponseString(response);
-                ExceptionMapper exception = gson.fromJson(resultString, ExceptionMapper.class);
-                System.out.println(exception);
+                String errorMsg = gson.fromJson(resultString, ResponseMessageBean.class).getMessage();
+                System.out.println(errorMsg);
             }
 
         } catch (Exception e) {
@@ -858,8 +867,8 @@ public class RestCommandLineService {
                 System.out.println("You have successfully activated the tenant: " + tenantDomain);
             } else {
                 String resultString = CliUtils.getHttpResponseString(response);
-                ExceptionMapper exception = gson.fromJson(resultString, ExceptionMapper.class);
-                System.out.println(exception);
+                String errorMsg = gson.fromJson(resultString, ResponseMessageBean.class).getMessage();
+                System.out.println(errorMsg);
             }
 
         } catch (Exception e) {

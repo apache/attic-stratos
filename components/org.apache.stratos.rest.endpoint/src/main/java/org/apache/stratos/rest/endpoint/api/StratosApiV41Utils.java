@@ -119,7 +119,7 @@ public class StratosApiV41Utils {
             }
 
             List<IaasProviderBean> iaasProviders = cartridgeBean.getIaasProvider();
-            if((iaasProviders == null) || iaasProviders.size() == 0) {
+            if ((iaasProviders == null) || iaasProviders.size() == 0) {
                 throw new RestAPIException(String.format("IaaS providers not found in cartridge: %s",
                         cartridgeBean.getType()));
             }
@@ -166,7 +166,7 @@ public class StratosApiV41Utils {
             }
 
             List<IaasProviderBean> iaasProviders = cartridgeBean.getIaasProvider();
-            if((iaasProviders == null) || iaasProviders.size() == 0) {
+            if ((iaasProviders == null) || iaasProviders.size() == 0) {
                 throw new RestAPIException(String.format("IaaS providers not found in cartridge: %s",
                         cartridgeBean.getType()));
             }
@@ -654,7 +654,7 @@ public class StratosApiV41Utils {
      * @throws RestAPIException
      */
     public static void addApplicationPolicy(ApplicationPolicyBean applicationPolicyBean) throws RestAPIException,
-            AutoscalerServiceInvalidApplicationPolicyExceptionException,AutoscalerServiceApplicationPolicyAlreadyExistsExceptionException {
+            AutoscalerServiceInvalidApplicationPolicyExceptionException, AutoscalerServiceApplicationPolicyAlreadyExistsExceptionException {
 
         if (applicationPolicyBean == null) {
             String msg = "Application policy bean is null";
@@ -3151,7 +3151,7 @@ public class StratosApiV41Utils {
                 }
             } else {
                 String msg = "The tenant with domain name: " + tenantDomain + " does not exist.";
-                throw new RestAPIException(msg);
+                throw new InvalidDomainException(msg);
             }
         } catch (UserStoreException e) {
             String msg = "Error in retrieving the tenant id for the tenant domain: " + tenantDomain + ".";
@@ -3171,7 +3171,27 @@ public class StratosApiV41Utils {
         int tenantId;
         try {
             tenantId = tenantManager.getTenantId(tenantDomain);
+            if (tenantId != -1) {
+                try {
+                    TenantMgtUtil.deactivateTenant(tenantDomain, tenantManager, tenantId);
+                } catch (Exception e) {
+                    String msg = "Error in deactivating Tenant :" + tenantDomain;
+                    log.error(msg, e);
+                    throw new RestAPIException(msg, e);
+                }
 
+                //Notify tenant deactivation all listeners
+                try {
+                    TenantMgtUtil.triggerTenantDeactivation(tenantId);
+                } catch (StratosException e) {
+                    String msg = "Error in notifying tenant deactivate.";
+                    log.error(msg, e);
+                    throw new RestAPIException(msg, e);
+                }
+            } else {
+                String msg = "The tenant with domain name: " + tenantDomain + " does not exist.";
+                throw new InvalidDomainException(msg);
+            }
         } catch (UserStoreException e) {
             String msg = "Error in retrieving the tenant id for the tenant domain: " +
                     tenantDomain + ".";
@@ -3180,22 +3200,6 @@ public class StratosApiV41Utils {
 
         }
 
-        try {
-            TenantMgtUtil.deactivateTenant(tenantDomain, tenantManager, tenantId);
-        } catch (Exception e) {
-            String msg = "Error in deactivating Tenant :" + tenantDomain;
-            log.error(msg, e);
-            throw new RestAPIException(msg, e);
-        }
-
-        //Notify tenant deactivation all listeners
-        try {
-            TenantMgtUtil.triggerTenantDeactivation(tenantId);
-        } catch (StratosException e) {
-            String msg = "Error in notifying tenant deactivate.";
-            log.error(msg, e);
-            throw new RestAPIException(msg, e);
-        }
 
     }
 
