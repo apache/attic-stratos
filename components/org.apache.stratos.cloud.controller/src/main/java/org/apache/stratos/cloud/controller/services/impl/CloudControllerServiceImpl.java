@@ -708,7 +708,6 @@ public class CloudControllerServiceImpl implements CloudControllerService {
             throw new CartridgeNotFoundException(msg);
         }
 
-        TopologyBuilder.handleClusterCreated(registrant);
         CloudControllerContext.getInstance().persist();
 
         log.info("Successfully registered service: " + registrant);
@@ -1450,7 +1449,7 @@ public class CloudControllerServiceImpl implements CloudControllerService {
                         networkPartition.getId()));
             }
         } catch (Exception e) {
-            String message = "Could not add network partition";
+            String message = e.getMessage();
             log.error(message);
             throw new CloudControllerException(message, e);
         }
@@ -1480,7 +1479,7 @@ public class CloudControllerServiceImpl implements CloudControllerService {
                         networkPartitionId));
             }
         } catch (Exception e) {
-            String message = "Could not remove network partition";
+            String message = e.getMessage();
             log.error(message);
             throw new CloudControllerException(message, e);
         }
@@ -1530,13 +1529,12 @@ public class CloudControllerServiceImpl implements CloudControllerService {
                 log.info(String.format("Network partition updated successfully: [network-partition-id] %s",
                         networkPartition.getId()));
             }
+            return true;
         } catch (Exception e) {
-            String message = String.format("Could not update network partition: [network-partition-id] %s",
-                    networkPartition.getId());
+            String message = e.getMessage();
             log.error(message);
             throw new CloudControllerException(message, e);
         }
-        return true;
     }
 
     @Override

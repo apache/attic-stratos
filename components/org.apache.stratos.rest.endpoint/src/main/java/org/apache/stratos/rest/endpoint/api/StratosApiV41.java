@@ -161,7 +161,6 @@ public class StratosApiV41 extends AbstractApi {
 
         String deploymentPolicyID = deploymentPolicyDefinitionBean.getId();
         try {
-            // TODO :: Deployment policy validation
             StratosApiV41Utils.addDeploymentPolicy(deploymentPolicyDefinitionBean);
         } catch (AutoscalerServiceInvalidDeploymentPolicyExceptionException e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseMessageBean(
@@ -817,12 +816,18 @@ public class StratosApiV41 extends AbstractApi {
             return Response.created(url).entity(new ResponseMessageBean(ResponseMessageBean.SUCCESS,
                     String.format("Application policy added successfully: [application-policy] %s",
                             applicationPolicy.getId()))).build();
-        } catch (RestAPIException e) {
-            throw e;
         } catch (AutoscalerServiceInvalidApplicationPolicyExceptionException e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(new ResponseMessageBean(
                     ResponseMessageBean.ERROR, "Invalid application policy")).build();
+        } catch(AutoscalerServiceApplicationPolicyAlreadyExistsExceptionException e){
+            return Response.status(Response.Status.CONFLICT).entity(new ResponseMessageBean(
+                    ResponseMessageBean.ERROR, "Application policy already exists")).build();
+
+        }catch (RestAPIException e) {
+            throw e;
         }
+
+
     }
 
     /**

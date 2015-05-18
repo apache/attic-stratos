@@ -107,25 +107,31 @@ public class StratosApiV41Utils {
     /**
      * Add New Cartridge
      *
-     * @param cartridgeDefinition Cartridge definition
+     * @param cartridgeBean Cartridge definition
      * @throws RestAPIException
      */
     // Util methods for cartridges
-    public static void addCartridge(CartridgeBean cartridgeDefinition) throws RestAPIException {
+    public static void addCartridge(CartridgeBean cartridgeBean) throws RestAPIException {
 
         try {
             if (log.isDebugEnabled()) {
-                log.debug(String.format("Adding cartridge: [cartridge-type] %s ", cartridgeDefinition.getType()));
+                log.debug(String.format("Adding cartridge: [cartridge-type] %s ", cartridgeBean.getType()));
             }
 
-            Cartridge cartridgeConfig = createCartridgeConfig(cartridgeDefinition);
+            List<IaasProviderBean> iaasProviders = cartridgeBean.getIaasProvider();
+            if((iaasProviders == null) || iaasProviders.size() == 0) {
+                throw new RestAPIException(String.format("IaaS providers not found in cartridge: %s",
+                        cartridgeBean.getType()));
+            }
+
+            Cartridge cartridgeConfig = createCartridgeConfig(cartridgeBean);
             CloudControllerServiceClient cloudControllerServiceClient = CloudControllerServiceClient.getInstance();
             cloudControllerServiceClient.addCartridge(cartridgeConfig);
 
             if (log.isDebugEnabled()) {
                 log.debug(String.format(
                         "Successfully added cartridge: [cartridge-type] %s ",
-                        cartridgeDefinition.getType()));
+                        cartridgeBean.getType()));
             }
         } catch (CloudControllerServiceCartridgeAlreadyExistsExceptionException e) {
             String msg = "Could not add cartridge";
@@ -149,23 +155,29 @@ public class StratosApiV41Utils {
     /**
      * Update Cartridge
      *
-     * @param cartridgeDefinition Cartridge Definition
+     * @param cartridgeBean Cartridge Definition
      * @throws RestAPIException
      */
-    public static void updateCartridge(CartridgeBean cartridgeDefinition) throws RestAPIException {
+    public static void updateCartridge(CartridgeBean cartridgeBean) throws RestAPIException {
 
         try {
             if (log.isDebugEnabled()) {
-                log.debug(String.format("Updating cartridge: [cartridge-type] %s ", cartridgeDefinition.getType()));
+                log.debug(String.format("Updating cartridge: [cartridge-type] %s ", cartridgeBean.getType()));
             }
 
-            Cartridge cartridgeConfig = createCartridgeConfig(cartridgeDefinition);
+            List<IaasProviderBean> iaasProviders = cartridgeBean.getIaasProvider();
+            if((iaasProviders == null) || iaasProviders.size() == 0) {
+                throw new RestAPIException(String.format("IaaS providers not found in cartridge: %s",
+                        cartridgeBean.getType()));
+            }
+
+            Cartridge cartridgeConfig = createCartridgeConfig(cartridgeBean);
             CloudControllerServiceClient cloudControllerServiceClient = CloudControllerServiceClient.getInstance();
             cloudControllerServiceClient.updateCartridge(cartridgeConfig);
 
             if (log.isDebugEnabled()) {
                 log.debug(String.format("Successfully updated cartridge: [cartridge-type] %s ",
-                        cartridgeDefinition.getType()));
+                        cartridgeBean.getType()));
             }
         } catch (CloudControllerServiceCartridgeDefinitionNotExistsExceptionException e) {
             String msg = "Could not add cartridge";
@@ -699,7 +711,7 @@ public class StratosApiV41Utils {
      * @throws RestAPIException
      */
     public static void addApplicationPolicy(ApplicationPolicyBean applicationPolicyBean) throws RestAPIException,
-            AutoscalerServiceInvalidApplicationPolicyExceptionException {
+            AutoscalerServiceInvalidApplicationPolicyExceptionException,AutoscalerServiceApplicationPolicyAlreadyExistsExceptionException {
 
         if (applicationPolicyBean == null) {
             String msg = "Application policy bean is null";
@@ -2604,7 +2616,7 @@ public class StratosApiV41Utils {
             serviceClient.addNetworkPartition(
                     ObjectConverter.convertNetworkPartitionToCCStubNetworkPartition(networkPartitionBean));
         } catch (RemoteException e) {
-            String message = "Could not add network partition";
+            String message = e.getMessage();
             log.error(message);
             throw new RestAPIException(message, e);
         }
@@ -2622,7 +2634,7 @@ public class StratosApiV41Utils {
                     serviceClient.getNetworkPartitions();
             return ObjectConverter.convertCCStubNetworkPartitionsToNetworkPartitions(networkPartitions);
         } catch (RemoteException e) {
-            String message = "Could not get network partitions";
+            String message = e.getMessage();
             log.error(message);
             throw new RestAPIException(message, e);
         }
@@ -2639,9 +2651,7 @@ public class StratosApiV41Utils {
             CloudControllerServiceClient serviceClient = CloudControllerServiceClient.getInstance();
             serviceClient.removeNetworkPartition(networkPartitionId);
         } catch (RemoteException e) {
-            String message = String.format(
-                    "Could not remove network partition: [network-partition-id] %s",
-                    networkPartitionId);
+            String message = e.getMessage();
             log.error(message);
             throw new RestAPIException(message, e);
         }
@@ -2660,9 +2670,7 @@ public class StratosApiV41Utils {
                     serviceClient.getNetworkPartition(networkPartitionId);
             return ObjectConverter.convertCCStubNetworkPartitionToNetworkPartition(networkPartition);
         } catch (RemoteException e) {
-            String message = String.format(
-                    "Could not get network partition: [network-partition-id] %s",
-                    networkPartitionId);
+            String message = e.getMessage();
             log.error(message);
             throw new RestAPIException(message, e);
         }
@@ -2680,8 +2688,7 @@ public class StratosApiV41Utils {
             serviceClient.updateNetworkPartition(ObjectConverter.
                     convertNetworkPartitionToCCStubNetworkPartition(networkPartition));
         } catch (RemoteException e) {
-            String message = String.format("Could not update network partition: [network-partition-id] %s,",
-                    networkPartition.getId());
+            String message = e.getMessage();
             log.error(message);
             throw new RestAPIException(message, e);
         }
@@ -2712,11 +2719,11 @@ public class StratosApiV41Utils {
                         deployementPolicyDefinitionBean.getId()));
             }
         } catch (RemoteException e) {
-            String msg = "Could not add deployment policy.";
+            String msg = e.getMessage();
             log.error(msg, e);
             throw new RestAPIException(msg, e);
         } catch (AutoscalerServiceRemoteExceptionException e) {
-            String msg = "Could not add deployment policy.";
+            String msg = e.getMessage();
             log.error(msg, e);
             throw new RestAPIException(msg, e);
         }
