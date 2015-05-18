@@ -80,7 +80,7 @@ public class ObjectConverter {
         cartridge.setDescription(cartridgeBean.getDescription());
         cartridge.setTenantPartitions(cartridgeBean.getTenantPartitions());
         cartridge.setLoadBalancingIPType(cartridgeBean.getLoadBalancingIPType());
-        cartridge.setMetadataKeys(cartridgeBean.getMetadataKeys());
+        //cartridge.setMetadataKeys(cartridgeBean.getMetadataKeys());
 
         // deployment information
         if (cartridgeBean.getDeployment() != null) {
@@ -1592,7 +1592,11 @@ public class ObjectConverter {
         cartridge.setMultiTenant(cartridgeInfo.getMultiTenant());
         cartridge.setDescription(cartridgeInfo.getDescription());
         cartridge.setLoadBalancingIPType(cartridgeInfo.getLoadBalancingIPType());
-        cartridge.setMetadataKeys(cartridgeInfo.getMetadataKeys());
+
+        /*if(cartridgeInfo.getMetadataKeys() != null && cartridgeInfo.getMetadataKeys()[0] != null) {
+            cartridge.setMetadataKeys(cartridgeInfo.getMetadataKeys());
+        }*/
+
         cartridge.setTenantPartitions(cartridgeInfo.getTenantPartitions());
 
         //convert persistence
