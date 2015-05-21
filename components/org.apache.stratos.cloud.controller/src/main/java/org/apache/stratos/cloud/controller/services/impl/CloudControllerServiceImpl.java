@@ -111,41 +111,41 @@ public class CloudControllerServiceImpl implements CloudControllerService {
     }
 
     @Override
-    public boolean updateCartridge(Cartridge cartridgeConfig) throws InvalidCartridgeDefinitionException,
+    public boolean updateCartridge(Cartridge cartridge) throws InvalidCartridgeDefinitionException,
             InvalidIaasProviderException,
             CartridgeDefinitionNotExistsException {
 
-        handleNullObject(cartridgeConfig, "Cartridge definition is null");
+        handleNullObject(cartridge, "Cartridge definition is null");
 
         if (log.isInfoEnabled()) {
-            log.info("Updating cartridge: [cartridge-type] " + cartridgeConfig.getType());
+            log.info("Updating cartridge: [cartridge-type] " + cartridge.getType());
         }
         if (log.isDebugEnabled()) {
-            log.debug("Cartridge definition: " + cartridgeConfig.toString());
+            log.debug("Cartridge definition: " + cartridge.toString());
         }
 
         try {
-            CloudControllerUtil.extractIaaSProvidersFromCartridge(cartridgeConfig);
+            CloudControllerUtil.extractIaaSProvidersFromCartridge(cartridge);
         } catch (Exception e) {
-            String msg = "Invalid cartridge definition: [cartridge-type] " + cartridgeConfig.getType();
+            String msg = "Invalid cartridge definition: [cartridge-type] " + cartridge.getType();
             log.error(msg, e);
             throw new InvalidCartridgeDefinitionException(msg, e);
         }
 
-        String cartridgeType = cartridgeConfig.getType();
+        String cartridgeType = cartridge.getType();
         if (cloudControllerContext.getCartridge(cartridgeType) != null) {
             Cartridge cartridgeToBeRemoved = cloudControllerContext.getCartridge(cartridgeType);
             try {
                 removeCartridgeFromCC(cartridgeToBeRemoved.getType());
             } catch (InvalidCartridgeTypeException ignore) {
             }
-            copyIaasProviders(cartridgeConfig, cartridgeToBeRemoved);
+            copyIaasProviders(cartridge, cartridgeToBeRemoved);
         } else {
             throw new CartridgeDefinitionNotExistsException("This cartridge definition not exists");
         }
 
         // Add cartridge to the cloud controller context and persist
-        CloudControllerContext.getInstance().addCartridge(cartridgeConfig);
+        CloudControllerContext.getInstance().addCartridge(cartridge);
         CloudControllerContext.getInstance().persist();
         // transaction ends
 
@@ -1436,7 +1436,8 @@ public class CloudControllerServiceImpl implements CloudControllerService {
     }
 
     @Override
-    public boolean addNetworkPartition(NetworkPartition networkPartition) throws NetworkPartitionAlreadyExistsException,
+    public boolean addNetworkPartition(NetworkPartition networkPartition) throws
+            NetworkPartitionAlreadyExistsException,
             InvalidNetworkPartitionException {
 
         handleNullObject(networkPartition, "Network Partition is null");
@@ -1453,7 +1454,7 @@ public class CloudControllerServiceImpl implements CloudControllerService {
             throw new NetworkPartitionAlreadyExistsException(message);
         }
 
-        if (networkPartition.getPartitions() != null) {
+        if (networkPartition.getPartitions() != null && networkPartition.getPartitions().length != 0) {
             for (Partition partition : networkPartition.getPartitions()) {
                 if (partition != null) {
                     if (log.isInfoEnabled()) {
@@ -1476,6 +1477,10 @@ public class CloudControllerServiceImpl implements CloudControllerService {
                     }
                 }
             }
+        } else {
+            //Following message is shown to the end user in all the the API clients(GUI/CLI/Rest API)
+            throw new InvalidNetworkPartitionException(String.format("Network partition: " +
+                            "%s doesn't not have any partitions ", networkPartition.getId()));
         }
 
         // adding network partition to CC-Context
