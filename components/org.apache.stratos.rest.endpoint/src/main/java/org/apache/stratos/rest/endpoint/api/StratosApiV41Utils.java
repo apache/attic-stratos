@@ -25,6 +25,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.stratos.autoscaler.stub.*;
 import org.apache.stratos.autoscaler.stub.deployment.policy.ApplicationPolicy;
+import org.apache.stratos.autoscaler.stub.deployment.policy.DeploymentPolicy;
 import org.apache.stratos.autoscaler.stub.pojo.ApplicationContext;
 import org.apache.stratos.autoscaler.stub.pojo.ServiceGroup;
 import org.apache.stratos.cloud.controller.stub.*;
@@ -2616,8 +2617,71 @@ public class StratosApiV41Utils {
     public static void removeNetworkPartition(String networkPartitionId) throws RestAPIException,
             CloudControllerServiceNetworkPartitionNotExistsExceptionException {
         try {
+
+            AutoscalerServiceClient autoscalerServiceClient = AutoscalerServiceClient.getInstance();
+            ApplicationContext[] applicationContexts = autoscalerServiceClient.getApplications();
+            if (applicationContexts != null) {
+                for (ApplicationContext applicationContext : applicationContexts) {
+                    if (applicationContext != null) {
+                        String[] networkPartitions = AutoscalerServiceClient.getInstance().
+                                getApplicationNetworkPartitions(applicationContext.getApplicationId());
+                        if (networkPartitions != null) {
+                            for (int i = 0; i < networkPartitions.length; i++) {
+                                if (networkPartitions[i].equals(networkPartitionId)) {
+                                    String message = String.format("Cannot remove the network partition %s, since" +
+                                                    " it is used in application %s", networkPartitionId,
+                                            applicationContext.getApplicationId());
+                                    log.error(message);
+                                    throw new RestAPIException(message);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            DeploymentPolicy[] deploymentPolicies = autoscalerServiceClient.getDeploymentPolicies();
+
+            if (deploymentPolicies != null) {
+                for (DeploymentPolicy deploymentPolicy : deploymentPolicies) {
+                    for (org.apache.stratos.autoscaler.stub.partition.NetworkPartitionRef networkPartitionRef :
+                            deploymentPolicy.getNetworkPartitionRefs()) {
+                        if (networkPartitionRef.getId().equals(networkPartitionId)) {
+                            String message = String.format("Cannot remove the network partition %s, since" +
+                                            " it is used in deployment policy %s", networkPartitionId,
+                                    deploymentPolicy.getDeploymentPolicyID());
+                            log.error(message);
+                            throw new RestAPIException(message);
+                        }
+                    }
+                }
+            }
+
+            ApplicationPolicy[] applicationPolicies = autoscalerServiceClient.getApplicationPolicies();
+
+            if (applicationPolicies != null) {
+                for (ApplicationPolicy applicationPolicy : applicationPolicies) {
+
+                    for (String networkPartition :
+                            applicationPolicy.getNetworkPartitions()) {
+
+                        if (networkPartition.equals(networkPartitionId)) {
+                            String message = String.format("Cannot remove the network partition %s, since" +
+                                            " it is used in application policy %s", networkPartitionId,
+                                    applicationPolicy.getId());
+                            log.error(message);
+                            throw new RestAPIException(message);
+                        }
+                    }
+                }
+            }
+
             CloudControllerServiceClient serviceClient = CloudControllerServiceClient.getInstance();
             serviceClient.removeNetworkPartition(networkPartitionId);
+        } catch (AutoscalerServiceAutoScalerExceptionException e) {
+            String message = e.getMessage();
+            log.error(message);
+            throw new RestAPIException(message, e);
         } catch (RemoteException e) {
             String message = e.getMessage();
             log.error(message);

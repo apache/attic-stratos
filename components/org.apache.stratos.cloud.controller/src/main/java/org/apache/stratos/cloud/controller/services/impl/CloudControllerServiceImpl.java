@@ -1480,7 +1480,7 @@ public class CloudControllerServiceImpl implements CloudControllerService {
         } else {
             //Following message is shown to the end user in all the the API clients(GUI/CLI/Rest API)
             throw new InvalidNetworkPartitionException(String.format("Network partition: " +
-                            "%s doesn't not have any partitions ", networkPartition.getId()));
+                    "%s doesn't not have any partitions ", networkPartition.getId()));
         }
 
         // adding network partition to CC-Context

@@ -64,6 +64,7 @@ public class KubernetesIaas extends Iaas {
     private static final String PORT_MAPPINGS = "PORT_MAPPINGS";
     private static final String KUBERNETES_CONTAINER_CPU = "KUBERNETES_CONTAINER_CPU";
     private static final String KUBERNETES_CONTAINER_MEMORY = "KUBERNETES_CONTAINER_MEMORY";
+    private static final String KUBERNETES_SERVICE_SESSION_AFFINITY = "KUBERNETES_SERVICE_SESSION_AFFINITY";
     private static final String KUBERNETES_CONTAINER_CPU_DEFAULT = "kubernetes.container.cpu.default";
     private static final String KUBERNETES_CONTAINER_MEMORY_DEFAULT = "kubernetes.container.memory.default";
 
@@ -463,6 +464,12 @@ public class KubernetesIaas extends Iaas {
             throw new RuntimeException(message);
         }
 
+        String sessionAffinity = null;
+        Property sessionAffinityProperty = cartridge.getProperties().getProperty(KUBERNETES_SERVICE_SESSION_AFFINITY);
+        if(sessionAffinityProperty != null) {
+            sessionAffinity = sessionAffinityProperty.getValue();
+        }
+
         List<KubernetesService> kubernetesServices = clusterContext.getKubernetesServices();
         if (kubernetesServices == null) {
             kubernetesServices = new ArrayList<KubernetesService>();
@@ -470,6 +477,7 @@ public class KubernetesIaas extends Iaas {
 
         // Prepare minion public IP addresses
         List<String> minionPrivateIPList = new ArrayList<String>();
+        List<String> minionPublicIPList = new ArrayList<String>();
         KubernetesHost[] kubernetesHosts = kubernetesCluster.getKubernetesHosts();
         if ((kubernetesHosts == null) || (kubernetesHosts.length == 0) || (kubernetesHosts[0] == null)) {
             throw new RuntimeException("Hosts not found in kubernetes cluster: [cluster] "
@@ -478,6 +486,7 @@ public class KubernetesIaas extends Iaas {
         for (KubernetesHost host : kubernetesHosts) {
             if (host != null) {
                 minionPrivateIPList.add(host.getPrivateIPAddress());
+                minionPublicIPList.add(host.getPublicIPAddress());
             }
         }
         if (log.isDebugEnabled()) {
@@ -511,8 +520,10 @@ public class KubernetesIaas extends Iaas {
                 String containerPortName = KubernetesIaasUtil.preparePortNameFromPortMapping(portMapping);
 
                 try {
+                    // Services need to use minions private IP addresses for creating iptable rules
+                    String[] minionPrivateIPArray = minionPrivateIPList.toArray(new String[minionPrivateIPList.size()]);
                     kubernetesApi.createService(serviceId, serviceLabel, servicePort, containerPortName,
-                            minionPrivateIPList.toArray(new String[minionPrivateIPList.size()]));
+                            minionPrivateIPArray, sessionAffinity);
                 } finally {
                     // Persist kubernetes service sequence no
                     CloudControllerContext.getInstance().persist();
@@ -528,7 +539,9 @@ public class KubernetesIaas extends Iaas {
                 KubernetesService kubernetesService = new KubernetesService();
                 kubernetesService.setId(service.getId());
                 kubernetesService.setPortalIP(service.getPortalIP());
-                kubernetesService.setPublicIPs(service.getPublicIPs());
+                // Expose minions public IP addresses as they need to be accessed by external networks
+                String[] minionPublicIPArray = minionPublicIPList.toArray(new String[minionPublicIPList.size()]);
+                kubernetesService.setPublicIPs(minionPublicIPArray);
                 kubernetesService.setProtocol(portMapping.getProtocol());
                 kubernetesService.setPort(service.getPort());
                 kubernetesService.setContainerPort(containerPort);
@@ -580,10 +593,11 @@ public class KubernetesIaas extends Iaas {
 
                         // Add port mappings to payload
                         if (portMappingStrBuilder.toString().length() > 0) {
-                            portMappingStrBuilder.append(":");
+                            portMappingStrBuilder.append(";");
                         }
-                        portMappingStrBuilder.append(String.format("PROTOCOL:%s|PORT:%d|PROXY_PORT:%d",
-                                portMapping.getProtocol(), portMapping.getKubernetesServicePort(), portMapping.getProxyPort()));
+                        portMappingStrBuilder.append(String.format("NAME:%s|PROTOCOL:%s|PORT:%d|PROXY_PORT:%d",
+                                portMapping.getName(), portMapping.getProtocol(),
+                                portMapping.getKubernetesServicePort(), portMapping.getProxyPort()));
 
                         if (log.isInfoEnabled()) {
                             log.info(String.format("Kubernetes service port generated: [cluster-id] %s [port] %d " +
