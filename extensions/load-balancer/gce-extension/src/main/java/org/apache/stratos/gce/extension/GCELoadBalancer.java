@@ -6,6 +6,9 @@ import org.apache.stratos.load.balancer.extension.api.exception.LoadBalancerExte
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -35,6 +38,10 @@ public class GCELoadBalancer implements LoadBalancer {
         try {
             gceOperations = new GCEOperations();
         } catch (LoadBalancerExtensionException e) {
+            log.error(e);
+        } catch (GeneralSecurityException e) {
+            log.error(e);
+        } catch (IOException e) {
             log.error(e);
         }
     }

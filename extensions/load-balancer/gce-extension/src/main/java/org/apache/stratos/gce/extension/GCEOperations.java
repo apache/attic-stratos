@@ -70,8 +70,9 @@ public class GCEOperations {
     Compute compute;
 
 
-    public GCEOperations() throws LoadBalancerExtensionException {
+    public GCEOperations() throws LoadBalancerExtensionException, GeneralSecurityException, IOException {
 
+        buildComputeEngineObject();
 
     }
 
@@ -80,7 +81,7 @@ public class GCEOperations {
 
     }
 
-    private Compute getComputeEngineObject() throws GeneralSecurityException, IOException {
+    private void buildComputeEngineObject() throws GeneralSecurityException, IOException {
 
         HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
         DataStoreFactory dataStoreFactory = new FileDataStoreFactory(new
@@ -98,7 +99,7 @@ public class GCEOperations {
         compute = new Compute.Builder(
                 httpTransport, jsonFactory, null).setApplicationName(PROJECT_NAME)
                 .setHttpRequestInitializer(credential).build();
-        return compute;
+
 
     }
 
