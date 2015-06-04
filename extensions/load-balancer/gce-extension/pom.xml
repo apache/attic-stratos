@@ -68,26 +68,25 @@
             <version>0.13.wso2v8</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.jclouds.driver</groupId>
-            <artifactId>jclouds-sshj</artifactId>
-            <version>${jclouds.version}</version>
+            <groupId>com.google.http-client</groupId>
+            <artifactId>google-http-client-jackson2</artifactId>
+            <version>${project.http.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.jclouds.driver</groupId>
-            <artifactId>jclouds-slf4j</artifactId>
-            <version>${jclouds.version}</version>
+            <groupId>com.google.oauth-client</groupId>
+            <artifactId>google-oauth-client-jetty</artifactId>
+            <version>${project.oauth.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.jclouds.labs</groupId>
-            <artifactId>google-compute-engine</artifactId>
-            <version>1.8.1</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.api-client</groupId>
-            <artifactId>google-api-client</artifactId>
-            <version>1.18.0-rc</version>
+            <groupId>com.google.apis</groupId>
+            <artifactId>google-api-services-compute</artifactId>
+            <version>v1-rev27-1.19.0</version>
         </dependency>
     </dependencies>
+    <properties>
+        <project.http.version>1.19.0</project.http.version>
+        <project.oauth.version>1.19.0</project.oauth.version>
+    </properties>
     <build>
         <plugins>
             <plugin>

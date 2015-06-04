@@ -1,18 +1,24 @@
 package org.apache.stratos.gce.extension;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.inject.Module;
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
+import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.http.HttpTransport;
+import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.util.store.DataStoreFactory;
+import com.google.api.client.util.store.FileDataStoreFactory;
+import com.google.api.services.compute.Compute;
+import com.google.api.services.compute.ComputeScopes;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.stratos.load.balancer.extension.api.exception.LoadBalancerExtensionException;
-import org.jclouds.ContextBuilder;
-import org.jclouds.compute.ComputeService;
-import org.jclouds.compute.ComputeServiceContext;
-import org.jclouds.sshj.config.SshjSshClientModule;
-import org.jclouds.util.Strings2;
 
-import java.io.FileInputStream;
+import java.io.File;
 import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -36,42 +42,65 @@ public class GCEOperations {
 
     private static final Log log = LogFactory.getLog(GCELoadBalancer.class);
 
+    //TODO: remove hardcoded values
+    private static final String PROJECT_NAME = "GCE-test";
+    private static final String projectId = "oceanic-depth-89120";
+    private static final String zoneName = "europe-west1-d";
+    private static final String regionName = "europe-west1";
+
+    //auth
+    private static final String keyFile = "/home/sanjaya/keys/p12key-donwloaded.p12";
+    private static final String accountId = "164588286821-a517i85433f83e0nthc4qjmoupri" +
+            "394q@developer.gserviceaccount.com";
+
+    /**
+     * Directory to store user credentials.
+     */
+    private static final String DATA_STORE_DIR = ".store/gce-extension";
+
+    /**
+     * Global instance of the JSON factory.
+     */
+
+    /**
+     * OAuth 2.0 scopes
+     */
+    private static final List<String> SCOPES = Arrays.asList(ComputeScopes.COMPUTE_READONLY);
+
+    Compute compute;
+
+
     public GCEOperations() throws LoadBalancerExtensionException {
 
-        //TODO: remove hard coded values
-        String provider = "google-compute-engine";
-        String identity = "969955727877-3q53n9vgjajebj9g7tigdosekedfviat@developer.gserviceaccount.com";
-        String credential = "/home/sanjaya/key.pem";
-        String groupName = "instance-group-1";
-        credential = getPrivateKeyFromFile(credential);
 
-        ComputeService compute = initComputeService(provider, identity, credential);
+    }
+
+    private void createTargetPool(String targetPoolName) {
 
 
     }
 
-    private static ComputeService initComputeService(String provider, String identity, String credential) {
+    private Compute getComputeEngineObject() throws GeneralSecurityException, IOException {
 
-        //initialize compute service
+        HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
+        DataStoreFactory dataStoreFactory = new FileDataStoreFactory(new
+                File(System.getProperty("user.home"), DATA_STORE_DIR));
+        JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
 
-        Iterable<Module> modules = ImmutableSet.<Module> of(new SshjSshClientModule());
+        GoogleCredential credential = new GoogleCredential.Builder().setTransport(httpTransport)
+                .setJsonFactory(jsonFactory)
+                .setServiceAccountId(accountId)
+                .setServiceAccountScopes(Collections.singleton(ComputeScopes.COMPUTE))
+                .setServiceAccountPrivateKeyFromP12File(new File(keyFile))
+                .build();
 
-        ContextBuilder builder = ContextBuilder.newBuilder(provider)
-                .credentials(identity, credential)
-                .modules(modules);
+        // Create compute engine object for listing instances
+        compute = new Compute.Builder(
+                httpTransport, jsonFactory, null).setApplicationName(PROJECT_NAME)
+                .setHttpRequestInitializer(credential).build();
+        return compute;
 
-        log.info("initializing " +  builder.getApiMetadata());
-
-        return builder.buildView(ComputeServiceContext.class).getComputeService();
     }
 
-    private static String getPrivateKeyFromFile(String filename) throws LoadBalancerExtensionException {
-        try {
-            return Strings2.toStringAndClose(new FileInputStream(filename));
-        } catch (IOException e) {
-            log.error("Exception : " + e);
-            throw new LoadBalancerExtensionException(e);
-        }
-    }
 
 }
