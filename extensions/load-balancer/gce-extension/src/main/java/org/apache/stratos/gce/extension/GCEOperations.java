@@ -152,6 +152,11 @@ public class GCEOperations {
 
         targetPool.setInstances(instanceList);
 
+        try {
+            compute.targetPools().insert(PROJECT_ID, REGION_NAME, targetPool).execute();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
