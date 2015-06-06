@@ -87,7 +87,7 @@ public class GCEOperations {
         buildComputeEngineObject();
         //Calling this method from here only for testing purposes
         // createTargetPool("testtargetpool");
-        System.out.println("==========="+isTargetPoolExists("testtargetpool1")+"============");
+        System.out.println("==========="+isTargetPoolExists("testtargetpool")+"============");
 
     }
 
