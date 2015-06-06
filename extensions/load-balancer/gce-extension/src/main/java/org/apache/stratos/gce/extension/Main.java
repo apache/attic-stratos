@@ -69,7 +69,7 @@ public class Main {
 
             TopologyProvider topologyProvider = new TopologyProvider();
             //ToDo: pass topology provider inside the statsReader. Look line 70 in HAProxy.java
-            GCEStatisticsReader statisticsReader = new GCEStatisticsReader();
+            GCEStatisticsReader statisticsReader = new GCEStatisticsReader(topologyProvider);
             extension = new LoadBalancerExtension(new GCELoadBalancer(), statisticsReader, topologyProvider);
             extension.setExecutorService(executorService);
             extension.execute();
