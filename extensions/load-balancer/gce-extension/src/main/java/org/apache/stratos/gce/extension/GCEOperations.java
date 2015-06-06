@@ -74,7 +74,7 @@ public class GCEOperations {
         buildComputeEngineObject();
 
         //Calling following  methods from here only for testing purposes
-        createForwardingRule("myfr");
+        createForwardingRule("myfr","testtargetpool");
 
     }
 
@@ -259,10 +259,11 @@ public class GCEOperations {
      */
     public static String getInstanceURLFromName(String instanceName) {
 
-        //check whether the given instance is available
+
         //todo:remove try catch
         String instanceURL;
         try {
+            //check whether the given instance is available
             InstanceList instanceList = getInstanceList();
             for (Instance instance : instanceList.getItems()) {
                 if (instance.getName().equals(instanceName)) {
@@ -280,15 +281,24 @@ public class GCEOperations {
 
     }
 
-    public void createForwardingRule(String forwardingRuleName){
+
+
+    public void createForwardingRule(String forwardingRuleName,String targetPoolName){
+
+        //Need to get target pool resource URL
+        TargetPool targetPool = getTargetPool(targetPoolName);
+        String targetPoolURL=targetPool.getSelfLink();
         ForwardingRule forwardingRule = new ForwardingRule();
         forwardingRule.setName(forwardingRuleName);
+        forwardingRule.setTarget(targetPoolURL);
         try {
             compute.forwardingRules().insert(PROJECT_ID,REGION_NAME,forwardingRule).execute();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
+
 
 
     /**
