@@ -19,15 +19,27 @@ package org.apache.stratos.gce.extension;
  * under the License.
  */
 
+import org.apache.stratos.common.constants.StratosConstants;
 import org.apache.stratos.load.balancer.common.statistics.LoadBalancerStatisticsReader;
+import org.apache.stratos.load.balancer.common.topology.TopologyProvider;
 
 /**
  * GCE extension statistics reader class.
  */
 public class GCEStatisticsReader implements LoadBalancerStatisticsReader {
+
+    private TopologyProvider topologyProvider;
+    private String clusterInstanceId;
+
+    public GCEStatisticsReader(TopologyProvider topologyProvider){
+        this.topologyProvider = topologyProvider;
+        this.clusterInstanceId = System.getProperty(StratosConstants.CLUSTER_INSTANCE_ID, StratosConstants.NOT_DEFINED);
+
+    }
+
     @Override
     public String getClusterInstanceId() {
-        return null;
+        return clusterInstanceId;
     }
 
     @Override

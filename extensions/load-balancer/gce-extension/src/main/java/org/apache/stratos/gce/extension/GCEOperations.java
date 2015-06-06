@@ -9,7 +9,6 @@ import com.google.api.client.util.store.DataStoreFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.compute.Compute;
 import com.google.api.services.compute.ComputeScopes;
-import com.google.api.services.compute.model.Instance;
 import com.google.api.services.compute.model.InstanceList;
 import com.google.api.services.compute.model.TargetPool;
 import org.apache.commons.logging.Log;
@@ -47,13 +46,15 @@ public class GCEOperations {
 
     //TODO: remove hardcoded values
     private static final String PROJECT_NAME = "My First Project";
-    private static final String projectId = "gold-access-96509";
-    private static final String zoneName = "europe-west1-b";
-    private static final String regionName = "europe-west1";
+    private static final String PROJECT_ID = "gold-access-96509";
+    private static final String ZONE_NAME = "europe-west1-b";
+    private static final String REGION_NAME = "europe-west1";
+    private static final String RUNNING_FILTER="status eq RUNNING";
+
 
     //auth
-    private static final String keyFile = "/home/sanjaya/keys/p12key-donwloaded.p12";
-    private static final String accountId = "164588286821-a517i85433f83e0nthc4qjmoupri" +
+    private static final String KEY_FILE = "/home/sanjaya/keys/p12key-donwloaded.p12";
+    private static final String ACCOUNT_ID = "164588286821-a517i85433f83e0nthc4qjmoupri" +
             "394q@developer.gserviceaccount.com";
 
     /**
@@ -77,7 +78,7 @@ public class GCEOperations {
 
         buildComputeEngineObject();
         //Calling this method from here only for testing purposes
-        createTargetPool("testtargetpool");
+       // createTargetPool("testtargetpool");
 
     }
 
@@ -88,23 +89,16 @@ public class GCEOperations {
 
         //get instances in given region
         try {
-            Compute.Instances.List instanceList = getInstanceList("status eq RUNNING");
+            Compute.Instances.List instanceList = getInstanceList();
             InstanceList list = instanceList.execute();
             log.info("number of instances: "+ list.size());
-            if (list.getItems() == null) {
-                System.out.println("No instances found. Sign in to the Google APIs Console and create "
-                        + "an instance at: code.google.com/apis/console");
-            } else {
-                for (Instance instance : list.getItems()) {
-                    System.out.println(instance.toPrettyString());
-                }
-            }
+
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         try {
-            compute.targetPools().insert(projectId,regionName,targetPool);
+            compute.targetPools().insert(PROJECT_ID, REGION_NAME,targetPool);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -120,6 +114,11 @@ public class GCEOperations {
 
     }
 
+    /**
+     * Authorize and build compute engine object
+     * @throws GeneralSecurityException
+     * @throws IOException
+     */
     private void buildComputeEngineObject() throws GeneralSecurityException, IOException {
 
         HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
@@ -129,9 +128,9 @@ public class GCEOperations {
 
         GoogleCredential credential = new GoogleCredential.Builder().setTransport(httpTransport)
                 .setJsonFactory(jsonFactory)
-                .setServiceAccountId(accountId)
+                .setServiceAccountId(ACCOUNT_ID)
                 .setServiceAccountScopes(Collections.singleton(ComputeScopes.COMPUTE))
-                .setServiceAccountPrivateKeyFromP12File(new File(keyFile))
+                .setServiceAccountPrivateKeyFromP12File(new File(KEY_FILE))
                 .build();
 
         // Create compute engine object for listing instances
@@ -142,9 +141,11 @@ public class GCEOperations {
 
     }
 
-    public static Compute.Instances.List getInstanceList(String filter) throws IOException {
-        System.out.println("================== Listing Compute Engine Instances ==================");
-        Compute.Instances.List instances = compute.instances().list(projectId, zoneName).setFilter(filter);
+
+    public static Compute.Instances.List getInstanceList() throws IOException {
+        System.out.println("================== Listing running Compute Engine Instances ==================");
+        Compute.Instances.List instances = compute.instances().
+                list(PROJECT_ID, ZONE_NAME).setFilter(RUNNING_FILTER);
         InstanceList list = instances.execute();
         if (list.getItems() == null) {
             log.info("No instances found for specified zone");
