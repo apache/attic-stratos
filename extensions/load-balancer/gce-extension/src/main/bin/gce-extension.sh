@@ -41,6 +41,6 @@ properties="-Djndi.properties.dir=${script_path}/../conf
 
 
 # Uncomment below line to enable remote debugging
-debug="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5006"
+#debug="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5006"
 
 java -cp "${class_path}" ${properties} ${debug} org.apache.stratos.gce.extension.Main $*

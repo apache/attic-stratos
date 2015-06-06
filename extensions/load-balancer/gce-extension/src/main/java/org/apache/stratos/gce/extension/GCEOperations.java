@@ -88,7 +88,7 @@ public class GCEOperations {
 
         //get instances in given region
         try {
-            Compute.Instances.List instanceList = getInstanceList("");
+            Compute.Instances.List instanceList = getInstanceList("status=RUNNING");
             InstanceList list = instanceList.execute();
             if (list.getItems() == null) {
                 System.out.println("No instances found. Sign in to the Google APIs Console and create "
@@ -143,10 +143,10 @@ public class GCEOperations {
 
     public static Compute.Instances.List getInstanceList(String filter) throws IOException {
         System.out.println("================== Listing Compute Engine Instances ==================");
-        Compute.Instances.List instances = compute.instances().list(projectId, zoneName);
+        Compute.Instances.List instances = compute.instances().list(projectId, zoneName).setFilter(filter);
         InstanceList list = instances.execute();
         if (list.getItems() == null) {
-            System.out.println("No instances found for specified zone");
+            log.info("No instances found for specified zone");
             return null;
         } else {
            return instances;
