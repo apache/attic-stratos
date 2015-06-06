@@ -74,18 +74,11 @@ public class GCEOperations {
 
         //Calling following  methods from here only for testing purposes
 
-        List<InstanceReference> instanceReferenceList = new ArrayList<InstanceReference>();
-        //add instance to instance referencelist
 
-        InstanceReference instanceReference1 = new InstanceReference();
-        instanceReference1.setInstance(getInstanceURLFromName("instance-2"));
-
-        instanceReferenceList.add(instanceReference1);
-
-
-       addInstancesToTargetPool("testtargetpool", instanceReferenceList);
 
     }
+
+
 
     /**
      * Creating a new target pool; name should be unique
@@ -235,5 +228,17 @@ public class GCEOperations {
 
     }
 
+    /**
+     * this is a sample method using for testing purposes
+     */
+    public void sampleMethodForAddingInstancesToTargetPool(){
+        List<InstanceReference> instanceReferenceList = new ArrayList<InstanceReference>();
+
+        //add instance to instance reference list, we should use the instance URL
+        InstanceReference instanceReference1 = new InstanceReference();
+        instanceReference1.setInstance(getInstanceURLFromName("instance-2"));
+        instanceReferenceList.add(instanceReference1);
+        addInstancesToTargetPool("testtargetpool", instanceReferenceList);
+    }
 
 }
