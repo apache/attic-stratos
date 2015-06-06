@@ -74,7 +74,7 @@ public class GCEOperations {
         buildComputeEngineObject();
 
         //Calling following  methods from here only for testing purposes
-        createForwardingRule("fr1");
+        createForwardingRule("myfr");
 
     }
 
