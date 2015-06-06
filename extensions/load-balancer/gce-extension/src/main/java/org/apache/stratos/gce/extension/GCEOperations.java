@@ -284,7 +284,7 @@ public class GCEOperations {
         ForwardingRule forwardingRule = new ForwardingRule();
         forwardingRule.setName(forwardingRuleName);
         try {
-            compute.forwardingRules().insert(PROJECT_ID,REGION_NAME,forwardingRule);
+            compute.forwardingRules().insert(PROJECT_ID,REGION_NAME,forwardingRule).execute();
         } catch (IOException e) {
             e.printStackTrace();
         }
