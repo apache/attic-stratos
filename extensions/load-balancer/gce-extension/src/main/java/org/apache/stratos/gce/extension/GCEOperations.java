@@ -131,6 +131,30 @@ public class GCEOperations {
     }
 
     /**
+     * create forwarding rule by using given target pool and protocol
+     * @param forwardingRuleName
+     * @param targetPoolName
+     * @param protocol
+     */
+
+    public void createForwardingRule(String forwardingRuleName,String targetPoolName,String protocol){
+
+        //Need to get target pool resource URL
+        TargetPool targetPool = getTargetPool(targetPoolName);
+        String targetPoolURL=targetPool.getSelfLink();
+        ForwardingRule forwardingRule = new ForwardingRule();
+        forwardingRule.setName(forwardingRuleName);
+        forwardingRule.setTarget(targetPoolURL);
+        forwardingRule.setIPProtocol(protocol);
+        try {
+            compute.forwardingRules().insert(PROJECT_ID,REGION_NAME,forwardingRule).execute();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    /**
      * Check whether the given target pool is already exists in the given project and region.
      * Target pools are unique for regions, not for zones
      *
@@ -158,6 +182,21 @@ public class GCEOperations {
         }
         return false;
 
+    }
+
+    public boolean isForwardingRuleExists(String forwardingRuleName){
+        try {
+            Compute.ForwardingRules.List forwardingRules = compute.forwardingRules().list(PROJECT_ID,REGION_NAME);
+            ForwardingRuleList forwardingRuleList = forwardingRules.execute();
+            for (ForwardingRule forwardingRule:forwardingRuleList.getItems()){
+                if(forwardingRule.getName().equals(forwardingRuleName)){
+                    return true;
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     /**
@@ -193,7 +232,6 @@ public class GCEOperations {
      * @param targetPoolName
      * @param instanceReferenceList
      */
-
     private void addInstancesToTargetPool(String targetPoolName, List<InstanceReference>
             instanceReferenceList) {
 
@@ -215,6 +253,12 @@ public class GCEOperations {
         }
     }
 
+    /**
+     * Remove given set of instances from target pool
+     *
+     * @param targetPoolName
+     * @param instanceReferenceList
+     */
     public void removeInstancesFromTargetPool(String targetPoolName, List<InstanceReference>
             instanceReferenceList) {
         TargetPoolsRemoveInstanceRequest targetPoolsRemoveInstanceRequest
@@ -280,26 +324,6 @@ public class GCEOperations {
         return null;
 
     }
-
-
-
-    public void createForwardingRule(String forwardingRuleName,String targetPoolName,String protocol){
-
-        //Need to get target pool resource URL
-        TargetPool targetPool = getTargetPool(targetPoolName);
-        String targetPoolURL=targetPool.getSelfLink();
-        ForwardingRule forwardingRule = new ForwardingRule();
-        forwardingRule.setName(forwardingRuleName);
-        forwardingRule.setTarget(targetPoolURL);
-        forwardingRule.setIPProtocol(protocol);
-        try {
-            compute.forwardingRules().insert(PROJECT_ID,REGION_NAME,forwardingRule).execute();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-
 
 
     /**
