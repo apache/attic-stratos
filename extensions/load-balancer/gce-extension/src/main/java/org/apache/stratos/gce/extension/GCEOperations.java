@@ -9,10 +9,7 @@ import com.google.api.client.util.store.DataStoreFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.compute.Compute;
 import com.google.api.services.compute.ComputeScopes;
-import com.google.api.services.compute.model.Instance;
-import com.google.api.services.compute.model.InstanceList;
-import com.google.api.services.compute.model.TargetPool;
-import com.google.api.services.compute.model.TargetPoolList;
+import com.google.api.services.compute.model.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.stratos.load.balancer.extension.api.exception.LoadBalancerExtensionException;
@@ -74,10 +71,19 @@ public class GCEOperations {
     public GCEOperations() throws LoadBalancerExtensionException, GeneralSecurityException, IOException {
 
         buildComputeEngineObject();
-        //Calling this method from here only for testing purposes
-        ArrayList<String> instanceList = new ArrayList<String>();
-        instanceList.add(getInstanceURLFromName("instance-2"));
-       addInstancesToTargetPool(getTargetPool("testtargetpool"), instanceList);
+
+        //Calling following  methods from here only for testing purposes
+
+        List<InstanceReference> instanceReferenceList = new ArrayList<InstanceReference>();
+        //add instance to instance referencelist
+
+        InstanceReference instanceReference1 = new InstanceReference();
+        instanceReference1.setInstance("instance-2");
+
+        instanceReferenceList.add(instanceReference1);
+
+
+       addInstancesToTargetPool("testtargetpool", instanceReferenceList);
 
     }
 
@@ -147,14 +153,18 @@ public class GCEOperations {
 
     }
 
-    private void addInstancesToTargetPool(TargetPool targetPool, List<String> instanceList) {
+    private void addInstancesToTargetPool(String targetPoolName, List<InstanceReference> instanceReferenceList) {
 
         log.info("Adding instances to target pool");
 
-        targetPool.setInstances(instanceList);
+        //create target pools add instance request and set instance to it
+        TargetPoolsAddInstanceRequest targetPoolsAddInstanceRequest = new TargetPoolsAddInstanceRequest();
+        targetPoolsAddInstanceRequest.setInstances(instanceReferenceList);
+
 
         try {
-            compute.targetPools().insert(PROJECT_ID, REGION_NAME, targetPool).execute();
+            //execute
+            compute.targetPools().addInstance(PROJECT_ID,REGION_NAME,targetPoolName,targetPoolsAddInstanceRequest).execute();
         } catch (IOException e) {
             e.printStackTrace();
         }
