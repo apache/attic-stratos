@@ -78,7 +78,7 @@ public class GCEOperations {
         //add instance to instance referencelist
 
         InstanceReference instanceReference1 = new InstanceReference();
-        instanceReference1.setInstance("instance-2");
+        instanceReference1.setInstance(getInstanceURLFromName("instance-2"));
 
         instanceReferenceList.add(instanceReference1);
 
