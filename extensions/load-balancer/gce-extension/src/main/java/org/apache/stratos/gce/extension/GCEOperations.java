@@ -19,6 +19,7 @@ import org.apache.stratos.load.balancer.extension.api.exception.LoadBalancerExte
 import java.io.File;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -45,14 +46,12 @@ public class GCEOperations {
 
     private static final Log log = LogFactory.getLog(GCELoadBalancer.class);
 
-    //TODO: remove hardcoded values
+    //TODO: remove all hardcoded values
     private static final String PROJECT_NAME = "My First Project";
     private static final String PROJECT_ID = "gold-access-96509";
     private static final String ZONE_NAME = "europe-west1-b";
     private static final String REGION_NAME = "europe-west1";
     private static final String RUNNING_FILTER = "status eq RUNNING";
-
-
     //auth
     private static final String KEY_FILE = "/home/sanjaya/keys/p12key-donwloaded.p12";
     private static final String ACCOUNT_ID = "164588286821-a517i85433f83e0nthc4qjmoupri" +
@@ -62,16 +61,6 @@ public class GCEOperations {
      * Directory to store user credentials.
      */
     private static final String DATA_STORE_DIR = ".store/gce-extension";
-
-    /**
-     * Global instance of the JSON factory.
-     */
-
-    /**
-     * OAuth 2.0 scopes
-     */
-    private static final List<String> SCOPES = Arrays.asList(ComputeScopes.COMPUTE_READONLY);
-
     static Compute compute;
 
 
@@ -86,8 +75,9 @@ public class GCEOperations {
 
         buildComputeEngineObject();
         //Calling this method from here only for testing purposes
-        System.out.println("=============targetpool name: "+ getTargetPool("testtargetpool"));
-
+        ArrayList<String> instanceList = new ArrayList<String>();
+        instanceList.add("instance-2");
+        addInstancesToTargetPool(getTargetPool("testtargetpool"), instanceList);
     }
 
     /**
@@ -141,6 +131,7 @@ public class GCEOperations {
      * @return
      */
     public TargetPool getTargetPool(String targetPoolName){
+        //todo:remove try catch
         try {
             if(isTargetPoolExists(targetPoolName))
                 return compute.targetPools().get(PROJECT_ID, REGION_NAME, targetPoolName).execute();
