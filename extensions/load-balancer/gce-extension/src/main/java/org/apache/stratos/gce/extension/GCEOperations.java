@@ -74,7 +74,7 @@ public class GCEOperations {
         buildComputeEngineObject();
 
         //Calling following  methods from here only for testing purposes
-        sampleMethodForRemovingInstancesToTargetPool();
+        createForwardingRule("fr1");
 
     }
 
@@ -121,6 +121,9 @@ public class GCEOperations {
         try {
             compute.targetPools().insert(PROJECT_ID, REGION_NAME, targetPool).execute();
         } catch (IOException e) {
+            if (log.isErrorEnabled()) {
+                log.error("failed to create target pool: " + targetPoolName);
+            }
             e.printStackTrace();
         }
 
@@ -148,6 +151,9 @@ public class GCEOperations {
             }
 
         } catch (IOException e) {
+            if(log.isErrorEnabled()){
+                log.error("Error caused when checking for target pools");
+            }
             e.printStackTrace();
         }
         return false;
@@ -166,10 +172,15 @@ public class GCEOperations {
             if (isTargetPoolExists(targetPoolName))
                 return compute.targetPools().get(PROJECT_ID, REGION_NAME, targetPoolName).execute();
             else
-                log.info("Requested Target Pool Is not Available");
+                if (log.isDebugEnabled())
+                    log.debug("Requested Target Pool Is not Available");
+
             return null;
 
         } catch (IOException e) {
+            if (log.isErrorEnabled()){
+                log.error("Exception caused when try to get target pool");
+            }
             e.printStackTrace();
         }
         return null;
@@ -203,8 +214,9 @@ public class GCEOperations {
             e.printStackTrace();
         }
     }
+
     public void removeInstancesFromTargetPool(String targetPoolName, List<InstanceReference>
-            instanceReferenceList){
+            instanceReferenceList) {
         TargetPoolsRemoveInstanceRequest targetPoolsRemoveInstanceRequest
                 = new TargetPoolsRemoveInstanceRequest();
         targetPoolsRemoveInstanceRequest.setInstances(instanceReferenceList);
@@ -255,7 +267,7 @@ public class GCEOperations {
             for (Instance instance : instanceList.getItems()) {
                 if (instance.getName().equals(instanceName)) {
                     //instance is available
-                    //getInstace URL
+                    //getInstance URL
                     instanceURL = instance.getSelfLink();
                     return instanceURL;
                 }
@@ -266,6 +278,16 @@ public class GCEOperations {
         }
         return null;
 
+    }
+
+    public void createForwardingRule(String forwardingRuleName){
+        ForwardingRule forwardingRule = new ForwardingRule();
+        forwardingRule.setName(forwardingRuleName);
+        try {
+            compute.forwardingRules().insert(PROJECT_ID,REGION_NAME,forwardingRule);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 
