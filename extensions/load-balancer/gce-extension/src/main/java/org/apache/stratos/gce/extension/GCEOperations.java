@@ -9,6 +9,8 @@ import com.google.api.client.util.store.DataStoreFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.compute.Compute;
 import com.google.api.services.compute.ComputeScopes;
+import com.google.api.services.compute.model.Instance;
+import com.google.api.services.compute.model.InstanceList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.stratos.load.balancer.extension.api.exception.LoadBalancerExtensionException;
@@ -43,8 +45,8 @@ public class GCEOperations {
     private static final Log log = LogFactory.getLog(GCELoadBalancer.class);
 
     //TODO: remove hardcoded values
-    private static final String PROJECT_NAME = "GCE-test";
-    private static final String projectId = "oceanic-depth-89120";
+    private static final String PROJECT_NAME = "My First Project";
+    private static final String projectId = "gold-access-96509";
     private static final String zoneName = "europe-west1-d";
     private static final String regionName = "europe-west1";
 
@@ -67,16 +69,18 @@ public class GCEOperations {
      */
     private static final List<String> SCOPES = Arrays.asList(ComputeScopes.COMPUTE_READONLY);
 
-    Compute compute;
+    static  Compute compute;
 
 
     public GCEOperations() throws LoadBalancerExtensionException, GeneralSecurityException, IOException {
 
         buildComputeEngineObject();
+        printInstances();
 
     }
 
     private void createTargetPool(String targetPoolName) {
+
 
 
     }
@@ -101,6 +105,21 @@ public class GCEOperations {
                 .setHttpRequestInitializer(credential).build();
 
 
+    }
+
+    //TODO: this is a testing method. Need to remove
+    public static void printInstances() throws IOException {
+        System.out.println("================== Listing Compute Engine Instances ==================");
+        Compute.Instances.List instances = compute.instances().list(projectId, zoneName);
+        InstanceList list = instances.execute();
+        if (list.getItems() == null) {
+            System.out.println("No instances found. Sign in to the Google APIs Console and create "
+                    + "an instance at: code.google.com/apis/console");
+        } else {
+            for (Instance instance : list.getItems()) {
+                System.out.println(instance.toPrettyString());
+            }
+        }
     }
 
 

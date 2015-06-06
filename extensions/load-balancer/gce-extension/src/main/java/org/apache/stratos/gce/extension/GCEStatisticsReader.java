@@ -32,6 +32,7 @@ public class GCEStatisticsReader implements LoadBalancerStatisticsReader {
 
     @Override
     public int getInFlightRequestCount(String clusterId) {
+
         return 0;
     }
 }
