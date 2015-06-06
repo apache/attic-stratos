@@ -117,6 +117,7 @@ public class GCEOperations {
 
         try {
             compute.targetPools().insert(PROJECT_ID, REGION_NAME,targetPool);
+            log.info("targetPool "+ targetPool+" added: " );
         } catch (IOException e) {
             e.printStackTrace();
         }
