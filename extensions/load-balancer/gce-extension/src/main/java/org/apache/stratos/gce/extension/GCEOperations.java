@@ -76,9 +76,9 @@ public class GCEOperations {
         buildComputeEngineObject();
         //Calling this method from here only for testing purposes
         ArrayList<String> instanceList = new ArrayList<String>();
-        //instanceList.add("instance-2");
-       // addInstancesToTargetPool(getTargetPool("testtargetpool"), instanceList);
-        getInstanceURLFromName("instance-2");
+        instanceList.add(getInstanceURLFromName("instance-2"));
+       addInstancesToTargetPool(getTargetPool("testtargetpool"), instanceList);
+
     }
 
     /**
@@ -214,7 +214,6 @@ public class GCEOperations {
                     //instance is available
                     //getInstace URL
                     instanceURL = instance.getSelfLink();
-                    System.out.println("====instanceURL==== "+instanceURL);
                     return instanceURL;
                 }
             }
