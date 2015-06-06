@@ -1,14 +1,3 @@
-package org.apache.stratos.gce.extension;
-
-import org.apache.stratos.load.balancer.common.domain.Topology;
-import org.apache.stratos.load.balancer.extension.api.LoadBalancer;
-import org.apache.stratos.load.balancer.extension.api.exception.LoadBalancerExtensionException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -27,6 +16,17 @@ import java.security.GeneralSecurityException;
  * specific language governing permissions and limitations
  * under the License.
  */
+
+package org.apache.stratos.gce.extension;
+
+import org.apache.stratos.load.balancer.common.domain.Topology;
+import org.apache.stratos.load.balancer.extension.api.LoadBalancer;
+import org.apache.stratos.load.balancer.extension.api.exception.LoadBalancerExtensionException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 
 public class GCELoadBalancer implements LoadBalancer {
 

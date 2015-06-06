@@ -1,5 +1,3 @@
-package org.apache.stratos.gce.extension;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,6 +16,9 @@ package org.apache.stratos.gce.extension;
  * specific language governing permissions and limitations
  * under the License.
  */
+
+package org.apache.stratos.gce.extension;
+
 
 import org.apache.stratos.common.constants.StratosConstants;
 import org.apache.stratos.load.balancer.common.statistics.LoadBalancerStatisticsReader;
