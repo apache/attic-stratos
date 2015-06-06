@@ -86,8 +86,7 @@ public class GCEOperations {
 
         buildComputeEngineObject();
         //Calling this method from here only for testing purposes
-        // createTargetPool("testtargetpool");
-        System.out.println("==========="+isTargetPoolExists("testtargetpool")+"============");
+        System.out.println("=============targetpool name: "+ getTargetPool("testtargetpool"));
 
     }
 
@@ -134,6 +133,26 @@ public class GCEOperations {
             e.printStackTrace();
         }
         return false;
+
+    }
+
+    /**
+     * Get a target pool already created in GCE
+     * @param targetPoolName
+     * @return
+     */
+    public TargetPool getTargetPool(String targetPoolName){
+        try {
+            if(isTargetPoolExists(targetPoolName))
+                return compute.targetPools().get(PROJECT_ID, REGION_NAME, targetPoolName).execute();
+            else
+                log.info("Requested Target Pool Is not Available");
+                return null;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
 
     }
 
