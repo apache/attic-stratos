@@ -47,7 +47,7 @@ public class GCEOperations {
     //TODO: remove hardcoded values
     private static final String PROJECT_NAME = "My First Project";
     private static final String projectId = "gold-access-96509";
-    private static final String zoneName = "europe-west1-d";
+    private static final String zoneName = "europe-west1-b";
     private static final String regionName = "europe-west1";
 
     //auth
