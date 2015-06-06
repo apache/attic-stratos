@@ -95,23 +95,12 @@ public class GCEOperations {
      */
     public void createTargetPool(String targetPoolName) {
 
-        //get instances in given region
-        /*try {
-            Compute.Instances.List instanceList = getInstanceList();
-            InstanceList list = instanceList.execute();
-            log.info("number of instances: "+ list.size());
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
-
         TargetPool targetPool = new TargetPool();
         targetPool.setName(targetPoolName);
 
-
         try {
             compute.targetPools().insert(PROJECT_ID, REGION_NAME,targetPool).execute();
-            log.info("targetPool "+ targetPool+" added: " );
+            log.info("==========targetPool "+ targetPool+" added ============" );
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -155,16 +144,16 @@ public class GCEOperations {
     }
 
 
-    public static Compute.Instances.List getInstanceList() throws IOException {
+    public static InstanceList getInstanceList() throws IOException {
         System.out.println("================== Listing running Compute Engine Instances ==================");
         Compute.Instances.List instances = compute.instances().
                 list(PROJECT_ID, ZONE_NAME).setFilter(RUNNING_FILTER);
-        InstanceList list = instances.execute();
-        if (list.getItems() == null) {
+        InstanceList instanceList = instances.execute();
+        if (instanceList.getItems() == null) {
             log.info("No instances found for specified zone");
             return null;
         } else {
-           return instances;
+           return instanceList;
         }
     }
 
