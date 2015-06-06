@@ -108,10 +108,10 @@ public class GCEOperations {
 
         TargetPool targetPool = new TargetPool();
         targetPool.setName(targetPoolName);
-        List<String> instanceList = new ArrayList<String>();
+        //List<String> instanceList = new ArrayList<String>();
         //todo: remove hardcoded value and take all the instances created by stratos and add
-        instanceList.add("instance-2");
-        targetPool.setInstances(instanceList);
+        //instanceList.add("instance-2");
+       // targetPool.setInstances(instanceList);
 
 
 
