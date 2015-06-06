@@ -9,6 +9,7 @@ import com.google.api.client.util.store.DataStoreFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.compute.Compute;
 import com.google.api.services.compute.ComputeScopes;
+import com.google.api.services.compute.model.Instance;
 import com.google.api.services.compute.model.InstanceList;
 import com.google.api.services.compute.model.TargetPool;
 import com.google.api.services.compute.model.TargetPoolList;
@@ -20,7 +21,6 @@ import java.io.File;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -76,8 +76,9 @@ public class GCEOperations {
         buildComputeEngineObject();
         //Calling this method from here only for testing purposes
         ArrayList<String> instanceList = new ArrayList<String>();
-        instanceList.add("instance-2");
-        addInstancesToTargetPool(getTargetPool("testtargetpool"), instanceList);
+        //instanceList.add("instance-2");
+       // addInstancesToTargetPool(getTargetPool("testtargetpool"), instanceList);
+        getInstanceURLFromName("instance-2");
     }
 
     /**
@@ -199,6 +200,30 @@ public class GCEOperations {
         } else {
             return instanceList;
         }
+    }
+
+    public static String getInstanceURLFromName(String instanceName){
+
+        //check whether the given instance is available
+        //todo:remove try catch
+        String instanceURL;
+        try {
+            InstanceList instanceList = getInstanceList();
+            for(Instance instance : instanceList.getItems()){
+                if(instance.getName().equals(instanceName)){
+                    //instance is available
+                    //getInstace URL
+                    instanceURL = instance.getSelfLink();
+                    System.out.println("====instanceURL==== "+instanceURL);
+                    return instanceURL;
+                }
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+
     }
 
 
