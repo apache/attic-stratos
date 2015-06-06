@@ -86,7 +86,7 @@ public class GCEOperations {
         buildComputeEngineObject();
         //Calling this method from here only for testing purposes
       // createTargetPool("testtargetpool");
-        isTargetPoolExists("testtargetpool");
+        isTargetPoolExists("testtargetpool1");
 
     }
 
