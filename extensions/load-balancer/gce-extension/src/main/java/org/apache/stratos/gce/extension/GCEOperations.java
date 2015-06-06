@@ -76,14 +76,31 @@ public class GCEOperations {
     public GCEOperations() throws LoadBalancerExtensionException, GeneralSecurityException, IOException {
 
         buildComputeEngineObject();
-        createTargetPool("testing");
+        //Calling this method from here only for testing purposes
+        createTargetPool("testtargetpool");
 
     }
 
-    private void createTargetPool(String targetPoolName) {
+    public void createTargetPool(String targetPoolName) {
 
         TargetPool targetPool = new TargetPool();
         targetPool.setName(targetPoolName);
+
+        //get instances in given region
+        try {
+            Compute.Instances.List instanceList = getInstanceList("");
+            InstanceList list = instanceList.execute();
+            if (list.getItems() == null) {
+                System.out.println("No instances found. Sign in to the Google APIs Console and create "
+                        + "an instance at: code.google.com/apis/console");
+            } else {
+                for (Instance instance : list.getItems()) {
+                    System.out.println(instance.toPrettyString());
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         try {
             compute.targetPools().insert(projectId,regionName,targetPool);
@@ -91,6 +108,14 @@ public class GCEOperations {
             e.printStackTrace();
         }
 
+
+    }
+
+    private void addInstancesToTargetPool(TargetPool targetPool,List<String> instanceList){
+
+        log.info("=========adding instances to target pool========");
+
+        targetPool.setInstances(instanceList);
 
     }
 
@@ -116,18 +141,15 @@ public class GCEOperations {
 
     }
 
-    //TODO: this is a testing method used for check authentication. Need to remove
-    public static void printInstances() throws IOException {
+    public static Compute.Instances.List getInstanceList(String filter) throws IOException {
         System.out.println("================== Listing Compute Engine Instances ==================");
-        Compute.Instances.List instances = compute.instances().list(projectId, zoneName);
+        Compute.Instances.List instances = compute.instances().list(projectId, zoneName).setFilter(filter);
         InstanceList list = instances.execute();
         if (list.getItems() == null) {
-            System.out.println("No instances found. Sign in to the Google APIs Console and create "
-                    + "an instance at: code.google.com/apis/console");
+            System.out.println("No instances found for specified zone");
+            return null;
         } else {
-            for (Instance instance : list.getItems()) {
-                System.out.println(instance.toPrettyString());
-            }
+           return instances;
         }
     }
 

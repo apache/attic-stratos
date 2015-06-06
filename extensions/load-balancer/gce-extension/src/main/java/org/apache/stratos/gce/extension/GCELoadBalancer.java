@@ -50,6 +50,7 @@ public class GCELoadBalancer implements LoadBalancer {
     public void start() throws LoadBalancerExtensionException {
         log.info("Starting GCE instance...");
 
+
     }
 
     @Override
