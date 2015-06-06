@@ -34,7 +34,8 @@ public class GCEStatisticsReader implements LoadBalancerStatisticsReader {
 
     public GCEStatisticsReader(TopologyProvider topologyProvider){
         this.topologyProvider = topologyProvider;
-        this.clusterInstanceId = System.getProperty(StratosConstants.CLUSTER_INSTANCE_ID, StratosConstants.NOT_DEFINED);
+        this.clusterInstanceId = System.getProperty(StratosConstants.
+                CLUSTER_INSTANCE_ID, StratosConstants.NOT_DEFINED);
 
     }
 
