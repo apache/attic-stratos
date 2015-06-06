@@ -208,11 +208,14 @@ public class GCEOperations {
     public TargetPool getTargetPool(String targetPoolName) {
         //todo:remove try catch
         try {
-            if (isTargetPoolExists(targetPoolName))
+            if (isTargetPoolExists(targetPoolName)) {
                 return compute.targetPools().get(PROJECT_ID, REGION_NAME, targetPoolName).execute();
-            else
-                if (log.isDebugEnabled())
+            }
+            else {
+                if (log.isDebugEnabled()) {
                     log.debug("Requested Target Pool Is not Available");
+                }
+            }
 
             return null;
 
@@ -235,7 +238,8 @@ public class GCEOperations {
     private void addInstancesToTargetPool(String targetPoolName, List<InstanceReference>
             instanceReferenceList) {
 
-        //todo: target pool is must be validated before call this method. May be we can add a validation check here
+        //todo: target pool is must be validated before call this method. May be we
+        // todo: can add a validation check here
         log.info("Adding instances to target pool");
 
         //create target pools add instance request and set instance to it
@@ -303,7 +307,6 @@ public class GCEOperations {
      */
     public static String getInstanceURLFromName(String instanceName) {
 
-
         //todo:remove try catch
         String instanceURL;
         try {
@@ -323,6 +326,10 @@ public class GCEOperations {
         }
         return null;
 
+    }
+
+    public void setPortRangeToForwardingRule(){
+        //todo:implement this method
     }
 
 
