@@ -103,7 +103,6 @@ public class GCEOperations {
         //TODO:REMOVE try catch
         try {
             compute.targetPools().insert(PROJECT_ID, REGION_NAME, targetPool).execute();
-            log.info("==========targetPool " + targetPoolName + " added ============");
         } catch (IOException e) {
             e.printStackTrace();
         }
