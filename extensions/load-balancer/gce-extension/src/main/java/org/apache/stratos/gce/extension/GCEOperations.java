@@ -74,7 +74,7 @@ public class GCEOperations {
         buildComputeEngineObject();
 
         //Calling following  methods from here only for testing purposes
-        createForwardingRule("myfr","testtargetpool");
+        createForwardingRule("myfr1","testtargetpool","TCP");
 
     }
 
@@ -283,7 +283,7 @@ public class GCEOperations {
 
 
 
-    public void createForwardingRule(String forwardingRuleName,String targetPoolName){
+    public void createForwardingRule(String forwardingRuleName,String targetPoolName,String protocol){
 
         //Need to get target pool resource URL
         TargetPool targetPool = getTargetPool(targetPoolName);
@@ -291,6 +291,7 @@ public class GCEOperations {
         ForwardingRule forwardingRule = new ForwardingRule();
         forwardingRule.setName(forwardingRuleName);
         forwardingRule.setTarget(targetPoolURL);
+        forwardingRule.setIPProtocol(protocol);
         try {
             compute.forwardingRules().insert(PROJECT_ID,REGION_NAME,forwardingRule).execute();
         } catch (IOException e) {
