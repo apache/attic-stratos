@@ -88,7 +88,7 @@ public class GCEOperations {
 
         //get instances in given region
         try {
-            Compute.Instances.List instanceList = getInstanceList("status=RUNNING");
+            Compute.Instances.List instanceList = getInstanceList("status eq RUNNING");
             InstanceList list = instanceList.execute();
             if (list.getItems() == null) {
                 System.out.println("No instances found. Sign in to the Google APIs Console and create "
