@@ -74,7 +74,7 @@ public class GCEOperations {
         buildComputeEngineObject();
 
         //Calling following  methods from here only for testing purposes
-
+        sampleMethodForRemovingInstancesToTargetPool();
 
     }
 
@@ -203,6 +203,20 @@ public class GCEOperations {
             e.printStackTrace();
         }
     }
+    public void removeInstancesFromTargetPool(String targetPoolName, List<InstanceReference>
+            instanceReferenceList){
+        TargetPoolsRemoveInstanceRequest targetPoolsRemoveInstanceRequest
+                = new TargetPoolsRemoveInstanceRequest();
+        targetPoolsRemoveInstanceRequest.setInstances(instanceReferenceList);
+        //TODO: remove try catch
+        try {
+            compute.targetPools().removeInstance(PROJECT_ID, REGION_NAME,
+                    targetPoolName, targetPoolsRemoveInstanceRequest).execute();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
 
     /**
      * Get list of running instances in given project and zone.(This method can be used
@@ -254,17 +268,31 @@ public class GCEOperations {
 
     }
 
+
     /**
      * this is a sample method using for testing purposes
      */
     public void sampleMethodForAddingInstancesToTargetPool() {
         List<InstanceReference> instanceReferenceList = new ArrayList<InstanceReference>();
 
-        //add instance to instance reference list, we should use the instance URL
+        //remove instance to instance reference list, we should use the instance URL
         InstanceReference instanceReference1 = new InstanceReference();
         instanceReference1.setInstance(getInstanceURLFromName("instance-2"));
         instanceReferenceList.add(instanceReference1);
         addInstancesToTargetPool("testtargetpool", instanceReferenceList);
+    }
+
+    /**
+     * this is a sample method using for testing purposes
+     */
+    public void sampleMethodForRemovingInstancesToTargetPool() {
+        List<InstanceReference> instanceReferenceList = new ArrayList<InstanceReference>();
+
+        //remove instances to instance reference list, we should use the instance URL
+        InstanceReference instanceReference1 = new InstanceReference();
+        instanceReference1.setInstance(getInstanceURLFromName("instance-2"));
+        instanceReferenceList.add(instanceReference1);
+        removeInstancesFromTargetPool("testtargetpool", instanceReferenceList);
     }
 
 }
