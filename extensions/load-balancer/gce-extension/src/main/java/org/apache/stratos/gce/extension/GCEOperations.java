@@ -18,6 +18,7 @@ import org.apache.stratos.load.balancer.extension.api.exception.LoadBalancerExte
 import java.io.File;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -74,28 +75,45 @@ public class GCEOperations {
     static  Compute compute;
 
 
+    /**
+     * Constructor for GCE Operations Class
+     * @throws LoadBalancerExtensionException
+     * @throws GeneralSecurityException
+     * @throws IOException
+     */
     public GCEOperations() throws LoadBalancerExtensionException, GeneralSecurityException, IOException {
 
         buildComputeEngineObject();
         //Calling this method from here only for testing purposes
-       // createTargetPool("testtargetpool");
+       createTargetPool("testtargetpool");
 
     }
 
+    /**
+     * Creating a target pool by adding instances to the target pool.
+     * At least one instance should be available to create a target pool.
+     * @param targetPoolName
+     */
     public void createTargetPool(String targetPoolName) {
 
-        TargetPool targetPool = new TargetPool();
-        targetPool.setName(targetPoolName);
-
         //get instances in given region
-        try {
+        /*try {
             Compute.Instances.List instanceList = getInstanceList();
             InstanceList list = instanceList.execute();
             log.info("number of instances: "+ list.size());
 
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
+
+        TargetPool targetPool = new TargetPool();
+        targetPool.setName(targetPoolName);
+        List<String> instanceList = new ArrayList<String>();
+        //todo: remove hardcoded value and take all the instances created by stratos and add
+        instanceList.add("instance-2");
+        targetPool.setInstances(instanceList);
+
+
 
         try {
             compute.targetPools().insert(PROJECT_ID, REGION_NAME,targetPool);
