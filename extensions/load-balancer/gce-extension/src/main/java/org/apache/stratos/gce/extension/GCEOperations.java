@@ -68,99 +68,14 @@ public class GCEOperations {
      * @throws GeneralSecurityException
      * @throws IOException
      */
-    public GCEOperations() throws LoadBalancerExtensionException, GeneralSecurityException, IOException {
+    public GCEOperations() throws LoadBalancerExtensionException,
+            GeneralSecurityException, IOException {
 
         buildComputeEngineObject();
 
         //Calling following  methods from here only for testing purposes
 
 
-
-    }
-
-
-
-    /**
-     * Creating a new target pool; name should be unique
-     *
-     * @param targetPoolName
-     */
-    public void createTargetPool(String targetPoolName) {
-
-        TargetPool targetPool = new TargetPool();
-        targetPool.setName(targetPoolName);
-
-        //TODO:REMOVE try catch
-        try {
-            compute.targetPools().insert(PROJECT_ID, REGION_NAME, targetPool).execute();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-
-    }
-
-    /**
-     * Check whether the given target pool is already exists in the given project and region.
-     * Target pools are unique for regions, not for zones
-     *
-     * @param targetPoolName
-     */
-    public boolean isTargetPoolExists(String targetPoolName) {
-
-        try {
-            Compute.TargetPools.List targetPools = compute.targetPools().list(PROJECT_ID, REGION_NAME);
-            TargetPoolList targetPoolList = targetPools.execute();
-            for (TargetPool targetPool : targetPoolList.getItems()) {
-                if (targetPool.getName().equals(targetPoolName)) {
-                    return true;
-                }
-
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return false;
-
-    }
-
-    /**
-     * Get a target pool already created in GCE
-     * @param targetPoolName
-     * @return
-     */
-    public TargetPool getTargetPool(String targetPoolName){
-        //todo:remove try catch
-        try {
-            if(isTargetPoolExists(targetPoolName))
-                return compute.targetPools().get(PROJECT_ID, REGION_NAME, targetPoolName).execute();
-            else
-                log.info("Requested Target Pool Is not Available");
-                return null;
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-
-    }
-
-    private void addInstancesToTargetPool(String targetPoolName, List<InstanceReference> instanceReferenceList) {
-
-        log.info("Adding instances to target pool");
-
-        //create target pools add instance request and set instance to it
-        TargetPoolsAddInstanceRequest targetPoolsAddInstanceRequest = new TargetPoolsAddInstanceRequest();
-        targetPoolsAddInstanceRequest.setInstances(instanceReferenceList);
-
-
-        try {
-            //execute
-            compute.targetPools().addInstance(PROJECT_ID,REGION_NAME,targetPoolName,targetPoolsAddInstanceRequest).execute();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     /**
@@ -192,6 +107,111 @@ public class GCEOperations {
     }
 
 
+    /**
+     * Creating a new target pool; name should be unique
+     *
+     * @param targetPoolName
+     */
+    public void createTargetPool(String targetPoolName) {
+
+        TargetPool targetPool = new TargetPool();
+        targetPool.setName(targetPoolName);
+
+        //TODO:REMOVE try catch
+        try {
+            compute.targetPools().insert(PROJECT_ID, REGION_NAME, targetPool).execute();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
+    /**
+     * Check whether the given target pool is already exists in the given project and region.
+     * Target pools are unique for regions, not for zones
+     *
+     * @param targetPoolName
+     */
+    public boolean isTargetPoolExists(String targetPoolName) {
+
+        //TODO: remove try catch
+        try {
+            Compute.TargetPools.List targetPools = compute.targetPools().
+                    list(PROJECT_ID, REGION_NAME);
+            TargetPoolList targetPoolList = targetPools.execute();
+            for (TargetPool targetPool : targetPoolList.getItems()) {
+                if (targetPool.getName().equals(targetPoolName)) {
+                    return true;
+                }
+
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
+
+    }
+
+    /**
+     * Get a target pool already created in GCE
+     *
+     * @param targetPoolName
+     * @return
+     */
+    public TargetPool getTargetPool(String targetPoolName) {
+        //todo:remove try catch
+        try {
+            if (isTargetPoolExists(targetPoolName))
+                return compute.targetPools().get(PROJECT_ID, REGION_NAME, targetPoolName).execute();
+            else
+                log.info("Requested Target Pool Is not Available");
+            return null;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+
+    }
+
+    /**
+     * Add given set of instances to given target pool.
+     *
+     * @param targetPoolName
+     * @param instanceReferenceList
+     */
+
+    private void addInstancesToTargetPool(String targetPoolName, List<InstanceReference>
+            instanceReferenceList) {
+
+        //todo: target pool is must be validated before call this method. May be we can add a validation check here
+        log.info("Adding instances to target pool");
+
+        //create target pools add instance request and set instance to it
+        TargetPoolsAddInstanceRequest targetPoolsAddInstanceRequest = new
+                TargetPoolsAddInstanceRequest();
+        targetPoolsAddInstanceRequest.setInstances(instanceReferenceList);
+
+        //todo Remove try catch
+        try {
+            //execute
+            compute.targetPools().addInstance(PROJECT_ID, REGION_NAME,
+                    targetPoolName, targetPoolsAddInstanceRequest).execute();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Get list of running instances in given project and zone.(This method can be used
+     * when we need to check whether a given instance is available or not in a given project
+     * and zone)
+     *
+     * @return
+     * @throws IOException
+     */
     public static InstanceList getInstanceList() throws IOException {
         System.out.println("Listing running Compute Engine Instances");
         Compute.Instances.List instances = compute.instances().
@@ -205,15 +225,21 @@ public class GCEOperations {
         }
     }
 
-    public static String getInstanceURLFromName(String instanceName){
+    /**
+     * Get instance resource URL from given instance name
+     *
+     * @param instanceName
+     * @return
+     */
+    public static String getInstanceURLFromName(String instanceName) {
 
         //check whether the given instance is available
         //todo:remove try catch
         String instanceURL;
         try {
             InstanceList instanceList = getInstanceList();
-            for(Instance instance : instanceList.getItems()){
-                if(instance.getName().equals(instanceName)){
+            for (Instance instance : instanceList.getItems()) {
+                if (instance.getName().equals(instanceName)) {
                     //instance is available
                     //getInstace URL
                     instanceURL = instance.getSelfLink();
@@ -231,7 +257,7 @@ public class GCEOperations {
     /**
      * this is a sample method using for testing purposes
      */
-    public void sampleMethodForAddingInstancesToTargetPool(){
+    public void sampleMethodForAddingInstancesToTargetPool() {
         List<InstanceReference> instanceReferenceList = new ArrayList<InstanceReference>();
 
         //add instance to instance reference list, we should use the instance URL
