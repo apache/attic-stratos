@@ -11,6 +11,7 @@ import com.google.api.services.compute.Compute;
 import com.google.api.services.compute.ComputeScopes;
 import com.google.api.services.compute.model.InstanceList;
 import com.google.api.services.compute.model.TargetPool;
+import com.google.api.services.compute.model.TargetPoolList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.stratos.load.balancer.extension.api.exception.LoadBalancerExtensionException;
@@ -18,7 +19,6 @@ import org.apache.stratos.load.balancer.extension.api.exception.LoadBalancerExte
 import java.io.File;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -50,7 +50,7 @@ public class GCEOperations {
     private static final String PROJECT_ID = "gold-access-96509";
     private static final String ZONE_NAME = "europe-west1-b";
     private static final String REGION_NAME = "europe-west1";
-    private static final String RUNNING_FILTER="status eq RUNNING";
+    private static final String RUNNING_FILTER = "status eq RUNNING";
 
 
     //auth
@@ -72,11 +72,12 @@ public class GCEOperations {
      */
     private static final List<String> SCOPES = Arrays.asList(ComputeScopes.COMPUTE_READONLY);
 
-    static  Compute compute;
+    static Compute compute;
 
 
     /**
      * Constructor for GCE Operations Class
+     *
      * @throws LoadBalancerExtensionException
      * @throws GeneralSecurityException
      * @throws IOException
@@ -85,13 +86,14 @@ public class GCEOperations {
 
         buildComputeEngineObject();
         //Calling this method from here only for testing purposes
-      // createTargetPool("testtargetpool");
-        isTargetPoolExists("testtargetpool1");
+        // createTargetPool("testtargetpool");
+        System.out.println("==========="+isTargetPoolExists("testtargetpool1")+"============");
 
     }
 
     /**
      * Creating a new target pool; name should be unique
+     *
      * @param targetPoolName
      */
     public void createTargetPool(String targetPoolName) {
@@ -101,8 +103,8 @@ public class GCEOperations {
 
         //TODO:REMOVE try catch
         try {
-            compute.targetPools().insert(PROJECT_ID, REGION_NAME,targetPool).execute();
-            log.info("==========targetPool "+ targetPoolName+" added ============" );
+            compute.targetPools().insert(PROJECT_ID, REGION_NAME, targetPool).execute();
+            log.info("==========targetPool " + targetPoolName + " added ============");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -113,20 +115,29 @@ public class GCEOperations {
     /**
      * Check whether the given target pool is already exists in the given project and region.
      * Target pools are unique for regions, not for zones
+     *
      * @param targetPoolName
      */
-    public void isTargetPoolExists(String targetPoolName){
+    public boolean isTargetPoolExists(String targetPoolName) {
 
         try {
-          TargetPool targetPool =  compute.targetPools().get(PROJECT_ID,REGION_NAME,targetPoolName).execute();
-            log.info("==========targetpoolname===="+targetPool.getName());
+            Compute.TargetPools.List targetPools = compute.targetPools().list(PROJECT_ID, REGION_NAME);
+            TargetPoolList targetPoolList = targetPools.execute();
+            for (TargetPool targetPool : targetPoolList.getItems()) {
+                if (targetPool.getName().equals(targetPoolName)) {
+                    return true;
+                }
+
+            }
+
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return false;
 
     }
 
-    private void addInstancesToTargetPool(TargetPool targetPool,List<String> instanceList){
+    private void addInstancesToTargetPool(TargetPool targetPool, List<String> instanceList) {
 
         log.info("=========adding instances to target pool========");
 
@@ -136,6 +147,7 @@ public class GCEOperations {
 
     /**
      * Authorize and build compute engine object
+     *
      * @throws GeneralSecurityException
      * @throws IOException
      */
@@ -171,7 +183,7 @@ public class GCEOperations {
             log.info("No instances found for specified zone");
             return null;
         } else {
-           return instanceList;
+            return instanceList;
         }
     }
 
