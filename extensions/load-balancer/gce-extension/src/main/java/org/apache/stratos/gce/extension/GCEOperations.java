@@ -11,6 +11,7 @@ import com.google.api.services.compute.Compute;
 import com.google.api.services.compute.ComputeScopes;
 import com.google.api.services.compute.model.Instance;
 import com.google.api.services.compute.model.InstanceList;
+import com.google.api.services.compute.model.TargetPool;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.stratos.load.balancer.extension.api.exception.LoadBalancerExtensionException;
@@ -75,12 +76,20 @@ public class GCEOperations {
     public GCEOperations() throws LoadBalancerExtensionException, GeneralSecurityException, IOException {
 
         buildComputeEngineObject();
-        printInstances();
+        createTargetPool("testing");
 
     }
 
     private void createTargetPool(String targetPoolName) {
 
+        TargetPool targetPool = new TargetPool();
+        targetPool.setName(targetPoolName);
+
+        try {
+            compute.targetPools().insert(projectId,regionName,targetPool);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
 
     }
@@ -107,7 +116,7 @@ public class GCEOperations {
 
     }
 
-    //TODO: this is a testing method. Need to remove
+    //TODO: this is a testing method used for check authentication. Need to remove
     public static void printInstances() throws IOException {
         System.out.println("================== Listing Compute Engine Instances ==================");
         Compute.Instances.List instances = compute.instances().list(projectId, zoneName);
