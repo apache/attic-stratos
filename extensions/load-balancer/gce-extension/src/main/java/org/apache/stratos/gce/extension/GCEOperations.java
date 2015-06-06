@@ -143,7 +143,7 @@ public class GCEOperations {
 
     public static Compute.Instances.List getInstanceList(String filter) throws IOException {
         System.out.println("================== Listing Compute Engine Instances ==================");
-        Compute.Instances.List instances = compute.instances().list(projectId, zoneName).setFilter(filter);
+        Compute.Instances.List instances = compute.instances().list(projectId, zoneName);
         InstanceList list = instances.execute();
         if (list.getItems() == null) {
             System.out.println("No instances found for specified zone");
