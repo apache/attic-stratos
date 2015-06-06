@@ -90,8 +90,7 @@ public class GCEOperations {
     }
 
     /**
-     * Creating a target pool by adding instances to the target pool.
-     * At least one instance should be available to create a target pool.
+     * Creating a new target pool
      * @param targetPoolName
      */
     public void createTargetPool(String targetPoolName) {
@@ -108,11 +107,6 @@ public class GCEOperations {
 
         TargetPool targetPool = new TargetPool();
         targetPool.setName(targetPoolName);
-        //List<String> instanceList = new ArrayList<String>();
-        //todo: remove hardcoded value and take all the instances created by stratos and add
-        //instanceList.add("instance-2");
-       // targetPool.setInstances(instanceList);
-
 
 
         try {
