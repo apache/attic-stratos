@@ -85,12 +85,13 @@ public class GCEOperations {
 
         buildComputeEngineObject();
         //Calling this method from here only for testing purposes
-       createTargetPool("testtargetpool");
+      // createTargetPool("testtargetpool");
+        isTargetPoolExists("testtargetpool");
 
     }
 
     /**
-     * Creating a new target pool
+     * Creating a new target pool; name should be unique
      * @param targetPoolName
      */
     public void createTargetPool(String targetPoolName) {
@@ -98,13 +99,30 @@ public class GCEOperations {
         TargetPool targetPool = new TargetPool();
         targetPool.setName(targetPoolName);
 
+        //TODO:REMOVE try catch
         try {
             compute.targetPools().insert(PROJECT_ID, REGION_NAME,targetPool).execute();
-            log.info("==========targetPool "+ targetPool+" added ============" );
+            log.info("==========targetPool "+ targetPoolName+" added ============" );
         } catch (IOException e) {
             e.printStackTrace();
         }
 
+
+    }
+
+    /**
+     * Check whether the given target pool is already exists in the given project and region.
+     * Target pools are unique for regions, not for zones
+     * @param targetPoolName
+     */
+    public void isTargetPoolExists(String targetPoolName){
+
+        try {
+          TargetPool targetPool =  compute.targetPools().get(PROJECT_ID,REGION_NAME,targetPoolName).execute();
+            log.info("==========targetpoolname===="+targetPool.getName());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 
