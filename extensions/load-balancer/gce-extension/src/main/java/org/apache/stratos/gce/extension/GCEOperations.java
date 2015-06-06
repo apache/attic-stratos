@@ -149,7 +149,7 @@ public class GCEOperations {
 
     private void addInstancesToTargetPool(TargetPool targetPool, List<String> instanceList) {
 
-        log.info("=========adding instances to target pool========");
+        log.info("Adding instances to target pool");
 
         targetPool.setInstances(instanceList);
 
@@ -190,7 +190,7 @@ public class GCEOperations {
 
 
     public static InstanceList getInstanceList() throws IOException {
-        System.out.println("================== Listing running Compute Engine Instances ==================");
+        System.out.println("Listing running Compute Engine Instances");
         Compute.Instances.List instances = compute.instances().
                 list(PROJECT_ID, ZONE_NAME).setFilter(RUNNING_FILTER);
         InstanceList instanceList = instances.execute();
