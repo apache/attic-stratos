@@ -68,8 +68,10 @@ public class Main {
             // Validate runtime parameters
 
             TopologyProvider topologyProvider = new TopologyProvider();
-            //ToDo: pass topology provider inside the statsReader. Look line 70 in HAProxy.java
-            GCEStatisticsReader statisticsReader = new GCEStatisticsReader(topologyProvider);
+
+            //If user has enabled the cep stats publisher, create a stat publisher object. Else null
+            GCEStatisticsReader statisticsReader =GCEContext.getInstance().isCEPStatsPublisherEnabled() ?
+                    new GCEStatisticsReader(topologyProvider) : null;
             extension = new LoadBalancerExtension(new GCELoadBalancer(), statisticsReader, topologyProvider);
             extension.setExecutorService(executorService);
             extension.execute();
