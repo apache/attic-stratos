@@ -19,11 +19,10 @@
 
 package org.apache.stratos.gce.extension;
 
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.converters.reflection.FieldDictionary;
-import com.thoughtworks.xstream.converters.reflection.ImmutableFieldKeySorter;
-import com.thoughtworks.xstream.converters.reflection.Sun14ReflectionProvider;
-import com.thoughtworks.xstream.io.xml.DomDriver;
+import com.google.api.services.compute.model.TargetPool;
+import org.apache.stratos.load.balancer.common.domain.Cluster;
+import org.apache.stratos.load.balancer.common.domain.Member;
+import org.apache.stratos.load.balancer.common.domain.Service;
 import org.apache.stratos.load.balancer.common.domain.Topology;
 import org.apache.stratos.load.balancer.extension.api.LoadBalancer;
 import org.apache.stratos.load.balancer.extension.api.exception.LoadBalancerExtensionException;
@@ -32,16 +31,26 @@ import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.HashMap;
 
 public class GCELoadBalancer implements LoadBalancer {
 
     private static final Log log = LogFactory.getLog(GCELoadBalancer.class);
 
     private GCEOperations gceOperations;
+    /**
+     * We create one load balancer per cluster(stratos side).
+     * A Load balancer has one target pool and set of forwarding rules
+     * This hash map is used to hold cluster IDs and corresponding Load balancer configuration
+     * So one cluster will have one loadBalancerConfiguration object
+     */
+    private HashMap<String, LoadBalancerConfiguration> clusterToLoadBalancerConfigurationMap;
 
     public GCELoadBalancer() {
         try {
             gceOperations = new GCEOperations();
+            clusterToLoadBalancerConfigurationMap = new HashMap<String, LoadBalancerConfiguration>();
+
         } catch (LoadBalancerExtensionException e) {
             log.error(e);
         } catch (GeneralSecurityException e) {
@@ -55,12 +64,11 @@ public class GCELoadBalancer implements LoadBalancer {
     public void start() throws LoadBalancerExtensionException {
         log.info("===========Starting GCE Load balancer instance===========");
 
-        //create a target pool by specifying the target pool name given by user
-        //add members to target pool
-        //change port range in forwarding rule
-
-        //todo:remove hardcoded value
-        gceOperations.createTargetPool("targetpool-1");
+        //iterate through clusterToLoadBalancerConfigurationMap
+        //for each cluster{
+        //if Load balancer status == not running -->
+        //      execute commands through GCE API for start the load balancer
+        //}
 
         log.info("==========GCE Load balancer instance started============");
 
@@ -71,8 +79,7 @@ public class GCELoadBalancer implements LoadBalancer {
     public void stop() throws LoadBalancerExtensionException {
 
         log.info("============stopped============");
-        //remove instances from target pool
-        //delete forwarding rule
+        //iterate through hashmap and remove all
     }
 
     @Override
@@ -82,10 +89,54 @@ public class GCELoadBalancer implements LoadBalancer {
         log.info("========Configuring====== ");
 
         //printing topology value for testing purposes
-        XStream xstream = new XStream(new Sun14ReflectionProvider(
+       /* XStream xstream = new XStream(new Sun14ReflectionProvider(
                 new FieldDictionary(new ImmutableFieldKeySorter())),
                 new DomDriver("utf-8"));
         log.info(xstream.toXML(topology));
+        */
+
+        for (Service service : topology.getServices()) {
+            for (Cluster cluster : service.getClusters()) { //for each cluster
+                //we create one load balancer per cluster
+                //Only create configuration object. Not execute.
+
+                //check whether this cluster has a forwarding rule configuration or not
+                if(clusterToLoadBalancerConfigurationMap.containsKey(cluster.getClusterId())){
+
+                    //It has a loadBalancer configured. Take it and update it as the given topology.
+
+
+                }
+                else {
+                    //doesn't have a loadBalancerConfiguration object. So crate a new one and add to hash map
+
+                    TargetPool targetPool = new TargetPool();
+
+
+
+                    for (Member member: cluster.getMembers()){
+
+                        //set instances(members) to targetPool object
+                        //add forwarding rules(Ports to be forwarded)
+                        //for(Integer port :member.getPorts()){}
+                    }
+
+                    LoadBalancerConfiguration loadBalancerConfiguration = new LoadBalancerConfiguration(
+                            cluster.getClusterId(),targetPool);
+
+                    //get forwarding rules from topology and set forwarding rules to
+                    // LoadBalancerConfiguration object
+
+
+
+
+
+                    clusterToLoadBalancerConfigurationMap.put(cluster.getClusterId(), loadBalancerConfiguration);
+
+                }
+
+            }
+        }
 
         return true;
     }
@@ -93,8 +144,9 @@ public class GCELoadBalancer implements LoadBalancer {
     @Override
     public void reload() throws LoadBalancerExtensionException {
 
-        //remove existing members in target pool
-        //add members to target pool
+        //iterate through hash map
+        //find what needs to be changed
+        //execute
 
     }
 }

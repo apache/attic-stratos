@@ -99,7 +99,7 @@ public class GCEOperations {
                 .setServiceAccountPrivateKeyFromP12File(new File(KEY_FILE))
                 .build();
 
-        // Create compute engine object for listing instances
+        // Create compute engine object
         compute = new Compute.Builder(
                 httpTransport, jsonFactory, null).setApplicationName(PROJECT_NAME)
                 .setHttpRequestInitializer(credential).build();
