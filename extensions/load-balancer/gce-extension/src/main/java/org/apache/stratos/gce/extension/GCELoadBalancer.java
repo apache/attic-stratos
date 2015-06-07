@@ -48,14 +48,16 @@ public class GCELoadBalancer implements LoadBalancer {
 
     @Override
     public void start() throws LoadBalancerExtensionException {
-        log.info("Starting GCE Load balancer instance...");
+        log.info("===========Starting GCE Load balancer instance===========");
 
         //create a target pool by specifying the target pool name given by user
+        //add members to target pool
+        //change port range in forwarding rule
 
         //todo:remove hardcoded value
         gceOperations.createTargetPool("targetpool-1");
 
-        log.info("GCE Load balancer instance started");
+        log.info("==========GCE Load balancer instance started============");
 
 
     }
@@ -63,6 +65,7 @@ public class GCELoadBalancer implements LoadBalancer {
     @Override
     public void stop() throws LoadBalancerExtensionException {
 
+        log.info("============stopped============");
         //remove instances from target pool
         //delete forwarding rule
     }
@@ -70,10 +73,10 @@ public class GCELoadBalancer implements LoadBalancer {
     @Override
     public boolean configure(Topology topology) throws LoadBalancerExtensionException {
 
-        //add members to target pool
-        //change port range in forwarding rule
 
-        return false;
+        log.info("=======configured=====");
+
+        return true;
     }
 
     @Override

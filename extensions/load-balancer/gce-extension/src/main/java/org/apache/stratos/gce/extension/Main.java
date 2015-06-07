@@ -66,7 +66,6 @@ public class Main {
             executorService = StratosThreadPool.getExecutorService("gce.extension.thread.pool", 10);
 
             // Validate runtime parameters
-
             TopologyProvider topologyProvider = new TopologyProvider();
 
             //If user has enabled the cep stats publisher, create a stat publisher object. Else null

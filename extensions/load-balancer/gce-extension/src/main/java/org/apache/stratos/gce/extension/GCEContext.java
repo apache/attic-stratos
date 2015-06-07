@@ -34,16 +34,26 @@ public class GCEContext {
     private boolean cepStatsPublisherEnabled;
     private String thriftReceiverIp;
     private String thriftReceiverPort;
+    private String networkPartitionId;
+    private String clusterId;
+    private String serviceName;
+
 
     private GCEContext(){
 
         this.cepStatsPublisherEnabled = Boolean.getBoolean(Constants.CEP_STATS_PUBLISHER_ENABLED);
         this.thriftReceiverIp = System.getProperty(Constants.THRIFT_RECEIVER_IP);
         this.thriftReceiverPort = System.getProperty(Constants.THRIFT_RECEIVER_PORT);
+        this.networkPartitionId = System.getProperty(Constants.NETWORK_PARTITION_ID);
+        this.clusterId = System.getProperty(Constants.CLUSTER_ID);
+        this.serviceName = System.getProperty(Constants.SERVICE_NAME);
         if (log.isDebugEnabled()) {
             log.debug(Constants.CEP_STATS_PUBLISHER_ENABLED + " = " + cepStatsPublisherEnabled);
             log.debug(Constants.THRIFT_RECEIVER_IP + " = " + thriftReceiverIp);
             log.debug(Constants.THRIFT_RECEIVER_PORT + " = " + thriftReceiverPort);
+            log.debug(Constants.THRIFT_RECEIVER_PORT + " = " + thriftReceiverPort);
+            log.debug(Constants.NETWORK_PARTITION_ID + " = " + networkPartitionId);
+            log.debug(Constants.CLUSTER_ID + " = " + clusterId);
         }
 
     }
@@ -62,11 +72,13 @@ public class GCEContext {
     public void validate() {
 
         validateSystemProperty(Constants.CEP_STATS_PUBLISHER_ENABLED);
+        validateSystemProperty(Constants.CLUSTER_ID);
 
 
         if (cepStatsPublisherEnabled) {
             validateSystemProperty(Constants.THRIFT_RECEIVER_IP);
             validateSystemProperty(Constants.THRIFT_RECEIVER_PORT);
+            validateSystemProperty(Constants.NETWORK_PARTITION_ID);
 
         }
     }
@@ -80,6 +92,17 @@ public class GCEContext {
 
     public boolean isCEPStatsPublisherEnabled() {
         return cepStatsPublisherEnabled;
+    }
+    public String getNetworkPartitionId() {
+        return networkPartitionId;
+    }
+
+    public String getClusterId() {
+        return clusterId;
+    }
+
+    public String getServiceName() {
+        return serviceName;
     }
 
 
