@@ -40,6 +40,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * All the GCE API calls will be done using this class
+ */
 
 public class GCEOperations {
 
