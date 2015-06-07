@@ -76,7 +76,6 @@ public class GCEOperations {
         buildComputeEngineObject();
 
         //Calling following  methods from here only for testing purposes
-        createForwardingRule("myfr1","testtargetpool","TCP");
 
     }
 
