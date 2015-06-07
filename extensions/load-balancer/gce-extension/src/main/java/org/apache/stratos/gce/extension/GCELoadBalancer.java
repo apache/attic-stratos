@@ -101,20 +101,18 @@ public class GCELoadBalancer implements LoadBalancer {
                 //Only create configuration object. Not execute.
 
                 //check whether this cluster has a forwarding rule configuration or not
-                if(clusterToLoadBalancerConfigurationMap.containsKey(cluster.getClusterId())){
+                if (clusterToLoadBalancerConfigurationMap.containsKey(cluster.getClusterId())) {
 
                     //It has a loadBalancer configured. Take it and update it as the given topology.
 
 
-                }
-                else {
+                } else {
                     //doesn't have a loadBalancerConfiguration object. So crate a new one and add to hash map
 
                     TargetPool targetPool = new TargetPool();
 
 
-
-                    for (Member member: cluster.getMembers()){
+                    for (Member member : cluster.getMembers()) {
 
                         //set instances(members) to targetPool object
                         //add forwarding rules(Ports to be forwarded)
@@ -122,13 +120,10 @@ public class GCELoadBalancer implements LoadBalancer {
                     }
 
                     LoadBalancerConfiguration loadBalancerConfiguration = new LoadBalancerConfiguration(
-                            cluster.getClusterId(),targetPool);
+                            cluster.getClusterId(), targetPool);
 
                     //get forwarding rules from topology and set forwarding rules to
                     // LoadBalancerConfiguration object
-
-
-
 
 
                     clusterToLoadBalancerConfigurationMap.put(cluster.getClusterId(), loadBalancerConfiguration);

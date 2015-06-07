@@ -30,10 +30,8 @@ import java.util.List;
  * one cluster in stratos.
  * This class is used to hold the configuration for a load balancer
  * Each cluster will have one object from this class
- *
  */
 public class LoadBalancerConfiguration {
-
 
 
     //A load balancer must have a target pool
@@ -69,10 +67,11 @@ public class LoadBalancerConfiguration {
         return clusterID;
     }
 
-    public void setStatus(boolean status){
+    public void setStatus(boolean status) {
         isRunning = status;
     }
-    public boolean getStatus(){
+
+    public boolean getStatus() {
         return isRunning;
     }
 
