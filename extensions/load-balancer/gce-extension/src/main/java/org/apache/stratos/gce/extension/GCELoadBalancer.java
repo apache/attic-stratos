@@ -19,6 +19,11 @@
 
 package org.apache.stratos.gce.extension;
 
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.converters.reflection.FieldDictionary;
+import com.thoughtworks.xstream.converters.reflection.ImmutableFieldKeySorter;
+import com.thoughtworks.xstream.converters.reflection.Sun14ReflectionProvider;
+import com.thoughtworks.xstream.io.xml.DomDriver;
 import org.apache.stratos.load.balancer.common.domain.Topology;
 import org.apache.stratos.load.balancer.extension.api.LoadBalancer;
 import org.apache.stratos.load.balancer.extension.api.exception.LoadBalancerExtensionException;
@@ -74,7 +79,13 @@ public class GCELoadBalancer implements LoadBalancer {
     public boolean configure(Topology topology) throws LoadBalancerExtensionException {
 
 
-        log.info("========Configuring====== "+ topology.toString());
+        log.info("========Configuring====== ");
+
+        //printing topology value for testing purposes
+        XStream xstream = new XStream(new Sun14ReflectionProvider(
+                new FieldDictionary(new ImmutableFieldKeySorter())),
+                new DomDriver("utf-8"));
+        log.info(xstream.toXML(topology));
 
         return true;
     }
