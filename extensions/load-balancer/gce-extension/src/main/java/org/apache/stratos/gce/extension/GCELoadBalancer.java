@@ -52,6 +52,9 @@ public class GCELoadBalancer implements LoadBalancer {
 
         //create a target pool by specifying the target pool name given by user
 
+        //todo:remove hardcoded value
+        gceOperations.createTargetPool("targetpool-1");
+
         log.info("GCE Load balancer instance started");
 
 
