@@ -48,7 +48,7 @@ public class GCEOperations {
 
     private static final Log log = LogFactory.getLog(GCELoadBalancer.class);
 
-    //TODO: remove all hardcoded values
+    //TODO: remove all hardcoded values and read from configuration parameters
     private static final String PROJECT_NAME = "My First Project";
     private static final String PROJECT_ID = "gold-access-96509";
     private static final String ZONE_NAME = "europe-west1-b";
