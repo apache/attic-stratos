@@ -74,7 +74,7 @@ public class GCELoadBalancer implements LoadBalancer {
     public boolean configure(Topology topology) throws LoadBalancerExtensionException {
 
 
-        log.info("========Configuring====== ");
+        log.info("========Configuring====== "+ topology.toString());
 
         return true;
     }
