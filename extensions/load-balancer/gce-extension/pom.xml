@@ -82,6 +82,12 @@
             <artifactId>google-api-services-compute</artifactId>
             <version>v1-rev27-1.19.0</version>
         </dependency>
+        <!--this dependency to be removed -->
+        <dependency>
+            <groupId>com.thoughtworks.xstream</groupId>
+            <artifactId>xstream</artifactId>
+            <version>1.4.8</version>
+        </dependency>
     </dependencies>
     <properties>
         <project.http.version>1.19.0</project.http.version>
