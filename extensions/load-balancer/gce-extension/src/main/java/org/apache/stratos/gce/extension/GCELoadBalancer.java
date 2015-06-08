@@ -75,33 +75,34 @@ public class GCELoadBalancer implements LoadBalancer {
         Iterator iterator = clusterToLoadBalancerConfigurationMap.entrySet().iterator();
         while (iterator.hasNext()){ //for each Load balancer configuration
 
-            Map.Entry clusterIDForwardingRulesPair = (Map.Entry)iterator.next();
+            Map.Entry clusterIDLoadBalancerConfigurationPair = (Map.Entry)iterator.next();
 
-            String clusterID = ((String) clusterIDForwardingRulesPair.getKey());
+            String clusterID = ((String) clusterIDLoadBalancerConfigurationPair.getKey());
+            LoadBalancerConfiguration loadBalancerConfiguration =
+                    ((LoadBalancerConfiguration) clusterIDLoadBalancerConfigurationPair.getValue());
 
-            //set a valid target pool name
-            String targetPoolName = targetPoolNameCreator(clusterID);
+            if(!loadBalancerConfiguration.getStatus()) { //if the load balancer is NOT already running
 
-            //crate a target pool in GCE
-            gceOperations.createTargetPool(targetPoolName);
+                //set a valid target pool name
+                String targetPoolName = targetPoolNameCreator(clusterID);
 
-            //add instances to target pool
-            gceOperations.addInstancesToTargetPool(((List<String>)
-                    clusterIDForwardingRulesPair.getValue()),targetPoolName);
+                //crate a target pool in GCE
+                gceOperations.createTargetPool(targetPoolName);
+
+                //add instances to target pool
+                gceOperations.addInstancesToTargetPool(loadBalancerConfiguration.getInstancesList(),targetPoolName);
 
 
-            //create forwarding rules in GCE
-            List<Integer> forwardingRulesList = ((List<Integer>) clusterIDForwardingRulesPair.getValue());
+                //create forwarding rules in GCE
+                for (int forwardingRule : ((List<Integer>) loadBalancerConfiguration.getForwardingRulesList())) { //for each port
 
-            for (int forwardingRule : forwardingRulesList){ //for each port
+                    //set a valid forwarding rule name
+                    String forwardingRuleName = forwardingRuleNameCreator(forwardingRule, clusterID);
 
-                //set a valid forwarding rule name
-                String forwardingRuleName = forwardingRuleNameCreator(forwardingRule,clusterID);
-
-                //create a forwarding rule in GCE
-                gceOperations.createForwardingRule(forwardingRuleName,targetPoolName,protocol);
+                    //create a forwarding rule in GCE
+                    gceOperations.createForwardingRule(forwardingRuleName, targetPoolName, protocol);
+                }
             }
-
 
         }
 
