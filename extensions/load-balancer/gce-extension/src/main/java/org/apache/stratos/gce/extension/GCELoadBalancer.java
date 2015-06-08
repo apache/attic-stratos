@@ -19,18 +19,16 @@
 
 package org.apache.stratos.gce.extension;
 
-import com.google.api.services.compute.model.TargetPool;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.stratos.load.balancer.common.domain.*;
 import org.apache.stratos.load.balancer.extension.api.LoadBalancer;
 import org.apache.stratos.load.balancer.extension.api.exception.LoadBalancerExtensionException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 
 public class GCELoadBalancer implements LoadBalancer {
@@ -105,11 +103,31 @@ public class GCELoadBalancer implements LoadBalancer {
 
                     //It has a loadBalancer configured. Take it and update it as the given topology.
 
+                    //get load balancer configuration
+                    LoadBalancerConfiguration loadBalancerConfiguration = clusterToLoadBalancerConfigurationMap.
+                            get(cluster.getClusterId());
+
+                    //check and update
+                    List<String> instancesList = loadBalancerConfiguration.getInstancesList();
+
+
+                    for (Member member : cluster.getMembers()) {
+
+                        //TODO:check instances(members) in target pool and update
+
+                        //add forwarding rules(Ports to be forwarded)
+
+                        for (Object port : member.getPorts()) {
+
+
+                        }
+                    }
+
 
                 } else {
                     //doesn't have a loadBalancerConfiguration object. So crate a new one and add to hash map
 
-                    TargetPool targetPool = new TargetPool();
+                    List<String> instancesList = new ArrayList<String>();
 
                     List<Integer> forwardingRulesList = new ArrayList<Integer>();
 
@@ -119,22 +137,22 @@ public class GCELoadBalancer implements LoadBalancer {
 
                         //add forwarding rules(Ports to be forwarded)
 
-                        //Iterator iterator = member.getPorts().iterator();
-
-
-                        for(Object port : member.getPorts()){
-                            log.info("=================port: "+ ((Port) port).getValue());
-                            log.info("=================protocol: "+ ((Port) port).getProtocol());
+                        for (Object port : member.getPorts()) {
+                            if (!forwardingRulesList.contains(((Port) port).getValue())) { //if port is not in list
+                                forwardingRulesList.add(((Port) port).getValue());
+                            }
                         }
+
 
                     }
 
                     LoadBalancerConfiguration loadBalancerConfiguration = new LoadBalancerConfiguration(
-                            cluster.getClusterId(), targetPool);
+                            cluster.getClusterId(), instancesList);
+
+                    loadBalancerConfiguration.setForwardingRulesList(forwardingRulesList);
 
                     //get forwarding rules from topology and set forwarding rules to
                     // LoadBalancerConfiguration object
-
 
                     clusterToLoadBalancerConfigurationMap.put(cluster.getClusterId(), loadBalancerConfiguration);
 

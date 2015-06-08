@@ -19,9 +19,6 @@
 
 package org.apache.stratos.gce.extension;
 
-import com.google.api.services.compute.model.TargetPool;
-
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -34,8 +31,8 @@ import java.util.List;
 public class LoadBalancerConfiguration {
 
 
-    //A load balancer must have a target pool
-    private TargetPool targetPool;
+    //A load balancer must have a target pool(set of instances)
+    private List<String> instancesList;
     //A load balancer can have one or more forwarding rules(set of ports to be forwarded)
     private List<Integer> forwardingRulesList;
     //cluster ID from stratos side
@@ -44,17 +41,14 @@ public class LoadBalancerConfiguration {
     private boolean isRunning = false;
 
 
-    public LoadBalancerConfiguration(String clusterID, TargetPool targetPool) {
+    public LoadBalancerConfiguration(String clusterID, List<String> instancesList,
+                                     List<Integer> forwardingRulesList) {
         this.clusterID = clusterID;
-        this.targetPool = targetPool;
-        forwardingRulesList = new ArrayList<Integer>();
+        this.instancesList = instancesList;
+        this.forwardingRulesList = forwardingRulesList;
     }
 
-    public void addForwardingRule(Integer forwardingRule) {
-        forwardingRulesList.add(forwardingRule);
-    }
-
-    public void setForwardingRulesList(List<Integer> forwardingRulesList){
+    public void setForwardingRulesList(List<Integer> forwardingRulesList) {
         this.forwardingRulesList = forwardingRulesList;
     }
 
@@ -62,8 +56,12 @@ public class LoadBalancerConfiguration {
         return forwardingRulesList;
     }
 
-    public TargetPool getTargetPool() {
-        return targetPool;
+    public List<String> getInstancesList() {
+        return instancesList;
+    }
+
+    public void setInstancesList(List<String> instancesList) {
+        this.instancesList = instancesList;
     }
 
 
