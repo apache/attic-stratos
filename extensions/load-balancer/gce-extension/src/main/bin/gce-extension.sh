@@ -41,7 +41,7 @@ properties="-Djndi.properties.dir=${script_path}/../conf
             -Dcluster.id=cluster-1
             -Dservice.name=php
             -Dname.prefix=lb
-            -Dproject.name=My First Project
+            -Dproject.name=MyFirstProject
             -Dproject.id=gold-access-96509
             -Dzone.name=europe-west1-b
             -Dregion.name=europe-west1
