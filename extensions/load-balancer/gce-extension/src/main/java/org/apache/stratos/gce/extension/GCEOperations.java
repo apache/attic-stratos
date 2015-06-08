@@ -132,6 +132,7 @@ public class GCEOperations {
                     compute.targetPools().insert(PROJECT_ID, REGION_NAME, targetPool).execute();
             //wait until operation succeed
             while (true){
+                //todo: correct this line
                 if(operation.getStatus().equals("DONE")){
 
                     //log response
@@ -167,7 +168,8 @@ public class GCEOperations {
         try {
             Operation operation = compute.targetPools().delete(PROJECT_ID, REGION_NAME, targetPoolName).execute();
             //wait until operation succeed
-            while (true){
+            while (true){                //todo: correct this line
+
                 if(operation.getStatus().equals("DONE")){
 
                     //log response
@@ -215,7 +217,8 @@ public class GCEOperations {
             Operation operation = compute.forwardingRules().insert(PROJECT_ID, REGION_NAME, forwardingRule).execute();
 
             //wait until operation succeed
-            while (true){
+            while (true){                //todo: correct this line
+
                 if(operation.getStatus().equals("DONE")){
 
                     //log response
@@ -248,7 +251,8 @@ public class GCEOperations {
                     delete(PROJECT_ID, REGION_NAME, forwardingRuleName).execute();
             //wait until operation succeed
             while (true){
-                if(operation.getStatus().equals("DONE")){
+                if(operation.getStatus().equals("DONE")){                //todo: correct this line
+
 
                     //log response
                     if(log.isDebugEnabled()){
