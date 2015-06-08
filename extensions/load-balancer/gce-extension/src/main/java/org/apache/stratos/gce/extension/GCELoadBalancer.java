@@ -123,7 +123,7 @@ public class GCELoadBalancer implements LoadBalancer {
 
 
                         for(Object port : member.getPorts()){
-                            log.info("=================port: "+ port.toString());
+                            log.info("=================port: "+ ((Port) port).getValue());
                         }
 
                     }
