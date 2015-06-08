@@ -68,7 +68,7 @@ public class RuleTasksDelegator {
 
         }
 
-        
+
         return predictedValue;
     }
 
@@ -366,6 +366,12 @@ public class RuleTasksDelegator {
         } else {
             return 0;
         }
+    }
+
+    public double getLoadAveragePredictedValue(){
+        double loadAveragePredicted = 0.0;
+        int totalMemberCount;
+        return 0;
     }
 
     public double getMemoryConsumptionPredictedValue(ClusterInstanceContext clusterInstanceContext) {
