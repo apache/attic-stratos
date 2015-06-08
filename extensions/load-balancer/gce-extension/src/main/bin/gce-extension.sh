@@ -40,7 +40,14 @@ properties="-Djndi.properties.dir=${script_path}/../conf
             -Dnetwork.partition.id=network-partition-1
             -Dcluster.id=cluster-1
             -Dservice.name=php
-            -Dname.prefix=lb"
+            -Dname.prefix=lb
+            -Dproject.name=My First Project
+            -Dproject.id=gold-access-96509
+            -Dzone.name=europe-west1-b
+            -Dregion.name=europe-west1
+            -Dkey.file.path=/home/sanjaya/keys/p12key-donwloaded.p12
+            -Dgce.account.id=164588286821-a517i85433f83e0nthc4qjmoupri394q@developer.gserviceaccount.com
+            -Ddata.store.directory=.store/gce-extension"
 
 # Uncomment below line to enable remote debugging
 debug="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5006"

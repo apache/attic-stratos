@@ -30,4 +30,11 @@ public class Constants {
     public static final String CLUSTER_ID = "cluster.id";
     public static final String SERVICE_NAME = "service.name";
     public static final String NAME_PREFIX = "name.prefix";
+    public static final String PROJECT_NAME = "project.name";
+    public static final String PROJECT_ID = "project.id";
+    public static final String ZONE_NAME = "zone.name";
+    public static final String REGION_NAME = "region.name";
+    public static final String KEY_FILE_PATH = "key.file.path";
+    public static final String GCE_ACCOUNT_ID = "gce.account.id";
+    public static final String DATA_STORE_DIRECTORY = ".store/gce-extension";
 }

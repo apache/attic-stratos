@@ -49,21 +49,23 @@ public class GCEOperations {
 
     private static final Log log = LogFactory.getLog(GCELoadBalancer.class);
 
-    //TODO: remove all hardcoded values and read from configuration parameters
-    private static final String PROJECT_NAME = "My First Project";
-    private static final String PROJECT_ID = "gold-access-96509";
-    private static final String ZONE_NAME = "europe-west1-b";
-    private static final String REGION_NAME = "europe-west1";
-    private static final String RUNNING_FILTER = "status eq RUNNING";
+    private static final String PROJECT_NAME = GCEContext.getInstance().getProjectName();
+    private static final String PROJECT_ID = GCEContext.getInstance().getProjectID();
+    private static final String ZONE_NAME = GCEContext.getInstance().getZoneName();
+    private static final String REGION_NAME = GCEContext.getInstance().getRegionName();
+
     //auth
-    private static final String KEY_FILE = "/home/sanjaya/keys/p12key-donwloaded.p12";
-    private static final String ACCOUNT_ID = "164588286821-a517i85433f83e0nthc4qjmoupri" +
-            "394q@developer.gserviceaccount.com";
+    private static final String KEY_FILE_PATH = GCEContext.getInstance().getKeyFilePath();
+    private static final String ACCOUNT_ID = GCEContext.getInstance().getGceAccountID();
 
     /**
      * Directory to store user credentials.
      */
-    private static final String DATA_STORE_DIR = ".store/gce-extension";
+    private static final String DATA_STORE_DIR = GCEContext.getInstance().getDataStoreDirectory();
+
+    private static final String RUNNING_FILTER = "status eq RUNNING";
+
+
     static Compute compute;
 
 
@@ -100,7 +102,7 @@ public class GCEOperations {
                 .setJsonFactory(jsonFactory)
                 .setServiceAccountId(ACCOUNT_ID)
                 .setServiceAccountScopes(Collections.singleton(ComputeScopes.COMPUTE))
-                .setServiceAccountPrivateKeyFromP12File(new File(KEY_FILE))
+                .setServiceAccountPrivateKeyFromP12File(new File(KEY_FILE_PATH))
                 .build();
 
         // Create compute engine object

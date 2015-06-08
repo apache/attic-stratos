@@ -38,6 +38,13 @@ public class GCEContext {
     private String clusterId;
     private String serviceName;
     private String namePrefix;
+    private String projectName;
+    private String projectID;
+    private String zoneName;
+    private String regionName;
+    private String keyFilePath;
+    private String gceAccountID;
+    private String dataStoreDirectory;
 
 
     private GCEContext() {
@@ -49,6 +56,14 @@ public class GCEContext {
         this.clusterId = System.getProperty(Constants.CLUSTER_ID);
         this.serviceName = System.getProperty(Constants.SERVICE_NAME);
         this.namePrefix = System.getProperty(Constants.NAME_PREFIX);
+        this.projectName = System.getProperty(Constants.PROJECT_NAME);
+        this.projectID = System.getProperty(Constants.PROJECT_ID);
+        this.zoneName = System.getProperty(Constants.ZONE_NAME);
+        this.regionName = System.getProperty(Constants.REGION_NAME);
+        this.keyFilePath = System.getProperty(Constants.KEY_FILE_PATH);
+        this.gceAccountID = System.getProperty(Constants.GCE_ACCOUNT_ID);
+        this.dataStoreDirectory = System.getProperty(Constants.DATA_STORE_DIRECTORY);
+
 
         if (log.isDebugEnabled()) {
             log.debug(Constants.CEP_STATS_PUBLISHER_ENABLED + " = " + cepStatsPublisherEnabled);
@@ -57,7 +72,14 @@ public class GCEContext {
             log.debug(Constants.THRIFT_RECEIVER_PORT + " = " + thriftReceiverPort);
             log.debug(Constants.NETWORK_PARTITION_ID + " = " + networkPartitionId);
             log.debug(Constants.CLUSTER_ID + " = " + clusterId);
-            log.debug(Constants.NAME_PREFIX + " = "+ namePrefix);
+            log.debug(Constants.NAME_PREFIX + " = " + namePrefix);
+            log.debug(Constants.PROJECT_NAME + " = " + projectName);
+            log.debug(Constants.PROJECT_ID + " = " + projectID);
+            log.debug(Constants.ZONE_NAME + " = " + zoneName);
+            log.debug(Constants.REGION_NAME + " = " + regionName);
+            log.debug(Constants.KEY_FILE_PATH + " = " + keyFilePath);
+            log.debug(Constants.GCE_ACCOUNT_ID + " = " + gceAccountID);
+            log.debug(Constants.DATA_STORE_DIRECTORY + " = " + dataStoreDirectory);
         }
 
     }
@@ -78,6 +100,14 @@ public class GCEContext {
         validateSystemProperty(Constants.CEP_STATS_PUBLISHER_ENABLED);
         validateSystemProperty(Constants.CLUSTER_ID);
         validateSystemProperty(Constants.NAME_PREFIX);
+        validateSystemProperty(Constants.PROJECT_NAME);
+        validateSystemProperty(Constants.PROJECT_ID);
+        validateSystemProperty(Constants.ZONE_NAME);
+        validateSystemProperty(Constants.REGION_NAME);
+        validateSystemProperty(Constants.KEY_FILE_PATH);
+        validateSystemProperty(Constants.GCE_ACCOUNT_ID);
+        validateSystemProperty(Constants.DATA_STORE_DIRECTORY);
+
 
         if (cepStatsPublisherEnabled) {
             validateSystemProperty(Constants.THRIFT_RECEIVER_IP);
@@ -110,7 +140,35 @@ public class GCEContext {
         return serviceName;
     }
 
-    public String getNamePrefix() { return namePrefix; }
+    public String getNamePrefix() {
+        return namePrefix;
+    }
 
+    public String getProjectName() {
+        return projectName;
+    }
 
+    public String getProjectID() {
+        return projectID;
+    }
+
+    public String getZoneName() {
+        return zoneName;
+    }
+
+    public String getRegionName() {
+        return regionName;
+    }
+
+    public String getKeyFilePath() {
+        return keyFilePath;
+    }
+
+    public String getGceAccountID() {
+        return gceAccountID;
+    }
+
+    public String getDataStoreDirectory() {
+        return dataStoreDirectory;
+    }
 }
