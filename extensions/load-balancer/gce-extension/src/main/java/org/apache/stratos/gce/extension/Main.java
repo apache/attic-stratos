@@ -52,7 +52,7 @@ public class Main {
             Runtime.getRuntime().addShutdownHook(new Thread() {
                 public void run() {
                     try {
-                        if(finalExtension != null) {
+                        if (finalExtension != null) {
                             log.info("GCE gce instance...");
                             finalExtension.stop();
                         }
@@ -69,7 +69,7 @@ public class Main {
             TopologyProvider topologyProvider = new TopologyProvider();
 
             //If user has enabled the cep stats publisher, create a stat publisher object. Else null
-            GCEStatisticsReader statisticsReader =GCEContext.getInstance().isCEPStatsPublisherEnabled() ?
+            GCEStatisticsReader statisticsReader = GCEContext.getInstance().isCEPStatsPublisherEnabled() ?
                     new GCEStatisticsReader(topologyProvider) : null;
             extension = new LoadBalancerExtension(new GCELoadBalancer(), statisticsReader, topologyProvider);
             extension.setExecutorService(executorService);

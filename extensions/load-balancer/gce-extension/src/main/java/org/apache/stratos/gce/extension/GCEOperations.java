@@ -136,22 +136,23 @@ public class GCEOperations {
 
     /**
      * create forwarding rule by using given target pool and protocol
+     *
      * @param forwardingRuleName
      * @param targetPoolName
      * @param protocol
      */
 
-    public void createForwardingRule(String forwardingRuleName,String targetPoolName,String protocol){
+    public void createForwardingRule(String forwardingRuleName, String targetPoolName, String protocol) {
 
         //Need to get target pool resource URL
         TargetPool targetPool = getTargetPool(targetPoolName);
-        String targetPoolURL=targetPool.getSelfLink();
+        String targetPoolURL = targetPool.getSelfLink();
         ForwardingRule forwardingRule = new ForwardingRule();
         forwardingRule.setName(forwardingRuleName);
         forwardingRule.setTarget(targetPoolURL);
         forwardingRule.setIPProtocol(protocol);
         try {
-            compute.forwardingRules().insert(PROJECT_ID,REGION_NAME,forwardingRule).execute();
+            compute.forwardingRules().insert(PROJECT_ID, REGION_NAME, forwardingRule).execute();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -179,7 +180,7 @@ public class GCEOperations {
             }
 
         } catch (IOException e) {
-            if(log.isErrorEnabled()){
+            if (log.isErrorEnabled()) {
                 log.error("Error caused when checking for target pools");
             }
             e.printStackTrace();
@@ -188,12 +189,12 @@ public class GCEOperations {
 
     }
 
-    public boolean isForwardingRuleExists(String forwardingRuleName){
+    public boolean isForwardingRuleExists(String forwardingRuleName) {
         try {
-            Compute.ForwardingRules.List forwardingRules = compute.forwardingRules().list(PROJECT_ID,REGION_NAME);
+            Compute.ForwardingRules.List forwardingRules = compute.forwardingRules().list(PROJECT_ID, REGION_NAME);
             ForwardingRuleList forwardingRuleList = forwardingRules.execute();
-            for (ForwardingRule forwardingRule:forwardingRuleList.getItems()){
-                if(forwardingRule.getName().equals(forwardingRuleName)){
+            for (ForwardingRule forwardingRule : forwardingRuleList.getItems()) {
+                if (forwardingRule.getName().equals(forwardingRuleName)) {
                     return true;
                 }
             }
@@ -214,8 +215,7 @@ public class GCEOperations {
         try {
             if (isTargetPoolExists(targetPoolName)) {
                 return compute.targetPools().get(PROJECT_ID, REGION_NAME, targetPoolName).execute();
-            }
-            else {
+            } else {
                 if (log.isDebugEnabled()) {
                     log.debug("Requested Target Pool Is not Available");
                 }
@@ -224,7 +224,7 @@ public class GCEOperations {
             return null;
 
         } catch (IOException e) {
-            if (log.isErrorEnabled()){
+            if (log.isErrorEnabled()) {
                 log.error("Exception caused when try to get target pool");
             }
             e.printStackTrace();
@@ -335,7 +335,7 @@ public class GCEOperations {
     /**
      * This method is used for set port rage for forwarding rule
      */
-    public void setPortRangeToForwardingRule(){
+    public void setPortRangeToForwardingRule() {
         //todo:implement this method
     }
 

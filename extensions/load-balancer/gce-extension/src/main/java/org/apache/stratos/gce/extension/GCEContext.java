@@ -39,7 +39,7 @@ public class GCEContext {
     private String serviceName;
 
 
-    private GCEContext(){
+    private GCEContext() {
 
         this.cepStatsPublisherEnabled = Boolean.getBoolean(Constants.CEP_STATS_PUBLISHER_ENABLED);
         this.thriftReceiverIp = System.getProperty(Constants.THRIFT_RECEIVER_IP);
@@ -93,6 +93,7 @@ public class GCEContext {
     public boolean isCEPStatsPublisherEnabled() {
         return cepStatsPublisherEnabled;
     }
+
     public String getNetworkPartitionId() {
         return networkPartitionId;
     }
@@ -104,7 +105,6 @@ public class GCEContext {
     public String getServiceName() {
         return serviceName;
     }
-
 
 
 }
