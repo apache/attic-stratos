@@ -39,7 +39,8 @@ properties="-Djndi.properties.dir=${script_path}/../conf
             -Dthrift.receiver.port=7615
             -Dnetwork.partition.id=network-partition-1
             -Dcluster.id=cluster-1
-            -Dservice.name=php"
+            -Dservice.name=php
+            -Dname.prefix=lb"
 
 # Uncomment below line to enable remote debugging
 debug="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5006"

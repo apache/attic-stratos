@@ -37,6 +37,7 @@ public class GCEContext {
     private String networkPartitionId;
     private String clusterId;
     private String serviceName;
+    private String namePrefix;
 
 
     private GCEContext() {
@@ -47,6 +48,8 @@ public class GCEContext {
         this.networkPartitionId = System.getProperty(Constants.NETWORK_PARTITION_ID);
         this.clusterId = System.getProperty(Constants.CLUSTER_ID);
         this.serviceName = System.getProperty(Constants.SERVICE_NAME);
+        this.namePrefix = System.getProperty(Constants.NAME_PREFIX);
+
         if (log.isDebugEnabled()) {
             log.debug(Constants.CEP_STATS_PUBLISHER_ENABLED + " = " + cepStatsPublisherEnabled);
             log.debug(Constants.THRIFT_RECEIVER_IP + " = " + thriftReceiverIp);
@@ -54,6 +57,7 @@ public class GCEContext {
             log.debug(Constants.THRIFT_RECEIVER_PORT + " = " + thriftReceiverPort);
             log.debug(Constants.NETWORK_PARTITION_ID + " = " + networkPartitionId);
             log.debug(Constants.CLUSTER_ID + " = " + clusterId);
+            log.debug(Constants.NAME_PREFIX + " = "+ namePrefix);
         }
 
     }
@@ -73,7 +77,7 @@ public class GCEContext {
 
         validateSystemProperty(Constants.CEP_STATS_PUBLISHER_ENABLED);
         validateSystemProperty(Constants.CLUSTER_ID);
-
+        validateSystemProperty(Constants.NAME_PREFIX);
 
         if (cepStatsPublisherEnabled) {
             validateSystemProperty(Constants.THRIFT_RECEIVER_IP);
@@ -105,6 +109,8 @@ public class GCEContext {
     public String getServiceName() {
         return serviceName;
     }
+
+    public String getNamePrefix() { return namePrefix; }
 
 
 }

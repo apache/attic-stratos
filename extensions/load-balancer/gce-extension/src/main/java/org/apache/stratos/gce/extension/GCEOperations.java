@@ -339,6 +339,18 @@ public class GCEOperations {
         //todo:implement this method
     }
 
+    public void addInstancesToTargetPool(List<String> instancesNamesList, String targetPoolName){
+        List<InstanceReference> instanceReferenceList = new ArrayList<InstanceReference>();
+
+        //add instance to instance reference list, we should use the instance URL
+        for(String instanceName : instancesNamesList ){ //for all instances
+
+            instanceReferenceList.add(new InstanceReference().
+                    setInstance(getInstanceURLFromName(instanceName)));
+
+        }
+        addInstancesToTargetPool(targetPoolName, instanceReferenceList);
+    }
 
     /**
      * this is a sample method using for testing purposes
@@ -359,7 +371,7 @@ public class GCEOperations {
     public void sampleMethodForRemovingInstancesToTargetPool() {
         List<InstanceReference> instanceReferenceList = new ArrayList<InstanceReference>();
 
-        //remove instances to instance reference list, we should use the instance URL
+        //add instances to instance reference list, we should use the instance URL
         InstanceReference instanceReference1 = new InstanceReference();
         instanceReference1.setInstance(getInstanceURLFromName("instance-2"));
         instanceReferenceList.add(instanceReference1);
