@@ -21,7 +21,6 @@ package org.apache.stratos.gce.extension;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
-import com.google.api.client.googleapis.services.AbstractGoogleClientRequest;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
@@ -40,6 +39,8 @@ import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import com.google.api.services.compute.model.Operation.Error.Errors;
 
 /**
  * All the GCE API calls will be done using this class
@@ -127,12 +128,25 @@ public class GCEOperations {
 
         //TODO:REMOVE try catch
         try {
-            Operation createTargetPoolOperation =
+            Operation operation =
                     compute.targetPools().insert(PROJECT_ID, REGION_NAME, targetPool).execute();
-            //wait until operation suceed
+            //wait until operation succeed
             while (true){
-                if(createTargetPoolOperation.getStatus().equals("DONE")){
+                if(operation.getStatus().equals("DONE")){
+
+                    //log response
+                    if(log.isDebugEnabled()){
+                        log.debug("Target pool creation operation Status: "+operation.getStatusMessage());
+                    }
+                    if (log.isErrorEnabled()) {
+                        for ( Errors errors : operation.getError().getErrors()) {
+                            log.error("Target pool creation operation error: " + errors.getMessage());
+                        }
+                    }
                     return;
+                }
+                if(log.isDebugEnabled()){
+                    log.debug("Waiting until the create target pool API call get succeeded");
                 }
                 Thread.sleep(100);
             }
@@ -151,8 +165,31 @@ public class GCEOperations {
 
     public void deleteTargetPool(String targetPoolName){
         try {
-            compute.targetPools().delete(PROJECT_ID, REGION_NAME, targetPoolName).execute();
+            Operation operation = compute.targetPools().delete(PROJECT_ID, REGION_NAME, targetPoolName).execute();
+            //wait until operation succeed
+            while (true){
+                if(operation.getStatus().equals("DONE")){
+
+                    //log response
+                    if(log.isDebugEnabled()){
+                        log.debug("Target pool creation operation Status: "+operation.getStatusMessage());
+                    }
+                    if (log.isErrorEnabled()) {
+                        for ( Errors errors : operation.getError().getErrors()) {
+                            log.error("Target pool creation operation error: " + errors.getMessage());
+                        }
+                    }
+                    return;
+                }
+                if(log.isDebugEnabled()){
+                    log.debug("Waiting until the delete target pool API call get succeeded");
+                }
+                Thread.sleep(100);
+            }
+
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
@@ -175,16 +212,64 @@ public class GCEOperations {
         forwardingRule.setTarget(targetPoolURL);
         forwardingRule.setIPProtocol(protocol);
         try {
-            compute.forwardingRules().insert(PROJECT_ID, REGION_NAME, forwardingRule).execute();
+            Operation operation = compute.forwardingRules().insert(PROJECT_ID, REGION_NAME, forwardingRule).execute();
+
+            //wait until operation succeed
+            while (true){
+                if(operation.getStatus().equals("DONE")){
+
+                    //log response
+                    if(log.isDebugEnabled()){
+                        log.debug("Target pool creation operation Status: "+operation.getStatusMessage());
+                    }
+                    if (log.isErrorEnabled()) {
+                        for ( Errors errors : operation.getError().getErrors()) {
+                            log.error("Target pool creation operation error: " + errors.getMessage());
+                        }
+                    }
+                    return;
+                }
+                if(log.isDebugEnabled()){
+                    log.debug("Waiting until the create forwarding rule API call get succeeded");
+                }
+                Thread.sleep(100);
+            }
+
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
 
     public void deleteForwardingRule(String forwardingRuleName){
         try {
-            compute.forwardingRules().delete(PROJECT_ID,REGION_NAME,forwardingRuleName).execute();
+            Operation operation = compute.forwardingRules().
+                    delete(PROJECT_ID, REGION_NAME, forwardingRuleName).execute();
+            //wait until operation succeed
+            while (true){
+                if(operation.getStatus().equals("DONE")){
+
+                    //log response
+                    if(log.isDebugEnabled()){
+                        log.debug("Target pool creation operation Status: "+operation.getStatusMessage());
+                    }
+                    if (log.isErrorEnabled()) {
+                        for ( Errors errors : operation.getError().getErrors()) {
+                            log.error("Target pool creation operation error: " + errors.getMessage());
+                        }
+                    }
+                    return;
+                }
+                if(log.isDebugEnabled()){
+                    log.debug("Waiting until the delete forwarding rule API call get succeeded");
+                }
+                Thread.sleep(100);
+            }
+
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
@@ -379,6 +464,8 @@ public class GCEOperations {
             //execute
             compute.targetPools().addInstance(PROJECT_ID, REGION_NAME,
                     targetPoolName, targetPoolsAddInstanceRequest).execute();
+
+
         } catch (IOException e) {
             e.printStackTrace();
         }
