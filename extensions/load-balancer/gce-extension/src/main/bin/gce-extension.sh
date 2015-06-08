@@ -46,8 +46,7 @@ properties="-Djndi.properties.dir=${script_path}/../conf
             -Dzone.name=europe-west1-b
             -Dregion.name=europe-west1
             -Dkey.file.path=/home/sanjaya/keys/p12key-donwloaded.p12
-            -Dgce.account.id=164588286821-a517i85433f83e0nthc4qjmoupri394q@developer.gserviceaccount.com
-            -Ddata.store.directory=.store/gce-extension"
+            -Dgce.account.id=164588286821-a517i85433f83e0nthc4qjmoupri394q@developer.gserviceaccount.com"
 
 # Uncomment below line to enable remote debugging
 debug="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5006"

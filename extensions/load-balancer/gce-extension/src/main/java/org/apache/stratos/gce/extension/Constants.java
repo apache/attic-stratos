@@ -36,5 +36,4 @@ public class Constants {
     public static final String REGION_NAME = "region.name";
     public static final String KEY_FILE_PATH = "key.file.path";
     public static final String GCE_ACCOUNT_ID = "gce.account.id";
-    public static final String DATA_STORE_DIRECTORY = ".store/gce-extension";
 }

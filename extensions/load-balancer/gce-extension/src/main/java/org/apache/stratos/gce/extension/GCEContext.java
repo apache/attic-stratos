@@ -44,7 +44,6 @@ public class GCEContext {
     private String regionName;
     private String keyFilePath;
     private String gceAccountID;
-    private String dataStoreDirectory;
 
 
     private GCEContext() {
@@ -62,7 +61,6 @@ public class GCEContext {
         this.regionName = System.getProperty(Constants.REGION_NAME);
         this.keyFilePath = System.getProperty(Constants.KEY_FILE_PATH);
         this.gceAccountID = System.getProperty(Constants.GCE_ACCOUNT_ID);
-        this.dataStoreDirectory = System.getProperty(Constants.DATA_STORE_DIRECTORY);
 
 
         if (log.isDebugEnabled()) {
@@ -79,7 +77,6 @@ public class GCEContext {
             log.debug(Constants.REGION_NAME + " = " + regionName);
             log.debug(Constants.KEY_FILE_PATH + " = " + keyFilePath);
             log.debug(Constants.GCE_ACCOUNT_ID + " = " + gceAccountID);
-            log.debug(Constants.DATA_STORE_DIRECTORY + " = " + dataStoreDirectory);
         }
 
     }
@@ -168,7 +165,4 @@ public class GCEContext {
         return gceAccountID;
     }
 
-    public String getDataStoreDirectory() {
-        return dataStoreDirectory;
-    }
 }

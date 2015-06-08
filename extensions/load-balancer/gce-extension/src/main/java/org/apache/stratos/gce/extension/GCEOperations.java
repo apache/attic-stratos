@@ -61,7 +61,7 @@ public class GCEOperations {
     /**
      * Directory to store user credentials.
      */
-    private static final String DATA_STORE_DIR = GCEContext.getInstance().getDataStoreDirectory();
+    private static final String DATA_STORE_DIR = ".store/gce-extension";
 
     private static final String RUNNING_FILTER = "status eq RUNNING";
 
