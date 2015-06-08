@@ -21,6 +21,7 @@ package org.apache.stratos.gce.extension;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.googleapis.services.AbstractGoogleClientRequest;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
@@ -126,11 +127,22 @@ public class GCEOperations {
 
         //TODO:REMOVE try catch
         try {
-            compute.targetPools().insert(PROJECT_ID, REGION_NAME, targetPool).execute();
+            Operation createTargetPoolOperation =
+                    compute.targetPools().insert(PROJECT_ID, REGION_NAME, targetPool).execute();
+            //wait until operation suceed
+            while (true){
+                if(createTargetPoolOperation.getStatus().equals("DONE")){
+                    return;
+                }
+                Thread.sleep(100);
+            }
+
         } catch (IOException e) {
             if (log.isErrorEnabled()) {
                 log.error("failed to create target pool: " + targetPoolName);
             }
+            e.printStackTrace();
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
@@ -261,23 +273,8 @@ public class GCEOperations {
     private void addInstancesToTargetPool(String targetPoolName, List<InstanceReference>
             instanceReferenceList) {
 
-        //todo: target pool is must be validated before call this method. May be we
-        // todo: can add a validation check here
-        log.info("Adding instances to target pool");
 
-        //create target pools add instance request and set instance to it
-        TargetPoolsAddInstanceRequest targetPoolsAddInstanceRequest = new
-                TargetPoolsAddInstanceRequest();
-        targetPoolsAddInstanceRequest.setInstances(instanceReferenceList);
 
-        //todo Remove try catch
-        try {
-            //execute
-            compute.targetPools().addInstance(PROJECT_ID, REGION_NAME,
-                    targetPoolName, targetPoolsAddInstanceRequest).execute();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     /**
@@ -359,6 +356,9 @@ public class GCEOperations {
     }
 
     public void addInstancesToTargetPool(List<String> instancesNamesList, String targetPoolName){
+
+        log.info("Adding instances to target pool");
+
         List<InstanceReference> instanceReferenceList = new ArrayList<InstanceReference>();
 
         //add instance to instance reference list, we should use the instance URL
@@ -368,7 +368,20 @@ public class GCEOperations {
                     setInstance(getInstanceURLFromName(instanceName)));
 
         }
-        addInstancesToTargetPool(targetPoolName, instanceReferenceList);
+
+        //create target pools add instance request and set instance to it
+        TargetPoolsAddInstanceRequest targetPoolsAddInstanceRequest = new
+                TargetPoolsAddInstanceRequest();
+        targetPoolsAddInstanceRequest.setInstances(instanceReferenceList);
+
+        //todo Remove try catch
+        try {
+            //execute
+            compute.targetPools().addInstance(PROJECT_ID, REGION_NAME,
+                    targetPoolName, targetPoolsAddInstanceRequest).execute();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**

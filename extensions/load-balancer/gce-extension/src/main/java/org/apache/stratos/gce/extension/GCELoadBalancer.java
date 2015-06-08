@@ -84,12 +84,15 @@ public class GCELoadBalancer implements LoadBalancer {
             if(!loadBalancerConfiguration.getStatus()) { //if the load balancer is NOT already running
 
 
+                //todo: need to add validation checks here(Need to check whether the resources are created or not)
                 //crate a target pool in GCE
                 gceOperations.createTargetPool(loadBalancerConfiguration.getTargetPoolName());
 
                 //add instances to target pool
                 gceOperations.addInstancesToTargetPool(loadBalancerConfiguration.getInstancesList(),
                         loadBalancerConfiguration.getTargetPoolName());
+
+
 
 
                 //create forwarding rules in GCE
