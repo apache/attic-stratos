@@ -53,7 +53,7 @@ public class LoadBalancerConfiguration {
         this.ipToForwardingRuleNameMap = ipToForwardingRuleNameMap;
     }
 
-    public void setipToForwardingRuleNameMap(HashMap<Integer,String> ipToForwardingRuleNameMap) {
+    public void setIPToForwardingRuleNameMap(HashMap<Integer, String> ipToForwardingRuleNameMap) {
         this.ipToForwardingRuleNameMap = ipToForwardingRuleNameMap;
     }
 

@@ -19,7 +19,6 @@
 
 package org.apache.stratos.gce.extension;
 
-import com.google.api.services.compute.model.TargetPool;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.stratos.load.balancer.common.domain.*;
@@ -30,6 +29,7 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.*;
 
+//TODO: exception handling
 public class GCELoadBalancer implements LoadBalancer {
 
     private static final Log log = LogFactory.getLog(GCELoadBalancer.class);
@@ -120,16 +120,19 @@ public class GCELoadBalancer implements LoadBalancer {
         while (iterator.hasNext()) { //for each Load balancer configuration
 
             Map.Entry clusterIDLoadBalancerConfigurationPair = (Map.Entry) iterator.next();
-
-            String clusterID = ((String) clusterIDLoadBalancerConfigurationPair.getKey());
             LoadBalancerConfiguration loadBalancerConfiguration =
                     ((LoadBalancerConfiguration) clusterIDLoadBalancerConfigurationPair.getValue());
 
             if (loadBalancerConfiguration.getStatus()) { //if the load balancer is  already running
 
-                //delete target pool from GCE
-
                 //delete forwarding rules from GCE
+                for(String forwardingRuleName : loadBalancerConfiguration.getForwardingRuleNames()){
+                    gceOperations.deleteForwardingRule(forwardingRuleName);
+                }
+
+                //delete target pool from GCE
+                gceOperations.deleteTargetPool(loadBalancerConfiguration.getTargetPoolName());
+
             }
         }
 
@@ -175,14 +178,14 @@ public class GCELoadBalancer implements LoadBalancer {
 
                     for (Member member : cluster.getMembers()) {
 
-                        //TODO:check instances(members) in target pool and update
+                        //TODO:check instances(members) in instance list and update
                       /*  EX:
                         if(!updatedInstancesList.contains(member.getMemberName())){
                             updatedInstancesList.add(member.getMemberName);
                         }
                         */
 
-                        //checking for forwarding rules
+                        //checking for forwarding rules and updating
                         for (Object port : member.getPorts()) {
 
                             int portValue = ((Port) port).getValue();
@@ -199,7 +202,7 @@ public class GCELoadBalancer implements LoadBalancer {
                     }
 
                     //set new forwarding rules and instances list
-                    loadBalancerConfiguration.setipToForwardingRuleNameMap(updatedIpToForwardingRuleNameMap);
+                    loadBalancerConfiguration.setIPToForwardingRuleNameMap(updatedIpToForwardingRuleNameMap);
                     loadBalancerConfiguration.setInstancesList(updatedInstancesList);
 
                     if(loadBalancerConfiguration.getTargetPoolName() == null){ //this does not have a target pool name
@@ -214,9 +217,6 @@ public class GCELoadBalancer implements LoadBalancer {
 
                     List<String> instancesList = new ArrayList<String>();
                     HashMap<Integer,String> ipToForwardingRuleNameMap = new HashMap<Integer, String>();
-
-
-
 
                     for (Member member : cluster.getMembers()) {
 

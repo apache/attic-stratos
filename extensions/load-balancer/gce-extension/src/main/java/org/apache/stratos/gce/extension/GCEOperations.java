@@ -44,6 +44,7 @@ import java.util.List;
  * All the GCE API calls will be done using this class
  */
 
+//TODO: exception handling
 public class GCEOperations {
 
     private static final Log log = LogFactory.getLog(GCELoadBalancer.class);
@@ -134,6 +135,14 @@ public class GCEOperations {
 
     }
 
+    public void deleteTargetPool(String targetPoolName){
+        try {
+            compute.targetPools().delete(PROJECT_ID, REGION_NAME, targetPoolName).execute();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * create forwarding rule by using given target pool and protocol
      *
@@ -153,6 +162,14 @@ public class GCEOperations {
         forwardingRule.setIPProtocol(protocol);
         try {
             compute.forwardingRules().insert(PROJECT_ID, REGION_NAME, forwardingRule).execute();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void deleteForwardingRule(String forwardingRuleName){
+        try {
+            compute.forwardingRules().delete(PROJECT_ID,REGION_NAME,forwardingRuleName).execute();
         } catch (IOException e) {
             e.printStackTrace();
         }
