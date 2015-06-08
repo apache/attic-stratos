@@ -19,7 +19,10 @@
 
 package org.apache.stratos.gce.extension;
 
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Since GCE have separate target pools and forwarding rules, we need
@@ -34,26 +37,36 @@ public class LoadBalancerConfiguration {
     //A load balancer must have a target pool(set of instances)
     private List<String> instancesList;
     //A load balancer can have one or more forwarding rules(set of ports to be forwarded)
-    private List<Integer> forwardingRulesList;
+    //we create a map to store the port IP and forwarding rule name
+    private HashMap<Integer,String> ipToForwardingRuleNameMap;
     //cluster ID from stratos side
     private String clusterID;
+    private String targetPoolName;
     //Whether we have executed this configuration in GCE or not
     private boolean isRunning = false;
 
 
     public LoadBalancerConfiguration(String clusterID, List<String> instancesList,
-                                     List<Integer> forwardingRulesList) {
+                                     HashMap<Integer,String> ipToForwardingRuleNameMap) {
         this.clusterID = clusterID;
         this.instancesList = instancesList;
-        this.forwardingRulesList = forwardingRulesList;
+        this.ipToForwardingRuleNameMap = ipToForwardingRuleNameMap;
     }
 
-    public void setForwardingRulesList(List<Integer> forwardingRulesList) {
-        this.forwardingRulesList = forwardingRulesList;
+    public void setipToForwardingRuleNameMap(HashMap<Integer,String> ipToForwardingRuleNameMap) {
+        this.ipToForwardingRuleNameMap = ipToForwardingRuleNameMap;
     }
 
-    public List getForwardingRulesList() {
-        return forwardingRulesList;
+    public void addForwardingRule(int ip, String forwardingRuleName){
+        this.ipToForwardingRuleNameMap.put(ip,forwardingRuleName);
+    }
+
+    public Set<Integer> getPorts() {
+        return ipToForwardingRuleNameMap.keySet();
+    }
+
+    public Collection<String> getForwardingRuleNames(){
+        return ipToForwardingRuleNameMap.values();
     }
 
     public List<String> getInstancesList() {
@@ -71,6 +84,14 @@ public class LoadBalancerConfiguration {
 
     public void setStatus(boolean status) {
         this.isRunning = status;
+    }
+
+    public void setTargetPoolName(String targetPoolName){
+        this.targetPoolName = targetPoolName;
+    }
+
+    public String getTargetPoolName(){
+        return targetPoolName;
     }
 
     public boolean getStatus() {
