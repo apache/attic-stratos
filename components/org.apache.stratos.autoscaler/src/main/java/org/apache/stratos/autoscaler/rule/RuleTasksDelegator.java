@@ -60,6 +60,18 @@ public class RuleTasksDelegator {
         return predictedValue;
     }
 
+    public double getPredictedValueForNextMinute(){
+        double predictedValue = 0.0;
+
+        if(log.isDebugEnabled()){
+            log.debug("New Curvefitting Mechanism");
+
+        }
+
+        
+        return predictedValue;
+    }
+
 
     public int getNumberOfInstancesRequiredBasedOnRif(float rifPredictedValue, float rifThreshold) {
 
