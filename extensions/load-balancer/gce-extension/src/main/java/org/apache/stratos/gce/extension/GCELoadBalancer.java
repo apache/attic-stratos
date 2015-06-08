@@ -62,7 +62,7 @@ public class GCELoadBalancer implements LoadBalancer {
 
     @Override
     public void start() throws LoadBalancerExtensionException {
-        log.info("===========Starting GCE Load balancer instance===========");
+        log.info("Starting GCE Load balancer instance");
 
         //iterate through clusterToLoadBalancerConfigurationMap
         //for each cluster{
@@ -70,7 +70,7 @@ public class GCELoadBalancer implements LoadBalancer {
         //      execute commands through GCE API for start the load balancer
         //}
 
-        log.info("==========GCE Load balancer instance started============");
+        log.info("GCE Load balancer instance started");
 
 
     }
@@ -78,7 +78,7 @@ public class GCELoadBalancer implements LoadBalancer {
     @Override
     public void stop() throws LoadBalancerExtensionException {
 
-        log.info("============stopped============");
+        log.info("GCE Load Balancer is stopping");
         //iterate through hashmap and remove all
     }
 
@@ -86,9 +86,9 @@ public class GCELoadBalancer implements LoadBalancer {
     public boolean configure(Topology topology) throws LoadBalancerExtensionException {
 
 
-        log.info("========Configuring====== ");
+        log.info("Configuring Load balancer ");
 
-        //printing topology value for testing purposes
+        //printing topology value as a xml for testing purposes
        /* XStream xstream = new XStream(new Sun14ReflectionProvider(
                 new FieldDictionary(new ImmutableFieldKeySorter())),
                 new DomDriver("utf-8"));
