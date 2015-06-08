@@ -20,10 +20,7 @@
 package org.apache.stratos.gce.extension;
 
 import com.google.api.services.compute.model.TargetPool;
-import org.apache.stratos.load.balancer.common.domain.Cluster;
-import org.apache.stratos.load.balancer.common.domain.Member;
-import org.apache.stratos.load.balancer.common.domain.Service;
-import org.apache.stratos.load.balancer.common.domain.Topology;
+import org.apache.stratos.load.balancer.common.domain.*;
 import org.apache.stratos.load.balancer.extension.api.LoadBalancer;
 import org.apache.stratos.load.balancer.extension.api.exception.LoadBalancerExtensionException;
 import org.apache.commons.logging.Log;
@@ -31,7 +28,10 @@ import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 
 public class GCELoadBalancer implements LoadBalancer {
 
@@ -111,12 +111,21 @@ public class GCELoadBalancer implements LoadBalancer {
 
                     TargetPool targetPool = new TargetPool();
 
+                    List<Integer> forwardingRulesList = new ArrayList<Integer>();
 
                     for (Member member : cluster.getMembers()) {
 
-                        //set instances(members) to targetPool object
+                        //TODO:set instances(members) to targetPool
+
                         //add forwarding rules(Ports to be forwarded)
-                        //for(Integer port :member.getPorts()){}
+
+                        //Iterator iterator = member.getPorts().iterator();
+
+
+                        for(Object port : member.getPorts()){
+                            log.info("=================port: "+ port.toString());
+                        }
+
                     }
 
                     LoadBalancerConfiguration loadBalancerConfiguration = new LoadBalancerConfiguration(

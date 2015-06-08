@@ -54,6 +54,10 @@ public class LoadBalancerConfiguration {
         forwardingRulesList.add(forwardingRule);
     }
 
+    public void setForwardingRulesList(List<Integer> forwardingRulesList){
+        this.forwardingRulesList = forwardingRulesList;
+    }
+
     public List getForwardingRulesList() {
         return forwardingRulesList;
     }
@@ -68,7 +72,7 @@ public class LoadBalancerConfiguration {
     }
 
     public void setStatus(boolean status) {
-        isRunning = status;
+        this.isRunning = status;
     }
 
     public boolean getStatus() {
