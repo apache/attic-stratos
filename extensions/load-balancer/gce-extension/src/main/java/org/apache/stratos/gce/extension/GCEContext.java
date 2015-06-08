@@ -103,8 +103,6 @@ public class GCEContext {
         validateSystemProperty(Constants.REGION_NAME);
         validateSystemProperty(Constants.KEY_FILE_PATH);
         validateSystemProperty(Constants.GCE_ACCOUNT_ID);
-        validateSystemProperty(Constants.DATA_STORE_DIRECTORY);
-
 
         if (cepStatsPublisherEnabled) {
             validateSystemProperty(Constants.THRIFT_RECEIVER_IP);
