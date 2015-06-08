@@ -124,6 +124,7 @@ public class GCELoadBalancer implements LoadBalancer {
 
                         for(Object port : member.getPorts()){
                             log.info("=================port: "+ ((Port) port).getValue());
+                            log.info("=================protocol: "+ ((Port) port).getProtocol());
                         }
 
                     }
