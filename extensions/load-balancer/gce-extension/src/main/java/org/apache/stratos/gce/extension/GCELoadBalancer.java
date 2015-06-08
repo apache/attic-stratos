@@ -92,9 +92,6 @@ public class GCELoadBalancer implements LoadBalancer {
                 gceOperations.addInstancesToTargetPool(loadBalancerConfiguration.getInstancesList(),
                         loadBalancerConfiguration.getTargetPoolName());
 
-
-
-
                 //create forwarding rules in GCE
                 for (String forwardingRuleName : loadBalancerConfiguration.getForwardingRuleNames()) { //for each port
                     //create a forwarding rule in GCE

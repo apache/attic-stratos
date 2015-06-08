@@ -462,11 +462,34 @@ public class GCEOperations {
         //todo Remove try catch
         try {
             //execute
-            compute.targetPools().addInstance(PROJECT_ID, REGION_NAME,
+            Operation operation = compute.targetPools().addInstance(PROJECT_ID, REGION_NAME,
                     targetPoolName, targetPoolsAddInstanceRequest).execute();
+            //wait until operation succeed
+            while (true){
+                if(operation.getStatus().equals("DONE")){
+
+                    //log response
+                    if(log.isDebugEnabled()){
+                        log.debug("Target pool creation operation Status: "+operation.getStatusMessage());
+                    }
+                    if (log.isErrorEnabled()) {
+                        for ( Errors errors : operation.getError().getErrors()) {
+                            log.error("Target pool creation operation error: " + errors.getMessage());
+                        }
+                    }
+                    return;
+                }
+                if(log.isDebugEnabled()){
+                    log.debug("Waiting until the Add instances to target pool API call get succeeded");
+                }
+                Thread.sleep(100);
+            }
+
 
 
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
