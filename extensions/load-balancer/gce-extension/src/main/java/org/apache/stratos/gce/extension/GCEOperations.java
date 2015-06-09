@@ -64,7 +64,7 @@ public class GCEOperations {
     //health check
     private static final String HEALTH_CHECK_REQUEST_PATH = GCEContext.getInstance().getHealthCheckRequestPath();
     private static final String HEALTH_CHECK_PORT = GCEContext.getInstance().getHealthCheckPort();
-    private static final String HEALTH_CHECK_TIME_OUT_SEC =GCEContext.getInstance().getHealthCheckTimeOutSec();
+    private static final String HEALTH_CHECK_TIME_OUT_SEC = GCEContext.getInstance().getHealthCheckTimeOutSec();
     private static final String HEALTH_CHECK_UNHEALTHY_THRESHOLD = GCEContext.getInstance().getHealthCheckUnhealthyThreshold();
 
     /**
@@ -128,10 +128,14 @@ public class GCEOperations {
      *
      * @param targetPoolName
      */
-    public void createTargetPool(String targetPoolName) {
+    public void createTargetPool(String targetPoolName, String healthCheckName) {
 
         TargetPool targetPool = new TargetPool();
         targetPool.setName(targetPoolName);
+        List<String> httpHealthChecks = new ArrayList<String>();
+        httpHealthChecks.add(getHealthCheckURLFromName(healthCheckName));
+
+        targetPool.setHealthChecks(httpHealthChecks);
 
         //TODO:REMOVE try catch
         try {
@@ -139,32 +143,32 @@ public class GCEOperations {
                     compute.targetPools().insert(PROJECT_ID, REGION_NAME, targetPool).execute();
             //wait until operation succeed
             int timeout = 0;
-            while (true){
+            while (true) {
                 //todo: correct this line
-                if(operation.getStatus().equals("DONE")){
+                if (operation.getStatus().equals("DONE")) {
 
                     //log response
-                    if(log.isDebugEnabled()){
-                        log.debug("Target pool creation operation Status: "+operation.getStatusMessage());
+                    if (log.isDebugEnabled()) {
+                        log.debug("Target pool creation operation Status: " + operation.getStatusMessage());
                     }
                     if (log.isErrorEnabled()) {
-                        for ( Errors errors : operation.getError().getErrors()) {
+                        for (Errors errors : operation.getError().getErrors()) {
                             log.error("Target pool creation operation error: " + errors.getMessage());
                         }
                     }
                     return;
                 }
-                if(log.isDebugEnabled()){
+                if (log.isDebugEnabled()) {
                     log.debug("Waiting until the create target pool API call get succeeded");
                 }
-                if(OPERATION_TIMEOUT_MSILEC == timeout){
-                    if(log.isDebugEnabled()){
+                if (OPERATION_TIMEOUT_MSILEC == timeout) {
+                    if (log.isDebugEnabled()) {
                         log.debug("Operation timeout reached for create target pool operation");
                     }
                     return;
                 }
                 Thread.sleep(100);
-                timeout+=100;
+                timeout += 100;
             }
 
         } catch (IOException e) {
@@ -178,38 +182,38 @@ public class GCEOperations {
 
     }
 
-    public void deleteTargetPool(String targetPoolName){
+    public void deleteTargetPool(String targetPoolName) {
         try {
             Operation operation = compute.targetPools().delete(PROJECT_ID, REGION_NAME, targetPoolName).execute();
 
             int timeout = 0;
             //wait until operation succeed
-            while (true){                //todo: correct this line
+            while (true) {                //todo: correct this line
 
-                if(operation.getStatus().equals("DONE")){
+                if (operation.getStatus().equals("DONE")) {
 
                     //log response
-                    if(log.isDebugEnabled()){
-                        log.debug("Delete target pool operation Status: "+operation.getStatusMessage());
+                    if (log.isDebugEnabled()) {
+                        log.debug("Delete target pool operation Status: " + operation.getStatusMessage());
                     }
                     if (log.isErrorEnabled()) {
-                        for ( Errors errors : operation.getError().getErrors()) {
+                        for (Errors errors : operation.getError().getErrors()) {
                             log.error("Delete target pool operation error: " + errors.getMessage());
                         }
                     }
                     return;
                 }
-                if(log.isDebugEnabled()){
+                if (log.isDebugEnabled()) {
                     log.debug("Waiting until the delete target pool API call get succeeded");
                 }
-                if(OPERATION_TIMEOUT_MSILEC == timeout){
-                    if(log.isDebugEnabled()){
+                if (OPERATION_TIMEOUT_MSILEC == timeout) {
+                    if (log.isDebugEnabled()) {
                         log.debug("Operation timeout reached for delete target pool operation");
                     }
                     return;
                 }
                 Thread.sleep(100);
-                timeout+=100;
+                timeout += 100;
             }
 
         } catch (IOException e) {
@@ -227,7 +231,7 @@ public class GCEOperations {
      * @param protocol
      */
 
-    public void createForwardingRule(String forwardingRuleName, String targetPoolName, String protocol,String portRange) {
+    public void createForwardingRule(String forwardingRuleName, String targetPoolName, String protocol, String portRange) {
 
         //Need to get target pool resource URL
         TargetPool targetPool = getTargetPool(targetPoolName);
@@ -243,32 +247,32 @@ public class GCEOperations {
             int timeout = 0;
 
             //wait until operation succeed
-            while (true){                //todo: correct this line
+            while (true) {                //todo: correct this line
 
-                if(operation.getStatus().equals("DONE")){
+                if (operation.getStatus().equals("DONE")) {
 
                     //log response
-                    if(log.isDebugEnabled()){
-                        log.debug("Create forwarding rule operation Status: "+operation.getStatusMessage());
+                    if (log.isDebugEnabled()) {
+                        log.debug("Create forwarding rule operation Status: " + operation.getStatusMessage());
                     }
                     if (log.isErrorEnabled()) {
-                        for ( Errors errors : operation.getError().getErrors()) {
+                        for (Errors errors : operation.getError().getErrors()) {
                             log.error("Create forwarding rule operation error: " + errors.getMessage());
                         }
                     }
                     return;
                 }
-                if(log.isDebugEnabled()){
+                if (log.isDebugEnabled()) {
                     log.debug("Waiting until the create forwarding rule API call get succeeded");
                 }
-                if(OPERATION_TIMEOUT_MSILEC == timeout){
-                    if(log.isDebugEnabled()){
+                if (OPERATION_TIMEOUT_MSILEC == timeout) {
+                    if (log.isDebugEnabled()) {
                         log.debug("Operation timeout reached for create forwarding rule operation");
                     }
                     return;
                 }
                 Thread.sleep(100);
-                timeout+=100;
+                timeout += 100;
             }
 
         } catch (IOException e) {
@@ -278,39 +282,39 @@ public class GCEOperations {
         }
     }
 
-    public void deleteForwardingRule(String forwardingRuleName){
+    public void deleteForwardingRule(String forwardingRuleName) {
         try {
             Operation operation = compute.forwardingRules().
                     delete(PROJECT_ID, REGION_NAME, forwardingRuleName).execute();
 
             int timeout = 0;
             //wait until operation succeed
-            while (true){
-                if(operation.getStatus().equals("DONE")){                //todo: correct this line
+            while (true) {
+                if (operation.getStatus().equals("DONE")) {                //todo: correct this line
 
 
                     //log response
-                    if(log.isDebugEnabled()){
-                        log.debug("delete forwarding rule operation Status: "+operation.getStatusMessage());
+                    if (log.isDebugEnabled()) {
+                        log.debug("delete forwarding rule operation Status: " + operation.getStatusMessage());
                     }
                     if (log.isErrorEnabled()) {
-                        for ( Errors errors : operation.getError().getErrors()) {
+                        for (Errors errors : operation.getError().getErrors()) {
                             log.error("delete forwarding rule operation error: " + errors.getMessage());
                         }
                     }
                     return;
                 }
-                if(log.isDebugEnabled()){
+                if (log.isDebugEnabled()) {
                     log.debug("Waiting until the delete forwarding rule API call get succeeded");
                 }
-                if(OPERATION_TIMEOUT_MSILEC == timeout){
-                    if(log.isDebugEnabled()){
+                if (OPERATION_TIMEOUT_MSILEC == timeout) {
+                    if (log.isDebugEnabled()) {
                         log.debug("Operation timeout reached for delete forwarding rule operation");
                     }
                     return;
                 }
                 Thread.sleep(100);
-                timeout+=100;
+                timeout += 100;
             }
 
         } catch (IOException e) {
@@ -405,7 +409,6 @@ public class GCEOperations {
             instanceReferenceList) {
 
 
-
     }
 
     /**
@@ -438,7 +441,6 @@ public class GCEOperations {
      * @throws IOException
      */
     public static InstanceList getInstanceList() throws IOException {
-        System.out.println("Listing running Compute Engine Instances");
         Compute.Instances.List instances = compute.instances().
                 list(PROJECT_ID, ZONE_NAME).setFilter(RUNNING_FILTER);
         InstanceList instanceList = instances.execute();
@@ -479,6 +481,7 @@ public class GCEOperations {
 
     }
 
+
     /**
      * This method is used for set port rage for forwarding rule
      */
@@ -486,12 +489,12 @@ public class GCEOperations {
         //todo:implement this method
     }
 
-    public void addInstancesToTargetPool(List<String> instancesNamesList, String targetPoolName){
+    public void addInstancesToTargetPool(List<String> instancesNamesList, String targetPoolName) {
 
         log.info("Adding instances to target pool");
 
-        if(instancesNamesList.isEmpty()){
-            if(log.isDebugEnabled()){
+        if (instancesNamesList.isEmpty()) {
+            if (log.isDebugEnabled()) {
                 log.debug("Cannot add instances to target pool. InstancesNamesList is empty.");
             }
             return;
@@ -500,7 +503,7 @@ public class GCEOperations {
         List<InstanceReference> instanceReferenceList = new ArrayList<InstanceReference>();
 
         //add instance to instance reference list, we should use the instance URL
-        for(String instanceName : instancesNamesList ){ //for all instances
+        for (String instanceName : instancesNamesList) { //for all instances
 
             instanceReferenceList.add(new InstanceReference().
                     setInstance(getInstanceURLFromName(instanceName)));
@@ -520,31 +523,31 @@ public class GCEOperations {
 
             int timeout = 0;
             //wait until operation succeed
-            while (true){
-                if(operation.getStatus().equals("DONE")){
+            while (true) {
+                if (operation.getStatus().equals("DONE")) {
 
                     //log response
-                    if(log.isDebugEnabled()){
-                        log.debug("Add instances to target pool operation Status: "+operation.getStatusMessage());
+                    if (log.isDebugEnabled()) {
+                        log.debug("Add instances to target pool operation Status: " + operation.getStatusMessage());
                     }
                     if (log.isErrorEnabled()) {
-                        for ( Errors errors : operation.getError().getErrors()) {
+                        for (Errors errors : operation.getError().getErrors()) {
                             log.error("Add instances to target pool operation error: " + errors.getMessage());
                         }
                     }
                     return;
                 }
-                if(log.isDebugEnabled()){
+                if (log.isDebugEnabled()) {
                     log.debug("Waiting until the Add instances to target pool API call get succeeded");
                 }
-                if(OPERATION_TIMEOUT_MSILEC == timeout){
-                    if(log.isDebugEnabled()){
+                if (OPERATION_TIMEOUT_MSILEC == timeout) {
+                    if (log.isDebugEnabled()) {
                         log.debug("Operation timeout reached for Add instances to target pool operation");
                     }
                     return;
                 }
                 Thread.sleep(100);
-                timeout+=100;
+                timeout += 100;
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -553,9 +556,9 @@ public class GCEOperations {
         }
     }
 
-    public void createHealthCheck(String healthCheckName){
+    public void createHealthCheck(String healthCheckName) {
 
-        if(!isHealthCheckExists(healthCheckName)){//if the health check is not present already
+        if (!isHealthCheckExists(healthCheckName)) {//if the health check is not present already
 
             HttpHealthCheck httpHealthCheck = new HttpHealthCheck();
             httpHealthCheck.setName(healthCheckName);
@@ -565,34 +568,34 @@ public class GCEOperations {
             httpHealthCheck.setTimeoutSec(Integer.parseInt(HEALTH_CHECK_TIME_OUT_SEC));
             httpHealthCheck.setUnhealthyThreshold(Integer.parseInt(HEALTH_CHECK_UNHEALTHY_THRESHOLD));
             try {
-                Operation operation = compute.httpHealthChecks().insert(PROJECT_ID,httpHealthCheck).execute();
+                Operation operation = compute.httpHealthChecks().insert(PROJECT_ID, httpHealthCheck).execute();
 
                 int timeout = 0;
                 //wait until succeed
-                while (true){
-                    if(operation.getStatus().equals("DONE")){
+                while (true) {
+                    if (operation.getStatus().equals("DONE")) {
                         //log response
-                        if(log.isDebugEnabled()){
-                            log.debug("Create health check operation Status: "+operation.getStatusMessage());
+                        if (log.isDebugEnabled()) {
+                            log.debug("Create health check operation Status: " + operation.getStatusMessage());
                         }
                         if (log.isErrorEnabled()) {
-                            for ( Errors errors : operation.getError().getErrors()) {
+                            for (Errors errors : operation.getError().getErrors()) {
                                 log.error("Create create health check operation error: " + errors.getMessage());
                             }
                         }
                         return;
                     }
-                    if(log.isDebugEnabled()){
+                    if (log.isDebugEnabled()) {
                         log.debug("Waiting until the create health check API call get succeeded");
                     }
-                    if(OPERATION_TIMEOUT_MSILEC == timeout){
-                        if(log.isDebugEnabled()){
+                    if (OPERATION_TIMEOUT_MSILEC == timeout) {
+                        if (log.isDebugEnabled()) {
                             log.debug("Operation timeout reached for create health check operation");
                         }
                         return;
                     }
                     Thread.sleep(100);
-                    timeout+=100;
+                    timeout += 100;
                 }
 
             } catch (IOException e) {
@@ -601,20 +604,18 @@ public class GCEOperations {
                 e.printStackTrace();
             }
 
-        }
-
-        else {
-            if(log.isDebugEnabled()) {
+        } else {
+            if (log.isDebugEnabled()) {
                 log.debug("Health check is already exist: " + healthCheckName);
             }
         }
     }
 
-    public boolean isHealthCheckExists(String healthCheckName){
+    public boolean isHealthCheckExists(String healthCheckName) {
         try {
-            HttpHealthCheckList httpHealthCheckList =  compute.httpHealthChecks().list(PROJECT_ID).execute();
-            for(HttpHealthCheck httpHealthCheck: httpHealthCheckList.getItems()){
-                if(httpHealthCheck.getName().equals(healthCheckName)){
+            HttpHealthCheckList httpHealthCheckList = compute.httpHealthChecks().list(PROJECT_ID).execute();
+            for (HttpHealthCheck httpHealthCheck : httpHealthCheckList.getItems()) {
+                if (httpHealthCheck.getName().equals(healthCheckName)) {
                     return true;
                 }
             }
@@ -623,6 +624,53 @@ public class GCEOperations {
         }
         return false;
     }
+
+    public HttpHealthCheck getHealthCheckFromName(String healthCheckName) {
+
+        HttpHealthCheckList healthCheckList = getHealthCheckList();
+        for (HttpHealthCheck httpHealthCheck : healthCheckList.getItems()) {
+            if (httpHealthCheck.getName().equals(healthCheckName)) {
+                //healthcheck is available
+                return httpHealthCheck;
+            }
+        }
+        return null;
+    }
+
+    public static String getHealthCheckURLFromName(String healthCheckName) {
+
+        String healthCheckURL;
+
+        //check whether the given instance is available
+        HttpHealthCheckList healthCheckList = getHealthCheckList();
+        for (HttpHealthCheck httpHealthCheck : healthCheckList.getItems()) {
+            if (httpHealthCheck.getName().equals(healthCheckName)) {
+                //instance is available
+                //getInstance URL
+                healthCheckURL = httpHealthCheck.getSelfLink();
+                return healthCheckURL;
+            }
+        }
+        return null;
+
+    }
+
+    public static HttpHealthCheckList getHealthCheckList() {
+        try {
+            Compute.HttpHealthChecks.List healthChecks = compute.httpHealthChecks().list(PROJECT_ID);
+            HttpHealthCheckList healthCheckList = healthChecks.execute();
+            if (healthCheckList.getItems() == null) {
+                log.info("No health check found for specified project");
+                return null;
+            } else {
+                return healthCheckList;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 
     /**
      * this is a sample method using for testing purposes
