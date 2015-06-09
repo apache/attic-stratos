@@ -161,6 +161,7 @@ public class GCEOperations {
                     if(log.isDebugEnabled()){
                         log.debug("Operation timeout reached for create target pool operation");
                     }
+                    return;
                 }
                 Thread.sleep(100);
                 timeout+=100;
@@ -205,6 +206,7 @@ public class GCEOperations {
                     if(log.isDebugEnabled()){
                         log.debug("Operation timeout reached for delete target pool operation");
                     }
+                    return;
                 }
                 Thread.sleep(100);
                 timeout+=100;
@@ -260,8 +262,9 @@ public class GCEOperations {
                 }
                 if(OPERATION_TIMEOUT_MSILEC == timeout){
                     if(log.isDebugEnabled()){
-                        log.debug("Operation timeout reached for delete target pool operation");
+                        log.debug("Operation timeout reached for create forwarding rule operation");
                     }
+                    return;
                 }
                 Thread.sleep(100);
                 timeout+=100;
@@ -301,8 +304,9 @@ public class GCEOperations {
                 }
                 if(OPERATION_TIMEOUT_MSILEC == timeout){
                     if(log.isDebugEnabled()){
-                        log.debug("Operation timeout reached for delete target pool operation");
+                        log.debug("Operation timeout reached for delete forwarding rule operation");
                     }
+                    return;
                 }
                 Thread.sleep(100);
                 timeout+=100;
@@ -527,8 +531,9 @@ public class GCEOperations {
                 }
                 if(OPERATION_TIMEOUT_MSILEC == timeout){
                     if(log.isDebugEnabled()){
-                        log.debug("Operation timeout reached for delete target pool operation");
+                        log.debug("Operation timeout reached for Add instances to target pool operation");
                     }
+                    return;
                 }
                 Thread.sleep(100);
                 timeout+=100;
@@ -554,6 +559,7 @@ public class GCEOperations {
             try {
                 Operation operation = compute.httpHealthChecks().insert(PROJECT_ID,httpHealthCheck).execute();
 
+                int timeout = 0;
                 //wait until succeed
                 while (true){
                     if(operation.getStatus().equals("DONE")){
@@ -571,7 +577,14 @@ public class GCEOperations {
                     if(log.isDebugEnabled()){
                         log.debug("Waiting until the create health check API call get succeeded");
                     }
+                    if(OPERATION_TIMEOUT_MSILEC == timeout){
+                        if(log.isDebugEnabled()){
+                            log.debug("Operation timeout reached for create health check operation");
+                        }
+                        return;
+                    }
                     Thread.sleep(100);
+                    timeout+=100;
                 }
 
             } catch (IOException e) {
