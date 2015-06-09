@@ -87,6 +87,8 @@ public class GCELoadBalancer implements LoadBalancer {
                 //create a health check
                 gceOperations.createHealthCheck(loadBalancerConfiguration.getHealthCheckName());
 
+                //todo: add health check to target pool
+
                 //crate a target pool in GCE
                 gceOperations.createTargetPool(loadBalancerConfiguration.getTargetPoolName());
 
