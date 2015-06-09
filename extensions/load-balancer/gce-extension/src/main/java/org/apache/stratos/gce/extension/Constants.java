@@ -38,7 +38,7 @@ public class Constants {
     public static final String GCE_ACCOUNT_ID = "gce.account.id";
     public static final String HEALTH_CHECK_REQUEST_PATH = "health.check.request.path";
     public static final String HEALTH_CHECK_PORT = "health.check.port";
-    public static final String HEALTH_CHECK_TIME_OUT_SEC = "health.check.time.out.sec";
+    public static final String HEALTH_CHECK_TIME_OUT_SEC = "health.check.timeout.sec";
     public static final String HEALTH_CHECK_UNHEALTHY_THRESHOLD = "health.check.unhealthy.threshold";
 
 }
