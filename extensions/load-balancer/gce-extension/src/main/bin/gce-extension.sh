@@ -50,7 +50,7 @@ properties="-Djndi.properties.dir=${script_path}/../conf
             -Dhealth.check.request.path=/
             -Dhealth.check.port=80
             -Dhealth.check.timeout.sec=5
-            -Dhealth.check.unhealthyThreshold=2"
+            -Dhealth.check.unhealthy.threshold=2"
 
 # Uncomment below line to enable remote debugging
 debug="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5006"
