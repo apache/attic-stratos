@@ -51,6 +51,7 @@ public class GCEOperations {
 
     private static final Log log = LogFactory.getLog(GCELoadBalancer.class);
 
+    //project related
     private static final String PROJECT_NAME = GCEContext.getInstance().getProjectName();
     private static final String PROJECT_ID = GCEContext.getInstance().getProjectID();
     private static final String ZONE_NAME = GCEContext.getInstance().getZoneName();
@@ -59,6 +60,12 @@ public class GCEOperations {
     //auth
     private static final String KEY_FILE_PATH = GCEContext.getInstance().getKeyFilePath();
     private static final String ACCOUNT_ID = GCEContext.getInstance().getGceAccountID();
+
+    //health check
+    private static final String HEALTH_CHECK_REQUEST_PATH = GCEContext.getInstance().getHealthCheckRequestPath();
+    private static final String HEALTH_CHECK_PORT = GCEContext.getInstance().getHealthCheckPort();
+    private static final String HEALTH_CHECK_TIME_OUT_SEC =GCEContext.getInstance().getHealthCheckTimeOutSec();
+    private static final String HEALTH_CHECK_UNHEALTHY_THRESHOLD = GCEContext.getInstance().getHealthCheckUnhealthyThreshold();
 
     /**
      * Directory to store user credentials.
@@ -174,11 +181,11 @@ public class GCEOperations {
 
                     //log response
                     if(log.isDebugEnabled()){
-                        log.debug("Target pool creation operation Status: "+operation.getStatusMessage());
+                        log.debug("Delete target pool operation Status: "+operation.getStatusMessage());
                     }
                     if (log.isErrorEnabled()) {
                         for ( Errors errors : operation.getError().getErrors()) {
-                            log.error("Target pool creation operation error: " + errors.getMessage());
+                            log.error("Delete target pool operation error: " + errors.getMessage());
                         }
                     }
                     return;
@@ -223,11 +230,11 @@ public class GCEOperations {
 
                     //log response
                     if(log.isDebugEnabled()){
-                        log.debug("Target pool creation operation Status: "+operation.getStatusMessage());
+                        log.debug("Create forwarding rule operation Status: "+operation.getStatusMessage());
                     }
                     if (log.isErrorEnabled()) {
                         for ( Errors errors : operation.getError().getErrors()) {
-                            log.error("Target pool creation operation error: " + errors.getMessage());
+                            log.error("Create forwarding rule operation error: " + errors.getMessage());
                         }
                     }
                     return;
@@ -256,11 +263,11 @@ public class GCEOperations {
 
                     //log response
                     if(log.isDebugEnabled()){
-                        log.debug("Target pool creation operation Status: "+operation.getStatusMessage());
+                        log.debug("delete forwarding rule operation Status: "+operation.getStatusMessage());
                     }
                     if (log.isErrorEnabled()) {
                         for ( Errors errors : operation.getError().getErrors()) {
-                            log.error("Target pool creation operation error: " + errors.getMessage());
+                            log.error("delete forwarding rule operation error: " + errors.getMessage());
                         }
                     }
                     return;
@@ -474,11 +481,11 @@ public class GCEOperations {
 
                     //log response
                     if(log.isDebugEnabled()){
-                        log.debug("Target pool creation operation Status: "+operation.getStatusMessage());
+                        log.debug("Add instances to target pool operation Status: "+operation.getStatusMessage());
                     }
                     if (log.isErrorEnabled()) {
                         for ( Errors errors : operation.getError().getErrors()) {
-                            log.error("Target pool creation operation error: " + errors.getMessage());
+                            log.error("Add instances to target pool operation error: " + errors.getMessage());
                         }
                     }
                     return;
@@ -488,14 +495,74 @@ public class GCEOperations {
                 }
                 Thread.sleep(100);
             }
-
-
-
         } catch (IOException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    public void createHealthCheck(String healthCheckName){
+
+        if(!isHealthCheckExists(healthCheckName)){//if the health check is not present already
+
+            HttpHealthCheck httpHealthCheck = new HttpHealthCheck();
+            httpHealthCheck.setName(healthCheckName);
+            httpHealthCheck.setRequestPath(HEALTH_CHECK_REQUEST_PATH);
+            //TODO: read as integers
+            httpHealthCheck.setPort(Integer.parseInt(HEALTH_CHECK_PORT));
+            httpHealthCheck.setTimeoutSec(Integer.parseInt(HEALTH_CHECK_TIME_OUT_SEC));
+            try {
+                Operation operation = compute.httpHealthChecks().insert(PROJECT_ID,httpHealthCheck).execute();
+
+                //wait until succeed
+                while (true){
+                    if(operation.getStatus().equals("DONE")){
+
+                        //log response
+                        if(log.isDebugEnabled()){
+                            log.debug("Create health check operation Status: "+operation.getStatusMessage());
+                        }
+                        if (log.isErrorEnabled()) {
+                            for ( Errors errors : operation.getError().getErrors()) {
+                                log.error("Create create health check operation error: " + errors.getMessage());
+                            }
+                        }
+                        return;
+                    }
+                    if(log.isDebugEnabled()){
+                        log.debug("Waiting until the create health check API call get succeeded");
+                    }
+                    Thread.sleep(100);
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+        }
+
+        else {
+            if(log.isDebugEnabled()) {
+                log.debug("Health check is already exist: " + healthCheckName);
+            }
+        }
+    }
+
+    public boolean isHealthCheckExists(String healthCheckName){
+        try {
+            HttpHealthCheckList httpHealthCheckList =  compute.httpHealthChecks().list(PROJECT_ID).execute();
+            for(HttpHealthCheck httpHealthCheck: httpHealthCheckList.getItems()){
+                if(httpHealthCheck.getName().equals(healthCheckName)){
+                    return true;
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     /**

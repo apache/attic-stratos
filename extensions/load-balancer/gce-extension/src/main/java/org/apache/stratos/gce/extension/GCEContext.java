@@ -44,6 +44,11 @@ public class GCEContext {
     private String regionName;
     private String keyFilePath;
     private String gceAccountID;
+    private String healthCheckRequestPath;
+    private String healthCheckPort;
+    private String healthCheckTimeOutSec;
+    private String healthCheckUnhealthyThreshold;
+
 
 
     private GCEContext() {
@@ -61,6 +66,10 @@ public class GCEContext {
         this.regionName = System.getProperty(Constants.REGION_NAME);
         this.keyFilePath = System.getProperty(Constants.KEY_FILE_PATH);
         this.gceAccountID = System.getProperty(Constants.GCE_ACCOUNT_ID);
+        this.healthCheckRequestPath = System.getProperty(Constants.HEALTH_CHECK_REQUEST_PATH);
+        this.healthCheckPort = System.getProperty(Constants.HEALTH_CHECK_PORT);
+        this.healthCheckTimeOutSec = System.getProperty(Constants.HEALTH_CHECK_TIME_OUT_SEC);
+        this.healthCheckUnhealthyThreshold = System.getProperty(Constants.HEALTH_CHECK_UNHEALTHY_THRESHOLD);
 
 
         if (log.isDebugEnabled()) {
@@ -77,6 +86,11 @@ public class GCEContext {
             log.debug(Constants.REGION_NAME + " = " + regionName);
             log.debug(Constants.KEY_FILE_PATH + " = " + keyFilePath);
             log.debug(Constants.GCE_ACCOUNT_ID + " = " + gceAccountID);
+            log.debug(Constants.HEALTH_CHECK_REQUEST_PATH + " = " + healthCheckRequestPath);
+            log.debug(Constants.HEALTH_CHECK_PORT + " = " + healthCheckPort);
+            log.debug(Constants.HEALTH_CHECK_TIME_OUT_SEC + " = " + healthCheckTimeOutSec);
+            log.debug(Constants.HEALTH_CHECK_UNHEALTHY_THRESHOLD + " = " + healthCheckUnhealthyThreshold);
+
         }
 
     }
@@ -103,12 +117,16 @@ public class GCEContext {
         validateSystemProperty(Constants.REGION_NAME);
         validateSystemProperty(Constants.KEY_FILE_PATH);
         validateSystemProperty(Constants.GCE_ACCOUNT_ID);
+        validateSystemProperty(Constants.HEALTH_CHECK_REQUEST_PATH);
+        validateSystemProperty(Constants.HEALTH_CHECK_PORT);
+        validateSystemProperty(Constants.HEALTH_CHECK_TIME_OUT_SEC);
+        validateSystemProperty(Constants.HEALTH_CHECK_UNHEALTHY_THRESHOLD);
+
 
         if (cepStatsPublisherEnabled) {
             validateSystemProperty(Constants.THRIFT_RECEIVER_IP);
             validateSystemProperty(Constants.THRIFT_RECEIVER_PORT);
             validateSystemProperty(Constants.NETWORK_PARTITION_ID);
-
         }
     }
 
@@ -163,4 +181,19 @@ public class GCEContext {
         return gceAccountID;
     }
 
+    public String getHealthCheckRequestPath() {
+        return healthCheckRequestPath;
+    }
+
+    public String getHealthCheckPort() {
+        return healthCheckPort;
+    }
+
+    public String getHealthCheckTimeOutSec() {
+        return healthCheckTimeOutSec;
+    }
+
+    public String getHealthCheckUnhealthyThreshold() {
+        return healthCheckUnhealthyThreshold;
+    }
 }
