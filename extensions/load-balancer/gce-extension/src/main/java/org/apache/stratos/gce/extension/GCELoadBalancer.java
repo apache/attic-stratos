@@ -298,7 +298,7 @@ public class GCELoadBalancer implements LoadBalancer {
 
     private String forwardingRuleNameCreator(int port,String clusterID){
         String forwardingRuleName = GCEContext.getInstance().getNamePrefix() + "-" +
-                Integer.toString(port) + "-" + clusterID;
+                Integer.toString(port) + "-" + clusterID.trim().toLowerCase().replace(".","-");
         //length should be les than 62 characters
         if(forwardingRuleName.length()>=62){
             forwardingRuleName = forwardingRuleName.substring(0,62);
