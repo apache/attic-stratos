@@ -49,7 +49,7 @@ properties="-Djndi.properties.dir=${script_path}/../conf
             -Dgce.account.id=164588286821-a517i85433f83e0nthc4qjmoupri394q@developer.gserviceaccount.com
             -Dhealth.check.request.path=/
             -Dhealth.check.port=80
-            -Dhealth.check.timeoutSec=5
+            -Dhealth.check.timeout.sec=5
             -Dhealth.check.unhealthyThreshold=2"
 
 # Uncomment below line to enable remote debugging
