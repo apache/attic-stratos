@@ -489,6 +489,13 @@ public class GCEOperations {
 
         log.info("Adding instances to target pool");
 
+        if(instancesNamesList.isEmpty()){
+            if(log.isDebugEnabled()){
+                log.debug("Cannot add instances to target pool. InstancesNamesList is empty.");
+            }
+            return;
+        }
+
         List<InstanceReference> instanceReferenceList = new ArrayList<InstanceReference>();
 
         //add instance to instance reference list, we should use the instance URL
