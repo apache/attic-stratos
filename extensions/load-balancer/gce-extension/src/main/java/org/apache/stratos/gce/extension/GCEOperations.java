@@ -133,8 +133,6 @@ public class GCEOperations {
         TargetPool targetPool = new TargetPool();
         targetPool.setName(targetPoolName);
         List<String> httpHealthChecks = new ArrayList<String>();
-        httpHealthChecks.add(getHealthCheckURLFromName(healthCheckName));
-
         targetPool.setHealthChecks(httpHealthChecks);
 
         //TODO:REMOVE try catch
@@ -595,6 +593,7 @@ public class GCEOperations {
                         return;
                     }
                     Thread.sleep(100);
+
                     timeout += 100;
                 }
 
