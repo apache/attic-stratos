@@ -227,7 +227,7 @@ public class GCEOperations {
      * @param protocol
      */
 
-    public void createForwardingRule(String forwardingRuleName, String targetPoolName, String protocol) {
+    public void createForwardingRule(String forwardingRuleName, String targetPoolName, String protocol,String portRange) {
 
         //Need to get target pool resource URL
         TargetPool targetPool = getTargetPool(targetPoolName);
@@ -236,6 +236,7 @@ public class GCEOperations {
         forwardingRule.setName(forwardingRuleName);
         forwardingRule.setTarget(targetPoolURL);
         forwardingRule.setIPProtocol(protocol);
+        forwardingRule.setPortRange(portRange);
         try {
             Operation operation = compute.forwardingRules().insert(PROJECT_ID, REGION_NAME, forwardingRule).execute();
 

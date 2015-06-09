@@ -98,11 +98,33 @@ public class GCELoadBalancer implements LoadBalancer {
                         loadBalancerConfiguration.getTargetPoolName());
 
                 //create forwarding rules in GCE
-                for (String forwardingRuleName : loadBalancerConfiguration.getForwardingRuleNames()) { //for each port
-                    //create a forwarding rule in GCE
-                    gceOperations.createForwardingRule(forwardingRuleName,
-                            loadBalancerConfiguration.getTargetPoolName(), protocol);
+                List<Integer> ipList = loadBalancerConfiguration.getIpList();
+                //need to create a port range String
+                String portRange = "";
+                //if the ip list is empty
+                if(ipList.isEmpty()){
+                    if(log.isDebugEnabled()){
+                        log.debug("Ip list is null");
+                    }
+                    //as a temporary solution set all ports to be open
+                    portRange = "1-65535";
+
                 }
+                //else if ip list has only one value
+                else if (ipList.size() == 1){
+                    portRange = Integer.toString(ipList.get(0))+"-"+Integer.toString(ipList.get(0));
+                }
+                //else we have more than 1 value
+                else {
+                    //first we need to take the port range. So arrange ipList in ascending order
+                    Collections.sort(ipList);
+                    //take the first one and last one
+                    portRange = Integer.toString(ipList.get(0)) + "-" + Integer.toString(ipList.get(ipList.size()-1));
+                }
+
+                //create the forwarding rule
+                gceOperations.createForwardingRule(loadBalancerConfiguration.getForwardingRuleName(),
+                        loadBalancerConfiguration.getTargetPoolName(),protocol,portRange);
 
                 //set status to running
                 loadBalancerConfiguration.setStatus(true);
@@ -129,11 +151,7 @@ public class GCELoadBalancer implements LoadBalancer {
 
             if (loadBalancerConfiguration.getStatus()) { //if the load balancer is  already running
 
-                //delete forwarding rules from GCE
-                for(String forwardingRuleName : loadBalancerConfiguration.getForwardingRuleNames()){
-                    gceOperations.deleteForwardingRule(forwardingRuleName);
-                }
-
+                gceOperations.deleteForwardingRule(loadBalancerConfiguration.getForwardingRuleName());
                 //delete target pool from GCE
                 gceOperations.deleteTargetPool(loadBalancerConfiguration.getTargetPoolName());
 
@@ -177,7 +195,7 @@ public class GCELoadBalancer implements LoadBalancer {
 
                     //check and update
                     List<String> updatedInstancesList = new ArrayList<String>();
-                    HashMap<Integer,String> updatedIpToForwardingRuleNameMap = new HashMap<Integer, String>();
+                    List<Integer> updatedIPList = new ArrayList<Integer>();
 
 
                     for (Member member : cluster.getMembers()) {
@@ -191,28 +209,30 @@ public class GCELoadBalancer implements LoadBalancer {
 
                         //checking for forwarding rules and updating
                         for (Object port : member.getPorts()) {
-
                             int portValue = ((Port) port).getValue();
-
                             //if not present update it
-                            if (!updatedIpToForwardingRuleNameMap.containsKey(portValue)){ //if port is not in list
-                                //create a new forwarding rule name
-                                String forwardingRuleName = forwardingRuleNameCreator(portValue,cluster.getClusterId());
-                                //put the forwarding rule to map
-                                updatedIpToForwardingRuleNameMap.put(portValue, forwardingRuleName);
+                            if (!updatedIPList.contains(portValue)){ //if port is not in list
+                                //put the forwarding rule to list
+                               updatedIPList.add(portValue);
                             }
 
                         }
                     }
 
                     //set new forwarding rules and instances list
-                    loadBalancerConfiguration.setIPToForwardingRuleNameMap(updatedIpToForwardingRuleNameMap);
+                    loadBalancerConfiguration.setIpList(updatedIPList);
                     loadBalancerConfiguration.setInstancesList(updatedInstancesList);
 
                     if(loadBalancerConfiguration.getTargetPoolName() == null){ //this does not have a target pool name
                         //set target pool name
                         String targetPoolName = targetPoolNameCreator(cluster.getClusterId());
                         loadBalancerConfiguration.setTargetPoolName(targetPoolName);
+                    }
+
+                    if (loadBalancerConfiguration.getForwardingRuleName() == null){
+                        //set forwarding rule name
+                        String forwardingRuleName = forwardingRuleNameCreator(cluster.getClusterId());
+                        loadBalancerConfiguration.setForwardingRuleName(forwardingRuleName);
                     }
 
                     if(loadBalancerConfiguration.getHealthCheckName() == null){//if this does not have a forwarding rule name
@@ -222,11 +242,12 @@ public class GCELoadBalancer implements LoadBalancer {
                      }
 
 
+
                 } else {
                     //doesn't have a loadBalancerConfiguration object. So crate a new one and add to hash map
 
                     List<String> instancesList = new ArrayList<String>();
-                    HashMap<Integer,String> ipToForwardingRuleNameMap = new HashMap<Integer, String>();
+                    List<Integer> ipList = new ArrayList<Integer>();
 
                     for (Member member : cluster.getMembers()) {
 
@@ -236,22 +257,27 @@ public class GCELoadBalancer implements LoadBalancer {
                         //add forwarding rules(Ports to be forwarded)
                         for (Object port : member.getPorts()) {
                             int portValue = ((Port) port).getValue();
-                            if (!ipToForwardingRuleNameMap.containsKey(portValue)) { //if port is not in list
-                                //create a new forwarding rule name
-                                String forwardingRuleName = forwardingRuleNameCreator(portValue,cluster.getClusterId());
-                                //put the forwarding rule to map
-                                ipToForwardingRuleNameMap.put(portValue,forwardingRuleName);
+                            if (!ipList.contains(portValue)) { //if port is not in list
+                                //put the forwarding rule to list
+                                ipList.add(portValue);
                             }
                         }
 
                     }
 
                     LoadBalancerConfiguration loadBalancerConfiguration = new LoadBalancerConfiguration(
-                            cluster.getClusterId(), instancesList, ipToForwardingRuleNameMap);
+                            cluster.getClusterId(), instancesList, ipList);
+
                     if(loadBalancerConfiguration.getTargetPoolName() == null){ //this does not have a target pool name
                         //set target pool name
                         String targetPoolName = targetPoolNameCreator(cluster.getClusterId());
                         loadBalancerConfiguration.setTargetPoolName(targetPoolName);
+                    }
+
+                    if (loadBalancerConfiguration.getForwardingRuleName() == null){
+                        //set forwarding rule name
+                        String forwardingRuleName = forwardingRuleNameCreator(cluster.getClusterId());
+                        loadBalancerConfiguration.setForwardingRuleName(forwardingRuleName);
                     }
 
                     if(loadBalancerConfiguration.getHealthCheckName() == null){//if this does not have a forwarding rule name
@@ -296,9 +322,9 @@ public class GCELoadBalancer implements LoadBalancer {
         return  targetPoolName;
     }
 
-    private String forwardingRuleNameCreator(int port,String clusterID){
-        String forwardingRuleName = GCEContext.getInstance().getNamePrefix() + "-" +
-                Integer.toString(port) + "-" + clusterID.trim().toLowerCase().replace(".","-");
+    private String forwardingRuleNameCreator(String clusterID){
+        String forwardingRuleName = GCEContext.getInstance().getNamePrefix()
+                + "-fr-" + clusterID.trim().toLowerCase().replace(".","-");
         //length should be les than 62 characters
         if(forwardingRuleName.length()>=62){
             forwardingRuleName = forwardingRuleName.substring(0,62);

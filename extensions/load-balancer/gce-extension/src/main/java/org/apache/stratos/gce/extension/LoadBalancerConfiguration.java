@@ -36,11 +36,11 @@ public class LoadBalancerConfiguration {
 
     //A load balancer must have a target pool(set of instances)
     private List<String> instancesList;
-    //A load balancer can have one or more forwarding rules(set of ports to be forwarded)
-    //we create a map to store the port IP and forwarding rule name
-    private HashMap<Integer,String> ipToForwardingRuleNameMap;
+    //A load balancer can have one IPs to be forwarded
+    private List<Integer> ipList;
     //cluster ID from stratos side
     private String clusterID;
+    private String forwardingRuleName;
     private String targetPoolName;
     private String healthCheckName;
     //Whether we have executed this configuration in GCE or not
@@ -48,26 +48,26 @@ public class LoadBalancerConfiguration {
 
 
     public LoadBalancerConfiguration(String clusterID, List<String> instancesList,
-                                     HashMap<Integer,String> ipToForwardingRuleNameMap) {
+                                     List<Integer> ipList) {
         this.clusterID = clusterID;
         this.instancesList = instancesList;
-        this.ipToForwardingRuleNameMap = ipToForwardingRuleNameMap;
+        this.ipList = ipList;
     }
 
-    public void setIPToForwardingRuleNameMap(HashMap<Integer, String> ipToForwardingRuleNameMap) {
-        this.ipToForwardingRuleNameMap = ipToForwardingRuleNameMap;
+    public List<Integer> getIpList() {
+        return ipList;
     }
 
-    public void addForwardingRule(int ip, String forwardingRuleName){
-        this.ipToForwardingRuleNameMap.put(ip,forwardingRuleName);
+    public void setIpList(List<Integer> ipList) {
+        this.ipList = ipList;
     }
 
-    public Set<Integer> getPorts() {
-        return ipToForwardingRuleNameMap.keySet();
+    public String getForwardingRuleName() {
+        return forwardingRuleName;
     }
 
-    public Collection<String> getForwardingRuleNames(){
-        return ipToForwardingRuleNameMap.values();
+    public void setForwardingRuleName(String forwardingRuleName) {
+        this.forwardingRuleName = forwardingRuleName;
     }
 
     public List<String> getInstancesList() {
