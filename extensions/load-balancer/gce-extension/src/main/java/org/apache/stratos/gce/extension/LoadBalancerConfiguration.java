@@ -42,6 +42,7 @@ public class LoadBalancerConfiguration {
     //cluster ID from stratos side
     private String clusterID;
     private String targetPoolName;
+    private String healthCheckName;
     //Whether we have executed this configuration in GCE or not
     private boolean isRunning = false;
 
@@ -98,4 +99,11 @@ public class LoadBalancerConfiguration {
         return isRunning;
     }
 
+    public String getHealthCheckName() {
+        return healthCheckName;
+    }
+
+    public void setHealthCheckName(String healthCheckName) {
+        this.healthCheckName = healthCheckName;
+    }
 }

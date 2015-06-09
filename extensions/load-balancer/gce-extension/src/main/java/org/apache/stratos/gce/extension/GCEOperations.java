@@ -168,7 +168,6 @@ public class GCEOperations {
             e.printStackTrace();
         }
 
-
     }
 
     public void deleteTargetPool(String targetPoolName){
@@ -512,6 +511,7 @@ public class GCEOperations {
             //TODO: read as integers
             httpHealthCheck.setPort(Integer.parseInt(HEALTH_CHECK_PORT));
             httpHealthCheck.setTimeoutSec(Integer.parseInt(HEALTH_CHECK_TIME_OUT_SEC));
+            httpHealthCheck.setUnhealthyThreshold(Integer.parseInt(HEALTH_CHECK_UNHEALTHY_THRESHOLD));
             try {
                 Operation operation = compute.httpHealthChecks().insert(PROJECT_ID,httpHealthCheck).execute();
 

@@ -19,6 +19,7 @@
 
 package org.apache.stratos.gce.extension;
 
+import com.google.api.services.compute.model.TargetPool;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.stratos.load.balancer.common.domain.*;
@@ -83,8 +84,9 @@ public class GCELoadBalancer implements LoadBalancer {
 
             if(!loadBalancerConfiguration.getStatus()) { //if the load balancer is NOT already running
 
+                //create a health check
+                gceOperations.createHealthCheck(loadBalancerConfiguration.getHealthCheckName());
 
-                //todo: need to add validation checks here(Need to check whether the resources are created or not)
                 //crate a target pool in GCE
                 gceOperations.createTargetPool(loadBalancerConfiguration.getTargetPoolName());
 
@@ -211,6 +213,12 @@ public class GCELoadBalancer implements LoadBalancer {
                         loadBalancerConfiguration.setTargetPoolName(targetPoolName);
                     }
 
+                    if(loadBalancerConfiguration.getHealthCheckName() == null){//if this does not have a forwarding rule name
+                        //set health check name
+                        String healthCheckName = healthCheckNameCreator(cluster.getClusterId());
+                        loadBalancerConfiguration.setHealthCheckName(healthCheckName);
+                     }
+
 
                 } else {
                     //doesn't have a loadBalancerConfiguration object. So crate a new one and add to hash map
@@ -242,6 +250,12 @@ public class GCELoadBalancer implements LoadBalancer {
                         //set target pool name
                         String targetPoolName = targetPoolNameCreator(cluster.getClusterId());
                         loadBalancerConfiguration.setTargetPoolName(targetPoolName);
+                    }
+
+                    if(loadBalancerConfiguration.getHealthCheckName() == null){//if this does not have a forwarding rule name
+                        //set health check name
+                        String healthCheckName = healthCheckNameCreator(cluster.getClusterId());
+                        loadBalancerConfiguration.setHealthCheckName(healthCheckName);
                     }
 
                     clusterToLoadBalancerConfigurationMap.put(cluster.getClusterId(), loadBalancerConfiguration);
@@ -288,5 +302,18 @@ public class GCELoadBalancer implements LoadBalancer {
             forwardingRuleName = forwardingRuleName.substring(0,62);
         }
         return  forwardingRuleName;
+    }
+
+    private String healthCheckNameCreator(String clusterID){
+        String healthCheckName = GCEContext.getInstance().getNamePrefix().toLowerCase() + "-hc-" +
+                clusterID.trim().toLowerCase().replace(".","-");
+
+        //length should be les than 62 characters
+        if(healthCheckName.length()>=62){
+            healthCheckName = healthCheckName.substring(0,62);
+        }
+
+        return healthCheckName;
+
     }
 }
