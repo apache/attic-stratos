@@ -421,7 +421,7 @@ public class GCEOperations {
             httpHealthCheck.setUnhealthyThreshold(Integer.parseInt(HEALTH_CHECK_UNHEALTHY_THRESHOLD));
             try {
                 Operation operation = compute.httpHealthChecks().insert(PROJECT_ID, httpHealthCheck).execute();
-                waitForOperationCompletion(operation.getSelfLink());
+                waitForOperationCompletion(operation.getName());
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -494,9 +494,9 @@ public class GCEOperations {
         return null;
     }
 
-    private void waitForOperationCompletion(String operationSelfLink){
+    private void waitForOperationCompletion(String operationName){
         try {
-          while (compute.regionOperations().get(PROJECT_ID,REGION_NAME,operationSelfLink).execute().
+          while (compute.regionOperations().get(PROJECT_ID,REGION_NAME,operationName).execute().
                   getStatus().equals("DONE")){
               Thread.sleep(1000);
           }
