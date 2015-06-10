@@ -500,6 +500,7 @@ public class GCEOperations {
 
     private void waitForGlobalOperationCompletion(String operationName){
         try {
+            Thread.sleep(2000);
           while (true){
               Operation operation = compute.globalOperations().get(PROJECT_ID,operationName).execute();
               if (operation.getStatus().equals("DONE")){
