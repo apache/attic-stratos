@@ -518,8 +518,11 @@ public class GCEOperations {
     private void waitForRegionOperationCompletion(String operationName){
         try {
             Thread.sleep(2000);
-            while (compute.regionOperations().get(PROJECT_ID, REGION_NAME, operationName).execute().
-                    getStatus().equals("DONE")){
+            while (true){
+                Operation operation = compute.regionOperations().get(PROJECT_ID, REGION_NAME, operationName).execute();
+                if(operation.getStatus().equals("DONE")){
+                    return;
+                }
                 Thread.sleep(1000);
             }
         } catch (IOException e) {
@@ -531,8 +534,11 @@ public class GCEOperations {
 
     private void waitForZoneOperationCompletion(String operationName){
         try {
-            while (compute.zoneOperations().get(PROJECT_ID,ZONE_NAME,operationName).execute().
-                    getStatus().equals("DONE")){
+            while (true){
+                Operation operation = compute.regionOperations().get(PROJECT_ID, REGION_NAME, operationName).execute();
+                if (operation.getStatus().equals("DONE")){
+                    return;
+                }
                 Thread.sleep(1000);
             }
         } catch (IOException e) {
