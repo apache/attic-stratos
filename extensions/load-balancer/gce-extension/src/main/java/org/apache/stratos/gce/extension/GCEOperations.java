@@ -140,42 +140,11 @@ public class GCEOperations {
         try {
             Operation operation =
                     compute.targetPools().insert(PROJECT_ID, REGION_NAME, targetPool).execute();
-            //wait until operation succeed
-            int timeout = 0;
-            while (true) {
-                //todo: correct this line
-                if (operation.getStatus().equals("DONE")) {
-
-                    //log response
-                    if (log.isDebugEnabled()) {
-                        log.debug("Target pool creation operation Status: " + operation.getStatusMessage());
-                    }
-                    if (log.isErrorEnabled()) {
-                        for (Errors errors : operation.getError().getErrors()) {
-                            log.error("Target pool creation operation error: " + errors.getMessage());
-                        }
-                    }
-                    return;
-                }
-                if (log.isDebugEnabled()) {
-                    log.debug("Waiting until the create target pool API call get succeeded");
-                }
-                if (OPERATION_TIMEOUT_MSILEC == timeout) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Operation timeout reached for create target pool operation");
-                    }
-                    return;
-                }
-                Thread.sleep(100);
-                timeout += 100;
-            }
 
         } catch (IOException e) {
             if (log.isErrorEnabled()) {
                 log.error("failed to create target pool: " + targetPoolName);
             }
-            e.printStackTrace();
-        } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
@@ -186,39 +155,10 @@ public class GCEOperations {
             Operation operation = compute.targetPools().delete(PROJECT_ID, REGION_NAME, targetPoolName).execute();
 
             int timeout = 0;
-            //wait until operation succeed
-            while (true) {                //todo: correct this line
-
-                if (operation.getStatus().equals("DONE")) {
-
-                    //log response
-                    if (log.isDebugEnabled()) {
-                        log.debug("Delete target pool operation Status: " + operation.getStatusMessage());
-                    }
-                    if (log.isErrorEnabled()) {
-                        for (Errors errors : operation.getError().getErrors()) {
-                            log.error("Delete target pool operation error: " + errors.getMessage());
-                        }
-                    }
-                    return;
-                }
-                if (log.isDebugEnabled()) {
-                    log.debug("Waiting until the delete target pool API call get succeeded");
-                }
-                if (OPERATION_TIMEOUT_MSILEC == timeout) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Operation timeout reached for delete target pool operation");
-                    }
-                    return;
-                }
-                Thread.sleep(100);
-                timeout += 100;
-            }
 
         } catch (IOException e) {
             e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+
         }
     }
 
@@ -245,38 +185,8 @@ public class GCEOperations {
 
             int timeout = 0;
 
-            //wait until operation succeed
-            while (true) {                //todo: correct this line
-
-                if (operation.getStatus().equals("DONE")) {
-
-                    //log response
-                    if (log.isDebugEnabled()) {
-                        log.debug("Create forwarding rule operation Status: " + operation.getStatusMessage());
-                    }
-                    if (log.isErrorEnabled()) {
-                        for (Errors errors : operation.getError().getErrors()) {
-                            log.error("Create forwarding rule operation error: " + errors.getMessage());
-                        }
-                    }
-                    return;
-                }
-                if (log.isDebugEnabled()) {
-                    log.debug("Waiting until the create forwarding rule API call get succeeded");
-                }
-                if (OPERATION_TIMEOUT_MSILEC == timeout) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Operation timeout reached for create forwarding rule operation");
-                    }
-                    return;
-                }
-                Thread.sleep(100);
-                timeout += 100;
-            }
 
         } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
@@ -286,39 +196,8 @@ public class GCEOperations {
             Operation operation = compute.forwardingRules().
                     delete(PROJECT_ID, REGION_NAME, forwardingRuleName).execute();
 
-            int timeout = 0;
-            //wait until operation succeed
-            while (true) {
-                if (operation.getStatus().equals("DONE")) {                //todo: correct this line
-
-
-                    //log response
-                    if (log.isDebugEnabled()) {
-                        log.debug("delete forwarding rule operation Status: " + operation.getStatusMessage());
-                    }
-                    if (log.isErrorEnabled()) {
-                        for (Errors errors : operation.getError().getErrors()) {
-                            log.error("delete forwarding rule operation error: " + errors.getMessage());
-                        }
-                    }
-                    return;
-                }
-                if (log.isDebugEnabled()) {
-                    log.debug("Waiting until the delete forwarding rule API call get succeeded");
-                }
-                if (OPERATION_TIMEOUT_MSILEC == timeout) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Operation timeout reached for delete forwarding rule operation");
-                    }
-                    return;
-                }
-                Thread.sleep(100);
-                timeout += 100;
-            }
 
         } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
@@ -522,35 +401,9 @@ public class GCEOperations {
 
             int timeout = 0;
             //wait until operation succeed
-            while (true) {
-                if (operation.getStatus().equals("DONE")) {
 
-                    //log response
-                    if (log.isDebugEnabled()) {
-                        log.debug("Add instances to target pool operation Status: " + operation.getStatusMessage());
-                    }
-                    if (log.isErrorEnabled()) {
-                        for (Errors errors : operation.getError().getErrors()) {
-                            log.error("Add instances to target pool operation error: " + errors.getMessage());
-                        }
-                    }
-                    return;
-                }
-                if (log.isDebugEnabled()) {
-                    log.debug("Waiting until the Add instances to target pool API call get succeeded");
-                }
-                if (OPERATION_TIMEOUT_MSILEC == timeout) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Operation timeout reached for Add instances to target pool operation");
-                    }
-                    return;
-                }
-                Thread.sleep(100);
-                timeout += 100;
-            }
+
         } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
@@ -568,39 +421,9 @@ public class GCEOperations {
             httpHealthCheck.setUnhealthyThreshold(Integer.parseInt(HEALTH_CHECK_UNHEALTHY_THRESHOLD));
             try {
                 Operation operation = compute.httpHealthChecks().insert(PROJECT_ID, httpHealthCheck).execute();
-
-                int timeout = 0;
-                //wait until succeed
-                while (true) {
-                    if (operation.getStatus().equals("DONE")) {
-                        //log response
-                        if (log.isDebugEnabled()) {
-                            log.debug("Create health check operation Status: " + operation.getStatusMessage());
-                        }
-                        if (log.isErrorEnabled()) {
-                            for (Errors errors : operation.getError().getErrors()) {
-                                log.error("Create create health check operation error: " + errors.getMessage());
-                            }
-                        }
-                        return;
-                    }
-                    if (log.isDebugEnabled()) {
-                        log.debug("Waiting until the create health check API call get succeeded");
-                    }
-                    if (OPERATION_TIMEOUT_MSILEC == timeout) {
-                        if (log.isDebugEnabled()) {
-                            log.debug("Operation timeout reached for create health check operation");
-                        }
-                        return;
-                    }
-                    Thread.sleep(100);
-
-                    timeout += 100;
-                }
+                waitForOperationCompletion(operation.getSelfLink());
 
             } catch (IOException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
 
@@ -671,6 +494,18 @@ public class GCEOperations {
         return null;
     }
 
+    private void waitForOperationCompletion(String operationSelfLink){
+        try {
+          while (compute.regionOperations().get(PROJECT_ID,REGION_NAME,operationSelfLink).execute().
+                  getStatus().equals("DONE")){
+              Thread.sleep(1000);
+          }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 
     /**
      * this is a sample method using for testing purposes
