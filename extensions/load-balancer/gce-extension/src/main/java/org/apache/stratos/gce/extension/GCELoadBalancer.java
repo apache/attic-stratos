@@ -36,7 +36,7 @@ public class GCELoadBalancer implements LoadBalancer {
 
     private GCEOperations gceOperations;
     /**
-     * We have one configuration for cluster
+     * We have one configuration per cluster
      * A Load balancer has one target pool forwarding rule and a health check
      * This hash map is used to hold cluster IDs and corresponding Load balancer configuration
      * So one cluster will have one loadBalancerConfiguration object
