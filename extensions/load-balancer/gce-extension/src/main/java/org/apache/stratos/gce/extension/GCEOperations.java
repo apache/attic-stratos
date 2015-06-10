@@ -425,7 +425,7 @@ public class GCEOperations {
             httpHealthCheck.setUnhealthyThreshold(Integer.parseInt(HEALTH_CHECK_UNHEALTHY_THRESHOLD));
             try {
                 Operation operation = compute.httpHealthChecks().insert(PROJECT_ID, httpHealthCheck).execute();
-                waitForGlobalOperationCompletion(operation.getName());
+                waitForRegionOperationCompletion(operation.getName());
 
             } catch (IOException e) {
                 e.printStackTrace();
