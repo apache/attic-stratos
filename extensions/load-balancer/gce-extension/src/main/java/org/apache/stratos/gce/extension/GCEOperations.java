@@ -140,6 +140,7 @@ public class GCEOperations {
         try {
             Operation operation =
                     compute.targetPools().insert(PROJECT_ID, REGION_NAME, targetPool).execute();
+            waitForOperationCompletion(operation.getName());
 
         } catch (IOException e) {
             if (log.isErrorEnabled()) {
@@ -153,6 +154,7 @@ public class GCEOperations {
     public void deleteTargetPool(String targetPoolName) {
         try {
             Operation operation = compute.targetPools().delete(PROJECT_ID, REGION_NAME, targetPoolName).execute();
+            waitForOperationCompletion(operation.getName());
 
             int timeout = 0;
 
@@ -182,6 +184,7 @@ public class GCEOperations {
         forwardingRule.setPortRange(portRange);
         try {
             Operation operation = compute.forwardingRules().insert(PROJECT_ID, REGION_NAME, forwardingRule).execute();
+            waitForOperationCompletion(operation.getName());
 
             int timeout = 0;
 
@@ -196,6 +199,7 @@ public class GCEOperations {
             Operation operation = compute.forwardingRules().
                     delete(PROJECT_ID, REGION_NAME, forwardingRuleName).execute();
 
+            waitForOperationCompletion(operation.getName());
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -304,6 +308,7 @@ public class GCEOperations {
         try {
             compute.targetPools().removeInstance(PROJECT_ID, REGION_NAME,
                     targetPoolName, targetPoolsRemoveInstanceRequest).execute();
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -399,8 +404,7 @@ public class GCEOperations {
             Operation operation = compute.targetPools().addInstance(PROJECT_ID, REGION_NAME,
                     targetPoolName, targetPoolsAddInstanceRequest).execute();
 
-            int timeout = 0;
-            //wait until operation succeed
+            waitForOperationCompletion(operation.getName());
 
 
         } catch (IOException e) {
@@ -496,7 +500,7 @@ public class GCEOperations {
 
     private void waitForOperationCompletion(String operationName){
         try {
-          while (compute.regionOperations().get(PROJECT_ID,REGION_NAME,operationName).execute().
+          while (compute.regionOperations().get(PROJECT_ID, REGION_NAME,operationName).execute().
                   getStatus().equals("DONE")){
               Thread.sleep(1000);
           }
