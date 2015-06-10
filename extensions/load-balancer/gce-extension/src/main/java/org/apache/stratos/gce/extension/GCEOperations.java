@@ -140,7 +140,7 @@ public class GCEOperations {
         try {
             Operation operation =
                     compute.targetPools().insert(PROJECT_ID, REGION_NAME, targetPool).execute();
-            waitForOperationCompletion(operation.getName());
+            waitForGlobalOperationCompletion(operation.getName());
 
         } catch (IOException e) {
             if (log.isErrorEnabled()) {
@@ -154,7 +154,7 @@ public class GCEOperations {
     public void deleteTargetPool(String targetPoolName) {
         try {
             Operation operation = compute.targetPools().delete(PROJECT_ID, REGION_NAME, targetPoolName).execute();
-            waitForOperationCompletion(operation.getName());
+            waitForGlobalOperationCompletion(operation.getName());
 
             int timeout = 0;
 
@@ -184,7 +184,7 @@ public class GCEOperations {
         forwardingRule.setPortRange(portRange);
         try {
             Operation operation = compute.forwardingRules().insert(PROJECT_ID, REGION_NAME, forwardingRule).execute();
-            waitForOperationCompletion(operation.getName());
+            waitForGlobalOperationCompletion(operation.getName());
 
             int timeout = 0;
 
@@ -199,7 +199,7 @@ public class GCEOperations {
             Operation operation = compute.forwardingRules().
                     delete(PROJECT_ID, REGION_NAME, forwardingRuleName).execute();
 
-            waitForOperationCompletion(operation.getName());
+            waitForGlobalOperationCompletion(operation.getName());
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -404,7 +404,7 @@ public class GCEOperations {
             Operation operation = compute.targetPools().addInstance(PROJECT_ID, REGION_NAME,
                     targetPoolName, targetPoolsAddInstanceRequest).execute();
 
-            waitForOperationCompletion(operation.getName());
+            waitForGlobalOperationCompletion(operation.getName());
 
 
         } catch (IOException e) {
@@ -425,7 +425,7 @@ public class GCEOperations {
             httpHealthCheck.setUnhealthyThreshold(Integer.parseInt(HEALTH_CHECK_UNHEALTHY_THRESHOLD));
             try {
                 Operation operation = compute.httpHealthChecks().insert(PROJECT_ID, httpHealthCheck).execute();
-                waitForOperationCompletion(operation.getName());
+                waitForGlobalOperationCompletion(operation.getName());
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -498,12 +498,38 @@ public class GCEOperations {
         return null;
     }
 
-    private void waitForOperationCompletion(String operationName){
+    private void waitForGlobalOperationCompletion(String operationName){
         try {
           while (compute.globalOperations().get(PROJECT_ID,operationName).execute().
                   getStatus().equals("DONE")){
               Thread.sleep(1000);
           }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void waitForRegionOperationCompletion(String operationName){
+        try {
+            while (compute.regionOperations().get(PROJECT_ID,REGION_NAME,operationName).execute().
+                    getStatus().equals("DONE")){
+                Thread.sleep(1000);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void waitForZoneOperationCompletion(String operationName){
+        try {
+            while (compute.zoneOperations().get(PROJECT_ID,ZONE_NAME,operationName).execute().
+                    getStatus().equals("DONE")){
+                Thread.sleep(1000);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
