@@ -370,15 +370,8 @@ public class RuleTasksDelegator {
 
     public double getLoadAveragePredictedValue(){
         double loadAveragePredicted = 0.0;
-        int totalMemberCount = 0;
-
-        if (totalMemberCount > 0) {
-            log.debug("Predicted load average : " + loadAveragePredicted / totalMemberCount);
-            return loadAveragePredicted / totalMemberCount;
-        } else {
-            return 0;
-        }
-
+        int totalMemberCount;
+        return 0;
     }
 
     public double getMemoryConsumptionPredictedValue(ClusterInstanceContext clusterInstanceContext) {
