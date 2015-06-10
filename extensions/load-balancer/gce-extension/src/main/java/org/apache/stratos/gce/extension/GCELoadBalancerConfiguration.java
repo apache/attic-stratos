@@ -31,7 +31,7 @@ import java.util.Set;
  * This class is used to hold the configuration for a load balancer
  * Each cluster will have one object from this class
  */
-public class LoadBalancerConfiguration {
+public class GCELoadBalancerConfiguration {
 
 
     //A load balancer must have a target pool(set of instances)
@@ -47,8 +47,8 @@ public class LoadBalancerConfiguration {
     private boolean isRunning = false;
 
 
-    public LoadBalancerConfiguration(String clusterID, List<String> instancesList,
-                                     List<Integer> ipList) {
+    public GCELoadBalancerConfiguration(String clusterID, List<String> instancesList,
+                                        List<Integer> ipList) {
         this.clusterID = clusterID;
         this.instancesList = instancesList;
         this.ipList = ipList;

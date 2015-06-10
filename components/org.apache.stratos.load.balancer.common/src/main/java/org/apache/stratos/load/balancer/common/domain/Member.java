@@ -33,6 +33,7 @@ public class Member {
     private String memberId;
     private String hostName;
     private Map<Integer, Port> portMap;
+    private String instanceName;
 
     public Member(String serviceName, String clusterId, String memberId, String hostName) {
         this.serviceName = serviceName;
@@ -85,5 +86,13 @@ public class Member {
 
     public String getServiceName() {
         return serviceName;
+    }
+
+    public String getInstanceName() {
+        return instanceName;
+    }
+
+    public void setInstanceName(String instanceName) {
+        this.instanceName = instanceName;
     }
 }
