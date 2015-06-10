@@ -140,7 +140,7 @@ public class GCEOperations {
         try {
             Operation operation =
                     compute.targetPools().insert(PROJECT_ID, REGION_NAME, targetPool).execute();
-            waitForGlobalOperationCompletion(operation.getName());
+            waitForRegionOperationCompletion(operation.getName());
 
         } catch (IOException e) {
             if (log.isErrorEnabled()) {
@@ -154,7 +154,7 @@ public class GCEOperations {
     public void deleteTargetPool(String targetPoolName) {
         try {
             Operation operation = compute.targetPools().delete(PROJECT_ID, REGION_NAME, targetPoolName).execute();
-            waitForGlobalOperationCompletion(operation.getName());
+            waitForRegionOperationCompletion(operation.getName());
 
             int timeout = 0;
 
@@ -184,7 +184,7 @@ public class GCEOperations {
         forwardingRule.setPortRange(portRange);
         try {
             Operation operation = compute.forwardingRules().insert(PROJECT_ID, REGION_NAME, forwardingRule).execute();
-            waitForGlobalOperationCompletion(operation.getName());
+            waitForRegionOperationCompletion(operation.getName());
 
             int timeout = 0;
 
@@ -404,7 +404,7 @@ public class GCEOperations {
             Operation operation = compute.targetPools().addInstance(PROJECT_ID, REGION_NAME,
                     targetPoolName, targetPoolsAddInstanceRequest).execute();
 
-            waitForGlobalOperationCompletion(operation.getName());
+            waitForRegionOperationCompletion(operation.getName());
 
 
         } catch (IOException e) {
@@ -517,6 +517,7 @@ public class GCEOperations {
 
     private void waitForRegionOperationCompletion(String operationName){
         try {
+            Thread.sleep(2000);
             while (compute.regionOperations().get(PROJECT_ID, REGION_NAME, operationName).execute().
                     getStatus().equals("DONE")){
                 Thread.sleep(1000);
