@@ -500,8 +500,11 @@ public class GCEOperations {
 
     private void waitForGlobalOperationCompletion(String operationName){
         try {
-          while (compute.globalOperations().get(PROJECT_ID,operationName).execute().
-                  getStatus().equals("DONE")){
+          while (true){
+              Operation operation = compute.globalOperations().get(PROJECT_ID,operationName).execute();
+              if (operation.getStatus().equals("DONE")){
+                  return;
+              }
               Thread.sleep(1000);
           }
         } catch (IOException e) {
@@ -513,7 +516,7 @@ public class GCEOperations {
 
     private void waitForRegionOperationCompletion(String operationName){
         try {
-            while (compute.regionOperations().get(PROJECT_ID,REGION_NAME,operationName).execute().
+            while (compute.regionOperations().get(PROJECT_ID, REGION_NAME, operationName).execute().
                     getStatus().equals("DONE")){
                 Thread.sleep(1000);
             }
