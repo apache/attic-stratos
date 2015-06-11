@@ -211,7 +211,7 @@ public class GCELoadBalancer implements LoadBalancer {
                         }
                         */
 
-                        log.info("===============Member instance id:============= " + member.getInstanceId());
+
                         //checking for forwarding rules and updating
                         for (Object port : member.getPorts()) {
                             int portValue = ((Port) port).getValue();
@@ -258,6 +258,7 @@ public class GCELoadBalancer implements LoadBalancer {
 
                         //TODO:set instances(members) to instances list
                         //instancesList.add(member.getMemberName);
+                        log.info("===============Member instance id:============= " + member.getInstanceId());
 
                         //add forwarding rules(Ports to be forwarded)
                         for (Object port : member.getPorts()) {
