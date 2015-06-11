@@ -263,4 +263,8 @@ public class CloudControllerServiceClient {
             throw new RuntimeException(msg, e);
         }
     }
+
+    public void removeExpiredObsoledMemberFromCloudController(MemberContext member) throws RemoteException {
+        stub.removeExpiredObsoledMemberFromCloudController(member);
+    }
 }
