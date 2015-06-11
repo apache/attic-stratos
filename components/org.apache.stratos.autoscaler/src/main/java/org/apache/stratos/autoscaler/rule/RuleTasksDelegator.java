@@ -60,15 +60,16 @@ public class RuleTasksDelegator {
         return predictedValue;
     }
 
-    public double getPredictedValueForNextMinute(){
-        double predictedValue = 0.0;
+    public double getPredictedValueForNextMinute(float a, float b, float c, float timeInterval){
+        double predictedValue;
 
+        // f(t) = a * t * t + b * t + c
         if(log.isDebugEnabled()){
-            log.debug("New Curvefitting Mechanism");
-
+            log.debug(String.format("Predicting the value, [a]: %s , [b]: %s , [c]: " +
+                    ": %s , [time intervals]: %s ", a, b, c, timeInterval));
         }
 
-
+        predictedValue = a * timeInterval * timeInterval + b * timeInterval + c;
         return predictedValue;
     }
 
