@@ -211,6 +211,7 @@ public class GCELoadBalancer implements LoadBalancer {
                         }
                         */
 
+                        log.info("===============Member instance id:============= " + member.getInstanceId());
                         //checking for forwarding rules and updating
                         for (Object port : member.getPorts()) {
                             int portValue = ((Port) port).getValue();
