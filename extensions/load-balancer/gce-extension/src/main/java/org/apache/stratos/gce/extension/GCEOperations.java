@@ -520,6 +520,7 @@ public class GCEOperations {
             Thread.sleep(2000);
             while (true){
                 Operation operation = compute.regionOperations().get(PROJECT_ID, REGION_NAME, operationName).execute();
+
                 if(operation.getStatus().equals("DONE")){
                     return;
                 }
