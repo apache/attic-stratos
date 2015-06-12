@@ -60,7 +60,15 @@ public class RuleTasksDelegator {
         return predictedValue;
     }
 
-    public double getPredictedValueForNextMinute(float a, float b, float c, float timeInterval){
+    /**
+     *
+     * @param a coefficent of t^2 term
+     * @param b coefficient of t term
+     * @param c constant term
+     * @param timeInterval
+     * @return predicted value
+     */
+    public double getPredictedValueForNextMin(float a, float b, float c, int timeInterval){
         double predictedValue;
 
         // f(t) = a * t * t + b * t + c
