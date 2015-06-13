@@ -6,6 +6,7 @@ import org.wso2.siddhi.core.event.StreamEvent;
 import org.wso2.siddhi.core.event.in.InEvent;
 import org.wso2.siddhi.core.event.in.InListEvent;
 import org.wso2.siddhi.core.event.remove.RemoveEvent;
+import org.wso2.siddhi.core.event.remove.RemoveListEvent;
 import org.wso2.siddhi.core.persistence.ThreadBarrier;
 import org.wso2.siddhi.core.query.QueryPostProcessingElement;
 import org.wso2.siddhi.core.query.processor.window.RunnableWindowProcessor;
@@ -15,6 +16,7 @@ import org.wso2.siddhi.core.util.collection.queue.scheduler.SchedulerSiddhiQueue
 import org.wso2.siddhi.core.util.collection.queue.scheduler.SchedulerSiddhiQueueGrid;
 import org.wso2.siddhi.query.api.definition.AbstractDefinition;
 import org.wso2.siddhi.query.api.definition.Attribute;
+import org.wso2.siddhi.query.api.definition.Attribute.Type;
 import org.wso2.siddhi.query.api.expression.Expression;
 import org.wso2.siddhi.query.api.expression.Variable;
 import org.wso2.siddhi.query.api.expression.constant.IntConstant;
@@ -23,6 +25,7 @@ import org.wso2.siddhi.query.api.expression.constant.LongConstant;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -37,6 +40,10 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
     private List<RemoveEvent> oldEventList;
     private ThreadBarrier threadBarrier;
     private ISchedulerSiddhiQueue<StreamEvent> window;
+    private CoefficientValueQueue coefficientValueQueueA;
+    private CoefficientValueQueue coefficientValueQueueB;
+    private CoefficientValueQueue getCoefficientValueQueueC;
+
 
     @Override
     protected void processEvent(InEvent inEvent) {
@@ -121,9 +128,68 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
 
     @Override
     public void run() {
+        acquireLock();
+        try {
+            long scheduledTime = System.currentTimeMillis();
+            try {
+                oldEventList.clear();
+                while (true) {
+                    threadBarrier.pass();
+                    RemoveEvent removeEvent = (RemoveEvent) window.poll();
+                    if (removeEvent == null) {
+                        if (oldEventList.size() > 0) {
+                            nextProcessor.process(new RemoveListEvent(
+                                    oldEventList.toArray(new RemoveEvent[oldEventList.size()])));
+                            oldEventList.clear();
+                        }
 
+                        if (newEventList.size() > 0) {
+                            InEvent[] inEvents =
+                                    newEventList.toArray(new InEvent[newEventList.size()]);
+                            for (InEvent inEvent : inEvents) {
+                                window.put(new RemoveEvent(inEvent, -1));
+                            }
+
+                            // in order to find second order polynomial, we need at least 3 events.
+                            if (newEventList.size() > 2) {
+
+
+                            } else {
+                                log.debug("Insufficient events to calculate second derivative. We need at least 3 events. Current event count: " +
+                                        newEventList.size());
+                            }
+
+                            newEventList.clear();
+                        }
+
+                        long diff = timeToKeep - (System.currentTimeMillis() - scheduledTime);
+                        if (diff > 0) {
+                            try {
+                                eventRemoverScheduler.schedule(this, diff, TimeUnit.MILLISECONDS);
+                            } catch (RejectedExecutionException ex) {
+                                log.warn("scheduling cannot be accepted for execution: elementID " +
+                                        elementId);
+                            }
+                            break;
+                        }
+                        scheduledTime = System.currentTimeMillis();
+                    } else {
+                        oldEventList.add(new RemoveEvent(removeEvent, System.currentTimeMillis()));
+                    }
+                }
+            } catch (Throwable t) {
+                log.error(t.getMessage(), t);
+            }
+        } finally {
+            releaseLock();
+        }
     }
 
+    private InEvent[] getA(InEvent firstEVent, InEvent lastEvent, Type type){
+        double newA = 0.0;
+
+        return null;m
+    }
     @Override
     public void schedule() {
         eventRemoverScheduler.schedule(this, timeToKeep, TimeUnit.MILLISECONDS);
@@ -149,5 +215,26 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
         oldEventList = null;
         newEventList = null;
         window = null;
+    }
+
+    public static class CoefficientValueQueue{
+        List<Double> valueList;
+
+        public CoefficientValueQueue(){
+            valueList = new ArrayList<Double>();
+        }
+
+        public void insert(double value){
+            if(valueList.size() < 10)
+                valueList.add(0,value);
+            else if(valueList.size() == 10){
+                valueList.remove(9);
+                valueList.add(0,value);
+            }
+        }
+
+        public double getCurrentValue(){
+            return Double.MAX_VALUE;
+        }
     }
 }
