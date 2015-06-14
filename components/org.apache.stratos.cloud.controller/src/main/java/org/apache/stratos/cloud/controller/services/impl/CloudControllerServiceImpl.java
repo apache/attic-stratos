@@ -1610,9 +1610,15 @@ public class CloudControllerServiceImpl implements CloudControllerService {
     }
 
     @Override
-    public void removeExpiredObsoletedMemberFromCloudController(MemberContext member) {
+    public boolean removeExpiredObsoletedMemberFromCloudController(String applicationId, String cartridgeType,
+                                                                   String clusterId, String memberId,
+                                                                   String networkPartitionId, Partition partition) {
 
-        CloudControllerServiceUtil.executeMemberTerminationPostProcess(member);
-
+        MemberContext obsoleteMember = new MemberContext(applicationId, cartridgeType, clusterId, memberId);
+        obsoleteMember.setNetworkPartitionId(networkPartitionId);
+        obsoleteMember.setPartition(partition);
+        CloudControllerServiceUtil.executeMemberTerminationPostProcess(obsoleteMember);
+        return true;
     }
+
 }
