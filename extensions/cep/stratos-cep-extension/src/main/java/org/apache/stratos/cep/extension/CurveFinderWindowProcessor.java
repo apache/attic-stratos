@@ -32,6 +32,10 @@ import java.util.concurrent.TimeUnit;
 public class CurveFinderWindowProcessor extends WindowProcessor implements RunnableWindowProcessor{
 
     static final Logger log = Logger.getLogger(CurveFinderWindowProcessor.class);
+    /**
+     * alpha is used as the smoothing constant in exponential moving average
+     */
+    public static final double ALPHA = 0.8000;
     private ScheduledExecutorService eventRemoverScheduler;
     private long timeToKeep;
     private int subjectedAttrIndex;
@@ -40,9 +44,8 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
     private List<RemoveEvent> oldEventList;
     private ThreadBarrier threadBarrier;
     private ISchedulerSiddhiQueue<StreamEvent> window;
-    private CoefficientValueQueue coefficientValueQueueA;
-    private CoefficientValueQueue coefficientValueQueueB;
-    private CoefficientValueQueue getCoefficientValueQueueC;
+    private double[] timeStampValues;
+    private double[] dataValues;
 
 
     @Override
@@ -153,7 +156,6 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
                             // in order to find second order polynomial, we need at least 3 events.
                             if (newEventList.size() > 2) {
 
-
                             } else {
                                 log.debug("Insufficient events to calculate second derivative. We need at least 3 events. Current event count: " +
                                         newEventList.size());
@@ -185,11 +187,23 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
         }
     }
 
-    private InEvent[] getA(InEvent firstEVent, InEvent lastEvent, Type type){
-        double newA = 0.0;
 
+    /**
+     * need to implement
+     * @param inEvents
+     * @return
+     */
+    public InEvent[] curvePredictor(InEvent[] inEvents){
         return null;
     }
+
+    /**
+     * need to implement find exponential moving average
+     */
+    public void findEMA(){
+
+    }
+
     @Override
     public void schedule() {
         eventRemoverScheduler.schedule(this, timeToKeep, TimeUnit.MILLISECONDS);
@@ -217,24 +231,4 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
         window = null;
     }
 
-    public static class CoefficientValueQueue{
-        List<Double> valueList;
-
-        public CoefficientValueQueue(){
-            valueList = new ArrayList<Double>();
-        }
-
-        public void insert(double value){
-            if(valueList.size() < 10)
-                valueList.add(0,value);
-            else if(valueList.size() == 10){
-                valueList.remove(9);
-                valueList.add(0,value);
-            }
-        }
-
-        public double getCurrentValue(){
-            return Double.MAX_VALUE;
-        }
-    }
 }

@@ -7,24 +7,24 @@ import org.apache.log4j.Logger;
 
 public class CurveFitter {
     private final Logger log = Logger.getLogger(CurveFitter.class);
-    private double[] xValues;
-    private double[] yValues;
+    private double[] timeStampValues;
+    private double[] dataValues;
 
-    public CurveFitter(double[] xValues, double[] yValues){
-        this.xValues = xValues;
-        this.yValues = yValues;
+    public CurveFitter(double[] timeStampValues, double[] dataValues){
+        this.timeStampValues = timeStampValues;
+        this.dataValues = dataValues;
     }
 
 
     /**
-     *fit the XValues and yValues into a second order polynomial
+     *fit the XValues and dataValues into a second order polynomial
      * @return the coefficient array of the polynomial
      */
     public double[] fit(){
         WeightedObservedPoints weightedObservedPoints = new WeightedObservedPoints();
 
-        for(int i = 0 ; i < xValues.length && i < yValues.length ; i++){
-            weightedObservedPoints.add(xValues[i], yValues[i]);
+        for(int i = 0 ; i < timeStampValues.length && i < dataValues.length ; i++){
+            weightedObservedPoints.add(timeStampValues[i], dataValues[i]);
         }
 
         /**
@@ -37,4 +37,5 @@ public class CurveFitter {
 
         return coefficients;
     }
+
 }
