@@ -188,7 +188,7 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
     private InEvent[] getA(InEvent firstEVent, InEvent lastEvent, Type type){
         double newA = 0.0;
 
-        return null;m
+        return null;
     }
     @Override
     public void schedule() {
