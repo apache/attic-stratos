@@ -40,8 +40,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.google.api.services.compute.model.Operation.Error.Errors;
-
 /**
  * All the GCE API calls will be done using this class
  */
@@ -126,7 +124,7 @@ public class GCEOperations {
     /**
      * Creating a new target pool; name should be unique
      *
-     * @param targetPoolName
+     * @param targetPoolName - name of the target pool in IaaS
      */
     public void createTargetPool(String targetPoolName, String healthCheckName) {
 
@@ -151,6 +149,11 @@ public class GCEOperations {
 
     }
 
+    /**
+     * Deleting an exiting target pool in IaaS
+     *
+     * @param targetPoolName - Name of the target pool in IaaS
+     */
     public void deleteTargetPool(String targetPoolName) {
         try {
             Operation operation = compute.targetPools().delete(PROJECT_ID, REGION_NAME, targetPoolName).execute();
@@ -167,9 +170,9 @@ public class GCEOperations {
     /**
      * create forwarding rule by using given target pool and protocol
      *
-     * @param forwardingRuleName
-     * @param targetPoolName
-     * @param protocol
+     * @param forwardingRuleName - name of the forwarding rule in IaaS to be created
+     * @param targetPoolName     - name of the target pool in IaaS which is already created
+     * @param protocol           - The protocol which is used to forward trafic. Should be either TCP or UDP
      */
 
     public void createForwardingRule(String forwardingRuleName, String targetPoolName, String protocol, String portRange) {
@@ -194,6 +197,11 @@ public class GCEOperations {
         }
     }
 
+    /**
+     * Deleting a existing forwarding rule in IaaS
+     *
+     * @param forwardingRuleName - Forwarding rule name in IaaS
+     */
     public void deleteForwardingRule(String forwardingRuleName) {
         try {
             Operation operation = compute.forwardingRules().
@@ -211,7 +219,7 @@ public class GCEOperations {
      * Check whether the given target pool is already exists in the given project and region.
      * Target pools are unique for regions, not for zones
      *
-     * @param targetPoolName
+     * @param targetPoolName - target pool name in IaaS
      */
     public boolean isTargetPoolExists(String targetPoolName) {
 
@@ -237,6 +245,12 @@ public class GCEOperations {
 
     }
 
+    /**
+     * Check whether a given forwarding rule is exists or not in the IaaS
+     *
+     * @param forwardingRuleName - forwarding rule name in IaaS
+     * @return
+     */
     public boolean isForwardingRuleExists(String forwardingRuleName) {
         try {
             Compute.ForwardingRules.List forwardingRules = compute.forwardingRules().list(PROJECT_ID, REGION_NAME);
@@ -255,7 +269,7 @@ public class GCEOperations {
     /**
      * Get a target pool already created in GCE
      *
-     * @param targetPoolName
+     * @param targetPoolName - target pool name in IaaS
      * @return
      */
     public TargetPool getTargetPool(String targetPoolName) {
@@ -284,8 +298,8 @@ public class GCEOperations {
     /**
      * Add given set of instances to given target pool.
      *
-     * @param targetPoolName
-     * @param instanceReferenceList
+     * @param targetPoolName        - target pool name in IaaS
+     * @param instanceReferenceList - List of instances to be added to target pool
      */
     private void addInstancesToTargetPool(String targetPoolName, List<InstanceReference>
             instanceReferenceList) {
@@ -296,8 +310,8 @@ public class GCEOperations {
     /**
      * Remove given set of instances from target pool
      *
-     * @param targetPoolName
-     * @param instanceReferenceList
+     * @param targetPoolName        - target pool name from IaaS
+     * @param instanceReferenceList - List of instances to be removed from target pool
      */
     public void removeInstancesFromTargetPool(String targetPoolName, List<InstanceReference>
             instanceReferenceList) {
@@ -397,6 +411,12 @@ public class GCEOperations {
         //todo:implement this method
     }
 
+    /**
+     * Add a given list of instances to a target pool
+     *
+     * @param instancesIdsList - list of instance Ids
+     * @param targetPoolName   - target pool name in IaaS
+     */
     public void addInstancesToTargetPool(List<String> instancesIdsList, String targetPoolName) {
 
         log.info("Adding instances to target pool");
@@ -437,6 +457,11 @@ public class GCEOperations {
         }
     }
 
+    /**
+     * Create a health check in IaaS
+     *
+     * @param healthCheckName - name of the health check to be created
+     */
     public void createHealthCheck(String healthCheckName) {
 
         if (!isHealthCheckExists(healthCheckName)) {//if the health check is not present already
@@ -463,6 +488,12 @@ public class GCEOperations {
         }
     }
 
+    /**
+     * Checking whether a given health check is exists or not
+     *
+     * @param healthCheckName - name of the health check
+     * @return
+     */
     public boolean isHealthCheckExists(String healthCheckName) {
         try {
             HttpHealthCheckList httpHealthCheckList = compute.httpHealthChecks().list(PROJECT_ID).execute();
@@ -477,6 +508,7 @@ public class GCEOperations {
         return false;
     }
 
+    //todo: remove this method(never used)
     public HttpHealthCheck getHealthCheckFromName(String healthCheckName) {
 
         HttpHealthCheckList healthCheckList = getHealthCheckList();
@@ -489,6 +521,12 @@ public class GCEOperations {
         return null;
     }
 
+    /**
+     * Get a given health check resource URL
+     *
+     * @param healthCheckName - name of the health check in IaaS
+     * @return
+     */
     public static String getHealthCheckURLFromName(String healthCheckName) {
 
         String healthCheckURL;
@@ -507,6 +545,11 @@ public class GCEOperations {
 
     }
 
+    /**
+     * Get list of health checks
+     *
+     * @return
+     */
     public static HttpHealthCheckList getHealthCheckList() {
         try {
             Compute.HttpHealthChecks.List healthChecks = compute.httpHealthChecks().list(PROJECT_ID);
@@ -523,30 +566,18 @@ public class GCEOperations {
         return null;
     }
 
-    private void waitForGlobalOperationCompletion(String operationName){
+    /**
+     * Wait for a global operation completion. If the operation is related to whole project
+     * that is a global operation
+     *
+     * @param operationName - name of the operation in IaaS
+     */
+    private void waitForGlobalOperationCompletion(String operationName) {
         try {
             Thread.sleep(2000);
-          while (true){
-              Operation operation = compute.globalOperations().get(PROJECT_ID,operationName).execute();
-              if (operation.getStatus().equals("DONE")){
-                  return;
-              }
-              Thread.sleep(1000);
-          }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void waitForRegionOperationCompletion(String operationName){
-        try {
-            Thread.sleep(2000);
-            while (true){
-                Operation operation = compute.regionOperations().get(PROJECT_ID, REGION_NAME, operationName).execute();
-
-                if(operation.getStatus().equals("DONE")){
+            while (true) {
+                Operation operation = compute.globalOperations().get(PROJECT_ID, operationName).execute();
+                if (operation.getStatus().equals("DONE")) {
                     return;
                 }
                 Thread.sleep(1000);
@@ -558,11 +589,41 @@ public class GCEOperations {
         }
     }
 
-    private void waitForZoneOperationCompletion(String operationName){
+    /**
+     * Wait for a region operation completion. If the operation is related to a region that is a
+     * region operation
+     *
+     * @param operationName - name of the region operation
+     */
+
+    private void waitForRegionOperationCompletion(String operationName) {
         try {
-            while (true){
+            Thread.sleep(2000);
+            while (true) {
                 Operation operation = compute.regionOperations().get(PROJECT_ID, REGION_NAME, operationName).execute();
-                if (operation.getStatus().equals("DONE")){
+
+                if (operation.getStatus().equals("DONE")) {
+                    return;
+                }
+                Thread.sleep(1000);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * wait for zone operation completion. If the operation is related to a zone, that is a zone operation
+     *
+     * @param operationName -operation name
+     */
+    private void waitForZoneOperationCompletion(String operationName) {
+        try {
+            while (true) {
+                Operation operation = compute.regionOperations().get(PROJECT_ID, REGION_NAME, operationName).execute();
+                if (operation.getStatus().equals("DONE")) {
                     return;
                 }
                 Thread.sleep(1000);
@@ -575,7 +636,7 @@ public class GCEOperations {
     }
 
     //a test method
-    public void addInstanceToTargetPool(String instanceId){
+    public void addInstanceToTargetPool(String instanceId) {
 
         List<InstanceReference> instanceReferenceList = new ArrayList<InstanceReference>();
 
