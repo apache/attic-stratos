@@ -391,7 +391,6 @@ public class TopologyBuilder {
             member.setStatus(MemberStatus.Created);
             member.setLbClusterId(lbClusterId);
             member.setProperties(CloudControllerUtil.toJavaUtilProperties(memberContext.getProperties()));
-            member.setInstanceId(CloudControllerContext.getInstance().getMemberContextOfMemberId(memberId).getInstanceId());
             cluster.addMember(member);
             TopologyManager.updateTopology(topology);
         } finally {
@@ -441,6 +440,8 @@ public class TopologyBuilder {
             if (memberContext.getPublicIPs() != null) {
                 member.setMemberPublicIPs(Arrays.asList(memberContext.getPublicIPs()));
             }
+            member.setInstanceId(CloudControllerContext.getInstance().getMemberContextOfMemberId(memberContext.getMemberId()).getInstanceId());
+
 
             // try update lifecycle state
             if (!member.isStateTransitionValid(MemberStatus.Initialized)) {
