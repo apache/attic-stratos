@@ -372,7 +372,8 @@ public class GCEOperations {
             //check whether the given instance is available
             InstanceList instanceList = getInstanceList();
             for (Instance instance : instanceList.getItems()) {
-                if ((instance.getZone() + "/" + instance.getName()).equals(instanceId)) {
+                String instanceIdInIaaS = instance.getZone() + "/" + instance.getName();
+                if (instanceIdInIaaS.equals(instanceId)) {
                     //instance is available
                     //getInstance URL
                     instanceURL = instance.getSelfLink();
