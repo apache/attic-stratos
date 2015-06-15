@@ -262,7 +262,7 @@ public class GCELoadBalancer implements LoadBalancer {
                         //instancesList.add(member.getMemberName);
                         log.info("===============Member instance id:============= " + member.getInstanceId());
 
-                        MemberContext memberContext = CloudControllerContext.getInstance().getMemberContextOfMemberId(member.getMemberId());
+                      //  MemberContext memberContext = CloudControllerContext.getInstance().getMemberContextOfMemberId(member.getMemberId());
 
                         //add forwarding rules(Ports to be forwarded)
                         for (Object port : member.getPorts()) {
