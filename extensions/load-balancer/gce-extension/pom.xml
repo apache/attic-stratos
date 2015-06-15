@@ -82,6 +82,11 @@
             <artifactId>google-api-services-compute</artifactId>
             <version>v1-rev27-1.19.0</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.stratos</groupId>
+            <artifactId>org.apache.stratos.cloud.controller</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <!--this dependency to be removed -->
 
         <dependency>
