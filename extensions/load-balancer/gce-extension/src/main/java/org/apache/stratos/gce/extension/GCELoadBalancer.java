@@ -26,6 +26,8 @@ import com.thoughtworks.xstream.converters.reflection.Sun14ReflectionProvider;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.stratos.cloud.controller.context.CloudControllerContext;
+import org.apache.stratos.cloud.controller.domain.MemberContext;
 import org.apache.stratos.load.balancer.common.domain.*;
 import org.apache.stratos.load.balancer.extension.api.LoadBalancer;
 import org.apache.stratos.load.balancer.extension.api.exception.LoadBalancerExtensionException;
@@ -259,6 +261,8 @@ public class GCELoadBalancer implements LoadBalancer {
                         //TODO:set instances(members) to instances list
                         //instancesList.add(member.getMemberName);
                         log.info("===============Member instance id:============= " + member.getInstanceId());
+
+                        MemberContext memberContext = CloudControllerContext.getInstance().getMemberContextOfMemberId(member.getMemberId());
 
                         //add forwarding rules(Ports to be forwarded)
                         for (Object port : member.getPorts()) {

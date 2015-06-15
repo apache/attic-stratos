@@ -36,6 +36,8 @@ public class InstanceContext {
     private Properties properties;
     private boolean isVolumeRequired;
     private Volume[] volumes;
+    //instance id provided by IaaS provider
+    private String instanceId;
 
     public String getClusterId() {
         return clusterId;
@@ -117,4 +119,11 @@ public class InstanceContext {
         this.volumes = ArrayUtils.clone(volumes);
     }
 
+    public String getInstanceId() {
+        return instanceId;
+    }
+
+    public void setInstanceId(String instanceId) {
+        this.instanceId = instanceId;
+    }
 }
