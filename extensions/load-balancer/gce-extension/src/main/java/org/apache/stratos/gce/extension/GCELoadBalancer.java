@@ -207,12 +207,10 @@ public class GCELoadBalancer implements LoadBalancer {
                     for (Member member : cluster.getMembers()) {
 
                         //TODO:check instances(members) in instance list and update
-                      /*  EX:
-                        if(!updatedInstancesList.contains(member.getMemberName())){
-                            updatedInstancesList.add(member.getMemberName);
-                        }
-                        */
 
+                        if(!updatedInstancesList.contains(member.getInstanceId())){
+                            updatedInstancesList.add(member.getInstanceId());
+                        }
 
                         //checking for forwarding rules and updating
                         for (Object port : member.getPorts()) {
@@ -259,10 +257,10 @@ public class GCELoadBalancer implements LoadBalancer {
                     for (Member member : cluster.getMembers()) {
 
                         //TODO:set instances(members) to instances list
-                        //instancesList.add(member.getMemberName);
                         log.info("===============Member instance id:============= " + member.getInstanceId());
 
-                      //  MemberContext memberContext = CloudControllerContext.getInstance().getMemberContextOfMemberId(member.getMemberId());
+                        //add instance to instance list
+                        instancesList.add(member.getInstanceId());
 
                         //add forwarding rules(Ports to be forwarded)
                         for (Object port : member.getPorts()) {

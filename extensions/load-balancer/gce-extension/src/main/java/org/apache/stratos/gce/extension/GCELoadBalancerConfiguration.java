@@ -34,7 +34,7 @@ import java.util.Set;
 public class GCELoadBalancerConfiguration {
 
 
-    //A load balancer must have a target pool(set of instances)
+    //A load balancer must have set of instances
     private List<String> instancesList;
     //A load balancer can have one IPs to be forwarded
     private List<Integer> ipList;

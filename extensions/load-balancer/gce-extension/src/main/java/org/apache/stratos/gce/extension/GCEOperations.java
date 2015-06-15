@@ -335,12 +335,6 @@ public class GCEOperations {
         }
     }
 
-    /**
-     * Get instance resource URL from given instance name
-     *
-     * @param instanceName
-     * @return
-     */
     public static String getInstanceURLFromName(String instanceName) {
 
         //todo:remove try catch
@@ -364,6 +358,35 @@ public class GCEOperations {
 
     }
 
+    /**
+     * Get instance resource URL from given instance name
+     *
+     * @param instanceId
+     * @return
+     */
+    public static String getInstanceURLFromId(String instanceId) {
+
+        //todo:remove try catch
+        String instanceURL;
+        try {
+            //check whether the given instance is available
+            InstanceList instanceList = getInstanceList();
+            for (Instance instance : instanceList.getItems()) {
+                if ((instance.getZone() + "/" + instance.getName()).equals(instanceId)) {
+                    //instance is available
+                    //getInstance URL
+                    instanceURL = instance.getSelfLink();
+                    return instanceURL;
+                }
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+
+    }
+
 
     /**
      * This method is used for set port rage for forwarding rule
@@ -372,11 +395,11 @@ public class GCEOperations {
         //todo:implement this method
     }
 
-    public void addInstancesToTargetPool(List<String> instancesNamesList, String targetPoolName) {
+    public void addInstancesToTargetPool(List<String> instancesIdsList, String targetPoolName) {
 
         log.info("Adding instances to target pool");
 
-        if (instancesNamesList.isEmpty()) {
+        if (instancesIdsList.isEmpty()) {
             if (log.isDebugEnabled()) {
                 log.debug("Cannot add instances to target pool. InstancesNamesList is empty.");
             }
@@ -386,10 +409,10 @@ public class GCEOperations {
         List<InstanceReference> instanceReferenceList = new ArrayList<InstanceReference>();
 
         //add instance to instance reference list, we should use the instance URL
-        for (String instanceName : instancesNamesList) { //for all instances
+        for (String instanceId : instancesIdsList) { //for all instances
 
             instanceReferenceList.add(new InstanceReference().
-                    setInstance(getInstanceURLFromName(instanceName)));
+                    setInstance(getInstanceURLFromId(instanceId)));
 
         }
 
@@ -547,6 +570,19 @@ public class GCEOperations {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    //a test method
+    public void addInstanceToTargetPool(String instanceId){
+
+        List<InstanceReference> instanceReferenceList = new ArrayList<InstanceReference>();
+
+        //remove instance to instance reference list, we should use the instance URL
+        InstanceReference instanceReference1 = new InstanceReference();
+        instanceReference1.setInstance(getInstanceURLFromName(instanceId));
+        instanceReferenceList.add(instanceReference1);
+        addInstancesToTargetPool("testtargetpool", instanceReferenceList);
+
     }
 
     /**
