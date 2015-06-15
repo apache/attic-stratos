@@ -391,7 +391,7 @@ public class TopologyBuilder {
             member.setStatus(MemberStatus.Created);
             member.setLbClusterId(lbClusterId);
             member.setProperties(CloudControllerUtil.toJavaUtilProperties(memberContext.getProperties()));
-            member.setInstanceId(memberContext.getInstanceId());
+            member.setInstanceId(CloudControllerContext.getInstance().getMemberContextOfMemberId(memberId).getInstanceId());
             cluster.addMember(member);
             TopologyManager.updateTopology(topology);
         } finally {
