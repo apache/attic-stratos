@@ -26,7 +26,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.stratos.autoscaler.algorithms.PartitionAlgorithm;
 import org.apache.stratos.autoscaler.algorithms.partition.OneAfterAnother;
 import org.apache.stratos.autoscaler.algorithms.partition.RoundRobin;
-import org.apache.stratos.autoscaler.client.CloudControllerClient;
+import org.apache.stratos.autoscaler.client.AutoscalerCloudControllerClient;
 import org.apache.stratos.autoscaler.context.AutoscalerContext;
 import org.apache.stratos.autoscaler.context.cluster.ClusterContext;
 import org.apache.stratos.autoscaler.context.cluster.ClusterInstanceContext;
@@ -194,7 +194,7 @@ public class RuleTasksDelegator {
             minimumCountOfNetworkPartition = clusterInstanceContext.getMinInstanceCount();
 
             MemberContext memberContext =
-                    CloudControllerClient.getInstance()
+                    AutoscalerCloudControllerClient.getInstance()
                             .startInstance(clusterMonitorPartitionContext.getPartition(),
                                     clusterId,
                                     clusterInstanceId, clusterMonitorPartitionContext.getNetworkPartitionId(),
@@ -204,6 +204,7 @@ public class RuleTasksDelegator {
                 ClusterLevelPartitionContext partitionContext = clusterInstanceContext.
                         getPartitionCtxt(clusterMonitorPartitionContext.getPartitionId());
                 partitionContext.addPendingMember(memberContext);
+                partitionContext.addMemberStatsContext(new MemberStatsContext(memberContext.getMemberId()));
                 if (log.isDebugEnabled()) {
                     log.debug(String.format("Pending member added, [member] %s [partition] %s", memberContext.getMemberId(),
                             memberContext.getPartition().getId()));

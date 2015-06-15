@@ -1,9 +1,9 @@
 {
-    "id": "network-partition-1",
-    "provider": "ec2",
+    "id": "ap-southeast-1-nw-partition",
+    "provider": "ec2-singapore",
     "partitions": [
         {
-            "id": "partition-1",
+            "id": "ap-southeast-1a-partition",
             "property": [
                 {
                     "name": "region",

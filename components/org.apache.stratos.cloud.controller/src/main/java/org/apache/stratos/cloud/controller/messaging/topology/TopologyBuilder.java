@@ -21,7 +21,10 @@ package org.apache.stratos.cloud.controller.messaging.topology;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.stratos.cloud.controller.context.CloudControllerContext;
-import org.apache.stratos.cloud.controller.domain.*;
+import org.apache.stratos.cloud.controller.domain.Cartridge;
+import org.apache.stratos.cloud.controller.domain.ClusterContext;
+import org.apache.stratos.cloud.controller.domain.MemberContext;
+import org.apache.stratos.cloud.controller.domain.PortMapping;
 import org.apache.stratos.cloud.controller.exception.InvalidCartridgeTypeException;
 import org.apache.stratos.cloud.controller.exception.InvalidMemberException;
 import org.apache.stratos.cloud.controller.messaging.publisher.TopologyEventPublisher;
@@ -91,7 +94,7 @@ public class TopologyBuilder {
                     }
 
                     service.setProperties(properties);
-                    if(cartridge.getPortMappings() != null) {
+                    if (cartridge.getPortMappings() != null) {
                         List<PortMapping> portMappings = Arrays.asList(cartridge.getPortMappings());
                         Port port;
                         //adding ports to the event
@@ -1008,7 +1011,7 @@ public class TopologyBuilder {
             ClusterStatus status = ClusterStatus.Terminating;
             if (context.isStateTransitionValid(status)) {
                 context.setStatus(status);
-                log.info("Cluster Terminating adding status started for " + cluster.getClusterId());
+                log.info("Cluster Terminating started for " + cluster.getClusterId());
                 TopologyManager.updateTopology(topology);
                 //publishing data
                 ClusterInstanceTerminatingEvent clusterTerminaingEvent = new ClusterInstanceTerminatingEvent(event.getAppId(),

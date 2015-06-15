@@ -1157,12 +1157,16 @@ public class ClusterMonitor extends Monitor {
                 clusterInstanceId);
         ClusterLevelPartitionContext clusterMonitorPartitionContext = networkPartitionCtxt.
                 getPartitionCtxt(partitionId);
-        clusterMonitorPartitionContext.addMemberStatsContext(new MemberStatsContext(memberId));
+
+        clusterMonitorPartitionContext.moveActiveMemberToTerminationPendingMembers(memberId);
+        if (clusterMonitorPartitionContext.getMemberStatsContext(memberId) != null) {
+            clusterMonitorPartitionContext.removeMemberStatsContext(memberId);
+        }
         if (log.isDebugEnabled()) {
-            log.debug(String.format("Member has been moved as pending termination: "
+            log.debug(String.format("Member has been moved as pending termination, and member stat context is removed: "
                     + "[member] %s", memberId));
         }
-        clusterMonitorPartitionContext.moveActiveMemberToTerminationPendingMembers(memberId);
+
     }
 
     public void handleMemberReadyToShutdownEvent(MemberReadyToShutdownEvent memberReadyToShutdownEvent) {
@@ -1187,6 +1191,8 @@ public class ClusterMonitor extends Monitor {
                             "and moved to obsolete list: [member] %s " +
                             "[partition] %s [cluster] %s ", memberId, partitionId, clusterId));
                 }
+
+
             } else if (partitionCtxt.getObsoleteMember(memberId) != null) {
                 if (log.isDebugEnabled()) {
                     log.debug(String.format("Member is  in obsolete list: [member] %s " +
@@ -1467,7 +1473,7 @@ public class ClusterMonitor extends Monitor {
             } else {
                 createClusterInstance(cluster.getServiceName(), cluster.getClusterId(), null, parentInstanceId, partitionId,
                         parentMonitorInstance.getNetworkPartitionId());
-                if(log.isDebugEnabled()) {
+                if (log.isDebugEnabled()) {
                     log.debug(String.format("Cluster instance created: [application-id] %s [service-name] %s " +
                             "[cluster-id] %s", appId, cluster.getServiceName(), cluster.getClusterId()));
                 }
