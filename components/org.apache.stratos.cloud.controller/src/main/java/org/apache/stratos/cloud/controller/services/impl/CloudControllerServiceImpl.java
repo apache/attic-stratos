@@ -485,7 +485,7 @@ public class CloudControllerServiceImpl implements CloudControllerService {
         memberContext.setLoadBalancingIPType(loadBalancingIPType);
         memberContext.setInitTime(System.currentTimeMillis());
         memberContext.setObsoleteExpiryTime(instanceContext.getObsoleteExpiryTime());
-//        memberContext.setInstanceId(instanceContext.get);
+        memberContext.setInstanceId(cloudControllerContext.getMemberContextOfMemberId(memberId).getInstanceId());
 
         return memberContext;
     }
