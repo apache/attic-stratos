@@ -28,6 +28,7 @@ import org.apache.stratos.autoscaler.stub.pojo.*;
 import org.apache.stratos.autoscaler.stub.pojo.Dependencies;
 import org.apache.stratos.autoscaler.stub.pojo.ServiceGroup;
 import org.apache.stratos.cloud.controller.stub.domain.*;
+import org.apache.stratos.common.beans.IaasProviderInfoBean;
 import org.apache.stratos.common.beans.application.*;
 import org.apache.stratos.common.beans.application.domain.mapping.DomainMappingBean;
 import org.apache.stratos.common.beans.application.signup.ApplicationSignUpBean;
@@ -1847,14 +1848,12 @@ public class ObjectConverter {
             DependencyBean dependencyBean = new DependencyBean();
             String[] startupOrders = dependencies.getStartupOrders();
             if (startupOrders != null && startupOrders[0] != null) {
-                List<String> startupOrdersDef = Arrays.asList(startupOrders);
-                //dependencyBean.setStartupOrders(startupOrdersDef);
+                dependencyBean.setStartupOrders(convertStringArrayToStartupOrderBeans(startupOrders));
             }
 
             String[] scalingDependants = dependencies.getScalingDependants();
             if (scalingDependants != null && scalingDependants[0] != null) {
-                List<String> scalingDependenciesDef = Arrays.asList(scalingDependants);
-                //dependencyBean.setScalingDependents(scalingDependenciesDef);
+                dependencyBean.setScalingDependents(convertStringArrayToDependentScalingBeans(scalingDependants));
             }
 
             dependencyBean.setTerminationBehaviour(dependencies.getTerminationBehaviour());
@@ -2113,12 +2112,23 @@ public class ObjectConverter {
             NetworkPartitionRef networkPartitionRef = new NetworkPartitionRef();
             networkPartitionRef.setId(networkPartitionReferenceBean.getId());
             networkPartitionRef.setPartitionAlgo(networkPartitionReferenceBean.getPartitionAlgo());
-            if(networkPartitionReferenceBean.getPartitions() != null) {
+            if (networkPartitionReferenceBean.getPartitions() != null) {
                 networkPartitionRef.setPartitionRefs(convertToASStubPartitions(
                         networkPartitionReferenceBean.getPartitions()));
             }
             networkPartitionRefList.add(networkPartitionRef);
         }
         return networkPartitionRefList.toArray(new NetworkPartitionRef[networkPartitionRefList.size()]);
+    }
+
+    public static IaasProviderInfoBean convertStringArrayToIaasProviderInfoBean(String[] iaasProviders) {
+
+        IaasProviderInfoBean iaasProviderInfoBean = new IaasProviderInfoBean();
+
+        if (iaasProviders != null) {
+            iaasProviderInfoBean.setIaasProviders(Arrays.asList(iaasProviders));
+        }
+
+        return iaasProviderInfoBean;
     }
 }

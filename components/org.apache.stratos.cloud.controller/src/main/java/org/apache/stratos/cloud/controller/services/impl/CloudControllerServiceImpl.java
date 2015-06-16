@@ -1621,4 +1621,24 @@ public class CloudControllerServiceImpl implements CloudControllerService {
         return true;
     }
 
+    @Override
+    public String[] getIaasProviders() {
+
+        try {
+            Collection<IaasProvider> iaasProviders = CloudControllerConfig.getInstance().getIaasProviders();
+            List<String> iaases = new ArrayList<String>();
+
+            for (IaasProvider iaas : iaasProviders) {
+                iaases.add(iaas.getType());
+            }
+
+            return iaases.toArray(new String[iaases.size()]);
+        } catch (Exception e) {
+            String message = String.format("Could not get Iaas Providers");
+            log.error(message);
+            throw new CloudControllerException(message, e);
+        }
+
+    }
+
 }

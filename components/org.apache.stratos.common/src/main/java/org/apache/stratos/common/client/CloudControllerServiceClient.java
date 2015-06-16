@@ -264,4 +264,8 @@ public class CloudControllerServiceClient {
         }
     }
 
+    public String[] getIaasProviders() throws RemoteException {
+        return stub.getIaasProviders();
+    }
+
 }
