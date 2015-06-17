@@ -497,6 +497,9 @@ public class GCEOperations {
     public boolean isHealthCheckExists(String healthCheckName) {
         try {
             HttpHealthCheckList httpHealthCheckList = compute.httpHealthChecks().list(PROJECT_ID).execute();
+            if(httpHealthCheckList.size() == 0){
+                return false;
+            }
             for (HttpHealthCheck httpHealthCheck : httpHealthCheckList.getItems()) {
                 if (httpHealthCheck.getName().equals(healthCheckName)) {
                     return true;
