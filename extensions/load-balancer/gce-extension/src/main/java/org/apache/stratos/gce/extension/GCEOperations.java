@@ -93,6 +93,125 @@ public class GCEOperations {
     }
 
     /**
+     * Get list of running instances in given project and zone.(This method can be used
+     * when we need to check whether a given instance is available or not in a given project
+     * and zone)
+     *
+     * @return
+     * @throws IOException
+     */
+    public static InstanceList getInstanceList() throws IOException {
+        Compute.Instances.List instances = compute.instances().
+                list(PROJECT_ID, ZONE_NAME).setFilter(RUNNING_FILTER);
+        InstanceList instanceList = instances.execute();
+        if (instanceList.getItems() == null) {
+            log.info("No instances found for specified zone");
+            return null;
+        } else {
+            return instanceList;
+        }
+    }
+
+    public static String getInstanceURLFromName(String instanceName) {
+
+        //todo:remove try catch
+        String instanceURL;
+        try {
+            //check whether the given instance is available
+            InstanceList instanceList = getInstanceList();
+            for (Instance instance : instanceList.getItems()) {
+                if (instance.getName().equals(instanceName)) {
+                    //instance is available
+                    //getInstance URL
+                    instanceURL = instance.getSelfLink();
+                    return instanceURL;
+                }
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+
+    }
+
+    /**
+     * Get instance resource URL from given instance name
+     *
+     * @param instanceId
+     * @return
+     */
+    public static String getInstanceURLFromId(String instanceId) {
+
+        //todo:remove try catch
+        String instanceURL;
+        try {
+            //check whether the given instance is available
+            InstanceList instanceList = getInstanceList();
+            for (Instance instance : instanceList.getItems()) {
+                //todo: recheck following line
+                String instanceIdInIaaS = ZONE_NAME + "/" + instance.getName();
+                if (instanceIdInIaaS.equals(instanceId)) {
+                    //instance is available
+                    //getInstance URL
+                    instanceURL = instance.getSelfLink();
+                    return instanceURL;
+                }
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+
+    }
+
+    /**
+     * Get a given health check resource URL
+     *
+     * @param healthCheckName - name of the health check in IaaS
+     * @return
+     */
+    public static String getHealthCheckURLFromName(String healthCheckName) {
+
+        String healthCheckURL;
+
+        //check whether the given instance is available
+        HttpHealthCheckList healthCheckList = getHealthCheckList();
+        for (HttpHealthCheck httpHealthCheck : healthCheckList.getItems()) {
+            if (httpHealthCheck.getName().equals(healthCheckName)) {
+                //instance is available
+                //getInstance URL
+                healthCheckURL = httpHealthCheck.getSelfLink();
+                return healthCheckURL;
+            }
+        }
+        return null;
+
+    }
+
+    /**
+     * Get list of health checks
+     *
+     * @return
+     */
+    public static HttpHealthCheckList getHealthCheckList() {
+        try {
+            Compute.HttpHealthChecks.List healthChecks = compute.httpHealthChecks().list(PROJECT_ID);
+            HttpHealthCheckList healthCheckList = healthChecks.execute();
+            if (healthCheckList.getItems() == null) {
+                log.info("No health check found for specified project");
+                return null;
+            } else {
+                return healthCheckList;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
      * Authorize and build compute engine object
      *
      * @throws GeneralSecurityException
@@ -119,7 +238,6 @@ public class GCEOperations {
 
 
     }
-
 
     /**
      * Creating a new target pool; name should be unique
@@ -189,8 +307,6 @@ public class GCEOperations {
             Operation operation = compute.forwardingRules().insert(PROJECT_ID, REGION_NAME, forwardingRule).execute();
             waitForRegionOperationCompletion(operation.getName());
 
-            int timeout = 0;
-
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -213,7 +329,6 @@ public class GCEOperations {
             e.printStackTrace();
         }
     }
-
 
     /**
      * Check whether the given target pool is already exists in the given project and region.
@@ -295,17 +410,7 @@ public class GCEOperations {
 
     }
 
-    /**
-     * Add given set of instances to given target pool.
-     *
-     * @param targetPoolName        - target pool name in IaaS
-     * @param instanceReferenceList - List of instances to be added to target pool
-     */
-    private void addInstancesToTargetPool(String targetPoolName, List<InstanceReference>
-            instanceReferenceList) {
 
-
-    }
 
     /**
      * Remove given set of instances from target pool
@@ -328,81 +433,6 @@ public class GCEOperations {
         }
 
     }
-
-    /**
-     * Get list of running instances in given project and zone.(This method can be used
-     * when we need to check whether a given instance is available or not in a given project
-     * and zone)
-     *
-     * @return
-     * @throws IOException
-     */
-    public static InstanceList getInstanceList() throws IOException {
-        Compute.Instances.List instances = compute.instances().
-                list(PROJECT_ID, ZONE_NAME).setFilter(RUNNING_FILTER);
-        InstanceList instanceList = instances.execute();
-        if (instanceList.getItems() == null) {
-            log.info("No instances found for specified zone");
-            return null;
-        } else {
-            return instanceList;
-        }
-    }
-
-    public static String getInstanceURLFromName(String instanceName) {
-
-        //todo:remove try catch
-        String instanceURL;
-        try {
-            //check whether the given instance is available
-            InstanceList instanceList = getInstanceList();
-            for (Instance instance : instanceList.getItems()) {
-                if (instance.getName().equals(instanceName)) {
-                    //instance is available
-                    //getInstance URL
-                    instanceURL = instance.getSelfLink();
-                    return instanceURL;
-                }
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-
-    }
-
-    /**
-     * Get instance resource URL from given instance name
-     *
-     * @param instanceId
-     * @return
-     */
-    public static String getInstanceURLFromId(String instanceId) {
-
-        //todo:remove try catch
-        String instanceURL;
-        try {
-            //check whether the given instance is available
-            InstanceList instanceList = getInstanceList();
-            for (Instance instance : instanceList.getItems()) {
-                //todo: recheck following line
-                String instanceIdInIaaS = ZONE_NAME + "/" + instance.getName();
-                if (instanceIdInIaaS.equals(instanceId)) {
-                    //instance is available
-                    //getInstance URL
-                    instanceURL = instance.getSelfLink();
-                    return instanceURL;
-                }
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-
-    }
-
 
     /**
      * This method is used for set port rage for forwarding rule
@@ -464,20 +494,32 @@ public class GCEOperations {
      */
     public void createHealthCheck(String healthCheckName) {
 
-            HttpHealthCheck httpHealthCheck = new HttpHealthCheck();
-            httpHealthCheck.setName(healthCheckName);
-            httpHealthCheck.setRequestPath(HEALTH_CHECK_REQUEST_PATH);
-            //TODO: read as integers
-            httpHealthCheck.setPort(Integer.parseInt(HEALTH_CHECK_PORT));
-            httpHealthCheck.setTimeoutSec(Integer.parseInt(HEALTH_CHECK_TIME_OUT_SEC));
-            httpHealthCheck.setUnhealthyThreshold(Integer.parseInt(HEALTH_CHECK_UNHEALTHY_THRESHOLD));
+        HttpHealthCheck httpHealthCheck = new HttpHealthCheck();
+        httpHealthCheck.setName(healthCheckName);
+        httpHealthCheck.setRequestPath(HEALTH_CHECK_REQUEST_PATH);
+        //TODO: read as integers
+        httpHealthCheck.setPort(Integer.parseInt(HEALTH_CHECK_PORT));
+        httpHealthCheck.setTimeoutSec(Integer.parseInt(HEALTH_CHECK_TIME_OUT_SEC));
+        httpHealthCheck.setUnhealthyThreshold(Integer.parseInt(HEALTH_CHECK_UNHEALTHY_THRESHOLD));
+        try {
+            Operation operation = compute.httpHealthChecks().insert(PROJECT_ID, httpHealthCheck).execute();
+            waitForGlobalOperationCompletion(operation.getName());
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void deleteHealthCheck(String healthCheckName){
             try {
-                Operation operation = compute.httpHealthChecks().insert(PROJECT_ID, httpHealthCheck).execute();
+                Operation operation = compute.httpHealthChecks().delete(PROJECT_ID, healthCheckName).execute();
                 waitForGlobalOperationCompletion(operation.getName());
 
             } catch (IOException e) {
                 e.printStackTrace();
+
             }
+
     }
 
     /**
@@ -489,7 +531,7 @@ public class GCEOperations {
     public boolean isHealthCheckExists(String healthCheckName) {
         try {
             HttpHealthCheckList httpHealthCheckList = compute.httpHealthChecks().list(PROJECT_ID).execute();
-            if(httpHealthCheckList.size() == 0){
+            if (httpHealthCheckList.size() == 0) {
                 return false;
             }
             for (HttpHealthCheck httpHealthCheck : httpHealthCheckList.getItems()) {
@@ -512,51 +554,6 @@ public class GCEOperations {
                 //healthcheck is available
                 return httpHealthCheck;
             }
-        }
-        return null;
-    }
-
-    /**
-     * Get a given health check resource URL
-     *
-     * @param healthCheckName - name of the health check in IaaS
-     * @return
-     */
-    public static String getHealthCheckURLFromName(String healthCheckName) {
-
-        String healthCheckURL;
-
-        //check whether the given instance is available
-        HttpHealthCheckList healthCheckList = getHealthCheckList();
-        for (HttpHealthCheck httpHealthCheck : healthCheckList.getItems()) {
-            if (httpHealthCheck.getName().equals(healthCheckName)) {
-                //instance is available
-                //getInstance URL
-                healthCheckURL = httpHealthCheck.getSelfLink();
-                return healthCheckURL;
-            }
-        }
-        return null;
-
-    }
-
-    /**
-     * Get list of health checks
-     *
-     * @return
-     */
-    public static HttpHealthCheckList getHealthCheckList() {
-        try {
-            Compute.HttpHealthChecks.List healthChecks = compute.httpHealthChecks().list(PROJECT_ID);
-            HttpHealthCheckList healthCheckList = healthChecks.execute();
-            if (healthCheckList.getItems() == null) {
-                log.info("No health check found for specified project");
-                return null;
-            } else {
-                return healthCheckList;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
         return null;
     }
@@ -630,7 +627,7 @@ public class GCEOperations {
         }
     }
 
-    public void createFirewallRule(){
+    public void createFirewallRule() {
 
         List<String> sourceRanges = new ArrayList<String>();
         sourceRanges.add("0.0.0.0/0");
@@ -651,49 +648,11 @@ public class GCEOperations {
         firewall.setSourceRanges(sourceRanges);
         firewall.setAllowed(allowedRules);
         try {
-            compute.firewalls().insert(PROJECT_ID,firewall);
+            compute.firewalls().insert(PROJECT_ID, firewall);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    //a test method
-    public void addInstanceToTargetPool(String instanceId) {
-
-        List<InstanceReference> instanceReferenceList = new ArrayList<InstanceReference>();
-
-        //remove instance to instance reference list, we should use the instance URL
-        InstanceReference instanceReference1 = new InstanceReference();
-        instanceReference1.setInstance(getInstanceURLFromName(instanceId));
-        instanceReferenceList.add(instanceReference1);
-        addInstancesToTargetPool("testtargetpool", instanceReferenceList);
-
-    }
-
-    /**
-     * this is a sample method using for testing purposes
-     */
-    public void sampleMethodForAddingInstancesToTargetPool() {
-        List<InstanceReference> instanceReferenceList = new ArrayList<InstanceReference>();
-
-        //remove instance to instance reference list, we should use the instance URL
-        InstanceReference instanceReference1 = new InstanceReference();
-        instanceReference1.setInstance(getInstanceURLFromName("instance-2"));
-        instanceReferenceList.add(instanceReference1);
-        addInstancesToTargetPool("testtargetpool", instanceReferenceList);
-    }
-
-    /**
-     * this is a sample method using for testing purposes
-     */
-    public void sampleMethodForRemovingInstancesToTargetPool() {
-        List<InstanceReference> instanceReferenceList = new ArrayList<InstanceReference>();
-
-        //add instances to instance reference list, we should use the instance URL
-        InstanceReference instanceReference1 = new InstanceReference();
-        instanceReference1.setInstance(getInstanceURLFromName("instance-2"));
-        instanceReferenceList.add(instanceReference1);
-        removeInstancesFromTargetPool("testtargetpool", instanceReferenceList);
-    }
 
 }

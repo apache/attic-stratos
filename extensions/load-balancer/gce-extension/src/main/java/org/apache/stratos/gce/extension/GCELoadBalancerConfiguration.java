@@ -19,10 +19,7 @@
 
 package org.apache.stratos.gce.extension;
 
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Since GCE have separate target pools and forwarding rules, we need
@@ -43,8 +40,6 @@ public class GCELoadBalancerConfiguration {
     private String forwardingRuleName;
     private String targetPoolName;
     private String healthCheckName;
-    //Whether we have executed this configuration in GCE or not
-    private boolean isRunning = false;
 
 
     public GCELoadBalancerConfiguration(String clusterID, List<String> instancesList,
@@ -83,20 +78,12 @@ public class GCELoadBalancerConfiguration {
         return clusterID;
     }
 
-    public void setStatus(boolean status) {
-        this.isRunning = status;
-    }
-
-    public void setTargetPoolName(String targetPoolName){
-        this.targetPoolName = targetPoolName;
-    }
-
-    public String getTargetPoolName(){
+    public String getTargetPoolName() {
         return targetPoolName;
     }
 
-    public boolean getStatus() {
-        return isRunning;
+    public void setTargetPoolName(String targetPoolName) {
+        this.targetPoolName = targetPoolName;
     }
 
     public String getHealthCheckName() {

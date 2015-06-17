@@ -93,11 +93,11 @@ public class GCELoadBalancer implements LoadBalancer {
 
                     for (Member member : cluster.getMembers()) {
 
-                      if(member.getInstanceId() != null) {
-                          if (!updatedInstancesList.contains(member.getInstanceId())) {
-                              updatedInstancesList.add(member.getInstanceId());
-                          }
-                      }
+                        if (member.getInstanceId() != null) {
+                            if (!updatedInstancesList.contains(member.getInstanceId())) {
+                                updatedInstancesList.add(member.getInstanceId());
+                            }
+                        }
 
                         //checking for forwarding rules and updating
                         for (Object port : member.getPorts()) {
@@ -132,10 +132,6 @@ public class GCELoadBalancer implements LoadBalancer {
                         String healthCheckName = healthCheckNameCreator(cluster.getClusterId());
                         GCELoadBalancerConfiguration.setHealthCheckName(healthCheckName);
                     }
-
-                    //for testing purposes
-                    start();
-
 
 
                 } else {
@@ -183,25 +179,52 @@ public class GCELoadBalancer implements LoadBalancer {
 
                     clusterToLoadBalancerConfigurationMap.put(cluster.getClusterId(), GCELoadBalancerConfiguration);
 
+
                 }
 
             }
         }
 
+
+        //Overwrite all the things related to load balancing in IaaS side
+
+        //delete all forwarding rules, target pools and health checks
+        deleteAll();
+        //recreate all forwarding rules, target pools and health checks
+        recreateAll();
+
         return true;
     }
 
-    @Override
-    public void start() throws LoadBalancerExtensionException {
-        //topology has completed
+    /**
+     * This method is used to delete all fowarding rules, target pools and health checks
+     * in IaaS side according to new topology
+     */
+    private void deleteAll() {
 
-        log.info("Starting GCE Load balancer instance");
+        Iterator iterator = clusterToLoadBalancerConfigurationMap.entrySet().iterator();
+        while (iterator.hasNext()) { //for each configuration
 
-        //iterate through clusterToLoadBalancerConfigurationMap
-        //for each cluster{
-        //if Load balancer status == not running -->
-        //      execute commands through GCE API for start the load balancer
-        //}
+            Map.Entry clusterIDLoadBalancerConfigurationPair = (Map.Entry) iterator.next();
+            GCELoadBalancerConfiguration GCELoadBalancerConfiguration =
+                    ((GCELoadBalancerConfiguration) clusterIDLoadBalancerConfigurationPair.getValue());
+
+            //delete forwarding rule
+            gceOperations.deleteForwardingRule(GCELoadBalancerConfiguration.getForwardingRuleName());
+            //delete target pool from GCE
+            gceOperations.deleteTargetPool(GCELoadBalancerConfiguration.getTargetPoolName());
+            //delete health check from GCE
+            gceOperations.deleteHealthCheck(GCELoadBalancerConfiguration.getHealthCheckName());
+
+
+        }
+    }
+
+    /**
+     * This method is used to recreate all fowarding rules, target pools and health checks
+     * in IaaS side according to new topology
+     */
+    private void recreateAll() {
 
         Iterator iterator = clusterToLoadBalancerConfigurationMap.entrySet().iterator();
         while (iterator.hasNext()) { //for each Load balancer configuration
@@ -211,55 +234,61 @@ public class GCELoadBalancer implements LoadBalancer {
             GCELoadBalancerConfiguration GCELoadBalancerConfiguration =
                     ((GCELoadBalancerConfiguration) clusterIDLoadBalancerConfigurationPair.getValue());
 
-            if (!GCELoadBalancerConfiguration.getStatus()) { //if the load balancer is NOT already running
 
-                //create a health check
-                gceOperations.createHealthCheck(GCELoadBalancerConfiguration.getHealthCheckName());
+            //create a health check
+            gceOperations.createHealthCheck(GCELoadBalancerConfiguration.getHealthCheckName());
 
-                gceOperations.createFirewallRule();
+            gceOperations.createFirewallRule();
 
-                //crate a target pool in GCE
-                gceOperations.createTargetPool(GCELoadBalancerConfiguration.getTargetPoolName(),
-                        GCELoadBalancerConfiguration.getHealthCheckName());
+            //crate a target pool in GCE
+            gceOperations.createTargetPool(GCELoadBalancerConfiguration.getTargetPoolName(),
+                    GCELoadBalancerConfiguration.getHealthCheckName());
 
-                //add instances to target pool
-                gceOperations.addInstancesToTargetPool(GCELoadBalancerConfiguration.getInstancesList(),
-                        GCELoadBalancerConfiguration.getTargetPoolName());
+            //add instances to target pool
+            gceOperations.addInstancesToTargetPool(GCELoadBalancerConfiguration.getInstancesList(),
+                    GCELoadBalancerConfiguration.getTargetPoolName());
 
-                //create forwarding rules in GCE
-                List<Integer> ipList = GCELoadBalancerConfiguration.getIpList();
-                //need to create a port range String
-                String portRange = "";
-                //if the ip list is empty
-                if (ipList.isEmpty()) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Ip list is null");
-                    }
-                    //as a temporary solution set all ports to be open
-                    portRange = "1-65535";
-
+            //create forwarding rules in GCE
+            List<Integer> ipList = GCELoadBalancerConfiguration.getIpList();
+            //need to create a port range String
+            String portRange = "";
+            //if the ip list is empty
+            if (ipList.isEmpty()) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Ip list is null");
                 }
-                //else if ip list has only one value
-                else if (ipList.size() == 1) {
-                    portRange = Integer.toString(ipList.get(0)) + "-" + Integer.toString(ipList.get(0));
-                }
-                //else we have more than 1 value
-                else {
-                    //first we need to take the port range. So arrange ipList in ascending order
-                    Collections.sort(ipList);
-                    //take the first one and last one
-                    portRange = Integer.toString(ipList.get(0)) + "-" + Integer.toString(ipList.get(ipList.size() - 1));
-                }
+                //as a temporary solution set all ports to be open
+                portRange = "1-65535";
 
-                //create the forwarding rule
-                gceOperations.createForwardingRule(GCELoadBalancerConfiguration.getForwardingRuleName(),
-                        GCELoadBalancerConfiguration.getTargetPoolName(), protocol, portRange);
-
-                //set status to running
-                GCELoadBalancerConfiguration.setStatus(true);
+            }
+            //else if ip list has only one value
+            else if (ipList.size() == 1) {
+                portRange = Integer.toString(ipList.get(0)) + "-" + Integer.toString(ipList.get(0));
+            }
+            //else we have more than 1 value
+            else {
+                //first we need to take the port range. So arrange ipList in ascending order
+                Collections.sort(ipList);
+                //take the first one and last one
+                portRange = Integer.toString(ipList.get(0)) + "-" + Integer.toString(ipList.get(ipList.size() - 1));
             }
 
+            //create the forwarding rule
+            gceOperations.createForwardingRule(GCELoadBalancerConfiguration.getForwardingRuleName(),
+                    GCELoadBalancerConfiguration.getTargetPoolName(), protocol, portRange);
+
+
         }
+
+    }
+
+
+    @Override
+    public void start() throws LoadBalancerExtensionException {
+        //topology has completed
+
+        log.info("Starting GCE Load balancer instance");
+
 
         log.info("GCE Load balancer instance started");
 
@@ -271,21 +300,7 @@ public class GCELoadBalancer implements LoadBalancer {
         log.info("GCE Load Balancer is stopping");
         //iterate through hashmap and remove all
 
-        Iterator iterator = clusterToLoadBalancerConfigurationMap.entrySet().iterator();
-        while (iterator.hasNext()) { //for each Load balancer configuration
-
-            Map.Entry clusterIDLoadBalancerConfigurationPair = (Map.Entry) iterator.next();
-            GCELoadBalancerConfiguration GCELoadBalancerConfiguration =
-                    ((GCELoadBalancerConfiguration) clusterIDLoadBalancerConfigurationPair.getValue());
-
-            if (GCELoadBalancerConfiguration.getStatus()) { //if the load balancer is  already running
-
-                gceOperations.deleteForwardingRule(GCELoadBalancerConfiguration.getForwardingRuleName());
-                //delete target pool from GCE
-                gceOperations.deleteTargetPool(GCELoadBalancerConfiguration.getTargetPoolName());
-
-            }
-        }
+        deleteAll();
 
     }
 

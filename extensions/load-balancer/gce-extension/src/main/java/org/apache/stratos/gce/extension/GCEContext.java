@@ -51,7 +51,6 @@ public class GCEContext {
     private String networkName;
 
 
-
     private GCEContext() {
 
         this.cepStatsPublisherEnabled = Boolean.getBoolean(Constants.CEP_STATS_PUBLISHER_ENABLED);
@@ -92,7 +91,7 @@ public class GCEContext {
             log.debug(Constants.HEALTH_CHECK_PORT + " = " + healthCheckPort);
             log.debug(Constants.HEALTH_CHECK_TIME_OUT_SEC + " = " + healthCheckTimeOutSec);
             log.debug(Constants.HEALTH_CHECK_UNHEALTHY_THRESHOLD + " = " + healthCheckUnhealthyThreshold);
-            log.debug(Constants.NETWORK_NAME + "="+ networkName);
+            log.debug(Constants.NETWORK_NAME + "=" + networkName);
 
         }
 
@@ -184,7 +183,6 @@ public class GCEContext {
     public String getGceAccountID() {
         return gceAccountID;
     }
-
 
 
     public String getHealthCheckRequestPath() {
