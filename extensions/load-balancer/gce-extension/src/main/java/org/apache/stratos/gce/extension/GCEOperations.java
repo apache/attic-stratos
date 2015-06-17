@@ -64,7 +64,7 @@ public class GCEOperations {
     private static final String HEALTH_CHECK_PORT = GCEContext.getInstance().getHealthCheckPort();
     private static final String HEALTH_CHECK_TIME_OUT_SEC = GCEContext.getInstance().getHealthCheckTimeOutSec();
     private static final String HEALTH_CHECK_UNHEALTHY_THRESHOLD = GCEContext.getInstance().getHealthCheckUnhealthyThreshold();
-
+    private static final String NETWORK_NAME = GCEContext.getInstance().getNetworkName();
     /**
      * Directory to store user credentials.
      */
@@ -626,6 +626,33 @@ public class GCEOperations {
         } catch (IOException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void createFirewallRule(){
+
+        List<String> sourceRanges = new ArrayList<String>();
+        sourceRanges.add("0.0.0.0/0");
+
+        List<String> ports = new ArrayList<String>();
+        ports.add(HEALTH_CHECK_PORT);
+
+        Firewall.Allowed allowed = new Firewall.Allowed();
+        allowed.setIPProtocol("TCP");
+        allowed.setPorts(ports);
+
+        List<Firewall.Allowed> allowedRules = new ArrayList<Firewall.Allowed>();
+        allowedRules.add(allowed);
+
+        Firewall firewall = new Firewall();
+        firewall.setName("stratos-health-check-firewall");
+        firewall.setNetwork(NETWORK_NAME);
+        firewall.setSourceRanges(sourceRanges);
+        firewall.setAllowed(allowedRules);
+        try {
+            compute.firewalls().insert(PROJECT_ID,firewall);
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
