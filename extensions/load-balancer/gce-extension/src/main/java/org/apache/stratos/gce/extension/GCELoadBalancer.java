@@ -76,7 +76,6 @@ public class GCELoadBalancer implements LoadBalancer {
 
             Map.Entry clusterIDLoadBalancerConfigurationPair = (Map.Entry) iterator.next();
 
-            String clusterID = ((String) clusterIDLoadBalancerConfigurationPair.getKey());
             GCELoadBalancerConfiguration GCELoadBalancerConfiguration =
                     ((GCELoadBalancerConfiguration) clusterIDLoadBalancerConfigurationPair.getValue());
 
@@ -191,11 +190,11 @@ public class GCELoadBalancer implements LoadBalancer {
 
                     for (Member member : cluster.getMembers()) {
 
-                        //TODO:check instances(members) in instance list and update
-
-                        if (!updatedInstancesList.contains(member.getInstanceId())) {
-                            updatedInstancesList.add(member.getInstanceId());
-                        }
+                      if(member.getInstanceId() != null) {
+                          if (!updatedInstancesList.contains(member.getInstanceId())) {
+                              updatedInstancesList.add(member.getInstanceId());
+                          }
+                      }
 
                         //checking for forwarding rules and updating
                         for (Object port : member.getPorts()) {
