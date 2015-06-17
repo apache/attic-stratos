@@ -323,7 +323,7 @@ public class GCEOperations {
             Operation operation = compute.forwardingRules().
                     delete(PROJECT_ID, REGION_NAME, forwardingRuleName).execute();
 
-            waitForGlobalOperationCompletion(operation.getName());
+            waitForRegionOperationCompletion(operation.getName());
 
         } catch (IOException e) {
             e.printStackTrace();
