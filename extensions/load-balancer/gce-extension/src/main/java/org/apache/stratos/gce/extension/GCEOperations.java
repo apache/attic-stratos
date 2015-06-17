@@ -464,8 +464,6 @@ public class GCEOperations {
      */
     public void createHealthCheck(String healthCheckName) {
 
-        if (!isHealthCheckExists(healthCheckName)) {//if the health check is not present already
-
             HttpHealthCheck httpHealthCheck = new HttpHealthCheck();
             httpHealthCheck.setName(healthCheckName);
             httpHealthCheck.setRequestPath(HEALTH_CHECK_REQUEST_PATH);
@@ -480,12 +478,6 @@ public class GCEOperations {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
-        } else {
-            if (log.isDebugEnabled()) {
-                log.debug("Health check is already exist: " + healthCheckName);
-            }
-        }
     }
 
     /**
