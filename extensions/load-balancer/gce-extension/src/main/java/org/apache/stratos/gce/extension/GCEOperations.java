@@ -411,7 +411,6 @@ public class GCEOperations {
     }
 
 
-
     /**
      * Remove given set of instances from target pool
      *
@@ -510,15 +509,15 @@ public class GCEOperations {
         }
     }
 
-    public void deleteHealthCheck(String healthCheckName){
-            try {
-                Operation operation = compute.httpHealthChecks().delete(PROJECT_ID, healthCheckName).execute();
-                waitForGlobalOperationCompletion(operation.getName());
+    public void deleteHealthCheck(String healthCheckName) {
+        try {
+            Operation operation = compute.httpHealthChecks().delete(PROJECT_ID, healthCheckName).execute();
+            waitForGlobalOperationCompletion(operation.getName());
 
-            } catch (IOException e) {
-                e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
 
-            }
+        }
 
     }
 
