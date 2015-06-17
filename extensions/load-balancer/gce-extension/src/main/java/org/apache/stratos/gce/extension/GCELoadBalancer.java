@@ -72,6 +72,38 @@ public class GCELoadBalancer implements LoadBalancer {
 
         log.info("Configuring Load balancer ");
 
+        //check whether any cluster is removed. If removed, then remove the cluster from
+        //clusterToLoadBalancerConfigurationMap and remove all objects in IaaS side too
+
+        Iterator iterator = clusterToLoadBalancerConfigurationMap.entrySet().iterator();
+        while (iterator.hasNext()) { //for each configuration
+
+            Map.Entry clusterIDLoadBalancerConfigurationPair = (Map.Entry) iterator.next();
+            GCELoadBalancerConfiguration gceLoadBalancerConfiguration =
+                    ((GCELoadBalancerConfiguration) clusterIDLoadBalancerConfigurationPair.getValue());
+
+            boolean found = false;
+
+            //check whether cluster is in the map or not
+            for (Service service : topology.getServices()) {
+                for (Cluster cluster : service.getClusters()) { //for each cluster
+                    if(cluster.getClusterId().equals(gceLoadBalancerConfiguration.getClusterID())){
+                        found = true;
+                        break;
+                    }
+                }
+                if (found == true){
+                    break;
+                }
+            }
+            if (found==false){
+                //remove cluster from map
+                clusterToLoadBalancerConfigurationMap.remove(gceLoadBalancerConfiguration.getClusterID());
+                deleteConfigurationForCluster(gceLoadBalancerConfiguration.getClusterID());
+            }
+        }
+
+
         for (Service service : topology.getServices()) {
             for (Cluster cluster : service.getClusters()) { //for each cluster
 
@@ -188,37 +220,6 @@ public class GCELoadBalancer implements LoadBalancer {
 
                 }
 
-            }
-        }
-
-        //check whether any cluster is removed. If removed, then remove the cluster from
-        //clusterToLoadBalancerConfigurationMap and remove all objects in IaaS side too
-
-        Iterator iterator = clusterToLoadBalancerConfigurationMap.entrySet().iterator();
-        while (iterator.hasNext()) { //for each configuration
-
-            Map.Entry clusterIDLoadBalancerConfigurationPair = (Map.Entry) iterator.next();
-            GCELoadBalancerConfiguration gceLoadBalancerConfiguration =
-                    ((GCELoadBalancerConfiguration) clusterIDLoadBalancerConfigurationPair.getValue());
-
-            boolean found = false;
-
-            //check whether cluster is in the map or not
-            for (Service service : topology.getServices()) {
-                for (Cluster cluster : service.getClusters()) { //for each cluster
-                    if(cluster.getClusterId().equals(gceLoadBalancerConfiguration.getClusterID())){
-                        found = true;
-                        break;
-                    }
-                }
-                if (found == true){
-                    break;
-                }
-            }
-            if (found==false){
-                //remove cluster from map
-                clusterToLoadBalancerConfigurationMap.remove(gceLoadBalancerConfiguration.getClusterID());
-                deleteConfigurationForCluster(gceLoadBalancerConfiguration.getClusterID());
             }
         }
 
