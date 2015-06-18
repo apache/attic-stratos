@@ -21,6 +21,7 @@ import org.wso2.siddhi.query.api.expression.Expression;
 import org.wso2.siddhi.query.api.expression.Variable;
 import org.wso2.siddhi.query.api.expression.constant.IntConstant;
 import org.wso2.siddhi.query.api.expression.constant.LongConstant;
+import org.wso2.siddhi.query.api.extension.annotation.SiddhiExtension;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -29,6 +30,7 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+@SiddhiExtension(namespace = "stratos", function = "curveFitting")
 public class CurveFinderWindowProcessor extends WindowProcessor implements RunnableWindowProcessor{
 
     static final Logger log = Logger.getLogger(CurveFinderWindowProcessor.class);
