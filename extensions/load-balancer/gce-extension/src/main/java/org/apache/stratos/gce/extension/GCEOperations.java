@@ -286,7 +286,7 @@ public class GCEOperations {
             e.printStackTrace();
 
         }
-        log.info("Deleted target pool: "+ targetPoolName);
+        log.info("Deleted target pool: " + targetPoolName);
     }
 
     /**
@@ -316,7 +316,7 @@ public class GCEOperations {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        log.info("Created forwarding rule: "+ forwardingRuleName);
+        log.info("Created forwarding rule: " + forwardingRuleName);
     }
 
     /**
@@ -422,23 +422,46 @@ public class GCEOperations {
     /**
      * Remove given set of instances from target pool
      *
-     * @param targetPoolName        - target pool name from IaaS
-     * @param instanceReferenceList - List of instances to be removed from target pool
+     * @param targetPoolName   - target pool name from IaaS
+     * @param instancesIdsList - List of instances to be removed from target pool
      */
-    public void removeInstancesFromTargetPool(String targetPoolName, List<InstanceReference>
-            instanceReferenceList) {
-        TargetPoolsRemoveInstanceRequest targetPoolsRemoveInstanceRequest
-                = new TargetPoolsRemoveInstanceRequest();
+    public void removeInstancesFromTargetPool(List<String> instancesIdsList, String targetPoolName) {
+        log.info("Removing instances from target pool: " + targetPoolName);
+
+        if (instancesIdsList.isEmpty()) {
+            log.warn("Cannot remove instances to target pool. InstancesNamesList is empty.");
+            return;
+        }
+
+        List<InstanceReference> instanceReferenceList = new ArrayList<InstanceReference>();
+
+        //add instance to instance reference list, we should use the instance URL
+        for (String instanceId : instancesIdsList) { //for all instances
+
+            instanceReferenceList.add(new InstanceReference().
+                    setInstance(getInstanceURLFromId(instanceId)));
+
+        }
+
+        //create target pools add instance request and set instance to it
+        TargetPoolsRemoveInstanceRequest targetPoolsRemoveInstanceRequest = new
+                TargetPoolsRemoveInstanceRequest();
         targetPoolsRemoveInstanceRequest.setInstances(instanceReferenceList);
-        //TODO: remove try catch
+
+        //todo Remove try catch
         try {
-            compute.targetPools().removeInstance(PROJECT_ID, REGION_NAME,
+            //execute
+            Operation operation = compute.targetPools().removeInstance(PROJECT_ID, REGION_NAME,
                     targetPoolName, targetPoolsRemoveInstanceRequest).execute();
+
+            waitForRegionOperationCompletion(operation.getName());
+
 
         } catch (IOException e) {
             e.printStackTrace();
         }
 
+        log.info("Removed instances from target pool: " + targetPoolName);
     }
 
     /**
@@ -459,7 +482,7 @@ public class GCEOperations {
         log.info("Adding instances to target pool: " + targetPoolName);
 
         if (instancesIdsList.isEmpty()) {
-                log.warn("Cannot add instances to target pool. InstancesNamesList is empty.");
+            log.warn("Cannot add instances to target pool. InstancesNamesList is empty.");
             return;
         }
 
@@ -491,7 +514,7 @@ public class GCEOperations {
             e.printStackTrace();
         }
 
-        log.info("Added instances to target pool: "+ targetPoolName);
+        log.info("Added instances to target pool: " + targetPoolName);
     }
 
     /**
@@ -501,7 +524,7 @@ public class GCEOperations {
      */
     public void createHealthCheck(String healthCheckName) {
 
-        log.info("Creating health check: "+ healthCheckName);
+        log.info("Creating health check: " + healthCheckName);
 
         HttpHealthCheck httpHealthCheck = new HttpHealthCheck();
         httpHealthCheck.setName(healthCheckName);
@@ -517,11 +540,11 @@ public class GCEOperations {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        log.info("Created health check: "+ healthCheckName);
+        log.info("Created health check: " + healthCheckName);
     }
 
     public void deleteHealthCheck(String healthCheckName) {
-        log.info("Deleting Health Check: "+ healthCheckName);
+        log.info("Deleting Health Check: " + healthCheckName);
         try {
             Operation operation = compute.httpHealthChecks().delete(PROJECT_ID, healthCheckName).execute();
             waitForGlobalOperationCompletion(operation.getName());
@@ -530,7 +553,7 @@ public class GCEOperations {
             e.printStackTrace();
 
         }
-        log.info("Deleted Health Check: "+ healthCheckName);
+        log.info("Deleted Health Check: " + healthCheckName);
 
 
     }

@@ -31,9 +31,9 @@ import java.util.List;
 public class GCELoadBalancerConfiguration {
 
 
-    //A load balancer must have set of instances
-    private List<String> instancesList;
-    //A load balancer can have one IPs to be forwarded
+    //A cluster should have set of members
+    private List<String> memberList;
+    //A cluster can have one IPs to be forwarded
     private List<Integer> ipList;
     //cluster ID from stratos side
     private String clusterID;
@@ -42,10 +42,10 @@ public class GCELoadBalancerConfiguration {
     private String healthCheckName;
 
 
-    public GCELoadBalancerConfiguration(String clusterID, List<String> instancesList,
+    public GCELoadBalancerConfiguration(String clusterID, List<String> memberList,
                                         List<Integer> ipList) {
         this.clusterID = clusterID;
-        this.instancesList = instancesList;
+        this.memberList = memberList;
         this.ipList = ipList;
     }
 
@@ -65,12 +65,12 @@ public class GCELoadBalancerConfiguration {
         this.forwardingRuleName = forwardingRuleName;
     }
 
-    public List<String> getInstancesList() {
-        return instancesList;
+    public List<String> getMemberList() {
+        return memberList;
     }
 
-    public void setInstancesList(List<String> instancesList) {
-        this.instancesList = instancesList;
+    public void setMemberList(List<String> memberList) {
+        this.memberList = memberList;
     }
 
 
@@ -92,5 +92,21 @@ public class GCELoadBalancerConfiguration {
 
     public void setHealthCheckName(String healthCheckName) {
         this.healthCheckName = healthCheckName;
+    }
+
+    public void addMember(String memberId) {
+        this.memberList.add(memberId);
+    }
+
+    public void removeMember(String memberId) {
+        this.memberList.remove(memberId);
+    }
+
+    public void addIp(int ip) {
+        this.ipList.add(ip);
+    }
+
+    public void removeIp(int ip) {
+        this.ipList.remove(ip);
     }
 }
