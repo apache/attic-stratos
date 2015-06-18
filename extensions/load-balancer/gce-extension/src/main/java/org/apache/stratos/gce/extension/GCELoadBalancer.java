@@ -172,7 +172,8 @@ public class GCELoadBalancer implements LoadBalancer {
                         for (String memberId : gceLoadBalancerConfiguration.getMemberList()) { //for all members in Map
                             boolean found = false;
                             for (Member member : cluster.getMembers()) { //for all members in cluster
-                                if (member.getMemberId().equals(memberId)) {
+                                //todo: retest this line
+                                if (member.getInstanceId().equals(memberId)) {
                                     found = true;
                                     break;
                                 }
