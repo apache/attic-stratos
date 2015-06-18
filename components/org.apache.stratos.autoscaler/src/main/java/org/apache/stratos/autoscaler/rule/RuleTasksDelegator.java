@@ -317,7 +317,7 @@ public class RuleTasksDelegator {
 
     public void terminateObsoleteInstance(String memberId) {
         try {
-            CloudControllerServiceClient.getInstance().terminateInstance(memberId);
+            AutoscalerCloudControllerClient.getInstance().terminateInstance(memberId);
         } catch (Exception e) {
             log.error("Cannot terminate instance", e);
         }
@@ -329,7 +329,7 @@ public class RuleTasksDelegator {
             if (log.isDebugEnabled()) {
                 log.debug("delegateTerminateAll - begin");
             }
-            CloudControllerServiceClient.getInstance().terminateAllInstances(clusterId);
+            AutoscalerCloudControllerClient.getInstance().terminateAllInstances(clusterId);
             if (log.isDebugEnabled()) {
                 log.debug("delegateTerminateAll - done");
             }
