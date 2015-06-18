@@ -246,6 +246,8 @@ public class GCEOperations {
      */
     public void createTargetPool(String targetPoolName, String healthCheckName) {
 
+        log.info("Creating target pool: " + targetPoolName);
+
         TargetPool targetPool = new TargetPool();
         targetPool.setName(targetPoolName);
         List<String> httpHealthChecks = new ArrayList<String>();
@@ -273,6 +275,7 @@ public class GCEOperations {
      * @param targetPoolName - Name of the target pool in IaaS
      */
     public void deleteTargetPool(String targetPoolName) {
+        log.info("Deleting target pool: " + targetPoolName);
         try {
             Operation operation = compute.targetPools().delete(PROJECT_ID, REGION_NAME, targetPoolName).execute();
             waitForRegionOperationCompletion(operation.getName());
@@ -283,6 +286,7 @@ public class GCEOperations {
             e.printStackTrace();
 
         }
+        log.info("Deleted target pool: "+ targetPoolName);
     }
 
     /**
@@ -295,6 +299,7 @@ public class GCEOperations {
 
     public void createForwardingRule(String forwardingRuleName, String targetPoolName, String protocol, String portRange) {
 
+        log.info("Creating a forwarding rule: " + forwardingRuleName);
         //Need to get target pool resource URL
         TargetPool targetPool = getTargetPool(targetPoolName);
         String targetPoolURL = targetPool.getSelfLink();
@@ -311,6 +316,7 @@ public class GCEOperations {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        log.info("Created forwarding rule: "+ forwardingRuleName);
     }
 
     /**
@@ -319,6 +325,7 @@ public class GCEOperations {
      * @param forwardingRuleName - Forwarding rule name in IaaS
      */
     public void deleteForwardingRule(String forwardingRuleName) {
+        log.info("Deleting forwarding rule: " + forwardingRuleName);
         try {
             Operation operation = compute.forwardingRules().
                     delete(PROJECT_ID, REGION_NAME, forwardingRuleName).execute();
@@ -328,6 +335,7 @@ public class GCEOperations {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        log.info("Deleted forwarding rule: " + forwardingRuleName);
     }
 
     /**
@@ -448,12 +456,10 @@ public class GCEOperations {
      */
     public void addInstancesToTargetPool(List<String> instancesIdsList, String targetPoolName) {
 
-        log.info("Adding instances to target pool");
+        log.info("Adding instances to target pool: " + targetPoolName);
 
         if (instancesIdsList.isEmpty()) {
-            if (log.isDebugEnabled()) {
-                log.debug("Cannot add instances to target pool. InstancesNamesList is empty.");
-            }
+                log.info("Cannot add instances to target pool. InstancesNamesList is empty.");
             return;
         }
 
@@ -484,6 +490,8 @@ public class GCEOperations {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        log.info("Added instances to target pool: "+ targetPoolName);
     }
 
     /**
@@ -492,6 +500,8 @@ public class GCEOperations {
      * @param healthCheckName - name of the health check to be created
      */
     public void createHealthCheck(String healthCheckName) {
+
+        log.info("Creating health check: "+ healthCheckName);
 
         HttpHealthCheck httpHealthCheck = new HttpHealthCheck();
         httpHealthCheck.setName(healthCheckName);
@@ -507,9 +517,11 @@ public class GCEOperations {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        log.info("Created health check: "+ healthCheckName);
     }
 
     public void deleteHealthCheck(String healthCheckName) {
+        log.info("Deleting Health Check: "+ healthCheckName);
         try {
             Operation operation = compute.httpHealthChecks().delete(PROJECT_ID, healthCheckName).execute();
             waitForGlobalOperationCompletion(operation.getName());
@@ -518,6 +530,8 @@ public class GCEOperations {
             e.printStackTrace();
 
         }
+        log.info("Deleted Health Check: "+ healthCheckName);
+
 
     }
 
@@ -628,6 +642,8 @@ public class GCEOperations {
 
     public void createFirewallRule() {
 
+        log.info("Creating firewall rule");
+
         List<String> sourceRanges = new ArrayList<String>();
         sourceRanges.add("0.0.0.0/0");
 
@@ -651,6 +667,7 @@ public class GCEOperations {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        log.info("Created firewall rule");
     }
 
 
