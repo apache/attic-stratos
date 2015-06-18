@@ -27,6 +27,7 @@ import org.apache.stratos.autoscaler.applications.parser.ApplicationParser;
 import org.apache.stratos.autoscaler.applications.parser.DefaultApplicationParser;
 import org.apache.stratos.autoscaler.applications.pojo.*;
 import org.apache.stratos.autoscaler.applications.topic.ApplicationBuilder;
+import org.apache.stratos.autoscaler.client.AutoscalerCloudControllerClient;
 import org.apache.stratos.autoscaler.context.AutoscalerContext;
 import org.apache.stratos.autoscaler.context.InstanceContext;
 import org.apache.stratos.autoscaler.context.cluster.ClusterInstanceContext;
@@ -961,7 +962,7 @@ public class AutoscalerServiceImpl implements AutoscalerService {
                 try {
                     log.info(String.format("Terminating member forcefully [member-id] %s of the cluster [cluster-id] %s " +
                             "[application-id] %s", memberIdToTerminate, clusterId, application));
-                    CloudControllerServiceClient.getInstance().terminateInstanceForcefully(memberIdToTerminate);
+                    AutoscalerCloudControllerClient.getInstance().terminateInstanceForcefully(memberIdToTerminate);
                 } catch (Exception e) {
                     log.error(String.format("Forceful termination of member %s has failed, but continuing forceful " +
                             "deletion of other members", memberIdToTerminate));
@@ -1053,15 +1054,19 @@ public class AutoscalerServiceImpl implements AutoscalerService {
             // network partition - partition id should be already added
             for (PartitionRef partitionRef : networkPartitionRef.getPartitionRefs()) {
                 String partitionId = partitionRef.getId();
+                boolean isPartitionFound = false;
 
                 for (Partition partition : networkPartition.getPartitions()) {
-                    if (!partition.getId().equals(partitionId)) {
-                        String msg = String.format("Partition Id is not found: [deployment-policy-id] %s " +
-                                        "[network-partition-id] %s [partition-id] %s",
-                                deploymentPolicyId, networkPartitionId, partitionId);
-                        log.error(msg);
-                        throw new InvalidDeploymentPolicyException(msg);
+                    if (partition.getId().equals(partitionId)) {
+                        isPartitionFound = true;
                     }
+                }
+                if (isPartitionFound == false) {
+                    String msg = String.format("Partition Id is not found: [deployment-policy-id] %s " +
+                                    "[network-partition-id] %s [partition-id] %s",
+                            deploymentPolicyId, networkPartitionId, partitionId);
+                    log.error(msg);
+                    throw new InvalidDeploymentPolicyException(msg);
                 }
             }
 

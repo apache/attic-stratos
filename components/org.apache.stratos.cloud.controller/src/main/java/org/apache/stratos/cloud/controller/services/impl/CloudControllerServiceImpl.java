@@ -574,7 +574,7 @@ public class CloudControllerServiceImpl implements CloudControllerService {
             log.info(String.format("Member terminated [member-id] %s ", memberId));
         } else {
             log.warn(String.format("Stratos could not terminate the member [member-id] %s. This may due to a issue " +
-                    "in the underlying IaaS, Please terminate the member manually", memberId));
+                    "in the underlying IaaS, Please terminate the member manually if it is available", memberId));
             MemberContext memberContext = CloudControllerContext.getInstance().getMemberContextOfMemberId(memberId);
             CloudControllerServiceUtil.executeMemberTerminationPostProcess(memberContext);
         }
@@ -1610,18 +1610,6 @@ public class CloudControllerServiceImpl implements CloudControllerService {
     }
 
     @Override
-    public boolean removeExpiredObsoletedMemberFromCloudController(String applicationId, String cartridgeType,
-                                                                   String clusterId, String memberId,
-                                                                   String networkPartitionId, Partition partition) {
-
-        MemberContext obsoleteMember = new MemberContext(applicationId, cartridgeType, clusterId, memberId);
-        obsoleteMember.setNetworkPartitionId(networkPartitionId);
-        obsoleteMember.setPartition(partition);
-        CloudControllerServiceUtil.executeMemberTerminationPostProcess(obsoleteMember);
-        return true;
-    }
-
-    @Override
     public String[] getIaasProviders() {
 
         try {
@@ -1629,7 +1617,7 @@ public class CloudControllerServiceImpl implements CloudControllerService {
             List<String> iaases = new ArrayList<String>();
 
             for (IaasProvider iaas : iaasProviders) {
-                iaases.add(iaas.getProvider());
+                iaases.add(iaas.getType());
             }
 
             return iaases.toArray(new String[iaases.size()]);
