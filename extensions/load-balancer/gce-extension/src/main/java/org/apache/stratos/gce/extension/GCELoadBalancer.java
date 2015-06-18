@@ -181,7 +181,9 @@ public class GCELoadBalancer implements LoadBalancer {
                     for (Member member : cluster.getMembers()) {
 
                         //add instance to instance list
-                        instancesList.add(member.getInstanceId());
+                        if (member.getInstanceId() != null) {
+                            instancesList.add(member.getInstanceId());
+                        }
 
                         //add forwarding rules(Ports to be forwarded)
                         for (Object port : member.getPorts()) {
