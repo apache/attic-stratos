@@ -459,7 +459,7 @@ public class GCEOperations {
         log.info("Adding instances to target pool: " + targetPoolName);
 
         if (instancesIdsList.isEmpty()) {
-                log.info("Cannot add instances to target pool. InstancesNamesList is empty.");
+                log.warn("Cannot add instances to target pool. InstancesNamesList is empty.");
             return;
         }
 

@@ -19,6 +19,11 @@
 
 package org.apache.stratos.gce.extension;
 
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.converters.reflection.FieldDictionary;
+import com.thoughtworks.xstream.converters.reflection.ImmutableFieldKeySorter;
+import com.thoughtworks.xstream.converters.reflection.Sun14ReflectionProvider;
+import com.thoughtworks.xstream.io.xml.DomDriver;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.stratos.load.balancer.common.domain.*;
@@ -72,6 +77,11 @@ public class GCELoadBalancer implements LoadBalancer {
 
         log.info("Configuring Load balancer ");
 
+        XStream xstream = new XStream(new Sun14ReflectionProvider(
+                new FieldDictionary(new ImmutableFieldKeySorter())),
+                new DomDriver("utf-8"));
+        log.info(xstream.toXML(topology));
+
         //check whether any cluster is removed. If removed, then remove the cluster from
         //clusterToLoadBalancerConfigurationMap and remove all objects in IaaS side too
 
@@ -109,6 +119,8 @@ public class GCELoadBalancer implements LoadBalancer {
 
                 //check whether this cluster has a forwarding rule configuration or not
                 if (clusterToLoadBalancerConfigurationMap.containsKey(cluster.getClusterId())) {
+
+                    log.info("Reconfiguring the existing cluster: " + cluster.getClusterId());
 
                     //It already has a entry in clusterToLoadBalancerConfigurationMap.
                     //Take it and update it as the given topology.
@@ -174,6 +186,8 @@ public class GCELoadBalancer implements LoadBalancer {
 
                 } else {
                     //doesn't have a GCELoadBalancerConfiguration object. So crate a new one and add to hash map
+
+                    log.info("Found a new cluster: " + cluster.getClusterId());
 
                     List<String> instancesList = new ArrayList<String>();
                     List<Integer> ipList = new ArrayList<Integer>();
