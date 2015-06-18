@@ -75,7 +75,7 @@ public class GCELoadBalancer implements LoadBalancer {
     @Override
     public boolean configure(Topology topology) throws LoadBalancerExtensionException {
 
-        log.info("Configuring Load balancer ");
+        log.info("Topology received. Configuring Load balancer ");
 
         XStream xstream = new XStream(new Sun14ReflectionProvider(
                 new FieldDictionary(new ImmutableFieldKeySorter())),
@@ -108,6 +108,8 @@ public class GCELoadBalancer implements LoadBalancer {
             }
             if (found == false) {
                 //remove cluster from map
+                log.info("Removed cluster is found. Remove it from GCE too. Cluster Id: " +
+                        gceLoadBalancerConfiguration.getClusterID());
                 clusterToLoadBalancerConfigurationMap.remove(gceLoadBalancerConfiguration.getClusterID());
                 deleteConfigurationForCluster(gceLoadBalancerConfiguration.getClusterID());
             }
@@ -132,6 +134,8 @@ public class GCELoadBalancer implements LoadBalancer {
                     //if the cluster does not contain at least one member
                     if (cluster.getMembers().size() == 0) {
 
+                        log.info("Cluster: " + cluster.getClusterId() + " does not have any member.So remove cluster " +
+                                "from GCE too");
                         //remove all
                         deleteConfigurationForCluster(cluster.getClusterId());
                         clusterToLoadBalancerConfigurationMap.remove(gceLoadBalancerConfiguration.getClusterID());
@@ -155,6 +159,9 @@ public class GCELoadBalancer implements LoadBalancer {
                         }
 
                         if (membersToBeAddedToTargetPool.size() > 0) { //we have new members
+
+                            log.info("New members in cluster" + cluster.getClusterId() + " found. Adding new members " +
+                                    "to cluster");
                             //add to target pool
                             gceOperations.addInstancesToTargetPool(membersToBeAddedToTargetPool,
                                     gceLoadBalancerConfiguration.getTargetPoolName());
@@ -178,6 +185,8 @@ public class GCELoadBalancer implements LoadBalancer {
                         }
 
                         if (membersToBeRemovedFromTargetPool.size() > 0) { //found terminated members
+
+                            log.info("Terminated members found in cluster " + cluster.getClusterId() + ". Removing them");
 
                             //remove them
                             gceOperations.removeInstancesFromTargetPool(membersToBeRemovedFromTargetPool,
