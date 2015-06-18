@@ -77,6 +77,8 @@ public class GCELoadBalancer implements LoadBalancer {
 
         log.info("Topology received. Configuring Load balancer ");
 
+
+        //printing the topology for tesging purposes
         XStream xstream = new XStream(new Sun14ReflectionProvider(
                 new FieldDictionary(new ImmutableFieldKeySorter())),
                 new DomDriver("utf-8"));
