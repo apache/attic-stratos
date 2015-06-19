@@ -184,7 +184,6 @@ public class GCEContext {
         return gceAccountID;
     }
 
-
     public String getHealthCheckRequestPath() {
         return healthCheckRequestPath;
     }

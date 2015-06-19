@@ -24,8 +24,6 @@ import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.api.client.util.store.DataStoreFactory;
-import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.compute.Compute;
 import com.google.api.services.compute.ComputeScopes;
 import com.google.api.services.compute.model.*;
@@ -65,13 +63,8 @@ public class GCEOperations {
     private static final String HEALTH_CHECK_TIME_OUT_SEC = GCEContext.getInstance().getHealthCheckTimeOutSec();
     private static final String HEALTH_CHECK_UNHEALTHY_THRESHOLD = GCEContext.getInstance().getHealthCheckUnhealthyThreshold();
     private static final String NETWORK_NAME = GCEContext.getInstance().getNetworkName();
-    /**
-     * Directory to store user credentials.
-     */
-    private static final String DATA_STORE_DIR = ".store/gce-extension";
-    private static final String RUNNING_FILTER = "status eq RUNNING";
-    private static final int OPERATION_TIMEOUT_MSILEC = 10000;
 
+    private static final String RUNNING_FILTER = "status eq RUNNING";
 
     static Compute compute;
 
@@ -83,13 +76,8 @@ public class GCEOperations {
      * @throws GeneralSecurityException
      * @throws IOException
      */
-    public GCEOperations() throws LoadBalancerExtensionException,
-            GeneralSecurityException, IOException {
-
+    public GCEOperations() {
         buildComputeEngineObject();
-
-        //Calling following  methods from here only for testing purposes
-
     }
 
     /**
@@ -97,87 +85,67 @@ public class GCEOperations {
      * when we need to check whether a given instance is available or not in a given project
      * and zone)
      *
-     * @return
+     * @return instanceList - list of instances(members in Stratos side)
      * @throws IOException
      */
-    public static InstanceList getInstanceList() throws IOException {
-        Compute.Instances.List instances = compute.instances().
-                list(PROJECT_ID, ZONE_NAME).setFilter(RUNNING_FILTER);
-        InstanceList instanceList = instances.execute();
-        if (instanceList.getItems() == null) {
-            log.info("No instances found for specified zone");
-            return null;
-        } else {
-            return instanceList;
-        }
-    }
-
-    public static String getInstanceURLFromName(String instanceName) {
-
-        //todo:remove try catch
-        String instanceURL;
+    public static InstanceList getInstanceList() {
+        Compute.Instances.List instances = null;
         try {
-            //check whether the given instance is available
-            InstanceList instanceList = getInstanceList();
-            for (Instance instance : instanceList.getItems()) {
-                if (instance.getName().equals(instanceName)) {
-                    //instance is available
-                    //getInstance URL
-                    instanceURL = instance.getSelfLink();
-                    return instanceURL;
-                }
+            instances = compute.instances().
+                    list(PROJECT_ID, ZONE_NAME).setFilter(RUNNING_FILTER);
+            InstanceList instanceList = instances.execute();
+            if (instanceList.getItems() == null) {
+                log.info("No instances found for specified zone");
+                return null;
+            } else {
+                return instanceList;
             }
-
         } catch (IOException e) {
-            e.printStackTrace();
+            if (log.isErrorEnabled()) {
+                log.error("Could not get instance list from GCE");
+            }
+            throw new RuntimeException(e);
         }
-        return null;
 
     }
+
 
     /**
      * Get instance resource URL from given instance name
      *
-     * @param instanceId
-     * @return
+     * @param instanceId - Id of the instance provided by IaaS
+     * @return - Resource URL of the instance in IaaS
      */
     public static String getInstanceURLFromId(String instanceId) {
 
-        //todo:remove try catch
         String instanceURL;
-        try {
-            //check whether the given instance is available
-            InstanceList instanceList = getInstanceList();
-            for (Instance instance : instanceList.getItems()) {
-                //todo: recheck following line
-                String instanceIdInIaaS = ZONE_NAME + "/" + instance.getName();
-                if (instanceIdInIaaS.equals(instanceId)) {
-                    //instance is available
-                    //getInstance URL
-                    instanceURL = instance.getSelfLink();
-                    return instanceURL;
-                }
+        //check whether the given instance is available
+        InstanceList instanceList = getInstanceList();
+        for (Instance instance : instanceList.getItems()) {
+            String instanceIdInIaaS = ZONE_NAME + "/" + instance.getName();
+            if (instanceIdInIaaS.equals(instanceId)) {
+                //instance is available
+                //getInstance URL
+                instanceURL = instance.getSelfLink();
+                return instanceURL;
             }
-
-        } catch (IOException e) {
-            e.printStackTrace();
         }
         return null;
-
     }
 
     /**
      * Get a given health check resource URL
      *
      * @param healthCheckName - name of the health check in IaaS
-     * @return
+     * @return - Resource URL of health check in IaaS side
      */
     public static String getHealthCheckURLFromName(String healthCheckName) {
 
         String healthCheckURL;
 
         //check whether the given instance is available
-        HttpHealthCheckList healthCheckList = getHealthCheckList();
+        HttpHealthCheckList healthCheckList;
+        healthCheckList = getHealthCheckList();
         for (HttpHealthCheck httpHealthCheck : healthCheckList.getItems()) {
             if (httpHealthCheck.getName().equals(healthCheckName)) {
                 //instance is available
@@ -187,17 +155,18 @@ public class GCEOperations {
             }
         }
         return null;
-
     }
 
     /**
      * Get list of health checks
      *
-     * @return
+     * @return - list of health checks
      */
-    public static HttpHealthCheckList getHealthCheckList() {
+    private static HttpHealthCheckList getHealthCheckList() {
+
+        Compute.HttpHealthChecks.List healthChecks;
         try {
-            Compute.HttpHealthChecks.List healthChecks = compute.httpHealthChecks().list(PROJECT_ID);
+            healthChecks = compute.httpHealthChecks().list(PROJECT_ID);
             HttpHealthCheckList healthCheckList = healthChecks.execute();
             if (healthCheckList.getItems() == null) {
                 log.info("No health check found for specified project");
@@ -206,9 +175,11 @@ public class GCEOperations {
                 return healthCheckList;
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            if (log.isErrorEnabled()) {
+                log.error("Could not get health check list from GCE");
+            }
+            throw new RuntimeException(e);
         }
-        return null;
     }
 
     /**
@@ -217,25 +188,35 @@ public class GCEOperations {
      * @throws GeneralSecurityException
      * @throws IOException
      */
-    private void buildComputeEngineObject() throws GeneralSecurityException, IOException {
+    private void buildComputeEngineObject() {
 
-        HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
-        DataStoreFactory dataStoreFactory = new FileDataStoreFactory(new
-                File(System.getProperty("user.home"), DATA_STORE_DIR));
-        JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
+        try {
 
-        GoogleCredential credential = new GoogleCredential.Builder().setTransport(httpTransport)
-                .setJsonFactory(jsonFactory)
-                .setServiceAccountId(ACCOUNT_ID)
-                .setServiceAccountScopes(Collections.singleton(ComputeScopes.COMPUTE))
-                .setServiceAccountPrivateKeyFromP12File(new File(KEY_FILE_PATH))
-                .build();
+            HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
+            JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
 
-        // Create compute engine object
-        compute = new Compute.Builder(
-                httpTransport, jsonFactory, null).setApplicationName(PROJECT_NAME)
-                .setHttpRequestInitializer(credential).build();
+            GoogleCredential credential = new GoogleCredential.Builder().setTransport(httpTransport)
+                    .setJsonFactory(jsonFactory)
+                    .setServiceAccountId(ACCOUNT_ID)
+                    .setServiceAccountScopes(Collections.singleton(ComputeScopes.COMPUTE))
+                    .setServiceAccountPrivateKeyFromP12File(new File(KEY_FILE_PATH))
+                    .build();
 
+            // Create compute engine object
+            compute = new Compute.Builder(
+                    httpTransport, jsonFactory, null).setApplicationName(PROJECT_NAME)
+                    .setHttpRequestInitializer(credential).build();
+        } catch (GeneralSecurityException e) {
+            if (log.isErrorEnabled()) {
+                log.error("Could not authenticate and build compute object");
+                throw new RuntimeException(e);
+            }
+        } catch (IOException e) {
+            if (log.isErrorEnabled()) {
+                log.error("Could not authenticate and build compute object");
+                throw new RuntimeException(e);
+            }
+        }
 
     }
 
@@ -254,7 +235,6 @@ public class GCEOperations {
         httpHealthChecks.add(getHealthCheckURLFromName(healthCheckName));
         targetPool.setHealthChecks(httpHealthChecks);
 
-        //TODO:REMOVE try catch
         try {
             Operation operation =
                     compute.targetPools().insert(PROJECT_ID, REGION_NAME, targetPool).execute();
@@ -262,9 +242,9 @@ public class GCEOperations {
 
         } catch (IOException e) {
             if (log.isErrorEnabled()) {
-                log.error("failed to create target pool: " + targetPoolName);
+                log.error("Could not create target pool: " + targetPoolName);
             }
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
 
     }
@@ -280,13 +260,13 @@ public class GCEOperations {
             Operation operation = compute.targetPools().delete(PROJECT_ID, REGION_NAME, targetPoolName).execute();
             waitForRegionOperationCompletion(operation.getName());
 
-            int timeout = 0;
-
         } catch (IOException e) {
-            e.printStackTrace();
-
+            if (log.isErrorEnabled()) {
+                log.error("Could not delete target pool " + targetPoolName);
+            }
+            throw new RuntimeException(e);
         }
-        log.info("Deleted target pool: " + targetPoolName);
+        log.info("Target pool: " + targetPoolName + " has been deleted");
     }
 
     /**
@@ -314,7 +294,10 @@ public class GCEOperations {
 
 
         } catch (IOException e) {
-            e.printStackTrace();
+            if (log.isErrorEnabled()) {
+                log.error("Could not create a forwarding rule " + forwardingRuleName);
+            }
+            throw new RuntimeException(e);
         }
         log.info("Created forwarding rule: " + forwardingRuleName);
     }
@@ -333,7 +316,10 @@ public class GCEOperations {
             waitForRegionOperationCompletion(operation.getName());
 
         } catch (IOException e) {
-            e.printStackTrace();
+            if (log.isErrorEnabled()) {
+                log.error("Could not delete forwarding rule " + forwardingRuleName);
+            }
+            throw new RuntimeException(e);
         }
         log.info("Deleted forwarding rule: " + forwardingRuleName);
     }
@@ -346,7 +332,6 @@ public class GCEOperations {
      */
     public boolean isTargetPoolExists(String targetPoolName) {
 
-        //TODO: remove try catch
         try {
             Compute.TargetPools.List targetPools = compute.targetPools().
                     list(PROJECT_ID, REGION_NAME);
@@ -362,7 +347,7 @@ public class GCEOperations {
             if (log.isErrorEnabled()) {
                 log.error("Error caused when checking for target pools");
             }
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
         return false;
 
@@ -372,7 +357,7 @@ public class GCEOperations {
      * Check whether a given forwarding rule is exists or not in the IaaS
      *
      * @param forwardingRuleName - forwarding rule name in IaaS
-     * @return
+     * @return - if forwarding rule exists in GCE return true. else return false
      */
     public boolean isForwardingRuleExists(String forwardingRuleName) {
         try {
@@ -384,7 +369,9 @@ public class GCEOperations {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            if (log.isErrorEnabled()) {
+                log.error("Could not get check for forwarding rule " + forwardingRuleName);
+            }
         }
         return false;
     }
@@ -393,16 +380,16 @@ public class GCEOperations {
      * Get a target pool already created in GCE
      *
      * @param targetPoolName - target pool name in IaaS
-     * @return
+     * @return - target pool object
      */
     public TargetPool getTargetPool(String targetPoolName) {
-        //todo:remove try catch
+
         try {
             if (isTargetPoolExists(targetPoolName)) {
                 return compute.targetPools().get(PROJECT_ID, REGION_NAME, targetPoolName).execute();
             } else {
                 if (log.isDebugEnabled()) {
-                    log.debug("Requested Target Pool Is not Available");
+                    log.debug("Requested Target Pool " + targetPoolName + " Is not Available");
                 }
             }
 
@@ -410,11 +397,10 @@ public class GCEOperations {
 
         } catch (IOException e) {
             if (log.isErrorEnabled()) {
-                log.error("Exception caused when try to get target pool");
+                log.error("Could not get target pool " + targetPoolName);
             }
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
-        return null;
 
     }
 
@@ -448,7 +434,6 @@ public class GCEOperations {
                 TargetPoolsRemoveInstanceRequest();
         targetPoolsRemoveInstanceRequest.setInstances(instanceReferenceList);
 
-        //todo Remove try catch
         try {
             //execute
             Operation operation = compute.targetPools().removeInstance(PROJECT_ID, REGION_NAME,
@@ -458,7 +443,10 @@ public class GCEOperations {
 
 
         } catch (IOException e) {
-            e.printStackTrace();
+            if (log.isErrorEnabled()) {
+                log.error("Could not remove instances from target pool " + targetPoolName);
+            }
+            throw new RuntimeException(e);
         }
 
         log.info("Removed instances from target pool: " + targetPoolName);
@@ -501,19 +489,18 @@ public class GCEOperations {
                 TargetPoolsAddInstanceRequest();
         targetPoolsAddInstanceRequest.setInstances(instanceReferenceList);
 
-        //todo Remove try catch
         try {
             //execute
             Operation operation = compute.targetPools().addInstance(PROJECT_ID, REGION_NAME,
                     targetPoolName, targetPoolsAddInstanceRequest).execute();
-
             waitForRegionOperationCompletion(operation.getName());
 
-
         } catch (IOException e) {
-            e.printStackTrace();
+            if (log.isErrorEnabled()) {
+                log.error("Could not add instance to target pool" + targetPoolName);
+            }
+            throw new RuntimeException(e);
         }
-
         log.info("Added instances to target pool: " + targetPoolName);
     }
 
@@ -529,7 +516,6 @@ public class GCEOperations {
         HttpHealthCheck httpHealthCheck = new HttpHealthCheck();
         httpHealthCheck.setName(healthCheckName);
         httpHealthCheck.setRequestPath(HEALTH_CHECK_REQUEST_PATH);
-        //TODO: read as integers
         httpHealthCheck.setPort(Integer.parseInt(HEALTH_CHECK_PORT));
         httpHealthCheck.setTimeoutSec(Integer.parseInt(HEALTH_CHECK_TIME_OUT_SEC));
         httpHealthCheck.setUnhealthyThreshold(Integer.parseInt(HEALTH_CHECK_UNHEALTHY_THRESHOLD));
@@ -538,7 +524,10 @@ public class GCEOperations {
             waitForGlobalOperationCompletion(operation.getName());
 
         } catch (IOException e) {
-            e.printStackTrace();
+            if (log.isErrorEnabled()) {
+                log.error("Could not create health check " + healthCheckName);
+            }
+            throw new RuntimeException(e);
         }
         log.info("Created health check: " + healthCheckName);
     }
@@ -550,19 +539,19 @@ public class GCEOperations {
             waitForGlobalOperationCompletion(operation.getName());
 
         } catch (IOException e) {
-            e.printStackTrace();
-
+            if (log.isErrorEnabled()) {
+                log.error("Could not get delete health check " + healthCheckName);
+            }
+            throw new RuntimeException(e);
         }
         log.info("Deleted Health Check: " + healthCheckName);
-
-
     }
 
     /**
      * Checking whether a given health check is exists or not
      *
      * @param healthCheckName - name of the health check
-     * @return
+     * @return - if the health check exists in IaaS return true, else return false
      */
     public boolean isHealthCheckExists(String healthCheckName) {
         try {
@@ -576,22 +565,12 @@ public class GCEOperations {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            if (log.isErrorEnabled()) {
+                log.error("Exception caused when checking for health checks ");
+            }
+            throw new RuntimeException(e);
         }
         return false;
-    }
-
-    //todo: remove this method(never used)
-    public HttpHealthCheck getHealthCheckFromName(String healthCheckName) {
-
-        HttpHealthCheckList healthCheckList = getHealthCheckList();
-        for (HttpHealthCheck httpHealthCheck : healthCheckList.getItems()) {
-            if (httpHealthCheck.getName().equals(healthCheckName)) {
-                //healthcheck is available
-                return httpHealthCheck;
-            }
-        }
-        return null;
     }
 
     /**
@@ -610,10 +589,12 @@ public class GCEOperations {
                 }
                 Thread.sleep(1000);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            log.error("Could not wait for global operation completion " + operationName);
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            log.error("Could not wait for global operation completion " + operationName);
+            throw new RuntimeException(e);
         }
     }
 
@@ -635,10 +616,12 @@ public class GCEOperations {
                 }
                 Thread.sleep(1000);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            log.error("Could not wait for region operation completion " + operationName);
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            log.error("Could not wait for region operation completion " + operationName);
+            throw new RuntimeException(e);
         }
     }
 
@@ -656,10 +639,12 @@ public class GCEOperations {
                 }
                 Thread.sleep(1000);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            log.error("Could not wait for zone operation completion " + operationName);
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            log.error("Could not wait for zone operation completion " + operationName);
+            throw new RuntimeException(e);
         }
     }
 
@@ -688,10 +673,12 @@ public class GCEOperations {
         try {
             compute.firewalls().insert(PROJECT_ID, firewall);
         } catch (IOException e) {
-            e.printStackTrace();
+            if (log.isErrorEnabled()) {
+                log.error("Could not create firewall rule ");
+            }
+            throw new RuntimeException(e);
         }
         log.info("Created firewall rule");
     }
-
 
 }
