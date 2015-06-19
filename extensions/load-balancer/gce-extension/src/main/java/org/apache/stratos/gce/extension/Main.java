@@ -75,7 +75,6 @@ public class Main {
             extension.setExecutorService(executorService);
             extension.execute();
 
-
         } catch (Exception e) {
             if (log.isErrorEnabled()) {
                 log.error(e);
