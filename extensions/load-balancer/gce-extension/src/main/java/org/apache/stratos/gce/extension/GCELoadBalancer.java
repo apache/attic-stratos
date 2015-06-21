@@ -231,7 +231,7 @@ public class GCELoadBalancer implements LoadBalancer {
                         log.info("Found a new cluster: " + cluster.getClusterId());
 
                         if (cluster.getMembers().size() == 0) {
-                            log.info("Cluster " + cluster.getClusterId() + "does not have any members. So not configuring");
+                            log.info("Cluster " + cluster.getClusterId() + " does not have any members. So not configuring");
                         } else {
                             List<String> instancesList = new ArrayList<String>();
                             List<Integer> ipList = new ArrayList<Integer>();
@@ -388,7 +388,16 @@ public class GCELoadBalancer implements LoadBalancer {
 
         //iterate through hashmap and remove all
 
-        //deleteAll();
+        Iterator iterator = clusterToLoadBalancerConfigurationMap.entrySet().iterator();
+        while (iterator.hasNext()) { //for each configuration
+
+            Map.Entry clusterIDLoadBalancerConfigurationPair = (Map.Entry) iterator.next();
+            GCELoadBalancerConfiguration gceLoadBalancerConfiguration =
+                    ((GCELoadBalancerConfiguration) clusterIDLoadBalancerConfigurationPair.getValue());
+
+            deleteConfigurationForCluster((String) clusterIDLoadBalancerConfigurationPair.getKey());
+
+        }
 
     }
 
@@ -399,6 +408,7 @@ public class GCELoadBalancer implements LoadBalancer {
     @Override
     public void reload() throws LoadBalancerExtensionException {
 
+        log.info("===========================reload method called===============");
         //iterate through hash map
         //find what needs to be changed
         //execute
