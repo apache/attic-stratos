@@ -306,4 +306,18 @@
          </payloadData>
      </streamDefinition>
 
+    <streamDefinition name="curve_finder_in_flight_requests" version="1.0.0">
+        <description>curve finder of in-flight request count</description>
+        <nickName>curve finder in-flight requests</nickName>
+        <metaData>
+        </metaData>
+        <correlationData>
+        </correlationData>
+        <payloadData>
+            <property name="cluster_id" type="String"/>
+            <property name="cluster_instance_id" type="String"/>
+            <property name="network_partition_id" type="String"/>
+            <property name="count" type="double"/>
+        </payloadData>
+    </streamDefinition>
 </streamManagerConfiguration>
