@@ -1245,7 +1245,7 @@ public class StratosApiV41 extends AbstractApi {
             return Response.status(Response.Status.NOT_FOUND).entity(new ResponseMessageBean(
                     ResponseMessageBean.ERROR, msg)).build();
         }
-        if (!applicationDefinition.getStatus().equalsIgnoreCase(StratosApiV41Utils.APPLICATION_STATUS_DEPLOYED)) {
+        if (applicationDefinition.getStatus().equalsIgnoreCase(StratosApiV41Utils.APPLICATION_STATUS_CREATED)) {
             String message = String.format("Could not undeploy since application is not in DEPLOYED status " +
                     "[application-id] %s [current status] %S", applicationId, applicationDefinition.getStatus());
             log.info(message);
@@ -1254,7 +1254,7 @@ public class StratosApiV41 extends AbstractApi {
         }
         StratosApiV41Utils.undeployApplication(applicationId, force);
         return Response.accepted().entity(new ResponseMessageBean(ResponseMessageBean.SUCCESS,
-                String.format("Application undeployed successfully: [application-id] %s", applicationId))).build();
+                String.format("Application undeploy process started successfully: [application-id] %s", applicationId))).build();
     }
 
     /**
