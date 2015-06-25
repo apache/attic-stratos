@@ -406,7 +406,7 @@ public class GCELoadBalancer implements LoadBalancer {
     @Override
     public void reload() throws LoadBalancerExtensionException {
 
-        log.info("===========================reload method called===============");
+        log.info("Configuration reloaded");
         //iterate through hash map
         //find what needs to be changed
         //execute
