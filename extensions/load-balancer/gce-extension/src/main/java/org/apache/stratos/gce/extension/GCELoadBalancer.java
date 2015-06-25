@@ -32,7 +32,6 @@ import org.apache.stratos.load.balancer.extension.api.exception.LoadBalancerExte
 
 import java.util.*;
 
-//TODO: exception handling
 public class GCELoadBalancer implements LoadBalancer {
 
     private static final Log log = LogFactory.getLog(GCELoadBalancer.class);
@@ -375,8 +374,7 @@ public class GCELoadBalancer implements LoadBalancer {
 
     @Override
     public void start() throws LoadBalancerExtensionException {
-        //topology has completed
-
+        //Configuration has completed
         log.info("GCE Load balancer instance started");
 
     }
