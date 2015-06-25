@@ -183,9 +183,6 @@ public class LoadBalancerExtension {
                     if (!loadBalancerStarted) {
                         configureAndStart();
                     }
-                    else {
-                        configureAndReload();
-                    }
                 } catch (Exception e) {
                     if (log.isErrorEnabled()) {
                         log.error("Could not start load balancer", e);
