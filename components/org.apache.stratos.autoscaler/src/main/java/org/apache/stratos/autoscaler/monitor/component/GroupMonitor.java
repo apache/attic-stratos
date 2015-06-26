@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.stratos.autoscaler.algorithms.PartitionAlgorithm;
 import org.apache.stratos.autoscaler.applications.ApplicationHolder;
+import org.apache.stratos.autoscaler.applications.dependency.context.ApplicationChildContext;
 import org.apache.stratos.autoscaler.applications.topic.ApplicationBuilder;
 import org.apache.stratos.autoscaler.context.AutoscalerContext;
 import org.apache.stratos.autoscaler.context.InstanceContext;
@@ -85,9 +86,9 @@ public class GroupMonitor extends ParentComponentMonitor {
             TopologyInConsistentException {
         super(group);
 
-        int threadPoolSize = Integer.getInteger(AutoscalerConstants.GROUP_MONITOR_THREAD_POOL_SIZE, 20);
+        int threadPoolSize = Integer.getInteger(AutoscalerConstants.MONITOR_THREAD_POOL_SIZE, 100);
         this.executorService = StratosThreadPool.getExecutorService(
-                AutoscalerConstants.GROUP_MONITOR_THREAD_POOL_ID, threadPoolSize);
+                AutoscalerConstants.MONITOR_THREAD_POOL_ID, threadPoolSize);
 
         this.groupScalingEnabled = group.isGroupScalingEnabled();
         this.appId = appId;
@@ -514,6 +515,16 @@ public class GroupMonitor extends ParentComponentMonitor {
         if (instance != null) {
             // If this parent instance is terminating, then based on child notification,
             // it has to decide its state rather than starting a the children recovery
+
+            ApplicationMonitor applicationMonitor = AutoscalerContext.getInstance().
+                    getAppMonitor(appId);
+            //In case if the group instance is not in terminating while application is
+            // terminating, changing the status to terminating
+            if(applicationMonitor.isTerminating() && instance.getStatus().getCode() < 3) {
+                //Sending group instance terminating event
+                ApplicationBuilder.handleGroupTerminatingEvent(appId, id, instanceId);
+            }
+
             if (instance.getStatus() == GroupStatus.Terminating ||
                     instance.getStatus() == GroupStatus.Terminated) {
                 ServiceReferenceHolder.getInstance().getGroupStatusProcessorChain().process(id,
@@ -554,7 +565,7 @@ public class GroupMonitor extends ParentComponentMonitor {
                     GroupInstance instance = (GroupInstance) instanceIdToInstanceMap.get(instanceId);
                     if (instance != null) {
                         if (log.isInfoEnabled()) {
-                            log.info(String.format("Publishing Group terminating event for [application] " +
+                            log.info(String.format("Publishing group terminating event for [application] " +
                                     "%s [group] %s [instance] %s", appId, id, instanceId));
                         }
                         ApplicationBuilder.handleGroupTerminatingEvent(appId, id, instanceId);
@@ -565,7 +576,7 @@ public class GroupMonitor extends ParentComponentMonitor {
                         if (!instanceIds.isEmpty()) {
                             for (String instanceId1 : instanceIds) {
                                 if (log.isInfoEnabled()) {
-                                    log.info(String.format("Publishing Group terminating event for" +
+                                    log.info(String.format("Publishing group terminating event for" +
                                                     " [application] %s [group] %s [instance] %s",
                                             appId, id, instanceId1));
                                 }

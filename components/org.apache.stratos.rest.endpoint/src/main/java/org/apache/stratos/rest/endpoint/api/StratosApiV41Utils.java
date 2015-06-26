@@ -127,6 +127,17 @@ public class StratosApiV41Utils {
                         cartridgeBean.getType()));
             }
 
+            for(PortMappingBean portMapping : cartridgeBean.getPortMapping()) {
+                if(StringUtils.isBlank(portMapping.getName())) {
+                    portMapping.setName(portMapping.getProtocol() + "-" + portMapping.getPort());
+                    if(log.isInfoEnabled()) {
+                        log.info(String.format("Port mapping name not found, default value generated: " +
+                                        "[cartridge-type] %s [port-mapping-name] %s",
+                                cartridgeBean.getType(), portMapping.getName()));
+                    }
+                }
+            }
+
             Cartridge cartridgeConfig = createCartridgeConfig(cartridgeBean);
             CloudControllerServiceClient cloudControllerServiceClient = CloudControllerServiceClient.getInstance();
             cloudControllerServiceClient.addCartridge(cartridgeConfig);
@@ -1895,10 +1906,13 @@ public class StratosApiV41Utils {
 
         }
 
-        if(applicationContext != null && applicationContext.getStatus().equals("Deployed")) {
-            try {
-                ApplicationManager.acquireReadLockForApplication(applicationId);
-                Application application = ApplicationManager.getApplications().getApplication(applicationId);
+        try {
+            ApplicationManager.acquireReadLockForApplication(applicationId);
+            Application application = ApplicationManager.getApplications().getApplication(applicationId);
+            if (application.getInstanceContextCount() > 0
+                    || (applicationContext != null &&
+                    applicationContext.getStatus().equals("Deployed"))) {
+
                 if (application == null) {
                     return null;
                 }
@@ -1907,10 +1921,11 @@ public class StratosApiV41Utils {
                     addClustersInstancesToApplicationInstanceBean(instanceBean, application);
                     addGroupsInstancesToApplicationInstanceBean(instanceBean, application);
                 }
-            } finally {
-                ApplicationManager.releaseReadLockForApplication(applicationId);
             }
+        } finally {
+            ApplicationManager.releaseReadLockForApplication(applicationId);
         }
+
         return applicationBean;
     }
 

@@ -422,7 +422,7 @@ public class AutoscalerUtil {
      * @param applicationId the application id
      * @return list of deployment policy ids
      */
-    private static List<String> getDeploymentPolicyIdsReferredInApplication(String applicationId) {
+    public static List<String> getDeploymentPolicyIdsReferredInApplication(String applicationId) {
 
         if (applicationId == null || StringUtils.isBlank(applicationId)) {
             return null;
@@ -761,8 +761,8 @@ public class AutoscalerUtil {
             return false;
         }
 
+        int referencesOfNetworkPartition = 0;
         for (String deploymentPolicyIDReferredInApp : deploymentPolicyIdsReferredInApplication) {
-            int referencesOfNetworkPartition = 0;
             try {
                 DeploymentPolicy deploymentPolicyInApp = PolicyManager.getInstance().getDeploymentPolicy(deploymentPolicyIDReferredInApp);
                 if (deploymentPolicyInApp != null) {
@@ -781,9 +781,10 @@ public class AutoscalerUtil {
                 log.error(msg, e);
                 throw new AutoScalerException(msg, e);
             }
-            if (deploymentPolicyIdsReferredInApplication.size() == referencesOfNetworkPartition) {
-                return true;
-            }
+        }
+        //If network-partition referred in application policy is found in all the deployment policies of application, return true
+        if (deploymentPolicyIdsReferredInApplication.size() == referencesOfNetworkPartition) {
+            return true;
         }
         return false;
     }
