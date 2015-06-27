@@ -68,7 +68,7 @@ public class GCELoadBalancer implements LoadBalancer {
 
         log.info("Topology received. Configuring Load balancer ");
 
-        //printing the topology for tesging purposes
+        //printing the topology for testing purposes
         XStream xstream = new XStream(new Sun14ReflectionProvider(
                 new FieldDictionary(new ImmutableFieldKeySorter())),
                 new DomDriver("utf-8"));
@@ -118,7 +118,6 @@ public class GCELoadBalancer implements LoadBalancer {
 
                         //It already has a entry in clusterToLoadBalancerConfigurationMap.
                         //Take it and update it as the given topology.
-
                         GCELoadBalancerConfiguration gceLoadBalancerConfiguration = clusterToLoadBalancerConfigurationMap.
                                 get(cluster.getClusterId());
 
@@ -186,42 +185,6 @@ public class GCELoadBalancer implements LoadBalancer {
                                         gceLoadBalancerConfiguration.getTargetPoolName());
                             }
 
-                            //****************detect port map changes and update it*************//
-
-                            //todo detect port map changes and update it
-
-                        /*   //checking for forwarding rules and updating
-                        for (Object port : member.getPorts()) {
-                            int portValue = ((Port) port).getValue();
-                            //if not present update it
-                            if (!updatedIPList.contains(portValue)) { //if port is not in list
-                                //put the forwarding rule to list
-                                updatedIPList.add(portValue);
-                            }
-
-                        }
-                        */
-
-                            //********************null checks**************//
-
-                            if (gceLoadBalancerConfiguration.getTargetPoolName() == null) { //this does not have a target pool name
-                                //set target pool name
-                                String targetPoolName = targetPoolNameCreator(cluster.getClusterId());
-                                gceLoadBalancerConfiguration.setTargetPoolName(targetPoolName);
-                            }
-
-                            if (gceLoadBalancerConfiguration.getForwardingRuleName() == null) {
-                                //set forwarding rule name
-                                String forwardingRuleName = forwardingRuleNameCreator(cluster.getClusterId());
-                                gceLoadBalancerConfiguration.setForwardingRuleName(forwardingRuleName);
-                            }
-
-                            if (gceLoadBalancerConfiguration.getHealthCheckName() == null) {//if this does not have a forwarding rule name
-                                //set health check name
-                                String healthCheckName = healthCheckNameCreator(cluster.getClusterId());
-                                gceLoadBalancerConfiguration.setHealthCheckName(healthCheckName);
-                            }
-
                         }
 
                     } else {
@@ -268,7 +231,6 @@ public class GCELoadBalancer implements LoadBalancer {
                             String healthCheckName = healthCheckNameCreator(cluster.getClusterId());
                             GCELoadBalancerConfiguration.setHealthCheckName(healthCheckName);
 
-
                             clusterToLoadBalancerConfigurationMap.put(cluster.getClusterId(), GCELoadBalancerConfiguration);
                             createConfigurationForCluster(cluster.getClusterId());
 
@@ -295,6 +257,7 @@ public class GCELoadBalancer implements LoadBalancer {
     private void deleteConfigurationForCluster(String clusterId) throws LoadBalancerExtensionException {
 
         try {
+            log.info("Deleting forwarding rule for cluster " + clusterId);
             GCELoadBalancerConfiguration gceLoadBalancerConfiguration = clusterToLoadBalancerConfigurationMap.get(clusterId);
             //delete forwarding rule
             gceOperations.deleteForwardingRule(gceLoadBalancerConfiguration.getForwardingRuleName());
@@ -302,6 +265,7 @@ public class GCELoadBalancer implements LoadBalancer {
             gceOperations.deleteTargetPool(gceLoadBalancerConfiguration.getTargetPoolName());
             //delete health check from GCE
             gceOperations.deleteHealthCheck(gceLoadBalancerConfiguration.getHealthCheckName());
+            log.info("Deleted forwarding rule for cluster " + clusterId);
         } catch (Exception e) {
             if (log.isErrorEnabled()) {
                 log.error("Could not delete configuration for cluster " + clusterId);
@@ -318,6 +282,8 @@ public class GCELoadBalancer implements LoadBalancer {
     private void createConfigurationForCluster(String clusterId) throws LoadBalancerExtensionException {
 
         try {
+
+            log.info("Creating configuration for cluster");
 
             GCELoadBalancerConfiguration gceLoadBalancerConfiguration = clusterToLoadBalancerConfigurationMap.get(clusterId);
 
@@ -362,12 +328,14 @@ public class GCELoadBalancer implements LoadBalancer {
             //create the forwarding rule
             gceOperations.createForwardingRule(gceLoadBalancerConfiguration.getForwardingRuleName(),
                     gceLoadBalancerConfiguration.getTargetPoolName(), protocol, portRange);
+            log.info("Created configuration for cluster");
         } catch (Exception e) {
             if (log.isErrorEnabled()) {
                 log.error("Could not create configuration for cluster " + clusterId);
             }
             throw new LoadBalancerExtensionException();
         }
+
 
     }
 
@@ -397,6 +365,8 @@ public class GCELoadBalancer implements LoadBalancer {
 
         }
 
+        log.info("GCE Load balancer stopped");
+
     }
 
 
@@ -407,9 +377,6 @@ public class GCELoadBalancer implements LoadBalancer {
     public void reload() throws LoadBalancerExtensionException {
 
         log.info("Configuration reloaded");
-        //iterate through hash map
-        //find what needs to be changed
-        //execute
 
     }
 
