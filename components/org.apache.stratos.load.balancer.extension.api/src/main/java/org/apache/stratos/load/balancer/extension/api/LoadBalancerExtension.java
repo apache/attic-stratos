@@ -258,7 +258,7 @@ public class LoadBalancerExtension {
         // Configure load balancer
         if (loadBalancer.configure(topologyProvider.getTopology())) {
             // Reload the load balancer
-                loadBalancer.reload();
+            loadBalancer.reload();
         }
     }
 
