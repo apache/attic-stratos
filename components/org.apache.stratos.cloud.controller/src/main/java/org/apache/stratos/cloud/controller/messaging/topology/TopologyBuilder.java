@@ -420,10 +420,8 @@ public class TopologyBuilder {
             member.setLbClusterId(lbClusterId);
             member.setProperties(CloudControllerUtil.toJavaUtilProperties(memberContext.getProperties()));
             cluster.addMember(member);
-            if(CloudControllerContext.getInstance().getMemberContextOfMemberId(
-                    memberContext.getMemberId()).getInstanceId() != null) {
-                member.setInstanceId(CloudControllerContext.getInstance().
-                        getMemberContextOfMemberId(memberContext.getMemberId()).getInstanceId());
+            if(memberContext.getInstanceId() != null) {
+               member.setInstanceId(memberContext.getInstanceId());
             }
             TopologyManager.updateTopology(topology);
         } finally {
@@ -473,12 +471,6 @@ public class TopologyBuilder {
             if (memberContext.getPublicIPs() != null) {
                 member.setMemberPublicIPs(Arrays.asList(memberContext.getPublicIPs()));
             }
-            if(CloudControllerContext.getInstance().getMemberContextOfMemberId(
-                    memberContext.getMemberId()).getInstanceId() != null) {
-                member.setInstanceId(CloudControllerContext.getInstance().
-                        getMemberContextOfMemberId(memberContext.getMemberId()).getInstanceId());
-            }
-
             // try update lifecycle state
             if (!member.isStateTransitionValid(MemberStatus.Initialized)) {
                 log.error("Invalid state transition from " + member.getStatus() + " to " +
