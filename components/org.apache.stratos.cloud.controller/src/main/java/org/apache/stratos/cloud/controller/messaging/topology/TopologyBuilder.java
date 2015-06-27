@@ -471,6 +471,7 @@ public class TopologyBuilder {
             if (memberContext.getPublicIPs() != null) {
                 member.setMemberPublicIPs(Arrays.asList(memberContext.getPublicIPs()));
             }
+
             // try update lifecycle state
             if (!member.isStateTransitionValid(MemberStatus.Initialized)) {
                 log.error("Invalid state transition from " + member.getStatus() + " to " +
