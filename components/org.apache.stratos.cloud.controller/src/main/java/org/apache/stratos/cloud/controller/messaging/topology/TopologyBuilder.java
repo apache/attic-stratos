@@ -473,11 +473,6 @@ public class TopologyBuilder {
             if (memberContext.getPublicIPs() != null) {
                 member.setMemberPublicIPs(Arrays.asList(memberContext.getPublicIPs()));
             }
-            if(CloudControllerContext.getInstance().getMemberContextOfMemberId(
-                    memberContext.getMemberId()).getInstanceId() != null) {
-                member.setInstanceId(CloudControllerContext.getInstance().
-                        getMemberContextOfMemberId(memberContext.getMemberId()).getInstanceId());
-            }
 
             // try update lifecycle state
             if (!member.isStateTransitionValid(MemberStatus.Initialized)) {
