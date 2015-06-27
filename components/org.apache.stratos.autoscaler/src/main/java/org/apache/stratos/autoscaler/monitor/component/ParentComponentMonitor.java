@@ -115,6 +115,14 @@ public abstract class ParentComponentMonitor extends Monitor {
     }
 
     /**
+     * This will create Instance on demand as requested by monitors
+     *
+     * @param instanceId instance Id of the instance to be created
+     * @return whether it is created or not
+     */
+    public abstract boolean createInstanceOnTermination(String instanceId);
+
+    /**
      * Starting the scheduler for the monitor
      */
     public void startScheduler() {
@@ -199,7 +207,11 @@ public abstract class ParentComponentMonitor extends Monitor {
                 //starting a new instance of the child
                 Monitor monitor = aliasToActiveChildMonitorsMap.get(context.getId());
                 //Creating the new instance
-                monitor.createInstanceOnDemand(instanceId);
+                if(monitor instanceof ParentComponentMonitor) {
+                    ((ParentComponentMonitor) monitor).createInstanceOnTermination(instanceId);
+                } else {
+                    monitor.createInstanceOnDemand(instanceId);
+                }
             }
         }
     }
@@ -311,7 +323,7 @@ public abstract class ParentComponentMonitor extends Monitor {
             }
         }
         //calling monitor to go for group scaling or notify the parent
-        this.monitor();
+        //this.monitor();
 
     }
 
@@ -644,6 +656,13 @@ public abstract class ParentComponentMonitor extends Monitor {
             }
         }
 
+        if(log.isDebugEnabled()) {
+            log.debug(String.format("Calculating the group instances status for [application] " +
+                    "%s [group] %s [group-instance] %s [required-status] %s [no-of-instances] %s",
+                    appId, childId, instanceId, requiredStatus.toString(),
+                    noOfInstancesOfRequiredStatus));
+        }
+
         if (!groupInstances.isEmpty()) {
             ParentLevelNetworkPartitionContext networkPartitionContext =
                     (ParentLevelNetworkPartitionContext) ((GroupMonitor) monitor).
@@ -652,12 +671,27 @@ public abstract class ParentComponentMonitor extends Monitor {
             //if terminated all the instances in this instances map should be in terminated state
             if (noOfInstancesOfRequiredStatus == this.inactiveInstancesMap.size() &&
                     requiredStatus == GroupStatus.Terminated) {
+                if(log.isDebugEnabled()) {
+                    log.debug(String.format("Group instances in required status for [application] " +
+                                    "%s [group] %s [group-instance] %s [required-status] %s",
+                            appId, childId, instanceId, GroupStatus.Terminated.toString()));
+                }
                 return true;
             } else if (noOfInstancesOfRequiredStatus >= minInstances) {
+                if(log.isDebugEnabled()) {
+                    log.debug(String.format("Group instances in required status for [application] " +
+                                    "%s [group] %s [group-instance] %s [required-status] %s",
+                            appId, childId, instanceId, requiredStatus.toString()));
+                }
                 return true;
             } else {
                 //of only one is inActive implies that the whole group is Inactive
                 if (requiredStatus == GroupStatus.Inactive && noOfInstancesOfRequiredStatus >= 1) {
+                    if(log.isDebugEnabled()) {
+                        log.debug(String.format("Group instances in required status for [application] " +
+                                        "%s [group] %s [group-instance] %s [required-status] %s",
+                                appId, childId, instanceId, GroupStatus.Inactive.toString()));
+                    }
                     return true;
                 }
             }

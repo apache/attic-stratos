@@ -574,7 +574,7 @@ public class CloudControllerServiceImpl implements CloudControllerService {
             log.info(String.format("Member terminated [member-id] %s ", memberId));
         } else {
             log.warn(String.format("Stratos could not terminate the member [member-id] %s. This may due to a issue " +
-                    "in the underlying IaaS, Please terminate the member manually", memberId));
+                    "in the underlying IaaS, Please terminate the member manually if it is available", memberId));
             MemberContext memberContext = CloudControllerContext.getInstance().getMemberContextOfMemberId(memberId);
             CloudControllerServiceUtil.executeMemberTerminationPostProcess(memberContext);
         }
@@ -1050,23 +1050,25 @@ public class CloudControllerServiceImpl implements CloudControllerService {
             Map<String, List<String>> accessUrls = new HashMap<String, List<String>>();
 
             for (ApplicationClusterContext appClusterCtxt : appClustersContexts) {
+                String clusterId = appClusterCtxt.getClusterId();
                 if (appClusterCtxt.isLbCluster()) {
                     String[] dependencyClusterIDs = appClusterCtxt.getDependencyClusterIds();
                     if (dependencyClusterIDs != null) {
                         for (int i = 0; i < dependencyClusterIDs.length; i++) {
-                            Cartridge cartridge = CloudControllerContext.getInstance().getCartridge(
-                                    appClusterCtxt.getCartridgeType());
+
                             List<String> accessUrlPerCluster = new ArrayList();
-                            List<PortMapping> portMappings = Arrays.asList(cartridge.getPortMappings());
-                            for (PortMapping portMap : portMappings) {
+                            Collection<ClusterPortMapping> clusterPortMappings =
+                                    CloudControllerContext.getInstance().getClusterPortMappings(appId, clusterId);
+
+                            for (ClusterPortMapping clusterPortMapping : clusterPortMappings) {
                                 try {
-                                    if (portMap.isKubernetesServicePortMapping()) {
-                                        URL accessUrl = new URL(portMap.getProtocol(), appClusterCtxt.getHostName(),
-                                                portMap.getKubernetesServicePort(), "");
+                                    if (clusterPortMapping.isKubernetes()) {
+                                        URL accessUrl = new URL(clusterPortMapping.getProtocol(), appClusterCtxt.getHostName(),
+                                                clusterPortMapping.getKubernetesServicePort(), "");
                                         accessUrlPerCluster.add(accessUrl.toString());
                                     } else {
-                                        URL accessUrl = new URL(portMap.getProtocol(), appClusterCtxt.getHostName(),
-                                                portMap.getProxyPort(), "");
+                                        URL accessUrl = new URL(clusterPortMapping.getProtocol(), appClusterCtxt.getHostName(),
+                                                clusterPortMapping.getProxyPort(), "");
                                         accessUrlPerCluster.add(accessUrl.toString());
                                     }
                                 } catch (MalformedURLException e) {
@@ -1610,15 +1612,23 @@ public class CloudControllerServiceImpl implements CloudControllerService {
     }
 
     @Override
-    public boolean removeExpiredObsoletedMemberFromCloudController(String applicationId, String cartridgeType,
-                                                                   String clusterId, String memberId,
-                                                                   String networkPartitionId, Partition partition) {
+    public String[] getIaasProviders() {
 
-        MemberContext obsoleteMember = new MemberContext(applicationId, cartridgeType, clusterId, memberId);
-        obsoleteMember.setNetworkPartitionId(networkPartitionId);
-        obsoleteMember.setPartition(partition);
-        CloudControllerServiceUtil.executeMemberTerminationPostProcess(obsoleteMember);
-        return true;
+        try {
+            Collection<IaasProvider> iaasProviders = CloudControllerConfig.getInstance().getIaasProviders();
+            List<String> iaases = new ArrayList<String>();
+
+            for (IaasProvider iaas : iaasProviders) {
+                iaases.add(iaas.getType());
+            }
+
+            return iaases.toArray(new String[iaases.size()]);
+        } catch (Exception e) {
+            String message = String.format("Could not get Iaas Providers");
+            log.error(message);
+            throw new CloudControllerException(message, e);
+        }
+
     }
 
 }

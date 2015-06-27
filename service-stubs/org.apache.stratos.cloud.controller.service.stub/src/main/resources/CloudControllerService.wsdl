@@ -5,6 +5,18 @@
             <xs:import namespace="http://domain.controller.cloud.stratos.apache.org/xsd"/>
             <xs:import namespace="http://kubernetes.domain.controller.cloud.stratos.apache.org/xsd"/>
             <xs:import namespace="http://topology.domain.messaging.stratos.apache.org/xsd"/>
+            <xs:element name="getIaasProviders">
+                <xs:complexType>
+                    <xs:sequence/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="getIaasProvidersResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element maxOccurs="unbounded" minOccurs="0" name="return" nillable="true" type="xs:string"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
             <xs:element name="getCartridges">
                 <xs:complexType>
                     <xs:sequence/>
@@ -405,6 +417,27 @@
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
+            <xs:element name="CloudControllerServiceInvalidPartitionException">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="InvalidPartitionException" nillable="true" type="ax21:InvalidPartitionException"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="validatePartition">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="partition" nillable="true" type="ax26:Partition"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="validatePartitionResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="return" type="xs:boolean"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
             <xs:element name="getServiceGroupSubGroups">
                 <xs:complexType>
                     <xs:sequence>
@@ -444,27 +477,6 @@
                 <xs:complexType>
                     <xs:sequence>
                         <xs:element minOccurs="0" name="return" nillable="true" type="ax26:Dependencies"/>
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
-            <xs:element name="CloudControllerServiceInvalidPartitionException">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element minOccurs="0" name="InvalidPartitionException" nillable="true" type="ax21:InvalidPartitionException"/>
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
-            <xs:element name="validatePartition">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element minOccurs="0" name="partition" nillable="true" type="ax26:Partition"/>
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
-            <xs:element name="validatePartitionResponse">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element minOccurs="0" name="return" type="xs:boolean"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -732,25 +744,6 @@
                 </xs:complexType>
             </xs:element>
             <xs:element name="updateNetworkPartitionResponse">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element minOccurs="0" name="return" type="xs:boolean"/>
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
-            <xs:element name="removeExpiredObsoletedMemberFromCloudController">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element minOccurs="0" name="applicationId" nillable="true" type="xs:string"/>
-                        <xs:element minOccurs="0" name="cartridgeType" nillable="true" type="xs:string"/>
-                        <xs:element minOccurs="0" name="clusterId" nillable="true" type="xs:string"/>
-                        <xs:element minOccurs="0" name="memberId" nillable="true" type="xs:string"/>
-                        <xs:element minOccurs="0" name="networkPartitionId" nillable="true" type="xs:string"/>
-                        <xs:element minOccurs="0" name="partition" nillable="true" type="ax26:Partition"/>
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
-            <xs:element name="removeExpiredObsoletedMemberFromCloudControllerResponse">
                 <xs:complexType>
                     <xs:sequence>
                         <xs:element minOccurs="0" name="return" type="xs:boolean"/>
@@ -1225,12 +1218,6 @@
     <wsdl:message name="CloudControllerServiceApplicationClusterRegistrationException">
         <wsdl:part name="parameters" element="ns:CloudControllerServiceApplicationClusterRegistrationException"/>
     </wsdl:message>
-    <wsdl:message name="removeExpiredObsoletedMemberFromCloudControllerRequest">
-        <wsdl:part name="parameters" element="ns:removeExpiredObsoletedMemberFromCloudController"/>
-    </wsdl:message>
-    <wsdl:message name="removeExpiredObsoletedMemberFromCloudControllerResponse">
-        <wsdl:part name="parameters" element="ns:removeExpiredObsoletedMemberFromCloudControllerResponse"/>
-    </wsdl:message>
     <wsdl:message name="removeKubernetesClusterRequest">
         <wsdl:part name="parameters" element="ns:removeKubernetesCluster"/>
     </wsdl:message>
@@ -1396,6 +1383,12 @@
     <wsdl:message name="getMasterForKubernetesClusterResponse">
         <wsdl:part name="parameters" element="ns:getMasterForKubernetesClusterResponse"/>
     </wsdl:message>
+    <wsdl:message name="getIaasProvidersRequest">
+        <wsdl:part name="parameters" element="ns:getIaasProviders"/>
+    </wsdl:message>
+    <wsdl:message name="getIaasProvidersResponse">
+        <wsdl:part name="parameters" element="ns:getIaasProvidersResponse"/>
+    </wsdl:message>
     <wsdl:message name="validateDeploymentPolicyNetworkPartitionRequest">
         <wsdl:part name="parameters" element="ns:validateDeploymentPolicyNetworkPartition"/>
     </wsdl:message>
@@ -1528,10 +1521,6 @@
             <wsdl:output message="ns:createApplicationClustersResponse" wsaw:Action="urn:createApplicationClustersResponse"/>
             <wsdl:fault message="ns:CloudControllerServiceApplicationClusterRegistrationException" name="CloudControllerServiceApplicationClusterRegistrationException" wsaw:Action="urn:createApplicationClustersCloudControllerServiceApplicationClusterRegistrationException"/>
         </wsdl:operation>
-        <wsdl:operation name="removeExpiredObsoletedMemberFromCloudController">
-            <wsdl:input message="ns:removeExpiredObsoletedMemberFromCloudControllerRequest" wsaw:Action="urn:removeExpiredObsoletedMemberFromCloudController"/>
-            <wsdl:output message="ns:removeExpiredObsoletedMemberFromCloudControllerResponse" wsaw:Action="urn:removeExpiredObsoletedMemberFromCloudControllerResponse"/>
-        </wsdl:operation>
         <wsdl:operation name="removeKubernetesCluster">
             <wsdl:input message="ns:removeKubernetesClusterRequest" wsaw:Action="urn:removeKubernetesCluster"/>
             <wsdl:output message="ns:removeKubernetesClusterResponse" wsaw:Action="urn:removeKubernetesClusterResponse"/>
@@ -1638,6 +1627,10 @@
             <wsdl:input message="ns:getMasterForKubernetesClusterRequest" wsaw:Action="urn:getMasterForKubernetesCluster"/>
             <wsdl:output message="ns:getMasterForKubernetesClusterResponse" wsaw:Action="urn:getMasterForKubernetesClusterResponse"/>
             <wsdl:fault message="ns:CloudControllerServiceNonExistingKubernetesClusterException" name="CloudControllerServiceNonExistingKubernetesClusterException" wsaw:Action="urn:getMasterForKubernetesClusterCloudControllerServiceNonExistingKubernetesClusterException"/>
+        </wsdl:operation>
+        <wsdl:operation name="getIaasProviders">
+            <wsdl:input message="ns:getIaasProvidersRequest" wsaw:Action="urn:getIaasProviders"/>
+            <wsdl:output message="ns:getIaasProvidersResponse" wsaw:Action="urn:getIaasProvidersResponse"/>
         </wsdl:operation>
         <wsdl:operation name="validateDeploymentPolicyNetworkPartition">
             <wsdl:input message="ns:validateDeploymentPolicyNetworkPartitionRequest" wsaw:Action="urn:validateDeploymentPolicyNetworkPartition"/>
@@ -1771,15 +1764,6 @@
             <wsdl:fault name="CloudControllerServiceApplicationClusterRegistrationException">
                 <soap:fault use="literal" name="CloudControllerServiceApplicationClusterRegistrationException"/>
             </wsdl:fault>
-        </wsdl:operation>
-        <wsdl:operation name="removeExpiredObsoletedMemberFromCloudController">
-            <soap:operation soapAction="urn:removeExpiredObsoletedMemberFromCloudController" style="document"/>
-            <wsdl:input>
-                <soap:body use="literal"/>
-            </wsdl:input>
-            <wsdl:output>
-                <soap:body use="literal"/>
-            </wsdl:output>
         </wsdl:operation>
         <wsdl:operation name="removeKubernetesCluster">
             <soap:operation soapAction="urn:removeKubernetesCluster" style="document"/>
@@ -2039,6 +2023,15 @@
                 <soap:fault use="literal" name="CloudControllerServiceNonExistingKubernetesClusterException"/>
             </wsdl:fault>
         </wsdl:operation>
+        <wsdl:operation name="getIaasProviders">
+            <soap:operation soapAction="urn:getIaasProviders" style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
         <wsdl:operation name="validateDeploymentPolicyNetworkPartition">
             <soap:operation soapAction="urn:validateDeploymentPolicyNetworkPartition" style="document"/>
             <wsdl:input>
@@ -2290,15 +2283,6 @@
             <wsdl:fault name="CloudControllerServiceApplicationClusterRegistrationException">
                 <soap12:fault use="literal" name="CloudControllerServiceApplicationClusterRegistrationException"/>
             </wsdl:fault>
-        </wsdl:operation>
-        <wsdl:operation name="removeExpiredObsoletedMemberFromCloudController">
-            <soap12:operation soapAction="urn:removeExpiredObsoletedMemberFromCloudController" style="document"/>
-            <wsdl:input>
-                <soap12:body use="literal"/>
-            </wsdl:input>
-            <wsdl:output>
-                <soap12:body use="literal"/>
-            </wsdl:output>
         </wsdl:operation>
         <wsdl:operation name="removeKubernetesCluster">
             <soap12:operation soapAction="urn:removeKubernetesCluster" style="document"/>
@@ -2558,6 +2542,15 @@
                 <soap12:fault use="literal" name="CloudControllerServiceNonExistingKubernetesClusterException"/>
             </wsdl:fault>
         </wsdl:operation>
+        <wsdl:operation name="getIaasProviders">
+            <soap12:operation soapAction="urn:getIaasProviders" style="document"/>
+            <wsdl:input>
+                <soap12:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap12:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
         <wsdl:operation name="validateDeploymentPolicyNetworkPartition">
             <soap12:operation soapAction="urn:validateDeploymentPolicyNetworkPartition" style="document"/>
             <wsdl:input>
@@ -2798,15 +2791,6 @@
                 <mime:content type="text/xml" part="parameters"/>
             </wsdl:output>
         </wsdl:operation>
-        <wsdl:operation name="removeExpiredObsoletedMemberFromCloudController">
-            <http:operation location="removeExpiredObsoletedMemberFromCloudController"/>
-            <wsdl:input>
-                <mime:content type="text/xml" part="parameters"/>
-            </wsdl:input>
-            <wsdl:output>
-                <mime:content type="text/xml" part="parameters"/>
-            </wsdl:output>
-        </wsdl:operation>
         <wsdl:operation name="removeKubernetesCluster">
             <http:operation location="removeKubernetesCluster"/>
             <wsdl:input>
@@ -2989,6 +2973,15 @@
         </wsdl:operation>
         <wsdl:operation name="getMasterForKubernetesCluster">
             <http:operation location="getMasterForKubernetesCluster"/>
+            <wsdl:input>
+                <mime:content type="text/xml" part="parameters"/>
+            </wsdl:input>
+            <wsdl:output>
+                <mime:content type="text/xml" part="parameters"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="getIaasProviders">
+            <http:operation location="getIaasProviders"/>
             <wsdl:input>
                 <mime:content type="text/xml" part="parameters"/>
             </wsdl:input>

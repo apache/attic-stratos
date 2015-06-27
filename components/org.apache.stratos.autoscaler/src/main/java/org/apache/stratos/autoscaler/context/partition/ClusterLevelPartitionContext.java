@@ -29,6 +29,10 @@ import org.apache.stratos.cloud.controller.stub.domain.MemberContext;
 import org.apache.stratos.common.client.CloudControllerServiceClient;
 import org.apache.stratos.common.constants.StratosConstants;
 import org.apache.stratos.common.partition.PartitionRef;
+import org.apache.stratos.messaging.domain.topology.Cluster;
+import org.apache.stratos.messaging.domain.topology.ClusterStatus;
+import org.apache.stratos.messaging.domain.topology.Service;
+import org.apache.stratos.messaging.message.receiver.topology.TopologyManager;
 
 import java.io.Serializable;
 import java.util.*;
@@ -124,7 +128,7 @@ public class ClusterLevelPartitionContext extends PartitionContext implements Se
             if (log.isDebugEnabled()) {
                 log.debug(String.format("Forcefully terminating member [member-id] %s", memberId));
             }
-            CloudControllerServiceClient.getInstance().terminateInstanceForcefully(memberId);
+            AutoscalerCloudControllerClient.getInstance().terminateInstanceForcefully(memberId);
         } catch (Exception e) {
             log.error("Error occurred while terminating instance", e);
         }
@@ -654,12 +658,26 @@ public class ClusterLevelPartitionContext extends PartitionContext implements Se
                     Iterator<MemberContext> iterator = pendingMembers.listIterator();
                     while (iterator.hasNext()) {
                         MemberContext pendingMember = iterator.next();
+                        String clusterInstanceId = pendingMember.getClusterInstanceId();
+                        String clusterId = pendingMember.getClusterId();
+                        String serviceName = pendingMember.getCartridgeType();
+                         Service service = TopologyManager.getTopology().
+                                getService(serviceName);
+
+                        ClusterStatus status = ClusterStatus.Terminated;
+                        if(service != null) {
+                            Cluster cluster = service.getCluster(clusterId);
+                            if(cluster != null) {
+                                status = cluster. getInstanceContexts(clusterInstanceId).getStatus();
+                            }
+                        }
 
                         if (pendingMember == null) {
                             continue;
                         }
+
                         long pendingTime = System.currentTimeMillis() - pendingMember.getInitTime();
-                        if (pendingTime >= expiryTime) {
+                        if (pendingTime >= expiryTime || status.equals(ClusterStatus.Terminating)) {
 
                             log.info(String.format("Pending state of member expired, member will be moved to obsolete list. " +
                                             "[pending member] %s [expiry time] %s [cluster] %s " + "[cluster instance] %s",
@@ -721,8 +739,14 @@ public class ClusterLevelPartitionContext extends PartitionContext implements Se
                                 obsoleteMember.getClusterInstanceId()));
 
                         //notifying CC, about the removal of obsolete member
-                        AutoscalerCloudControllerClient.getInstance().removeExpiredObsoletedMemberFromCloudController(
-                                obsoleteMember);
+                        try {
+                            AutoscalerCloudControllerClient.getInstance().terminateInstanceForcefully(
+                                    obsoleteMember.getMemberId());
+                        } catch (Exception e) {
+                            log.error(String.format("Termination of obsolete member %s is failed, but all the contexts" +
+                                    "will be removed", obsoleteMember.getMemberId()));
+
+                        }
 
                         iterator.remove();
                         if (ctxt.getMemberStatsContexts().containsKey(obsoleteMemberId)) {
@@ -767,6 +791,7 @@ public class ClusterLevelPartitionContext extends PartitionContext implements Se
                 while (iterator.hasNext()) {
 
                     MemberContext terminationPendingMember = iterator.next();
+
                     if (terminationPendingMember == null) {
                         continue;
                     }
