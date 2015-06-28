@@ -64,7 +64,11 @@ public class GCEOperations {
     private static final String HEALTH_CHECK_UNHEALTHY_THRESHOLD = GCEContext.getInstance().getHealthCheckUnhealthyThreshold();
     private static final String NETWORK_NAME = GCEContext.getInstance().getNetworkName();
 
+    //a filter for get only running instances from IaaS side
     private static final String RUNNING_FILTER = "status eq RUNNING";
+
+    //a timeout for operation completion
+    private static final int OPERATION_TIMEOUT = Integer.parseInt(GCEContext.getInstance().getOperationTimeout());
 
     static Compute compute;
 
@@ -582,12 +586,18 @@ public class GCEOperations {
     private void waitForGlobalOperationCompletion(String operationName) {
         try {
             Thread.sleep(2000);
+            int timeout = 0;
             while (true) {
                 Operation operation = compute.globalOperations().get(PROJECT_ID, operationName).execute();
                 if (operation.getStatus().equals("DONE")) {
                     return;
                 }
+                if (timeout >= OPERATION_TIMEOUT) {
+                    log.warn("Timeout reached for operation " + operationName + ". Existing..");
+                    return;
+                }
                 Thread.sleep(1000);
+                timeout += 1000;
             }
         } catch (InterruptedException e) {
             log.error("Could not wait for global operation completion " + operationName);
@@ -608,13 +618,19 @@ public class GCEOperations {
     private void waitForRegionOperationCompletion(String operationName) {
         try {
             Thread.sleep(2000);
+            int timeout = 0;
             while (true) {
                 Operation operation = compute.regionOperations().get(PROJECT_ID, REGION_NAME, operationName).execute();
 
                 if (operation.getStatus().equals("DONE")) {
                     return;
                 }
+                if (timeout >= OPERATION_TIMEOUT) {
+                    log.warn("Timeout reached for operation " + operationName + ". Existing..");
+                    return;
+                }
                 Thread.sleep(1000);
+                timeout += 1000;
             }
         } catch (InterruptedException e) {
             log.error("Could not wait for region operation completion " + operationName);
@@ -632,12 +648,19 @@ public class GCEOperations {
      */
     private void waitForZoneOperationCompletion(String operationName) {
         try {
+            Thread.sleep(2000);
+            int timeout = 0;
             while (true) {
                 Operation operation = compute.regionOperations().get(PROJECT_ID, REGION_NAME, operationName).execute();
                 if (operation.getStatus().equals("DONE")) {
                     return;
                 }
+                if (timeout >= OPERATION_TIMEOUT) {
+                    log.warn("Timeout reached for operation " + operationName + ". Existing..");
+                    return;
+                }
                 Thread.sleep(1000);
+                timeout += 1000;
             }
         } catch (InterruptedException e) {
             log.error("Could not wait for zone operation completion " + operationName);

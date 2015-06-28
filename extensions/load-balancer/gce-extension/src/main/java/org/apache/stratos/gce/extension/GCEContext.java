@@ -49,6 +49,7 @@ public class GCEContext {
     private String healthCheckTimeOutSec;
     private String healthCheckUnhealthyThreshold;
     private String networkName;
+    private String operationTimeout;
 
 
     private GCEContext() {
@@ -71,6 +72,7 @@ public class GCEContext {
         this.healthCheckTimeOutSec = System.getProperty(Constants.HEALTH_CHECK_TIME_OUT_SEC);
         this.healthCheckUnhealthyThreshold = System.getProperty(Constants.HEALTH_CHECK_UNHEALTHY_THRESHOLD);
         this.networkName = System.getProperty(Constants.NETWORK_NAME);
+        this.operationTimeout = System.getProperty(Constants.OPERATION_TIMEOUT);
 
 
         if (log.isDebugEnabled()) {
@@ -92,6 +94,7 @@ public class GCEContext {
             log.debug(Constants.HEALTH_CHECK_TIME_OUT_SEC + " = " + healthCheckTimeOutSec);
             log.debug(Constants.HEALTH_CHECK_UNHEALTHY_THRESHOLD + " = " + healthCheckUnhealthyThreshold);
             log.debug(Constants.NETWORK_NAME + "=" + networkName);
+            log.debug(Constants.OPERATION_TIMEOUT + "=" + operationTimeout);
 
         }
 
@@ -124,7 +127,7 @@ public class GCEContext {
         validateSystemProperty(Constants.HEALTH_CHECK_TIME_OUT_SEC);
         validateSystemProperty(Constants.HEALTH_CHECK_UNHEALTHY_THRESHOLD);
         validateSystemProperty(Constants.NETWORK_NAME);
-
+        validateSystemProperty(Constants.OPERATION_TIMEOUT);
 
         if (cepStatsPublisherEnabled) {
             validateSystemProperty(Constants.THRIFT_RECEIVER_IP);
@@ -202,5 +205,9 @@ public class GCEContext {
 
     public String getNetworkName() {
         return networkName;
+    }
+
+    public String getOperationTimeout() {
+        return operationTimeout;
     }
 }

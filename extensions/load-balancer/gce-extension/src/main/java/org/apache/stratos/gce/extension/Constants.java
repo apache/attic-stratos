@@ -41,4 +41,5 @@ public class Constants {
     public static final String HEALTH_CHECK_TIME_OUT_SEC = "health.check.timeout.sec";
     public static final String HEALTH_CHECK_UNHEALTHY_THRESHOLD = "health.check.unhealthy.threshold";
     public static final String NETWORK_NAME = "network.name";
+    public static final String OPERATION_TIMEOUT = "operation.timeout";
 }
