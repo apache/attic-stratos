@@ -22,7 +22,6 @@
 
 echo "Starting gce load balancer extension..."
 script_path="$( cd -P "$( dirname "$SOURCE" )" && pwd )/`dirname $0`"
-echo ${script_path}
 lib_path=${script_path}/../lib/
 class_path=`echo ${lib_path}/*.jar | tr ' ' ':'`
 
