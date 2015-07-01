@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.stratos.gce.extension;
+package org.apache.stratos.gce.extension.config;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -34,9 +34,6 @@ public class GCEContext {
     private boolean cepStatsPublisherEnabled;
     private String thriftReceiverIp;
     private String thriftReceiverPort;
-    private String networkPartitionId;
-    private String clusterId;
-    private String serviceName;
     private String namePrefix;
     private String projectName;
     private String projectID;
@@ -57,9 +54,6 @@ public class GCEContext {
         this.cepStatsPublisherEnabled = Boolean.getBoolean(Constants.CEP_STATS_PUBLISHER_ENABLED);
         this.thriftReceiverIp = System.getProperty(Constants.THRIFT_RECEIVER_IP);
         this.thriftReceiverPort = System.getProperty(Constants.THRIFT_RECEIVER_PORT);
-        this.networkPartitionId = System.getProperty(Constants.NETWORK_PARTITION_ID);
-        this.clusterId = System.getProperty(Constants.CLUSTER_ID);
-        this.serviceName = System.getProperty(Constants.SERVICE_NAME);
         this.namePrefix = System.getProperty(Constants.NAME_PREFIX);
         this.projectName = System.getProperty(Constants.PROJECT_NAME);
         this.projectID = System.getProperty(Constants.PROJECT_ID);
@@ -80,8 +74,6 @@ public class GCEContext {
             log.debug(Constants.THRIFT_RECEIVER_IP + " = " + thriftReceiverIp);
             log.debug(Constants.THRIFT_RECEIVER_PORT + " = " + thriftReceiverPort);
             log.debug(Constants.THRIFT_RECEIVER_PORT + " = " + thriftReceiverPort);
-            log.debug(Constants.NETWORK_PARTITION_ID + " = " + networkPartitionId);
-            log.debug(Constants.CLUSTER_ID + " = " + clusterId);
             log.debug(Constants.NAME_PREFIX + " = " + namePrefix);
             log.debug(Constants.PROJECT_NAME + " = " + projectName);
             log.debug(Constants.PROJECT_ID + " = " + projectID);
@@ -114,7 +106,6 @@ public class GCEContext {
     public void validate() {
 
         validateSystemProperty(Constants.CEP_STATS_PUBLISHER_ENABLED);
-        validateSystemProperty(Constants.CLUSTER_ID);
         validateSystemProperty(Constants.NAME_PREFIX);
         validateSystemProperty(Constants.PROJECT_NAME);
         validateSystemProperty(Constants.PROJECT_ID);
@@ -132,7 +123,6 @@ public class GCEContext {
         if (cepStatsPublisherEnabled) {
             validateSystemProperty(Constants.THRIFT_RECEIVER_IP);
             validateSystemProperty(Constants.THRIFT_RECEIVER_PORT);
-            validateSystemProperty(Constants.NETWORK_PARTITION_ID);
         }
     }
 
@@ -145,18 +135,6 @@ public class GCEContext {
 
     public boolean isCEPStatsPublisherEnabled() {
         return cepStatsPublisherEnabled;
-    }
-
-    public String getNetworkPartitionId() {
-        return networkPartitionId;
-    }
-
-    public String getClusterId() {
-        return clusterId;
-    }
-
-    public String getServiceName() {
-        return serviceName;
     }
 
     public String getNamePrefix() {

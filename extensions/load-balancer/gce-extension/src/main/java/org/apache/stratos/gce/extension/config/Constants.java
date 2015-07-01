@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.stratos.gce.extension;
+package org.apache.stratos.gce.extension.config;
 
 /**
  * GCE extension constants.
@@ -26,10 +26,7 @@ public class Constants {
     public static final String CEP_STATS_PUBLISHER_ENABLED = "cep.stats.publisher.enabled";
     public static final String THRIFT_RECEIVER_IP = "thrift.receiver.ip";
     public static final String THRIFT_RECEIVER_PORT = "thrift.receiver.port";
-    public static final String NETWORK_PARTITION_ID = "network.partition.id";
-    public static final String CLUSTER_ID = "cluster.id";
-    public static final String SERVICE_NAME = "service.name";
-    public static final String NAME_PREFIX = "name.prefix";
+    static final String NAME_PREFIX = "name.prefix";
     public static final String PROJECT_NAME = "project.name";
     public static final String PROJECT_ID = "project.id";
     public static final String ZONE_NAME = "zone.name";

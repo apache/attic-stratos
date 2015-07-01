@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.stratos.gce.extension;
+package org.apache.stratos.gce.extension.util;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
@@ -29,6 +29,8 @@ import com.google.api.services.compute.ComputeScopes;
 import com.google.api.services.compute.model.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.stratos.gce.extension.GCELoadBalancer;
+import org.apache.stratos.gce.extension.config.GCEContext;
 import org.apache.stratos.load.balancer.extension.api.exception.LoadBalancerExtensionException;
 
 import java.io.File;

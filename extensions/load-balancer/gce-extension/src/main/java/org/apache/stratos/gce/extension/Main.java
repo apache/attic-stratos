@@ -19,10 +19,14 @@
 
 package org.apache.stratos.gce.extension;
 
+import org.apache.axiom.om.OMElement;
+import org.apache.axiom.om.impl.builder.StAXOMBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.PropertyConfigurator;
 import org.apache.stratos.common.threading.StratosThreadPool;
+import org.apache.stratos.gce.extension.config.GCEContext;
+import org.apache.stratos.gce.extension.config.parser.GCEConfigParser;
 import org.apache.stratos.load.balancer.common.topology.TopologyProvider;
 import org.apache.stratos.load.balancer.extension.api.LoadBalancerExtension;
 
@@ -31,14 +35,24 @@ import java.util.concurrent.ExecutorService;
 /**
  * GCE extension main class.
  */
+
+
 public class Main {
     private static final Log log = LogFactory.getLog(Main.class);
     private static ExecutorService executorService;
+
+    private static String configFilePath = "/conf/gce-configuration.xml";
+
 
     public static void main(String[] args) {
 
         LoadBalancerExtension extension = null;
         try {
+
+            //read configuration from gce-configuration.xml and store configuration in GCEConfigurationHolder class
+            OMElement documentElement = new StAXOMBuilder(configFilePath).getDocumentElement();
+            GCEConfigParser.parse(documentElement);
+
             // Configure log4j properties
             PropertyConfigurator.configure(System.getProperty("log4j.properties.file.path"));
 

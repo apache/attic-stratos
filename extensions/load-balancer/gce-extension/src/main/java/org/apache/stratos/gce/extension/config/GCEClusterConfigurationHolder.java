@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.stratos.gce.extension;
+package org.apache.stratos.gce.extension.config;
 
 import java.util.List;
 
@@ -28,7 +28,7 @@ import java.util.List;
  * This class is used to hold the configuration for a load balancer
  * Each cluster will have one object from this class
  */
-public class GCELoadBalancerConfiguration {
+public class GCEClusterConfigurationHolder {
 
 
     //A cluster should have set of members
@@ -42,8 +42,8 @@ public class GCELoadBalancerConfiguration {
     private String healthCheckName;
 
 
-    public GCELoadBalancerConfiguration(String clusterID, List<String> memberList,
-                                        List<Integer> ipList) {
+    public GCEClusterConfigurationHolder(String clusterID, List<String> memberList,
+                                         List<Integer> ipList) {
         this.clusterID = clusterID;
         this.memberList = memberList;
         this.ipList = ipList;
