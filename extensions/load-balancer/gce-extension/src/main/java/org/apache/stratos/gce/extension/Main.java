@@ -41,7 +41,7 @@ public class Main {
     private static final Log log = LogFactory.getLog(Main.class);
     private static ExecutorService executorService;
 
-    private static String configFilePath = "../conf/gce-configuration.xml";
+    private static String configFilePath = "src/main/conf/gce-configuration.xml";
 
 
     public static void main(String[] args) {
