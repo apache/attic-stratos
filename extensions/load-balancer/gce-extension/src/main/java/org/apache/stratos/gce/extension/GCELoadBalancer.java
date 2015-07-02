@@ -77,6 +77,11 @@ public class GCELoadBalancer implements LoadBalancer {
                 new DomDriver("utf-8"));
         log.info(xstream.toXML(topology));
         try {
+
+            //delaying the configuration as a temporary solution( Because topology may not be updated when the configure
+            // method calls)
+            Thread.sleep(10000);
+
             //check whether any cluster is removed. If removed, then remove the cluster from
             //clusterToLoadBalancerConfigurationMap and remove all objects in IaaS side too
 
