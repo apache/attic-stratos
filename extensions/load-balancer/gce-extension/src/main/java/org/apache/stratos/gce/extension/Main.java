@@ -25,11 +25,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.PropertyConfigurator;
 import org.apache.stratos.common.threading.StratosThreadPool;
+import org.apache.stratos.common.util.AxiomXpathParserUtil;
 import org.apache.stratos.gce.extension.config.GCEContext;
 import org.apache.stratos.gce.extension.config.parser.GCEConfigParser;
 import org.apache.stratos.load.balancer.common.topology.TopologyProvider;
 import org.apache.stratos.load.balancer.extension.api.LoadBalancerExtension;
 
+import java.io.File;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -41,7 +43,8 @@ public class Main {
     private static final Log log = LogFactory.getLog(Main.class);
     private static ExecutorService executorService;
 
-    private static String configFilePath = "src/main/conf/gce-configuration.xml";
+    private static String configFileName = "gce-configuration.xml";
+    private static String configFolderName = "conf";
 
 
     public static void main(String[] args) {
@@ -50,7 +53,10 @@ public class Main {
         try {
 
             //read configuration from gce-configuration.xml and store configuration in GCEConfigurationHolder class
-            OMElement documentElement = new StAXOMBuilder(configFilePath).getDocumentElement();
+            String workingDirectory = System.getProperty("user.dir");
+            String configFilePath = workingDirectory + File.separator + ".." + File.separator + configFolderName + File.separator + configFileName;
+            File configFile = new File(configFilePath);
+            OMElement documentElement  = AxiomXpathParserUtil.parse(configFile);
             GCEConfigParser.parse(documentElement);
 
             // Configure log4j properties

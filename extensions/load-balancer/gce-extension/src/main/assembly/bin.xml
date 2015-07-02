@@ -41,6 +41,7 @@
                 <include>jndi.properties</include>
                 <include>log4j.properties</include>
                 <include>thrift-client-config.xml</include>
+                <include>gce-configuration.xml</include>
             </includes>
         </fileSet>
         <fileSet>
