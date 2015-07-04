@@ -1,0 +1,56 @@
+<link rel="stylesheet" href="{{url "/themes/theme0/css/style.css"}}" type="text/css" >
+<link rel="stylesheet" href="{{url "/themes/theme0/css/c3/c3.css"}}" type="text/css" >
+
+<body onload="bodyOnLoad({{Json}})">
+
+<div class="container-fluid" style="padding-bottom:40px">
+    <div class="row title">
+        <div class="title-main text-center">
+            <h1 id="mainTitle">Health statistics</h1>
+        </div>
+    </div>
+
+    <div class="container content">
+        <div class="row text-center" id="rowTable">
+        </div>
+    </div>
+
+    <div id="menu" style="display:none;">
+        <div class="page-container">
+            <table>
+                <tr>
+                    <td style="vertical-align: top;">
+                        <div class="page-sidebar-wrapper" style="width:200px">
+                            <ul id="sideMenu" class="page-sidebar-menu">
+                            </ul>
+                        </div>
+                    </td>
+                    <td style="padding-left:5%">
+                        <div id="charts">
+                            <h3 style="color:white">Load Average</h3>
+                            <div id="chart1" style="background-color: #FFFAF0; height:400px ; width: 800px ; margin: 0 auto"></div><br>
+                            <h3 style="color:white">Request in Flight<h3>
+                            <div id="chart2" style="background-color: #FFFAF0; height:400px ; width: 800px ; margin: 0 auto"></div><br>
+                            <h3 style="color:white">Memory Consumption</h3>
+                            <div id="chart3" style="background-color: #FFFAF0; height:400px ; width: 800px ; margin: 0 auto"></div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div style="background:#fff; height:15px; bottom:0; left:0; margin-top:5px; width:100%; position:fixed">
+    <div class="row title">
+        <div class="title-main text-center">
+
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" src="{{url "/themes/theme0/js/c3/d3.v3.min.js"}}"></script>
+<script type="text/javascript" src="{{url "/themes/theme0/js/c3/c3.min.js"}}"></script>
+<script type="text/javascript" src="{{url "/themes/theme0/js/healthStat/healthstat.js"}}"></script>
+</body>
+
