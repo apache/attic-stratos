@@ -1,0 +1,69 @@
+<%
+/*
+ *
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ *
+ */
+//add login validator for pages
+include('/controllers/login/validator.jag');
+include('/controllers/menu/menu_generator.jag');
+
+var log = new Log("apacheStratos.appconfig"),
+        error = [],
+        caramel = require('caramel'),
+// dataTSV=require('/controllers/datatsv/data2.json'),
+        context = caramel.configs().context,
+        menuJson = require('/controllers/menu/menu.json'),
+        JsonFile = require("/controllers/datatsv/json.json"),
+        userPermissions = session.get('PERMISSIONS');
+
+//create left menu
+var leftMenu = menuGenerator(context, menuJson.menu, userPermissions);
+//create metro block
+var metro_menu = metroGenerator('/healthStatistics', menuJson.menu, userPermissions);
+
+var log = new Log();
+var config = {"driverClassName":"org.apache.cassandra.cql.jdbc.CassandraDriver"};
+log.info(JsonFile);
+var db = null;
+var result = null;
+
+/*try {
+ db = new Database("WSO2BAM_CASSANDRA_DATASOURCE_3");
+ db.query("USE AGENTHEALTH_STAT");
+
+ result = db.query("SELECT * FROM AGENTHEALTH_STAT");
+
+ } finally {
+ if (db != null) {
+ db.close();
+ }
+ }
+ */
+caramel.render({
+    breadcrumbPathLevelOne: 'health',
+    //dataTSV: JSON.stringify(dataTSV),
+    Json: JSON.stringify(JsonFile),
+    result:result,
+    error: error
+});
+
+
+
+
+%>
