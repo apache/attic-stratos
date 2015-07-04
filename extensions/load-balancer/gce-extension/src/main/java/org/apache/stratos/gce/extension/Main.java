@@ -37,13 +37,10 @@ import java.util.concurrent.ExecutorService;
 /**
  * GCE extension main class.
  */
-
-
 public class Main {
+
     private static final Log log = LogFactory.getLog(Main.class);
     private static ExecutorService executorService;
-
-
 
     public static void main(String[] args) {
 
@@ -102,6 +99,12 @@ public class Main {
         }
     }
 
+    /**
+     * get the full path of a given file which is located in conf folder
+     *
+     * @param fileName - name of file name
+     * @return - full path of given file
+     */
     private static String getFilePathOfConfigFile(String fileName) {
         String workingDirectory = System.getProperty("user.dir");
         String FilePath = workingDirectory + File.separator + ".." + File.separator + Constants.CONFIG_FOLDER_NAME + File.separator + fileName;

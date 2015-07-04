@@ -34,7 +34,7 @@ public class GCEConfigParser {
     private static GCEContext gceContext;
 
     /**
-     * Parse the gce-configuration file.
+     * Parse the gce-configuration.xml file.
      *
      * @param documentElement axiom document element.
      * @throws MalformedConfigurationFileException
@@ -63,6 +63,11 @@ public class GCEConfigParser {
 
     }
 
+    /**
+     * Extract cep ip and port and store in gceContext object
+     *
+     * @param cepInfoElement
+     */
     private static void extractCepConfiguration(OMElement cepInfoElement) {
 
         //Check whether the cep stat publisher enabled or not
@@ -89,6 +94,11 @@ public class GCEConfigParser {
 
     }
 
+    /**
+     * extract Iaas propreties from given OMElement and store it in gceContext object
+     *
+     * @param gceIaasInfoElement - OMElement which contains Iaas properties
+     */
     private static void extractGceIaasInformation(OMElement gceIaasInfoElement) {
 
         String projectName = AxiomXpathParserUtil.getFirstChildElement(gceIaasInfoElement, Constants.PROJECT_NAME).getText();
@@ -110,6 +120,10 @@ public class GCEConfigParser {
 
     }
 
+    /**
+     * extract health check properties from given OMElement and store it in gceContext object
+     * @param healthCheckPropertiesElement - OMElement which contains health check properties
+     */
     private static void extractHealthCheckProperties(OMElement healthCheckPropertiesElement) {
 
         String healthCheckRequestPath = AxiomXpathParserUtil.getFirstChildElement(healthCheckPropertiesElement, Constants.HEALTH_CHECK_REQUEST_PATH).getText();
@@ -124,6 +138,11 @@ public class GCEConfigParser {
         gceContext.setHealthCheckUnhealthyThreshold(healthCheckUnhealthyThreshold);
     }
 
+    /**
+     * extract all other properties which is not extracted from above methods and store in gceContext object
+     *
+     * @param documentElement - OMElement which contains other properties
+     */
     private static void extractOtherProperties(OMElement documentElement) {
         String operationTimeout = AxiomXpathParserUtil.getFirstChildElement(documentElement, Constants.OPERATION_TIMEOUT).getText();
         String namePrefix = AxiomXpathParserUtil.getFirstChildElement(documentElement, Constants.NAME_PREFIX).getText();

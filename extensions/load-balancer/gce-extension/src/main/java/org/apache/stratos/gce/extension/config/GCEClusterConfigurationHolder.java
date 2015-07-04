@@ -30,7 +30,6 @@ import java.util.List;
  */
 public class GCEClusterConfigurationHolder {
 
-
     //A cluster should have set of members
     private List<String> memberList;
     //A cluster can have one IPs to be forwarded
@@ -40,7 +39,6 @@ public class GCEClusterConfigurationHolder {
     private String forwardingRuleName;
     private String targetPoolName;
     private String healthCheckName;
-
 
     public GCEClusterConfigurationHolder(String clusterID, List<String> memberList,
                                          List<Integer> ipList) {
