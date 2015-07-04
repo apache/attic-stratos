@@ -31,27 +31,34 @@ public class GCEContext {
 
     private static volatile GCEContext context;
 
+    //cep stat publisher properties
     private boolean cepStatsPublisherEnabled;
     private String thriftReceiverIp;
     private String thriftReceiverPort;
-    private String namePrefix;
+
+    //IaaS properties
     private String projectName;
     private String projectID;
     private String zoneName;
     private String regionName;
     private String keyFilePath;
     private String gceAccountID;
+    private String networkName;
+
+    //healthcheck properties
     private String healthCheckRequestPath;
     private String healthCheckPort;
     private String healthCheckTimeOutSec;
     private String healthCheckUnhealthyThreshold;
-    private String networkName;
-    private String operationTimeout;
 
+    //other properties
+    private String namePrefix;
+    private String operationTimeout;
+    private String log4jPropertiesFileName;
 
     private GCEContext() {
 
-        this.cepStatsPublisherEnabled = Boolean.getBoolean(Constants.CEP_STATS_PUBLISHER_ENABLED);
+       /* this.cepStatsPublisherEnabled = Boolean.getBoolean(Constants.CEP_STATS_PUBLISHER_ENABLED);
         this.thriftReceiverIp = System.getProperty(Constants.THRIFT_RECEIVER_IP);
         this.thriftReceiverPort = System.getProperty(Constants.THRIFT_RECEIVER_PORT);
         this.namePrefix = System.getProperty(Constants.NAME_PREFIX);
@@ -89,6 +96,7 @@ public class GCEContext {
             log.debug(Constants.OPERATION_TIMEOUT + "=" + operationTimeout);
 
         }
+        */
 
     }
 
@@ -101,6 +109,14 @@ public class GCEContext {
             }
         }
         return context;
+    }
+
+    public String getLog4jPropertiesFileName() {
+        return log4jPropertiesFileName;
+    }
+
+    public void setLog4jPropertiesFileName(String log4jPropertiesFileName) {
+        this.log4jPropertiesFileName = log4jPropertiesFileName;
     }
 
     public void validate() {
@@ -141,51 +157,116 @@ public class GCEContext {
         return namePrefix;
     }
 
+    public void setNamePrefix(String namePrefix) {
+        this.namePrefix = namePrefix;
+    }
+
     public String getProjectName() {
         return projectName;
+    }
+
+    public void setProjectName(String projectName) {
+        this.projectName = projectName;
     }
 
     public String getProjectID() {
         return projectID;
     }
 
+    public void setProjectID(String projectID) {
+        this.projectID = projectID;
+    }
+
     public String getZoneName() {
         return zoneName;
+    }
+
+    public void setZoneName(String zoneName) {
+        this.zoneName = zoneName;
     }
 
     public String getRegionName() {
         return regionName;
     }
 
+    public void setRegionName(String regionName) {
+        this.regionName = regionName;
+    }
+
     public String getKeyFilePath() {
         return keyFilePath;
+    }
+
+    public void setKeyFilePath(String keyFilePath) {
+        this.keyFilePath = keyFilePath;
     }
 
     public String getGceAccountID() {
         return gceAccountID;
     }
 
+    public void setGceAccountID(String gceAccountID) {
+        this.gceAccountID = gceAccountID;
+    }
+
     public String getHealthCheckRequestPath() {
         return healthCheckRequestPath;
+    }
+
+    public void setHealthCheckRequestPath(String healthCheckRequestPath) {
+        this.healthCheckRequestPath = healthCheckRequestPath;
     }
 
     public String getHealthCheckPort() {
         return healthCheckPort;
     }
 
+    public void setHealthCheckPort(String healthCheckPort) {
+        this.healthCheckPort = healthCheckPort;
+    }
+
     public String getHealthCheckTimeOutSec() {
         return healthCheckTimeOutSec;
+    }
+
+    public void setHealthCheckTimeOutSec(String healthCheckTimeOutSec) {
+        this.healthCheckTimeOutSec = healthCheckTimeOutSec;
     }
 
     public String getHealthCheckUnhealthyThreshold() {
         return healthCheckUnhealthyThreshold;
     }
 
+    public void setHealthCheckUnhealthyThreshold(String healthCheckUnhealthyThreshold) {
+        this.healthCheckUnhealthyThreshold = healthCheckUnhealthyThreshold;
+    }
+
     public String getNetworkName() {
         return networkName;
+    }
+
+    public void setNetworkName(String networkName) {
+        this.networkName = networkName;
     }
 
     public String getOperationTimeout() {
         return operationTimeout;
     }
+
+    public void setOperationTimeout(String operationTimeout) {
+        this.operationTimeout = operationTimeout;
+    }
+
+    public void setCepStatsPublisherEnabled(boolean cepStatsPublisherEnabled) {
+        this.cepStatsPublisherEnabled = cepStatsPublisherEnabled;
+    }
+
+    public void setThriftReceiverIp(String thriftReceiverIp) {
+        this.thriftReceiverIp = thriftReceiverIp;
+    }
+
+    public void setThriftReceiverPort(String thriftReceiverPort) {
+        this.thriftReceiverPort = thriftReceiverPort;
+    }
+
 }

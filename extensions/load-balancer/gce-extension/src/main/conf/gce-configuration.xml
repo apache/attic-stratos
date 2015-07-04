@@ -24,7 +24,6 @@
         <thriftReceiverPort>7615</thriftReceiverPort>
     </cepStatsPublisher>
 
-    <namePrifix>lb</namePrifix>
     <iaasProperties>
         <projectName>MyFirstProject</projectName>
         <projectId>gold-access-96509</projectId>
@@ -43,5 +42,8 @@
     </healthCheckProperties>
 
     <operationTimeout>10000</operationTimeout>
+    <namePrefix>lb</namePrefix>
+
+    <log4jPropertiesFileName>log4j.properties</log4jPropertiesFileName>
 
 </gceConfiguration>

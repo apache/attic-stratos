@@ -23,20 +23,35 @@ package org.apache.stratos.gce.extension.config;
  * GCE extension constants.
  */
 public class Constants {
-    public static final String CEP_STATS_PUBLISHER_ENABLED = "cep.stats.publisher.enabled";
-    public static final String THRIFT_RECEIVER_IP = "thrift.receiver.ip";
-    public static final String THRIFT_RECEIVER_PORT = "thrift.receiver.port";
-    static final String NAME_PREFIX = "name.prefix";
-    public static final String PROJECT_NAME = "project.name";
-    public static final String PROJECT_ID = "project.id";
-    public static final String ZONE_NAME = "zone.name";
-    public static final String REGION_NAME = "region.name";
-    public static final String KEY_FILE_PATH = "key.file.path";
-    public static final String GCE_ACCOUNT_ID = "gce.account.id";
-    public static final String HEALTH_CHECK_REQUEST_PATH = "health.check.request.path";
-    public static final String HEALTH_CHECK_PORT = "health.check.port";
-    public static final String HEALTH_CHECK_TIME_OUT_SEC = "health.check.timeout.sec";
-    public static final String HEALTH_CHECK_UNHEALTHY_THRESHOLD = "health.check.unhealthy.threshold";
-    public static final String NETWORK_NAME = "network.name";
-    public static final String OPERATION_TIMEOUT = "operation.timeout";
+
+    public static final String CONFIG_FILE_NAME = "gce-configuration.xml";
+    public static final String CONFIG_FOLDER_NAME = "conf";
+
+    //CEP configuration
+    public static final String CEP_STATS_PUBLISHER_ELEMENT = "cepStatsPublisher";
+    public static final String CEP_STATS_PUBLISHER_ENABLED = "enable";
+    public static final String THRIFT_RECEIVER_IP = "thriftReceiverIp";
+    public static final String THRIFT_RECEIVER_PORT = "thriftReceiverPort";
+
+    //IaaS provider configuration
+    public static final String IAAS_PROPERTIES_ELEMENT = "iaasProperties";
+    public static final String PROJECT_NAME = "projectName";
+    public static final String PROJECT_ID = "projectId";
+    public static final String ZONE_NAME = "zoneName";
+    public static final String REGION_NAME = "regionName";
+    public static final String KEY_FILE_PATH = "keyFilePath";
+    public static final String GCE_ACCOUNT_ID = "gceAccountId";
+    public static final String NETWORK_NAME = "networkName";
+
+    //health check configuration
+    public static final String HEALTH_CHECK_PROPERTIES_ELEMENT = "healthCheckProperties";
+    public static final String HEALTH_CHECK_REQUEST_PATH = "healthCheckRequestPath";
+    public static final String HEALTH_CHECK_PORT = "healthCheckPort";
+    public static final String HEALTH_CHECK_TIME_OUT_SEC = "healthCheckTimeoutSec";
+    public static final String HEALTH_CHECK_UNHEALTHY_THRESHOLD = "healthCheckUnhealthyThreshold";
+
+    //other properties
+    public static final String OPERATION_TIMEOUT = "operationTimeout";
+    public static final String NAME_PREFIX = "namePrefix";
+    public static final String LOG4J_PROPERTIES_FILE_NAME = "log4jPropertiesFileName";
 }
