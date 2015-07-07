@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<eventFormatter name="Member_Load_Average" statistics="disable"
+  trace="disable" xmlns="http://wso2.org/carbon/eventformatter">
+  <from streamName="member_average_load_average_stats" version="1.0.0"/>
+  <mapping customMapping="disable" type="map"/>
+  <to eventAdaptorName="OutPutadaptorRDBMStoPublishHealthStat" eventAdaptorType="mysql">
+    <property name="table.name">Average_Member_Load_Average_</property>
+    <property name="execution.mode">insert</property>
+  </to>
+</eventFormatter>
