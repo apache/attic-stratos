@@ -96,6 +96,7 @@
              <property name="cluster_instance_id" type="String"/>
              <property name="network_partition_id" type="String"/>
              <property name="member_id" type="String" />
+             <property name="timeStamp" type="long" />
              <property name="partition_id" type="String" />
              <property name="health_description" type="String"/>
              <property name="value" type="double"/>
