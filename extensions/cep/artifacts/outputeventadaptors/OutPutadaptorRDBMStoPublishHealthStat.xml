@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<outputEventAdaptor name="OutPutadaptorRDBMStoPublishHealthStat" statistics="disable"
+  trace="disable" type="mysql" xmlns="http://wso2.org/carbon/eventadaptormanager">
+  <property name="datasource.name">DataSourcetoPublishHealthStatRDBMS</property>
+</outputEventAdaptor>
