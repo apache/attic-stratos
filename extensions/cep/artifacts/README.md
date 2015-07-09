@@ -21,13 +21,13 @@ MYSQL server as u prefer or you can copy paste this into master-datasource.xml
    <name>DataSourcetoPublishHealthStatRDBMS</name>
    <description>The datasource used for registry and user manager</description>
    <jndiConfig>
-      <name>jdbc/DataSourcetoPublishHealthStatRDBMS</name>
+      <name>jdbc/[Your DB:DataSourcetoPublishHealthStatRDBMS]</name>
    </jndiConfig>
    <definition type="RDBMS">
     <configuration>
-      <url>jdbc:mysql://localhost:3306/DataSourcetoPublishHealthStatRDBMS</url>
-      <username>root</username>
-      <password>root</password>
+      <url>jdbc:mysql://localhost:3306/[Your DB:DataSourcetoPublishHealthStatRDBMS]</url>
+      <username>wso2carbon</username>
+      <password>wso2carbon</password>
       <driverClassName>com.mysql.jdbc.Driver</driverClassName>
       <maxActive>50</maxActive>
       <maxWait>60000</maxWait>
@@ -56,8 +56,8 @@ In here you can get the 3 formatters artifacts/eventformatters/
 
 Names,
 
-Average_Member_Load_Average
-Average_Member_Memory_Consumption
-Requests_In_Flight Formatter
+MemberAverageLoadAverageEventFormatterHealthStat
+MemberAverageMemoryAverageEventFormatterHealthStat
+FlightRequestEventFormatterHealthStat
 
 depoly them in the previously mentioned directory.
