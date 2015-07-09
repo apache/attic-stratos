@@ -3,26 +3,28 @@
                 statistics="disable" trace="disable" xmlns="http://wso2.org/carbon/eventformatter">
 <from streamName="in_flight_requests" version="1.0.0"/>
 <mapping customMapping="enable" type="map">
-  <property>
-    <from name="in_flight_request_count"/>
-    <to name="FLIGHT_REQUEST_COUNT"/>
-  </property>
-  <property>
-    <from name="network_partition_id"/>
-    <to name="IN_FLIGHT_REQUEST_COUNT"/>
-  </property>
+
   <property>
     <from name="timeStamp"/>
     <to name="TIMESTAMP"/>
+  </property>
+  <property>
+    <from name="cluster_id"/>
+    <to name="CLUSTER_ID"/>
   </property>
   <property>
     <from name="cluster_instance_id"/>
     <to name="CLUSTER_INSTANCE_ID"/>
   </property>
   <property>
-    <from name="cluster_id"/>
-    <to name="CLUSTER_ID"/>
+    <from name="network_partition_id"/>
+    <to name="IN_FLIGHT_REQUEST_COUNT"/>
   </property>
+  <property>
+    <from name="in_flight_request_count"/>
+    <to name="FLIGHT_REQUEST_COUNT"/>
+  </property>
+
 </mapping>
 <to eventAdaptorName="OutPutadaptorRDBMStoPublishHealthStat" eventAdaptorType="mysql">
   <property name="database.name">DataSourcetoPublishHealthStatRDBMS</property>
