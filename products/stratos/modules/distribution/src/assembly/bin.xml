@@ -620,6 +620,15 @@
             <filtered>true</filtered>
             <fileMode>600</fileMode>
         </file>
+
+        <!-- Health Statistics -->
+        <file>
+            <source>src/main/conf/healthstat-datasources.xml</source>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf/datasources</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>600</fileMode>
+        </file>
+
         <!--iindentity.xml and application-authentication.xml for oAuth feature -->
         <file>
             <source>src/main/conf/identity.xml</source>
