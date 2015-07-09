@@ -140,6 +140,11 @@ public class AutoscalerServiceClient {
         return stub.getApplicationPolicy(applicationPolicyId);
     }
 
+    public ApplicationPolicy getApplicationPolicyByTenant(String applicationPolicyId,
+                                                           int tenantId) throws RemoteException {
+        return stub.getApplicationPolicyByTenant(applicationPolicyId, tenantId);
+    }
+
     public ApplicationPolicy[] getApplicationPolicies() throws RemoteException {
         return stub.getApplicationPolicies();
     }

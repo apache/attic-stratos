@@ -434,6 +434,23 @@ public class PolicyManager {
     }
 
     /**
+     * Retruns an ApplicationPolicy of a given application
+     *
+     * @param applicationPolicyId Application policy Id
+     * @return
+     */
+    public ApplicationPolicy getApplicationPolicyByTenantId(String applicationPolicyId, int tenantId) {
+        ApplicationPolicy applicationPolicy = null;
+        for (ApplicationPolicy applicationPolicy1 : getApplicationPolicies()) {
+            if (applicationPolicy1.getTenantId() == tenantId && applicationPolicy1.getId().equals
+                    (applicationPolicyId)) {
+                applicationPolicy = applicationPolicy1;
+            }
+        }
+        return applicationPolicy;
+    }
+
+    /**
      * Returns the application policy to which the specified id is mapped or null
      *
      * @param id Id of the deployment policy

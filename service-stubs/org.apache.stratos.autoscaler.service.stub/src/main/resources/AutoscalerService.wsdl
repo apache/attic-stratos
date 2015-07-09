@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:ax29="http://deployment.policy.pojo.autoscaler.stratos.apache.org/xsd" xmlns:ns="http://impl.services.autoscaler.stratos.apache.org" xmlns:ax27="http://exception.autoscaler.stratos.apache.org/xsd" xmlns:ax25="http://application.exception.autoscaler.stratos.apache.org/xsd" xmlns:ax21="http://pojo.applications.autoscaler.stratos.apache.org/xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:ax216="http://autoscale.policy.pojo.autoscaler.stratos.apache.org/xsd" xmlns:ax22="http://common.stratos.apache.org/xsd" xmlns:ax219="http://policy.exception.autoscaler.stratos.apache.org/xsd" xmlns:ax214="http://pojo.autoscaler.stratos.apache.org/xsd" xmlns:ns1="http://org.apache.axis2/xsd" xmlns:ax222="http://rmi.java/xsd" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:ax210="http://partition.common.stratos.apache.org/xsd" xmlns:ax223="http://io.java/xsd" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" targetNamespace="http://impl.services.autoscaler.stratos.apache.org">
+<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:ax29="http://pojo.autoscaler.stratos.apache.org/xsd" xmlns:ns="http://impl.services.autoscaler.stratos.apache.org" xmlns:ax27="http://exception.autoscaler.stratos.apache.org/xsd" xmlns:ax25="http://application.exception.autoscaler.stratos.apache.org/xsd" xmlns:ax21="http://pojo.applications.autoscaler.stratos.apache.org/xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:ax216="http://autoscale.policy.pojo.autoscaler.stratos.apache.org/xsd" xmlns:ax22="http://common.stratos.apache.org/xsd" xmlns:ax219="http://policy.exception.autoscaler.stratos.apache.org/xsd" xmlns:ns1="http://org.apache.axis2/xsd" xmlns:ax212="http://partition.common.stratos.apache.org/xsd" xmlns:ax222="http://rmi.java/xsd" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:ax223="http://io.java/xsd" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:ax211="http://deployment.policy.pojo.autoscaler.stratos.apache.org/xsd" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" targetNamespace="http://impl.services.autoscaler.stratos.apache.org">
     <wsdl:types>
         <xs:schema xmlns:ax224="http://io.java/xsd" attributeFormDefault="qualified" elementFormDefault="qualified" targetNamespace="http://rmi.java/xsd">
             <xs:import namespace="http://io.java/xsd"/>
@@ -149,8 +149,8 @@
             <xs:complexType name="ServiceGroup">
                 <xs:sequence>
                     <xs:element maxOccurs="unbounded" minOccurs="0" name="cartridges" nillable="true" type="xs:string"/>
-                    <xs:element minOccurs="0" name="dependencies" nillable="true" type="ax214:Dependencies"/>
-                    <xs:element maxOccurs="unbounded" minOccurs="0" name="groups" nillable="true" type="ax214:ServiceGroup"/>
+                    <xs:element minOccurs="0" name="dependencies" nillable="true" type="ax29:Dependencies"/>
+                    <xs:element maxOccurs="unbounded" minOccurs="0" name="groups" nillable="true" type="ax29:ServiceGroup"/>
                     <xs:element minOccurs="0" name="name" nillable="true" type="xs:string"/>
                     <xs:element minOccurs="0" name="tenantId" type="xs:int"/>
                     <xs:element minOccurs="0" name="uuid" nillable="true" type="xs:string"/>
@@ -164,12 +164,12 @@
                 </xs:sequence>
             </xs:complexType>
         </xs:schema>
-        <xs:schema xmlns:ax28="http://exception.autoscaler.stratos.apache.org/xsd" xmlns:ax26="http://application.exception.autoscaler.stratos.apache.org/xsd" xmlns:ax24="http://pojo.applications.autoscaler.stratos.apache.org/xsd" xmlns:ax217="http://autoscale.policy.pojo.autoscaler.stratos.apache.org/xsd" xmlns:ax218="http://common.stratos.apache.org/xsd" xmlns:ax215="http://pojo.autoscaler.stratos.apache.org/xsd" xmlns:ax220="http://policy.exception.autoscaler.stratos.apache.org/xsd" xmlns:ax213="http://deployment.policy.pojo.autoscaler.stratos.apache.org/xsd" xmlns:ax225="http://rmi.java/xsd" attributeFormDefault="qualified" elementFormDefault="qualified" targetNamespace="http://impl.services.autoscaler.stratos.apache.org">
+        <xs:schema xmlns:ax28="http://exception.autoscaler.stratos.apache.org/xsd" xmlns:ax26="http://application.exception.autoscaler.stratos.apache.org/xsd" xmlns:ax24="http://pojo.applications.autoscaler.stratos.apache.org/xsd" xmlns:ax217="http://autoscale.policy.pojo.autoscaler.stratos.apache.org/xsd" xmlns:ax218="http://common.stratos.apache.org/xsd" xmlns:ax215="http://deployment.policy.pojo.autoscaler.stratos.apache.org/xsd" xmlns:ax220="http://policy.exception.autoscaler.stratos.apache.org/xsd" xmlns:ax210="http://pojo.autoscaler.stratos.apache.org/xsd" xmlns:ax225="http://rmi.java/xsd" attributeFormDefault="qualified" elementFormDefault="qualified" targetNamespace="http://impl.services.autoscaler.stratos.apache.org">
             <xs:import namespace="http://pojo.applications.autoscaler.stratos.apache.org/xsd"/>
             <xs:import namespace="http://application.exception.autoscaler.stratos.apache.org/xsd"/>
             <xs:import namespace="http://exception.autoscaler.stratos.apache.org/xsd"/>
-            <xs:import namespace="http://deployment.policy.pojo.autoscaler.stratos.apache.org/xsd"/>
             <xs:import namespace="http://pojo.autoscaler.stratos.apache.org/xsd"/>
+            <xs:import namespace="http://deployment.policy.pojo.autoscaler.stratos.apache.org/xsd"/>
             <xs:import namespace="http://autoscale.policy.pojo.autoscaler.stratos.apache.org/xsd"/>
             <xs:import namespace="http://common.stratos.apache.org/xsd"/>
             <xs:import namespace="http://policy.exception.autoscaler.stratos.apache.org/xsd"/>
@@ -221,6 +221,20 @@
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
+            <xs:element name="getServiceGroup">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="uuid" nillable="true" type="xs:string"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="getServiceGroupResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="return" nillable="true" type="ax29:ServiceGroup"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
             <xs:element name="getDeploymentPolicy">
                 <xs:complexType>
                     <xs:sequence>
@@ -231,7 +245,7 @@
             <xs:element name="getDeploymentPolicyResponse">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element minOccurs="0" name="return" nillable="true" type="ax29:DeploymentPolicy"/>
+                        <xs:element minOccurs="0" name="return" nillable="true" type="ax215:DeploymentPolicy"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -246,20 +260,6 @@
                 <xs:complexType>
                     <xs:sequence>
                         <xs:element minOccurs="0" name="return" nillable="true" type="ax24:ApplicationContext"/>
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
-            <xs:element name="getServiceGroup">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element minOccurs="0" name="uuid" nillable="true" type="xs:string"/>
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
-            <xs:element name="getServiceGroupResponse">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element minOccurs="0" name="return" nillable="true" type="ax214:ServiceGroup"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -493,7 +493,7 @@
             <xs:element name="addServiceGroup">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element minOccurs="0" name="servicegroup" nillable="true" type="ax214:ServiceGroup"/>
+                        <xs:element minOccurs="0" name="servicegroup" nillable="true" type="ax29:ServiceGroup"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -507,7 +507,7 @@
             <xs:element name="updateServiceGroup">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element minOccurs="0" name="cartridgeGroup" nillable="true" type="ax214:ServiceGroup"/>
+                        <xs:element minOccurs="0" name="cartridgeGroup" nillable="true" type="ax29:ServiceGroup"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -543,7 +543,7 @@
             <xs:element name="getServiceGroupByTenantResponse">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element minOccurs="0" name="return" nillable="true" type="ax214:ServiceGroup"/>
+                        <xs:element minOccurs="0" name="return" nillable="true" type="ax29:ServiceGroup"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -577,7 +577,7 @@
             <xs:element name="getServiceGroupsResponse">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element maxOccurs="unbounded" minOccurs="0" name="return" nillable="true" type="ax214:ServiceGroup"/>
+                        <xs:element maxOccurs="unbounded" minOccurs="0" name="return" nillable="true" type="ax29:ServiceGroup"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -647,7 +647,7 @@
             <xs:element name="addApplicationPolicy">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element minOccurs="0" name="applicationPolicy" nillable="true" type="ax29:ApplicationPolicy"/>
+                        <xs:element minOccurs="0" name="applicationPolicy" nillable="true" type="ax215:ApplicationPolicy"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -655,6 +655,21 @@
                 <xs:complexType>
                     <xs:sequence>
                         <xs:element minOccurs="0" name="return" type="xs:boolean"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="getApplicationPolicyByTenant">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="applicationPolicyId" nillable="true" type="xs:string"/>
+                        <xs:element minOccurs="0" name="tenantId" type="xs:int"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="getApplicationPolicyByTenantResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="return" nillable="true" type="ax215:ApplicationPolicy"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -682,7 +697,7 @@
             <xs:element name="updateApplicationPolicy">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element minOccurs="0" name="applicationPolicy" nillable="true" type="ax29:ApplicationPolicy"/>
+                        <xs:element minOccurs="0" name="applicationPolicy" nillable="true" type="ax215:ApplicationPolicy"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -701,7 +716,7 @@
             <xs:element name="getApplicationPoliciesResponse">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element maxOccurs="unbounded" minOccurs="0" name="return" nillable="true" type="ax29:ApplicationPolicy"/>
+                        <xs:element maxOccurs="unbounded" minOccurs="0" name="return" nillable="true" type="ax215:ApplicationPolicy"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -722,7 +737,7 @@
             <xs:element name="addDeployementPolicy">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element minOccurs="0" name="deploymentPolicy" nillable="true" type="ax29:DeploymentPolicy"/>
+                        <xs:element minOccurs="0" name="deploymentPolicy" nillable="true" type="ax215:DeploymentPolicy"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -750,7 +765,7 @@
             <xs:element name="updateDeploymentPolicy">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element minOccurs="0" name="deploymentPolicy" nillable="true" type="ax29:DeploymentPolicy"/>
+                        <xs:element minOccurs="0" name="deploymentPolicy" nillable="true" type="ax215:DeploymentPolicy"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -786,7 +801,7 @@
             <xs:element name="getDeploymentPolicyForTenantResponse">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element minOccurs="0" name="return" nillable="true" type="ax29:DeploymentPolicy"/>
+                        <xs:element minOccurs="0" name="return" nillable="true" type="ax215:DeploymentPolicy"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -798,7 +813,7 @@
             <xs:element name="getDeploymentPoliciesResponse">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element maxOccurs="unbounded" minOccurs="0" name="return" nillable="true" type="ax29:DeploymentPolicy"/>
+                        <xs:element maxOccurs="unbounded" minOccurs="0" name="return" nillable="true" type="ax215:DeploymentPolicy"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -812,18 +827,18 @@
             <xs:element name="getApplicationPolicyResponse">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element minOccurs="0" name="return" nillable="true" type="ax29:ApplicationPolicy"/>
+                        <xs:element minOccurs="0" name="return" nillable="true" type="ax215:ApplicationPolicy"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
         </xs:schema>
-        <xs:schema xmlns:ax212="http://partition.common.stratos.apache.org/xsd" xmlns:ax226="http://common.stratos.apache.org/xsd" attributeFormDefault="qualified" elementFormDefault="qualified" targetNamespace="http://deployment.policy.pojo.autoscaler.stratos.apache.org/xsd">
+        <xs:schema xmlns:ax214="http://partition.common.stratos.apache.org/xsd" xmlns:ax226="http://common.stratos.apache.org/xsd" attributeFormDefault="qualified" elementFormDefault="qualified" targetNamespace="http://deployment.policy.pojo.autoscaler.stratos.apache.org/xsd">
             <xs:import namespace="http://partition.common.stratos.apache.org/xsd"/>
             <xs:import namespace="http://common.stratos.apache.org/xsd"/>
             <xs:complexType name="DeploymentPolicy">
                 <xs:sequence>
                     <xs:element minOccurs="0" name="id" nillable="true" type="xs:string"/>
-                    <xs:element maxOccurs="unbounded" minOccurs="0" name="networkPartitionRefs" nillable="true" type="ax212:NetworkPartitionRef"/>
+                    <xs:element maxOccurs="unbounded" minOccurs="0" name="networkPartitionRefs" nillable="true" type="ax214:NetworkPartitionRef"/>
                     <xs:element minOccurs="0" name="tenantId" type="xs:int"/>
                     <xs:element minOccurs="0" name="uuid" nillable="true" type="xs:string"/>
                 </xs:sequence>
@@ -841,13 +856,13 @@
                 </xs:sequence>
             </xs:complexType>
         </xs:schema>
-        <xs:schema xmlns:ax211="http://common.stratos.apache.org/xsd" attributeFormDefault="qualified" elementFormDefault="qualified" targetNamespace="http://partition.common.stratos.apache.org/xsd">
+        <xs:schema xmlns:ax213="http://common.stratos.apache.org/xsd" attributeFormDefault="qualified" elementFormDefault="qualified" targetNamespace="http://partition.common.stratos.apache.org/xsd">
             <xs:import namespace="http://common.stratos.apache.org/xsd"/>
             <xs:complexType name="NetworkPartitionRef">
                 <xs:sequence>
                     <xs:element minOccurs="0" name="id" nillable="true" type="xs:string"/>
                     <xs:element minOccurs="0" name="partitionAlgo" nillable="true" type="xs:string"/>
-                    <xs:element maxOccurs="unbounded" minOccurs="0" name="partitionRefs" nillable="true" type="ax210:PartitionRef"/>
+                    <xs:element maxOccurs="unbounded" minOccurs="0" name="partitionRefs" nillable="true" type="ax212:PartitionRef"/>
                     <xs:element minOccurs="0" name="uuid" nillable="true" type="xs:string"/>
                 </xs:sequence>
             </xs:complexType>
@@ -1136,6 +1151,12 @@
     <wsdl:message name="undeployServiceGroupResponse">
         <wsdl:part name="parameters" element="ns:undeployServiceGroupResponse"/>
     </wsdl:message>
+    <wsdl:message name="getApplicationPolicyByTenantRequest">
+        <wsdl:part name="parameters" element="ns:getApplicationPolicyByTenant"/>
+    </wsdl:message>
+    <wsdl:message name="getApplicationPolicyByTenantResponse">
+        <wsdl:part name="parameters" element="ns:getApplicationPolicyByTenantResponse"/>
+    </wsdl:message>
     <wsdl:message name="getDeploymentPolicyForTenantRequest">
         <wsdl:part name="parameters" element="ns:getDeploymentPolicyForTenant"/>
     </wsdl:message>
@@ -1350,6 +1371,10 @@
             <wsdl:input message="ns:undeployServiceGroupRequest" wsaw:Action="urn:undeployServiceGroup"/>
             <wsdl:output message="ns:undeployServiceGroupResponse" wsaw:Action="urn:undeployServiceGroupResponse"/>
             <wsdl:fault message="ns:AutoscalerServiceAutoScalerException" name="AutoscalerServiceAutoScalerException" wsaw:Action="urn:undeployServiceGroupAutoscalerServiceAutoScalerException"/>
+        </wsdl:operation>
+        <wsdl:operation name="getApplicationPolicyByTenant">
+            <wsdl:input message="ns:getApplicationPolicyByTenantRequest" wsaw:Action="urn:getApplicationPolicyByTenant"/>
+            <wsdl:output message="ns:getApplicationPolicyByTenantResponse" wsaw:Action="urn:getApplicationPolicyByTenantResponse"/>
         </wsdl:operation>
         <wsdl:operation name="getDeploymentPolicyForTenant">
             <wsdl:input message="ns:getDeploymentPolicyForTenantRequest" wsaw:Action="urn:getDeploymentPolicyForTenant"/>
@@ -1683,6 +1708,15 @@
             <wsdl:fault name="AutoscalerServiceAutoScalerException">
                 <soap:fault use="literal" name="AutoscalerServiceAutoScalerException"/>
             </wsdl:fault>
+        </wsdl:operation>
+        <wsdl:operation name="getApplicationPolicyByTenant">
+            <soap:operation soapAction="urn:getApplicationPolicyByTenant" style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
         </wsdl:operation>
         <wsdl:operation name="getAutoscalingPolicyForTenant">
             <soap:operation soapAction="urn:getAutoscalingPolicyForTenant" style="document"/>
@@ -2128,6 +2162,15 @@
                 <soap12:fault use="literal" name="AutoscalerServiceAutoScalerException"/>
             </wsdl:fault>
         </wsdl:operation>
+        <wsdl:operation name="getApplicationPolicyByTenant">
+            <soap12:operation soapAction="urn:getApplicationPolicyByTenant" style="document"/>
+            <wsdl:input>
+                <soap12:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap12:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
         <wsdl:operation name="getAutoscalingPolicyForTenant">
             <soap12:operation soapAction="urn:getAutoscalingPolicyForTenant" style="document"/>
             <wsdl:input>
@@ -2511,6 +2554,15 @@
         </wsdl:operation>
         <wsdl:operation name="undeployServiceGroup">
             <http:operation location="undeployServiceGroup"/>
+            <wsdl:input>
+                <mime:content type="text/xml" part="parameters"/>
+            </wsdl:input>
+            <wsdl:output>
+                <mime:content type="text/xml" part="parameters"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="getApplicationPolicyByTenant">
+            <http:operation location="getApplicationPolicyByTenant"/>
             <wsdl:input>
                 <mime:content type="text/xml" part="parameters"/>
             </wsdl:input>

@@ -116,7 +116,7 @@ public interface AutoscalerService {
     public ApplicationContext getApplication(String applicationId);
 
     /**
-     * Get an application
+     * Get an application by tenant id
      *
      * @param applicationId
      * @param tenantId
@@ -180,6 +180,14 @@ public interface AutoscalerService {
      * @return {@link ApplicationPolicy} used by the given application
      */
     public ApplicationPolicy getApplicationPolicy(String applicationPolicyId);
+
+    /**
+     * Get application policy by application id and tenant id
+     *
+     * @param applicationPolicyId the application policy id
+     * @return {@link ApplicationPolicy} used by the given application
+     */
+    public ApplicationPolicy getApplicationPolicyByTenant(String applicationPolicyId, int tenantId);
 
     /**
      * Remove application policy

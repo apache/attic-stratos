@@ -949,6 +949,11 @@ public class AutoscalerServiceImpl implements AutoscalerService {
     }
 
     @Override
+    public ApplicationPolicy getApplicationPolicyByTenant(String applicationPolicyId, int tenantId) {
+        return PolicyManager.getInstance().getApplicationPolicy(applicationPolicyId);
+    }
+
+    @Override
     public boolean removeApplicationPolicy(String applicationPolicyId) throws InvalidPolicyException, UnremovablePolicyException {
 
         if (removableApplicationPolicy(applicationPolicyId)) {

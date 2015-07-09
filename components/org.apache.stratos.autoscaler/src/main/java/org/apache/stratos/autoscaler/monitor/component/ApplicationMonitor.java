@@ -563,7 +563,7 @@ public class ApplicationMonitor extends ParentComponentMonitor {
         List<String> instanceIdList = new ArrayList<String>();
 
         ApplicationPolicy applicationPolicy = PolicyManager.getInstance().
-                getApplicationPolicy(application.getApplicationPolicyId());
+                getApplicationPolicyByTenantId(application.getApplicationPolicyId(), application.getTenantId());
         if (applicationPolicy == null) {
             String msg = String.format("Application policy not found in registry or in-memory " +
                     "[application-id] %s [application-policy-id] %s ", appId, application.getApplicationPolicyId());
