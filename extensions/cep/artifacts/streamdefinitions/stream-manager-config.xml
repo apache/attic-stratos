@@ -32,6 +32,7 @@
          <payloadData>
              <property name="cluster_id" type="String"/>
              <property name="cluster_instance_id" type="String"/>
+             <property name="timeStamp" type="long" />
              <property name="network_partition_id" type="String"/>
              <property name="in_flight_request_count" type="double"/>
          </payloadData>
@@ -221,6 +222,7 @@
          <payloadData>
              <property name="member_id" type="String" />
              <property name="cluster_id" type="String" />
+             <property name="timeStamp" type="long"/>
              <property name="cluster_instance_id" type="String"/>
              <property name="network_partition_id" type="String"/>
              <property name="member_average_load_average" type="double"/>
@@ -237,6 +239,7 @@
          <payloadData>
              <property name="member_id" type="String"/>
              <property name="cluster_id" type="String"/>
+             <property name="timeStamp" type="long" />
              <property name="cluster_instance_id" type="String"/>
              <property name="network_partition_id" type="String"/>
              <property name="member_average_memory_consumption" type="double"/>
