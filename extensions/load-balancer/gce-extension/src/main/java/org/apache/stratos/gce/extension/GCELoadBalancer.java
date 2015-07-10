@@ -58,7 +58,6 @@ public class GCELoadBalancer implements LoadBalancer {
 
     }
 
-
     /**
      * Listen to latest topology and update load balancer configuration
      *
