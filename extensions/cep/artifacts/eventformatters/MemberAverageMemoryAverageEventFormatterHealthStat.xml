@@ -35,6 +35,14 @@ statistics="disable" trace="disable" xmlns="http://wso2.org/carbon/eventformatte
     <to name="CLUSTER_INSTANCE_ID"/>
   </property>
   <property>
+    <from name="member_id"/>
+    <to name="MEMBER_ID"/>
+  </property>
+  <property>
+    <from name="member_average_memory_consumption"/>
+    <to name="MEMBER_AVERAGE_MEMORY_CONSUMPTION"/>
+  </property>
+  <property>
     <from name="network_partition_id"/>
     <to name="NETWORK_PARTIOTION_ID"/>
   </property>

@@ -39,8 +39,13 @@
   </property>
   <property>
     <from name="member_average_load_average"/>
-    <to name="MEMBER_AVERAGE_MEMORY_CONSUMPTION"/>
+    <to name="MEMBER_AVERAGE_LOAD_AVERAGE"/>
   </property>
+  <property>
+    <from name="member_id"/>
+    <to name="MEMBER_ID"/>
+  </property>
+
 </mapping>
 <to eventAdaptorName="OutPutadaptorRDBMStoPublishHealthStat" eventAdaptorType="mysql">
   <property name="database.name">DataSourcetoPublishHealthStatRDBMS</property>

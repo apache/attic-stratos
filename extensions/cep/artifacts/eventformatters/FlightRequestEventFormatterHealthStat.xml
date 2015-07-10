@@ -36,7 +36,7 @@
   </property>
   <property>
     <from name="network_partition_id"/>
-    <to name="IN_FLIGHT_REQUEST_COUNT"/>
+    <to name="NETWORK_PARTIOTION_ID"/>
   </property>
   <property>
     <from name="in_flight_request_count"/>
