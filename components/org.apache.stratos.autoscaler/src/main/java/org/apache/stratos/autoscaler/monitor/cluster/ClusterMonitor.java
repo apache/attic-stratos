@@ -30,6 +30,7 @@ import org.apache.stratos.autoscaler.context.cluster.ClusterInstanceContext;
 import org.apache.stratos.autoscaler.context.member.MemberStatsContext;
 import org.apache.stratos.autoscaler.context.partition.ClusterLevelPartitionContext;
 import org.apache.stratos.autoscaler.context.partition.network.ClusterLevelNetworkPartitionContext;
+import org.apache.stratos.autoscaler.context.partition.network.NetworkPartitionContext;
 import org.apache.stratos.autoscaler.event.publisher.ClusterStatusEventPublisher;
 import org.apache.stratos.autoscaler.event.publisher.InstanceNotificationPublisher;
 import org.apache.stratos.autoscaler.exception.InvalidArgumentException;
@@ -466,6 +467,25 @@ public class ClusterMonitor extends Monitor {
                         executorService.execute(monitoringRunnable);
                     }
 
+                    if (instance.getStatus() == ClusterStatus.Terminating) {
+                        //Move active members to Termination pending
+                        if (instanceContext.getActiveMembers() > 0) {
+                            //Sending cluster cleanup event
+                            InstanceNotificationPublisher.getInstance().
+                                    sendInstanceCleanupEventForCluster(clusterId,
+                                            instance.getInstanceId());
+                            moveMembersToTerminatingPending(networkPartitionContext.getId(),
+                                    instance.getInstanceId());
+                        }
+
+                        if (instanceContext.getPendingMemberCount() > 0) {
+                            //Terminating the pending members
+                            terminatePendingMembers(networkPartitionContext.getId(),
+                                    instance.getInstanceId());
+                        }
+
+                    }
+
                     for (final ClusterLevelPartitionContext partitionContext : instanceContext.getPartitionCtxts()) {
                         Runnable monitoringRunnable = new Runnable() {
                             @Override
@@ -520,7 +540,9 @@ public class ClusterMonitor extends Monitor {
     @Override
     public void destroy() {
         //shutting down the scheduler
-        schedulerFuture.cancel(true);
+        if (schedulerFuture != null) {
+            schedulerFuture.cancel(true);
+        }
 
         if (log.isDebugEnabled()) {
             log.debug("ClusterMonitor task has been stopped " + this.toString());
@@ -543,17 +565,26 @@ public class ClusterMonitor extends Monitor {
     }
 
     @Override
-    public void onParentStatusEvent(MonitorStatusEvent statusEvent) {
-        String instanceId = statusEvent.getInstanceId();
-        // send the ClusterTerminating event
-        if (statusEvent.getStatus() == GroupStatus.Terminating || statusEvent.getStatus() ==
-                ApplicationStatus.Terminating) {
-            if (log.isInfoEnabled()) {
-                log.info("Publishing Cluster terminating event for [application] " + appId +
-                        " [cluster] " + this.getClusterId() + " [instance] " + instanceId);
+    public void onParentStatusEvent(final MonitorStatusEvent statusEvent) {
+        Runnable monitoringRunnable = new Runnable() {
+            @Override
+            public void run() {
+                String instanceId = statusEvent.getInstanceId();
+                // send the ClusterTerminating event
+                if (statusEvent.getStatus() == GroupStatus.Terminating || statusEvent.getStatus() ==
+                        ApplicationStatus.Terminating) {
+                    if (log.isInfoEnabled()) {
+                        log.info("Publishing Cluster terminating event for [application] " + appId +
+                                " [cluster] " + getClusterId() + " [instance] " + instanceId);
+                    }
+                    ClusterStatusEventPublisher.sendClusterStatusClusterTerminatingEvent(getAppId(),
+                            getServiceId(), getClusterId(), instanceId);
+                }
             }
-            ClusterStatusEventPublisher.sendClusterStatusClusterTerminatingEvent(getAppId(), getServiceId(), getClusterId(), instanceId);
-        }
+
+        };
+        executorService.execute(monitoringRunnable);
+
     }
 
     @Override
@@ -1343,6 +1374,114 @@ public class ClusterMonitor extends Monitor {
         memberTerminator.start();
     }
 
+    public void terminatePendingMembers(final String instanceId, final String networkPartitionId) {
+        final ClusterMonitor monitor = this;
+        Thread memberTerminator = new Thread(new Runnable() {
+            public void run() {
+
+                NetworkPartitionContext networkPartitionContext =
+                        getAllNetworkPartitionCtxts().get(networkPartitionId);
+
+                ClusterInstanceContext instanceContext =
+                        (ClusterInstanceContext) networkPartitionContext.
+                                getInstanceContext(instanceId);
+                if (instanceContext != null) {
+                    boolean allMovedToObsolete = true;
+                    for (ClusterLevelPartitionContext partitionContext : instanceContext.getPartitionCtxts()) {
+                        if (log.isInfoEnabled()) {
+                            log.info("Starting to terminate all members in cluster [" + getClusterId() + "] " +
+                                    "Network Partition [" + instanceContext.getNetworkPartitionId() + "], Partition [" +
+                                    partitionContext.getPartitionId() + "]");
+                        }
+
+                        if (AutoscalerContext.getInstance().getAppMonitor(getAppId()).isForce()) {
+                            log.info(String.format("Terminating all remaining members of partition [partition-id] %s [application-id] %s", partitionContext.getPartitionId(), getAppId()));
+                            partitionContext.terminateAllRemainingInstances();
+                        }
+                        //Need to terminate pending members
+                        Iterator<MemberContext> pendingIterator = partitionContext.getPendingMembers().listIterator();
+                        List<String> pendingMemberIdList = new ArrayList<String>();
+                        while (pendingIterator.hasNext()) {
+                            MemberContext pendingMemberContext = pendingIterator.next();
+                            pendingMemberIdList.add(pendingMemberContext.getMemberId());
+
+                        }
+                        for (String memberId : pendingMemberIdList) {
+                            // pending members
+                            if (log.isDebugEnabled()) {
+                                log.debug("Moving pending member [member id] " + memberId + " to obsolete list");
+                            }
+                            partitionContext.movePendingMemberToObsoleteMembers(memberId);
+                        }
+
+                        allMovedToObsolete = partitionContext.getTotalMemberCount() == 0;
+                    }
+
+                    if (allMovedToObsolete) {
+                        monitor.monitor();
+                    }
+                }
+
+            }
+        }, "Member Terminator - [cluster id] " + getClusterId());
+
+        memberTerminator.start();
+    }
+
+    public void moveMembersToTerminatingPending(final String instanceId, final String networkPartitionId) {
+        final ClusterMonitor monitor = this;
+        Thread memberTerminator = new Thread(new Runnable() {
+            public void run() {
+
+                NetworkPartitionContext networkPartitionContext =
+                        getAllNetworkPartitionCtxts().get(networkPartitionId);
+
+                ClusterInstanceContext instanceContext =
+                        (ClusterInstanceContext) networkPartitionContext.
+                                getInstanceContext(instanceId);
+                if (instanceContext != null) {
+                    for (ClusterLevelPartitionContext partitionContext : instanceContext.getPartitionCtxts()) {
+                        if (log.isInfoEnabled()) {
+                            log.info("Starting to move all members in cluster [" + getClusterId() + "] " +
+                                    "Network Partition [" + instanceContext.getNetworkPartitionId() + "], Partition [" +
+                                    partitionContext.getPartitionId() + "] to termination pending list");
+                        }
+
+                        //Need to terminate pending members
+                        Iterator<MemberContext> activeIterator = partitionContext.getActiveMembers().listIterator();
+                        List<String> activeMemberIdList = new ArrayList<String>();
+                        while (activeIterator.hasNext()) {
+                            MemberContext activeMemberContext = activeIterator.next();
+                            activeMemberIdList.add(activeMemberContext.getMemberId());
+
+                        }
+                        for (String memberId : activeMemberIdList) {
+                            // pending members
+                            if (log.isDebugEnabled()) {
+                                log.debug("Moving pending member [member id] " + memberId + " to obsolete list");
+                            }
+                            partitionContext.moveActiveMemberToTerminationPendingMembers(memberId);
+                            if (partitionContext.getMemberStatsContext(memberId) != null) {
+                                partitionContext.removeMemberStatsContext(memberId);
+                            }
+                            if (log.isDebugEnabled()) {
+                                log.debug(String.format("Member has been moved as pending termination, " +
+                                        "and member stat context is removed: "
+                                        + "[member] %s", memberId));
+                            }
+                        }
+
+                    }
+                }
+
+
+            }
+        }, "Active to Terminating pending adder - [cluster id] " + getClusterId());
+
+        memberTerminator.start();
+    }
+
+
     public Map<String, ClusterLevelNetworkPartitionContext> getAllNetworkPartitionCtxts() {
         return (this.clusterContext).getNetworkPartitionCtxts();
     }
@@ -1461,52 +1600,6 @@ public class ClusterMonitor extends Monitor {
 
         }
 
-    }
-
-    /**
-     * Move all the members of the cluster instance to termiantion pending
-     *
-     * @param instanceId
-     */
-    public void moveMembersFromActiveToPendingTermination(String instanceId) {
-
-        //TODO take read lock for network partition context
-        //FIXME to iterate properly
-        for (ClusterLevelNetworkPartitionContext networkPartitionContext :
-                (this.clusterContext).getNetworkPartitionCtxts().values()) {
-            ClusterInstanceContext clusterInstanceContext =
-                    (ClusterInstanceContext) networkPartitionContext.getInstanceContext(instanceId);
-            if (clusterInstanceContext != null) {
-                for (ClusterLevelPartitionContext partitionContext : clusterInstanceContext.getPartitionCtxts()) {
-                    List<String> members = new ArrayList<String>();
-
-                    Iterator<MemberContext> iterator = partitionContext.getActiveMembers().listIterator();
-                    while (iterator.hasNext()) {
-                        MemberContext activeMember = iterator.next();
-                        members.add(activeMember.getMemberId());
-                    }
-
-                    for (String memberId : members) {
-                        partitionContext.moveActiveMemberToTerminationPendingMembers(
-                                memberId);
-                    }
-                    List<String> pendingMembers = new ArrayList<String>();
-
-                    Iterator<MemberContext> pendingIterator = partitionContext.getPendingMembers().listIterator();
-                    while (pendingIterator.hasNext()) {
-                        MemberContext activeMember = pendingIterator.next();
-                        pendingMembers.add(activeMember.getMemberId());
-                    }
-                    for (String memberId : members) {
-                        // pending members
-                        if (log.isDebugEnabled()) {
-                            log.debug("Moving pending member [member id] " + memberId + " the obsolete list");
-                        }
-                        partitionContext.movePendingMemberToObsoleteMembers(memberId);
-                    }
-                }
-            }
-        }
     }
 
     public String getDeploymentPolicyId() {

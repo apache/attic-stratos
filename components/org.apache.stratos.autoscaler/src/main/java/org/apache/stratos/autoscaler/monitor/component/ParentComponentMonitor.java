@@ -244,7 +244,14 @@ public abstract class ParentComponentMonitor extends Monitor {
                     Monitor monitor = aliasToActiveChildMonitorsMap.get(context.getId());
                     // Creating new instance
                     for (String instanceId : parentInstanceIds) {
-                        monitor.createInstanceOnDemand(instanceId);
+                        if(monitor.getInstancesByParentInstanceId(instanceId) == null ||
+                                monitor.getInstancesByParentInstanceId(instanceId).isEmpty()) {
+                            monitor.createInstanceOnDemand(instanceId);
+                        } else {
+                            log.info(String.format("Instance has already exists for [application] " +
+                                    "%s [component] %s [instance-id] %s", getAppId(),
+                                    context.getId(), instanceId));
+                        }
                     }
                 }
             }
@@ -941,6 +948,15 @@ public abstract class ParentComponentMonitor extends Monitor {
      */
     public Map<String, NetworkPartitionContext> getNetworkPartitionContextsMap() {
         return networkPartitionContextsMap;
+    }
+
+    /**
+     * This will give the network partitions used by this monitor
+     *
+     * @return network-partition-contexts
+     */
+    public void removeNetworkPartitionContext(String networkPartitionId) {
+        networkPartitionContextsMap.remove(networkPartitionId);
     }
 
     /**
