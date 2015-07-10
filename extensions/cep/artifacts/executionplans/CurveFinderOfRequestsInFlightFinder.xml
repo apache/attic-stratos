@@ -36,8 +36,9 @@
 		stratos:concat(cluster_id, '-' ,network_partition_id) as rif_curve_finder_cluster_network
 		insert into rif_curve_finder_concat;
 	define partition rif_curve_finder_cluster_partition by rif_curve_finder_concat.rif_curve_finder_cluster_network;
-	from rif_curve_finder_concat#window.stratos:curveFitting(1 min, in_flight_request_count)
+	from rif_curve_finder_concat#window.stratos:curveFitting(10 min, in_flight_request_count)
 		select cluster_id, cluster_instance_id, network_partition_id,in_flight_request_count as count
+		output snapshot every 1 min
 		insert into curve_finder_in_flight_requests
 		partition by rif_curve_finder_cluster_partition;
   ]]></queryExpressions>

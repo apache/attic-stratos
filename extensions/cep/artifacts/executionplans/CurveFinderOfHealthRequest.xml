@@ -37,23 +37,27 @@
 		insert into health_curve_finder_concat;
 	define partition health_curve_finder_cluster_partition  by health_curve_finder_concat.health_curve_finder_cluster_network;
 	from health_curve_finder_concat [health_description == 'memory_consumption']
-		#window.stratos:curveFitting(1 min, value) select cluster_id, cluster_instance_id, network_partition_id, value as second_derivative_memory_consumption
+		#window.stratos:curveFitting(10 min, value) select cluster_id, cluster_instance_id, network_partition_id, value as second_derivative_memory_consumption
+		output snapshot every 1 min
 		insert into curve_finder_memory_consumption_stats
 		partition by health_curve_finder_cluster_partition;
 	from health_curve_finder_concat [health_description == 'load_average']
-		#window.stratos:curveFitting(1 min, value) select cluster_id, cluster_instance_id, network_partition_id, value as second_derivative_load_average
+		#window.stratos:curveFitting(10 min, value) select cluster_id, cluster_instance_id, network_partition_id, value as second_derivative_load_average
+		output snapshot every 1 min
 		insert into curve_finder_load_average_stats
 		partition by health_curve_finder_cluster_partition;
 	define partition health_curve_finder_member_partition by health_curve_finder_request.member_id;
 	from health_curve_finder_request [health_description == 'memory_consumption']
-		#window.stratos:curveFitting(1 min, value)
+		#window.stratos:curveFitting(10 min, value)
 		select member_id, cluster_id, cluster_instance_id, network_partition_id, value as member_second_derivative_memory_consumption
+		output snapshot every 1 min
 		insert into member_curve_finder_memory_consumption_stats
 		partition by health_curve_finder_member_partition;
 	from health_curve_finder_request [health_description == 'load_average']
-		#window.stratos:curveFitting(1 min, value)
+		#window.stratos:curveFitting(10 min, value)
 		select member_id, cluster_id, cluster_instance_id, network_partition_id, value as member_second_derivative_load_average
-		 insert into member_curve_finder_load_average_stats
+		output snapshot every 1 min
+		insert into member_curve_finder_load_average_stats
 		partition by health_curve_finder_member_partition;]]></queryExpressions>
     <exportedStreams>
         <stream name="curve_finder_memory_consumption_stats"
