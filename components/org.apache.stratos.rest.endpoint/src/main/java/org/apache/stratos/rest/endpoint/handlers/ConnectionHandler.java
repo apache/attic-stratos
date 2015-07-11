@@ -58,9 +58,7 @@ public class ConnectionHandler {
 
                 resultSet = statement.executeQuery(stringSql);
 
-                resultSet.close();
-                statement.close();
-                connection.close();
+
             }
 
 

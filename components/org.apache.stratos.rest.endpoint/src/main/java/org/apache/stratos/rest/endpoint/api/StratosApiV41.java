@@ -2001,6 +2001,8 @@ public class StratosApiV41 extends AbstractApi {
             return Response.status(Response.Status.NOT_FOUND).entity(new ResponseMessageBean(
                     ResponseMessageBean.ERROR, "No kubernetes clusters found")).build();
         }
+
+
         return Response.ok().entity(availableKubernetesClusters).build();
     }
 
@@ -2152,7 +2154,7 @@ public class StratosApiV41 extends AbstractApi {
     @Consumes("application/json")
     @Produces("application/json")
     @AuthorizationAction("/permission/admin/stratos")
-    public List<AverageMemoryConsumptionBean> GetAverageMemberMemoryByClusterId() throws RestAPIException {
+    public Response GetAverageMemberMemoryByClusterId() throws RestAPIException {
 
         log.info("****************1********************************************************************"+"134123414123");
 
@@ -2161,12 +2163,14 @@ public class StratosApiV41 extends AbstractApi {
         List<AverageMemoryConsumptionBean> averageMemberMemoryList = new ArrayList<AverageMemoryConsumptionBean>();
         try {
             averageMemberMemoryList = StratosApiV41Utils.getAverageMemberMemoryByClusterId();
-            Response.status(HttpServletResponse.SC_OK);
+
+            log.info("****************1********************************************************************"+averageMemberMemoryList);
+
         } catch (RestAPIException ex) {
             Response.status(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
+        return Response.ok(averageMemberMemoryList).build();
 
-        return averageMemberMemoryList;
     }
 
 }
