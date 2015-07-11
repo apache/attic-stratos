@@ -128,7 +128,7 @@ public class GCEOperations {
         //check whether the given instance is available
         InstanceList instanceList = getInstanceList();
         for (Instance instance : instanceList.getItems()) {
-            String instanceIdInIaaS = ZONE_NAME + "/" + instance.getName();
+            String instanceIdInIaaS = getZoneNameFromZoneURL(instance.getZone()) + "/" + instance.getName();
             if (instanceIdInIaaS.equals(instanceId)) {
                 //instance is available
                 //getInstance URL
@@ -704,6 +704,12 @@ public class GCEOperations {
             throw new RuntimeException(e);
         }
         log.info("Created firewall rule");
+    }
+
+    private static String getZoneNameFromZoneURL(String zoneURL){
+        int lastIndexOfSlash = zoneURL.lastIndexOf("/");
+        String zoneName = zoneURL.substring(lastIndexOfSlash);
+        return zoneName;
     }
 
 }
