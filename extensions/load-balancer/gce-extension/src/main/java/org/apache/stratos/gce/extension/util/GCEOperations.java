@@ -676,9 +676,9 @@ public class GCEOperations {
         log.info("Created firewall rule");
     }
 
-    private static String getZoneNameFromInstanceId(String zoneURL){
-        int lastIndexOfSlash = zoneURL.lastIndexOf("/");
-        String zoneName = zoneURL.substring(lastIndexOfSlash+1);
+    private static String getZoneNameFromInstanceId(String instanceId){
+        int lastIndexOfSlash = instanceId.lastIndexOf("/");
+        String zoneName = instanceId.substring(0,lastIndexOfSlash-1);
         return zoneName;
     }
 
