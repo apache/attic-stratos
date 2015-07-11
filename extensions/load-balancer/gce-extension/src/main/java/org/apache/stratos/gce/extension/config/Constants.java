@@ -37,7 +37,6 @@ public class Constants {
     public static final String IAAS_PROPERTIES_ELEMENT = "iaasProperties";
     public static final String PROJECT_NAME = "projectName";
     public static final String PROJECT_ID = "projectId";
-    public static final String ZONE_NAME = "zoneName";
     public static final String REGION_NAME = "regionName";
     public static final String KEY_FILE_PATH = "keyFilePath";
     public static final String GCE_ACCOUNT_ID = "gceAccountId";

@@ -103,7 +103,6 @@ public class GCEConfigParser {
 
         String projectName = AxiomXpathParserUtil.getFirstChildElement(gceIaasInfoElement, Constants.PROJECT_NAME).getText();
         String projectId = AxiomXpathParserUtil.getFirstChildElement(gceIaasInfoElement, Constants.PROJECT_ID).getText();
-        String zoneName = AxiomXpathParserUtil.getFirstChildElement(gceIaasInfoElement, Constants.ZONE_NAME).getText();
         String regionName = AxiomXpathParserUtil.getFirstChildElement(gceIaasInfoElement, Constants.REGION_NAME).getText();
         String keyFilePath = AxiomXpathParserUtil.getFirstChildElement(gceIaasInfoElement, Constants.KEY_FILE_PATH).getText();
         String gceAccountId = AxiomXpathParserUtil.getFirstChildElement(gceIaasInfoElement, Constants.GCE_ACCOUNT_ID).getText();
@@ -112,7 +111,6 @@ public class GCEConfigParser {
         //set extracted properties to gceContext object
         gceContext.setProjectName(projectName);
         gceContext.setProjectID(projectId);
-        gceContext.setZoneName(zoneName);
         gceContext.setRegionName(regionName);
         gceContext.setKeyFilePath(keyFilePath);
         gceContext.setGceAccountID(gceAccountId);

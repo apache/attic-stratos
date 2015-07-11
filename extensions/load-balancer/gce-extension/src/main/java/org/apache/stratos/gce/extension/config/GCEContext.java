@@ -39,7 +39,6 @@ public class GCEContext {
     //IaaS properties
     private String projectName;
     private String projectID;
-    private String zoneName;
     private String regionName;
     private String keyFilePath;
     private String gceAccountID;
@@ -125,7 +124,6 @@ public class GCEContext {
         validateSystemProperty(Constants.NAME_PREFIX);
         validateSystemProperty(Constants.PROJECT_NAME);
         validateSystemProperty(Constants.PROJECT_ID);
-        validateSystemProperty(Constants.ZONE_NAME);
         validateSystemProperty(Constants.REGION_NAME);
         validateSystemProperty(Constants.KEY_FILE_PATH);
         validateSystemProperty(Constants.GCE_ACCOUNT_ID);
@@ -175,14 +173,6 @@ public class GCEContext {
 
     public void setProjectID(String projectID) {
         this.projectID = projectID;
-    }
-
-    public String getZoneName() {
-        return zoneName;
-    }
-
-    public void setZoneName(String zoneName) {
-        this.zoneName = zoneName;
     }
 
     public String getRegionName() {

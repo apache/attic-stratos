@@ -52,7 +52,6 @@ public class GCEOperations {
     //project related
     private static final String PROJECT_NAME = GCEContext.getInstance().getProjectName();
     private static final String PROJECT_ID = GCEContext.getInstance().getProjectID();
-    private static final String ZONE_NAME = GCEContext.getInstance().getZoneName();
     private static final String REGION_NAME = GCEContext.getInstance().getRegionName();
 
     //auth
@@ -94,11 +93,11 @@ public class GCEOperations {
      * @return instanceList - list of instances(members in Stratos side)
      * @throws IOException
      */
-    public static InstanceList getInstanceList() {
+    public static InstanceList getInstanceList(String zoneName) {
         Compute.Instances.List instances = null;
         try {
             instances = compute.instances().
-                    list(PROJECT_ID, ZONE_NAME).setFilter(RUNNING_FILTER);
+                    list(PROJECT_ID, zoneName).setFilter(RUNNING_FILTER);
             InstanceList instanceList = instances.execute();
             if (instanceList.getItems() == null) {
                 log.info("No instances found for specified zone");
@@ -125,10 +124,11 @@ public class GCEOperations {
     public static String getInstanceURLFromId(String instanceId) {
 
         String instanceURL;
+        String zoneName = getZoneNameFromInstanceId(instanceId);
         //check whether the given instance is available
-        InstanceList instanceList = getInstanceList();
+        InstanceList instanceList = getInstanceList(zoneName);
         for (Instance instance : instanceList.getItems()) {
-            String instanceIdInIaaS = getZoneNameFromZoneURL(instance.getZone()) + "/" + instance.getName();
+            String instanceIdInIaaS = zoneName + "/" + instance.getName();
             if (instanceIdInIaaS.equals(instanceId)) {
                 //instance is available
                 //getInstance URL
@@ -643,36 +643,6 @@ public class GCEOperations {
         }
     }
 
-    /**
-     * wait for zone operation completion. If the operation is related to a zone, that is a zone operation
-     *
-     * @param operationName -operation name
-     */
-    private void waitForZoneOperationCompletion(String operationName) {
-        try {
-            Thread.sleep(2000);
-            int timeout = 0;
-            while (true) {
-                Operation operation = compute.regionOperations().get(PROJECT_ID, REGION_NAME, operationName).execute();
-                if (operation.getStatus().equals("DONE")) {
-                    return;
-                }
-                if (timeout >= OPERATION_TIMEOUT) {
-                    log.warn("Timeout reached for operation " + operationName + ". Existing..");
-                    return;
-                }
-                Thread.sleep(1000);
-                timeout += 1000;
-            }
-        } catch (InterruptedException e) {
-            log.error("Could not wait for zone operation completion " + operationName);
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            log.error("Could not wait for zone operation completion " + operationName);
-            throw new RuntimeException(e);
-        }
-    }
-
     public void createFirewallRule() {
 
         log.info("Creating firewall rule");
@@ -706,9 +676,9 @@ public class GCEOperations {
         log.info("Created firewall rule");
     }
 
-    private static String getZoneNameFromZoneURL(String zoneURL){
+    private static String getZoneNameFromInstanceId(String zoneURL){
         int lastIndexOfSlash = zoneURL.lastIndexOf("/");
-        String zoneName = zoneURL.substring(lastIndexOfSlash);
+        String zoneName = zoneURL.substring(lastIndexOfSlash+1);
         return zoneName;
     }
 
