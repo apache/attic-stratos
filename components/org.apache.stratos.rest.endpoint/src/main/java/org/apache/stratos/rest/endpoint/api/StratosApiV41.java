@@ -34,6 +34,7 @@ import org.apache.stratos.common.beans.application.signup.ApplicationSignUpBean;
 import org.apache.stratos.common.beans.artifact.repository.GitNotificationPayloadBean;
 import org.apache.stratos.common.beans.cartridge.CartridgeBean;
 import org.apache.stratos.common.beans.cartridge.CartridgeGroupBean;
+import org.apache.stratos.common.beans.healthStatistics.AverageMemoryConsumptionBean;
 import org.apache.stratos.common.beans.kubernetes.KubernetesClusterBean;
 import org.apache.stratos.common.beans.kubernetes.KubernetesHostBean;
 import org.apache.stratos.common.beans.kubernetes.KubernetesMasterBean;
@@ -50,9 +51,13 @@ import org.apache.stratos.rest.endpoint.Utils;
 import org.apache.stratos.rest.endpoint.annotation.AuthorizationAction;
 import org.apache.stratos.rest.endpoint.annotation.SuperTenantService;
 import org.apache.stratos.rest.endpoint.exception.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -183,6 +188,14 @@ public class StratosApiV41 extends AbstractApi {
     public Response getDeploymentPolicies()
             throws RestAPIException {
         DeploymentPolicyBean[] deploymentPolicies = StratosApiV41Utils.getDeployementPolicies();
+        List<AverageMemoryConsumptionBean> averageMemberMemoryList = new ArrayList<AverageMemoryConsumptionBean>();
+        try {
+            averageMemberMemoryList = StratosApiV41Utils.getAverageMemberMemoryByClusterId();
+            Response.status(HttpServletResponse.SC_OK);
+        } catch (RestAPIException ex) {
+            Response.status(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }
+
         if (deploymentPolicies == null || deploymentPolicies.length == 0) {
             return Response.status(Response.Status.NOT_FOUND).entity(new ResponseMessageBean(
                     ResponseMessageBean.ERROR, "No deployment policies found")).build();
@@ -1756,7 +1769,17 @@ public class StratosApiV41 extends AbstractApi {
     @AuthorizationAction("/permission/admin")
     public Response addUser(
             UserInfoBean userInfoBean) throws RestAPIException {
+        log.info("****************1********************************************************************"+"134123414123");
 
+        log.info("****************1********************************************************************"+"\"tomcat-single-signon.mywso2is.wso2is.domain\"");
+
+        List<AverageMemoryConsumptionBean> averageMemberMemoryList = new ArrayList<AverageMemoryConsumptionBean>();
+        try {
+            averageMemberMemoryList = StratosApiV41Utils.getAverageMemberMemoryByClusterId();
+            Response.status(HttpServletResponse.SC_OK);
+        } catch (RestAPIException ex) {
+            Response.status(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }
         StratosApiV41Utils.addUser(userInfoBean);
         log.info("Successfully added an user with Username " + userInfoBean.getUserName());
         URI url = uriInfo.getAbsolutePathBuilder().path(userInfoBean.getUserName()).build();
@@ -2120,4 +2143,30 @@ public class StratosApiV41 extends AbstractApi {
         }
         return Response.ok(iaasProviderInfoBean).build();
     }
+
+    private static final String GET_AVERAGE_MEMBER_MEMORY_BY_CLUSTER_ID = "/averageMemberMemory/getByClusterId";
+    private static final String GET_AVERAGE_MEMBER_MEMORY_BY_MEMBER_ID = "/averageMemberMemory/getByMemberId";
+
+    @GET
+    @Path("/averageMemberMemory/getByClusterId")
+    @Consumes("application/json")
+    @Produces("application/json")
+    @AuthorizationAction("/permission/admin/stratos")
+    public List<AverageMemoryConsumptionBean> GetAverageMemberMemoryByClusterId() throws RestAPIException {
+
+        log.info("****************1********************************************************************"+"134123414123");
+
+        log.info("****************1********************************************************************"+"\"tomcat-single-signon.mywso2is.wso2is.domain\"");
+
+        List<AverageMemoryConsumptionBean> averageMemberMemoryList = new ArrayList<AverageMemoryConsumptionBean>();
+        try {
+            averageMemberMemoryList = StratosApiV41Utils.getAverageMemberMemoryByClusterId();
+            Response.status(HttpServletResponse.SC_OK);
+        } catch (RestAPIException ex) {
+            Response.status(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }
+
+        return averageMemberMemoryList;
+    }
+
 }

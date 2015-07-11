@@ -42,6 +42,7 @@ import org.apache.stratos.common.beans.application.domain.mapping.DomainMappingB
 import org.apache.stratos.common.beans.application.signup.ApplicationSignUpBean;
 import org.apache.stratos.common.beans.artifact.repository.GitNotificationPayloadBean;
 import org.apache.stratos.common.beans.cartridge.*;
+import org.apache.stratos.common.beans.healthStatistics.AverageMemoryConsumptionBean;
 import org.apache.stratos.common.beans.kubernetes.KubernetesClusterBean;
 import org.apache.stratos.common.beans.kubernetes.KubernetesHostBean;
 import org.apache.stratos.common.beans.kubernetes.KubernetesMasterBean;
@@ -78,6 +79,7 @@ import org.apache.stratos.messaging.message.receiver.topology.TopologyManager;
 import org.apache.stratos.rest.endpoint.Constants;
 import org.apache.stratos.rest.endpoint.ServiceHolder;
 import org.apache.stratos.rest.endpoint.exception.*;
+import org.apache.stratos.rest.endpoint.handlers.ConnectionHandler;
 import org.apache.stratos.rest.endpoint.util.converter.ObjectConverter;
 import org.wso2.carbon.context.CarbonContext;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
@@ -95,6 +97,9 @@ import org.wso2.carbon.user.core.tenant.TenantManager;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 
 import java.rmi.RemoteException;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
@@ -3642,5 +3647,41 @@ public class StratosApiV41Utils {
             log.error(message);
             throw new RestAPIException(message, e);
         }
+    }
+
+
+    public static List<AverageMemoryConsumptionBean> getAverageMemberMemoryByClusterId() throws RestAPIException {
+
+        /*String sql = "SELECT SUM(MEMBER_AVERAGE_MEMORY_CONSUMPTION) AS 'MEMBER_AVERAGE_MEMORY_CONSUMPTION'" +
+                " ,TIMESTAMP FROM MemberAverageMemoryAverageEventFormatterHealthStat"
+                + " WHERE CLUSTER_ID= " + clusterId
+                + " AND `TIMESTAMP`>= " + System.currentTimeMillis()
+                + " AND `TIMESTAMP`<= " + endTime
+                + " GROUP BY TIMESTAMP";
+*/
+
+        String sql="SELECT SUM(MEMBER_AVERAGE_MEMORY_CONSUMPTION) AS 'MEMBER_AVERAGE_MEMORY_CONSUMPTION',TIMESTAMP,CLUSTER_ID FROM MemberAverageMemoryAverageEventFormatterHealthStat WHERE CLUSTER_ID =\"tomcat-single-signon.mywso2is.wso2is.domain\"AND NOW() + INTERVAL 1 DAY GROUP BY TIMESTAMP;";
+
+
+        List<AverageMemoryConsumptionBean> averageMemberMemoryList = new ArrayList<AverageMemoryConsumptionBean>();;
+        ConnectionHandler connectionHandler = new ConnectionHandler();
+
+        ResultSet result = connectionHandler.GetsqlConnection(sql);
+        log.info("****************2********************************************************************");
+
+        log.info("************2************************************************************************");
+
+        log.info("****************2********************************************************************");
+log.error(result);
+        try {
+            while (result.next()) {
+                averageMemberMemoryList.add(new AverageMemoryConsumptionBean("", "", result.getDouble("MEMBER_AVERAGE_MEMORY_CONSUMPTION"), result.getInt("TIMESTAMP"), "", ""));
+            }
+        } catch (SQLException e) {
+            throw new RestAPIException(e.getMessage(), e);
+        }
+
+
+        return averageMemberMemoryList;
     }
 }

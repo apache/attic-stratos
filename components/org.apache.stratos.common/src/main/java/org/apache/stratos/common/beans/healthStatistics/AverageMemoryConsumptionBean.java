@@ -19,7 +19,7 @@
 
 package org.apache.stratos.common.beans.healthStatistics;
 
-public class AverageMemoryConsumption {
+public class AverageMemoryConsumptionBean {
     private static final long serialVersionUID = -7788619177798333711L;
 
     private String clusterId;
@@ -29,7 +29,7 @@ public class AverageMemoryConsumption {
     private String memberId;
     private String networkPartitionId;
 
-    public AverageMemoryConsumption(String clusterId, String clusterInstanceId, Double memberAverageMemoryConsumption, Integer timeStamp, String memberId, String networkPartitionId) {
+    public AverageMemoryConsumptionBean(String clusterId, String clusterInstanceId, Double memberAverageMemoryConsumption, Integer timeStamp, String memberId, String networkPartitionId) {
         this.clusterId = clusterId;
         this.clusterInstanceId = clusterInstanceId;
         this.memberAverageMemoryConsumption = memberAverageMemoryConsumption;

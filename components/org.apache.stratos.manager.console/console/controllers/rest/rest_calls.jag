@@ -27,6 +27,10 @@ RESTCalls = new function(){
         return this.sendReceive("GET","/tenants",{});
     };
 
+    this.getClusterDetails = function(){
+        return this.sendReceive("GET","/averageMemberMemory/getByClusterId",{});
+    };
+
     this.deployPartitionDefinition = function(partitionDefinition){
         return this.send("POST","/networkPartitions", partitionDefinition);
     };

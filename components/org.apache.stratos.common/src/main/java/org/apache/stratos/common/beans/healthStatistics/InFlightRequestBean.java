@@ -20,7 +20,7 @@
 package org.apache.stratos.common.beans.healthStatistics;
 
 
-public class InFlightRequest {
+public class InFlightRequestBean {
 
     private static final long serialVersionUID = -7788619177798333712L;
 
@@ -30,7 +30,7 @@ public class InFlightRequest {
     private Double inFlightRequestCount;
     private String networkPartitionId;
 
-    public InFlightRequest(String clusterId, String clusterInstanceId, Integer timeStamp, Double inFlightRequestCount, String networkPartitionId) {
+    public InFlightRequestBean(String clusterId, String clusterInstanceId, Integer timeStamp, Double inFlightRequestCount, String networkPartitionId) {
         this.clusterId = clusterId;
         this.clusterInstanceId = clusterInstanceId;
         this.timeStamp = timeStamp;

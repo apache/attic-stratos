@@ -20,7 +20,7 @@
 package org.apache.stratos.common.beans.healthStatistics;
 
 
-public class AverageLoadAverage {
+public class AverageLoadAverageBean {
     private static final long serialVersionUID = -7788619177798333712L;
 
     private String clusterId;
@@ -30,7 +30,7 @@ public class AverageLoadAverage {
     private String memberId;
     private String networkPartitionId;
 
-    public AverageLoadAverage(String clusterId, String clusterInstanceId, Integer timeStamp, Double memberAverageLoadAverage, String memberId, String networkPartitionId) {
+    public AverageLoadAverageBean(String clusterId, String clusterInstanceId, Integer timeStamp, Double memberAverageLoadAverage, String memberId, String networkPartitionId) {
         this.clusterId = clusterId;
         this.clusterInstanceId = clusterInstanceId;
         this.timeStamp = timeStamp;
