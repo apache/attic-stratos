@@ -678,7 +678,7 @@ public class GCEOperations {
 
     private static String getZoneNameFromInstanceId(String instanceId){
         int lastIndexOfSlash = instanceId.lastIndexOf("/");
-        String zoneName = instanceId.substring(0,lastIndexOfSlash-1);
+        String zoneName = instanceId.substring(0,lastIndexOfSlash);
         return zoneName;
     }
 
