@@ -19,7 +19,7 @@
   -->
 <gceConfiguration>
 
-    <cepStatsPublisher enable="true">
+    <cepStatsPublisher enable="false">
         <thriftReceiverIp>127.0.0.1</thriftReceiverIp>
         <thriftReceiverPort>7615</thriftReceiverPort>
     </cepStatsPublisher>
