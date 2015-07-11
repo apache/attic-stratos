@@ -1,0 +1,85 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+package org.apache.stratos.common.beans.healthStatistics;
+
+
+public class InFlightRequest {
+
+    private static final long serialVersionUID = -7788619177798333712L;
+
+    private String clusterId;
+    private String clusterInstanceId;
+    private Integer timeStamp;
+    private Double inFlightRequestCount;
+    private String networkPartitionId;
+
+    public InFlightRequest(String clusterId, String clusterInstanceId, Integer timeStamp, Double inFlightRequestCount, String networkPartitionId) {
+        this.clusterId = clusterId;
+        this.clusterInstanceId = clusterInstanceId;
+        this.timeStamp = timeStamp;
+        this.inFlightRequestCount = inFlightRequestCount;
+        this.networkPartitionId = networkPartitionId;
+    }
+
+    
+    
+
+    public String getClusterId() {
+        return clusterId;
+    }
+
+    public void setClusterId(String clusterId) {
+        this.clusterId = clusterId;
+    }
+
+    public String getClusterInstanceId() {
+        return clusterInstanceId;
+    }
+
+    public void setClusterInstanceId(String clusterInstanceId) {
+        this.clusterInstanceId = clusterInstanceId;
+    }
+
+    public Double getInFlightRequestCount() {
+        return inFlightRequestCount;
+    }
+
+    public void setInFlightRequestCount(Double inFlightRequestCount) {
+        this.inFlightRequestCount = inFlightRequestCount;
+    }
+
+
+    public Integer getTimeStamp() {
+        return timeStamp;
+    }
+
+    public void setTimeStamp(Integer timeStamp) {
+        this.timeStamp = timeStamp;
+    }
+
+    public String getNetworkPartitionId() {
+        return networkPartitionId;
+    }
+
+    public void setNetworkPartitionId(String networkPartitionId) {
+        this.networkPartitionId = networkPartitionId;
+    }
+
+}
