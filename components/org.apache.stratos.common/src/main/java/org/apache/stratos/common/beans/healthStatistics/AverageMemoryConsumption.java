@@ -1,14 +1,9 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.apache.stratos.common.beans.healthStatistics;
-import java.util.Date;
 
-
-public class AverageMemberMemory {
-
+/**
+ * Created by dk on 11/07/2015.
+ */
+public class AverageMemoryConsumption {
     private static final long serialVersionUID = -7788619177798333711L;
 
     private String clusterId;
@@ -18,7 +13,7 @@ public class AverageMemberMemory {
     private String memberId;
     private String networkPartitionId;
 
-    public AverageMemberMemory(String clusterId, String clusterInstanceId, Double memberAverageMemoryConsumption, Integer timeStamp, String memberId, String networkPartitionId) {
+    public AverageMemoryConsumption(String clusterId, String clusterInstanceId, Double memberAverageMemoryConsumption, Integer timeStamp, String memberId, String networkPartitionId) {
         this.clusterId = clusterId;
         this.clusterInstanceId = clusterInstanceId;
         this.memberAverageMemoryConsumption = memberAverageMemoryConsumption;
@@ -77,3 +72,4 @@ public class AverageMemberMemory {
 
 
 }
+
