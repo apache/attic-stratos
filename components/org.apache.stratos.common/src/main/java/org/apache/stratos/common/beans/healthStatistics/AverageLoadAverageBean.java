@@ -25,12 +25,12 @@ public class AverageLoadAverageBean {
 
     private String clusterId;
     private String clusterInstanceId;
-    private Integer timeStamp;
+    private Long timeStamp;
     private Double memberAverageLoadAverage;
     private String memberId;
     private String networkPartitionId;
 
-    public AverageLoadAverageBean(String clusterId, String clusterInstanceId, Integer timeStamp, Double memberAverageLoadAverage, String memberId, String networkPartitionId) {
+    public AverageLoadAverageBean(String clusterId, String clusterInstanceId, Long timeStamp, Double memberAverageLoadAverage, String memberId, String networkPartitionId) {
         this.clusterId = clusterId;
         this.clusterInstanceId = clusterInstanceId;
         this.timeStamp = timeStamp;
@@ -67,11 +67,11 @@ public class AverageLoadAverageBean {
         this.memberAverageLoadAverage = memberAverageLoadAverage;
     }
 
-    public Integer getTimeStamp() {
+    public Long getTimeStamp() {
         return timeStamp;
     }
 
-    public void setTimeStamp(Integer timeStamp) {
+    public void setTimeStamp(Long timeStamp) {
         this.timeStamp = timeStamp;
     }
 

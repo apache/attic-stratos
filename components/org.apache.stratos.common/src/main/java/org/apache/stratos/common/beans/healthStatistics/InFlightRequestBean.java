@@ -26,11 +26,11 @@ public class InFlightRequestBean {
 
     private String clusterId;
     private String clusterInstanceId;
-    private Integer timeStamp;
+    private Long timeStamp;
     private Double inFlightRequestCount;
     private String networkPartitionId;
 
-    public InFlightRequestBean(String clusterId, String clusterInstanceId, Integer timeStamp, Double inFlightRequestCount, String networkPartitionId) {
+    public InFlightRequestBean(String clusterId, String clusterInstanceId, Long timeStamp, Double inFlightRequestCount, String networkPartitionId) {
         this.clusterId = clusterId;
         this.clusterInstanceId = clusterInstanceId;
         this.timeStamp = timeStamp;
@@ -66,11 +66,11 @@ public class InFlightRequestBean {
     }
 
 
-    public Integer getTimeStamp() {
+    public Long getTimeStamp() {
         return timeStamp;
     }
 
-    public void setTimeStamp(Integer timeStamp) {
+    public void setTimeStamp(Long timeStamp) {
         this.timeStamp = timeStamp;
     }
 

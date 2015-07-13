@@ -29,7 +29,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 
 public class ConnectionHandler {
-    public ResultSet GetsqlConnection(String sql) {
+    public ResultSet getsqlConnection(String sql) {
 
         DataSource dataSource = null;
         String stringSql = sql;
@@ -55,9 +55,7 @@ public class ConnectionHandler {
             if (dataSource != null) {
                 Connection connection = dataSource.getConnection();
                 Statement statement = connection.createStatement();
-
                 resultSet = statement.executeQuery(stringSql);
-
 
             }
 

@@ -18,6 +18,7 @@
  */
 package org.apache.stratos.rest.endpoint.api;
 
+import com.google.gson.Gson;
 import org.apache.axis2.AxisFault;
 import org.apache.axis2.context.ConfigurationContext;
 import org.apache.commons.lang.StringUtils;
@@ -42,7 +43,9 @@ import org.apache.stratos.common.beans.application.domain.mapping.DomainMappingB
 import org.apache.stratos.common.beans.application.signup.ApplicationSignUpBean;
 import org.apache.stratos.common.beans.artifact.repository.GitNotificationPayloadBean;
 import org.apache.stratos.common.beans.cartridge.*;
+import org.apache.stratos.common.beans.healthStatistics.AverageLoadAverageBean;
 import org.apache.stratos.common.beans.healthStatistics.AverageMemoryConsumptionBean;
+import org.apache.stratos.common.beans.healthStatistics.InFlightRequestBean;
 import org.apache.stratos.common.beans.kubernetes.KubernetesClusterBean;
 import org.apache.stratos.common.beans.kubernetes.KubernetesHostBean;
 import org.apache.stratos.common.beans.kubernetes.KubernetesMasterBean;
@@ -1917,7 +1920,7 @@ public class StratosApiV41Utils {
             ApplicationManager.acquireReadLockForApplication(applicationId);
             Application application = ApplicationManager.getApplications().
                     getApplication(applicationId);
-            if(application != null) {
+            if (application != null) {
                 if (application.getInstanceContextCount() > 0
                         || (applicationContext != null &&
                         applicationContext.getStatus().equals("Deployed"))) {
@@ -3650,38 +3653,136 @@ public class StratosApiV41Utils {
     }
 
 
-    public static List<AverageMemoryConsumptionBean> getAverageMemberMemoryByClusterId() throws RestAPIException {
-
-        /*String sql = "SELECT SUM(MEMBER_AVERAGE_MEMORY_CONSUMPTION) AS 'MEMBER_AVERAGE_MEMORY_CONSUMPTION'" +
-                " ,TIMESTAMP FROM MemberAverageMemoryAverageEventFormatterHealthStat"
-                + " WHERE CLUSTER_ID= " + clusterId
-                + " AND `TIMESTAMP`>= " + System.currentTimeMillis()
-                + " AND `TIMESTAMP`<= " + endTime
-                + " GROUP BY TIMESTAMP";
-*/
-
-        String sql="SELECT SUM(MEMBER_AVERAGE_MEMORY_CONSUMPTION) AS 'MEMBER_AVERAGE_MEMORY_CONSUMPTION',TIMESTAMP,CLUSTER_ID FROM MemberAverageMemoryAverageEventFormatterHealthStat WHERE CLUSTER_ID =\"tomcat-single-signon.mywso2is.wso2is.domain\"AND NOW() + INTERVAL 1 DAY GROUP BY TIMESTAMP;";
+    public static String getAverageClusterMemoryByClusterId(String Id,String Interval) throws RestAPIException {
 
 
-        List<AverageMemoryConsumptionBean> averageMemberMemoryList = new ArrayList<AverageMemoryConsumptionBean>();;
+        String sql="  SELECT SUM(MEMBER_AVERAGE_MEMORY_CONSUMPTION) AS 'MEMBER_AVERAGE_MEMORY_CONSUMPTION'," +
+                " TIMESTAMP From MemberAverageMemoryAverageEventFormatterHealthStat " +
+                "WHERE CLUSTER_ID = \""+Id+"\" AND from_unixtime(TIMESTAMP/1000,\"%Y-%m-%d %H:%i\") > " +
+                "NOW() - INTERVAL "+Interval+" HOUR GROUP BY from_unixtime(TIMESTAMP/1000,\"%Y-%m-%d %H : %i\");";
+
+        List<AverageMemoryConsumptionBean> averageMemberMemoryList = new ArrayList<AverageMemoryConsumptionBean>();
+
         ConnectionHandler connectionHandler = new ConnectionHandler();
+        ResultSet result = connectionHandler.getsqlConnection(sql);
 
-        ResultSet result = connectionHandler.GetsqlConnection(sql);
-        log.info("****************2********************************************************************");
-
-        log.info("************2************************************************************************");
-
-        log.info("****************2********************************************************************");
-log.error(result);
         try {
             while (result.next()) {
-                averageMemberMemoryList.add(new AverageMemoryConsumptionBean("", "", result.getDouble("MEMBER_AVERAGE_MEMORY_CONSUMPTION"), result.getInt("TIMESTAMP"), "", ""));
+                averageMemberMemoryList.add(new AverageMemoryConsumptionBean("", "", result.getDouble("MEMBER_AVERAGE_MEMORY_CONSUMPTION"), result.getLong("TIMESTAMP"), "", ""));
             }
         } catch (SQLException e) {
             throw new RestAPIException(e.getMessage(), e);
         }
+        String json = new Gson().toJson(averageMemberMemoryList);
 
-
-        return averageMemberMemoryList;
+        return json;
     }
+
+
+    public static String getAverageClusterLoadByClusterId(String Id,String Interval) throws RestAPIException {
+
+
+        String sql="  SELECT SUM(MEMBER_AVERAGE_LOAD_AVERAGE) AS 'MEMBER_AVERAGE_LOAD_AVERAGE'," +
+                " TIMESTAMP From MemberAverageLoadAverageEventFormatterHealthStat " +
+                "WHERE CLUSTER_ID = \""+Id+"\" AND from_unixtime(TIMESTAMP/1000,\"%Y-%m-%d %H:%i\") > " +
+                "NOW() - INTERVAL "+Interval+" HOUR GROUP BY from_unixtime(TIMESTAMP/1000,\"%Y-%m-%d %H : %i\");";
+
+        List<AverageLoadAverageBean> averageMemberLoadList = new ArrayList<AverageLoadAverageBean>();
+
+        ConnectionHandler connectionHandler = new ConnectionHandler();
+        ResultSet result = connectionHandler.getsqlConnection(sql);
+
+        try {
+            while (result.next()) {
+                averageMemberLoadList.add(new AverageLoadAverageBean("", "", result.getLong("TIMESTAMP"), result.getDouble("MEMBER_AVERAGE_LOAD_AVERAGE"), "", ""));
+            }
+        } catch (SQLException e) {
+            throw new RestAPIException(e.getMessage(), e);
+        }
+        String json = new Gson().toJson(averageMemberLoadList);
+
+        return json;
+    }
+
+
+
+
+    public static String getAverageMemberMemoryByMemberId(String Id,String Interval) throws RestAPIException {
+
+        String memberIDQuery="SELECT TIMESTAMP," +
+                "MEMBER_AVERAGE_MEMORY_CONSUMPTION FROM MemberAverageMemoryAverageEventFormatterHealthStat WHERE " +
+                "from_unixtime(TIMESTAMP/1000,\"%Y-%m-%d %H:%i\") " +
+                "> NOW() - INTERVAL "+Interval+" HOUR AND MEMBER_ID =\""+Id+"\"";
+
+
+        List<AverageMemoryConsumptionBean> averageMemberMemoryList = new ArrayList<AverageMemoryConsumptionBean>();
+        ConnectionHandler connectionHandler = new ConnectionHandler();
+
+        ResultSet result = connectionHandler.getsqlConnection(memberIDQuery);
+
+        try {
+            while (result.next()) {
+                averageMemberMemoryList.add(new AverageMemoryConsumptionBean("", "", result.getDouble("MEMBER_AVERAGE_MEMORY_CONSUMPTION"), result.getLong("TIMESTAMP"), "", ""));
+            }
+        } catch (SQLException e) {
+            throw new RestAPIException(e.getMessage(), e);
+        }
+        String json = new Gson().toJson(averageMemberMemoryList);
+
+        return json;
+    }
+
+    public static String getAverageMemberLoadByMemberId(String Id,String Interval) throws RestAPIException {
+
+        String memberIDQuery="SELECT TIMESTAMP," +
+                "MEMBER_AVERAGE_LOAD_AVERAGE FROM MemberAverageLoadAverageEventFormatterHealthStat WHERE " +
+                "from_unixtime(TIMESTAMP/1000,\"%Y-%m-%d %H:%i\") " +
+                "> NOW() - INTERVAL "+Interval+" HOUR AND MEMBER_ID =\""+Id+"\"";
+
+
+        List<AverageLoadAverageBean> averageMemberLoadList = new ArrayList<AverageLoadAverageBean>();
+        ConnectionHandler connectionHandler = new ConnectionHandler();
+
+        ResultSet result = connectionHandler.getsqlConnection(memberIDQuery);
+
+        try {
+            while (result.next()) {
+
+                averageMemberLoadList.add(new AverageLoadAverageBean("", "", result.getLong("TIMESTAMP"), result.getDouble("MEMBER_AVERAGE_LOAD_AVERAGE"), "", ""));
+            }
+        } catch (SQLException e) {
+            throw new RestAPIException(e.getMessage(), e);
+        }
+        String json = new Gson().toJson(averageMemberLoadList);
+
+        return json;
+    }
+
+
+    public static String getAverageClusterFlightRequestCountByClusterId(String Id,String Interval) throws RestAPIException {
+
+        String memberIDQuery="SELECT SUM(FLIGHT_REQUEST_COUNT) AS FLIGHT_REQUEST_COUNT,TIMESTAMP FROM " +
+                "FlightRequestEventFormatterHealthStat WHERE from_unixtime(TIMESTAMP/1000,\"%Y-%m-%d %H:%i\") > NOW() - " +
+                "INTERVAL "+Interval+" HOUR AND CLUSTER_ID = \""+Id+"\"" +
+                "GROUP BY from_unixtime(TIMESTAMP/1000,\"%Y-%m-%d %H:%i\");";
+
+
+        List<InFlightRequestBean> inFlightRequestBeanList = new ArrayList<InFlightRequestBean>();
+        ConnectionHandler connectionHandler = new ConnectionHandler();
+
+        ResultSet result = connectionHandler.getsqlConnection(memberIDQuery);
+
+        try {
+            while (result.next()) {
+                inFlightRequestBeanList.add(new InFlightRequestBean("", "", result.getLong("TIMESTAMP"), result.getDouble("FLIGHT_REQUEST_COUNT"), ""));
+            }
+        } catch (SQLException e) {
+            throw new RestAPIException(e.getMessage(), e);
+        }
+        String json = new Gson().toJson(inFlightRequestBeanList);
+
+        return json;
+    }
+
+
 }

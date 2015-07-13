@@ -189,12 +189,6 @@ public class StratosApiV41 extends AbstractApi {
             throws RestAPIException {
         DeploymentPolicyBean[] deploymentPolicies = StratosApiV41Utils.getDeployementPolicies();
         List<AverageMemoryConsumptionBean> averageMemberMemoryList = new ArrayList<AverageMemoryConsumptionBean>();
-        try {
-            averageMemberMemoryList = StratosApiV41Utils.getAverageMemberMemoryByClusterId();
-            Response.status(HttpServletResponse.SC_OK);
-        } catch (RestAPIException ex) {
-            Response.status(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
 
         if (deploymentPolicies == null || deploymentPolicies.length == 0) {
             return Response.status(Response.Status.NOT_FOUND).entity(new ResponseMessageBean(
@@ -1769,17 +1763,7 @@ public class StratosApiV41 extends AbstractApi {
     @AuthorizationAction("/permission/admin")
     public Response addUser(
             UserInfoBean userInfoBean) throws RestAPIException {
-        log.info("****************1********************************************************************"+"134123414123");
 
-        log.info("****************1********************************************************************"+"\"tomcat-single-signon.mywso2is.wso2is.domain\"");
-
-        List<AverageMemoryConsumptionBean> averageMemberMemoryList = new ArrayList<AverageMemoryConsumptionBean>();
-        try {
-            averageMemberMemoryList = StratosApiV41Utils.getAverageMemberMemoryByClusterId();
-            Response.status(HttpServletResponse.SC_OK);
-        } catch (RestAPIException ex) {
-            Response.status(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
         StratosApiV41Utils.addUser(userInfoBean);
         log.info("Successfully added an user with Username " + userInfoBean.getUserName());
         URI url = uriInfo.getAbsolutePathBuilder().path(userInfoBean.getUserName()).build();
@@ -2146,31 +2130,107 @@ public class StratosApiV41 extends AbstractApi {
         return Response.ok(iaasProviderInfoBean).build();
     }
 
-    private static final String GET_AVERAGE_MEMBER_MEMORY_BY_CLUSTER_ID = "/averageMemberMemory/getByClusterId";
-    private static final String GET_AVERAGE_MEMBER_MEMORY_BY_MEMBER_ID = "/averageMemberMemory/getByMemberId";
-
     @GET
-    @Path("/averageMemberMemory/getByClusterId")
+    @Path("/averageClusterMemory/{Id}/{Interval}")
     @Consumes("application/json")
     @Produces("application/json")
     @AuthorizationAction("/permission/admin/stratos")
-    public Response GetAverageMemberMemoryByClusterId() throws RestAPIException {
+    public Response getAverageClusterMemoryByClusterId(
+            @PathParam("Id") String Id,@PathParam("Interval") String Interval) throws RestAPIException {
 
-        log.info("****************1********************************************************************"+"134123414123");
-
-        log.info("****************1********************************************************************"+"\"tomcat-single-signon.mywso2is.wso2is.domain\"");
-
-        List<AverageMemoryConsumptionBean> averageMemberMemoryList = new ArrayList<AverageMemoryConsumptionBean>();
+        String averageMemberMemoryList=null;
         try {
-            averageMemberMemoryList = StratosApiV41Utils.getAverageMemberMemoryByClusterId();
-
-            log.info("****************1********************************************************************"+averageMemberMemoryList);
+            averageMemberMemoryList = StratosApiV41Utils.getAverageClusterMemoryByClusterId(Id, Interval);
 
         } catch (RestAPIException ex) {
             Response.status(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
+
         return Response.ok(averageMemberMemoryList).build();
 
     }
+
+    @GET
+    @Path("/averageMemberMemory/{Id}/{Interval}")
+    @Consumes("application/json")
+    @Produces("application/json")
+    @AuthorizationAction("/permission/admin/stratos")
+    public Response getAverageMemberMemoryByMemberId(
+            @PathParam("Id") String Id,@PathParam("Interval") String Interval) throws RestAPIException {
+
+        String averageMemberMemoryList=null;
+        try {
+            averageMemberMemoryList = StratosApiV41Utils.getAverageMemberMemoryByMemberId(Id, Interval);
+
+        } catch (RestAPIException ex) {
+            Response.status(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }
+
+        return Response.ok(averageMemberMemoryList).build();
+
+    }
+
+    @GET
+    @Path("/averageMemberLoad/{Id}/{Interval}")
+    @Consumes("application/json")
+    @Produces("application/json")
+    @AuthorizationAction("/permission/admin/stratos")
+    public Response getAverageMemberLoadByMemberId(
+            @PathParam("Id") String Id,@PathParam("Interval") String Interval) throws RestAPIException {
+
+        String averageMemberLoadList=null;
+        try {
+            averageMemberLoadList = StratosApiV41Utils.getAverageMemberLoadByMemberId(Id, Interval);
+
+        } catch (RestAPIException ex) {
+            Response.status(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }
+
+        return Response.ok(averageMemberLoadList).build();
+
+    }
+
+
+    @GET
+    @Path("/averageClusterLoad/{Id}/{Interval}")
+    @Consumes("application/json")
+    @Produces("application/json")
+    @AuthorizationAction("/permission/admin/stratos")
+    public Response getAverageClusterLoadByClusterId(
+            @PathParam("Id") String Id,@PathParam("Interval") String Interval) throws RestAPIException {
+
+        String averageMemberLoadList=null;
+        try {
+            averageMemberLoadList = StratosApiV41Utils.getAverageClusterLoadByClusterId(Id, Interval);
+
+        } catch (RestAPIException ex) {
+            Response.status(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }
+
+        return Response.ok(averageMemberLoadList).build();
+
+    }
+
+
+    @GET
+    @Path("/averageClusterFlightRequest/{Id}/{Interval}")
+    @Consumes("application/json")
+    @Produces("application/json")
+    @AuthorizationAction("/permission/admin/stratos")
+    public Response getAverageClusterFlightRequestCountByClusterId(
+            @PathParam("Id") String Id,@PathParam("Interval") String Interval) throws RestAPIException {
+
+        String averageClusterFlightRequestCount=null;
+        try {
+            averageClusterFlightRequestCount = StratosApiV41Utils.getAverageClusterFlightRequestCountByClusterId(Id, Interval);
+
+        } catch (RestAPIException ex) {
+            Response.status(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }
+
+        return Response.ok(averageClusterFlightRequestCount).build();
+
+    }
+
 
 }

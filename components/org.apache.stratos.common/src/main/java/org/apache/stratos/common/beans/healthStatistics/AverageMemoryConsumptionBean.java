@@ -25,11 +25,11 @@ public class AverageMemoryConsumptionBean {
     private String clusterId;
     private String clusterInstanceId;
     private Double memberAverageMemoryConsumption;
-    private Integer timeStamp;
+    private Long timeStamp;
     private String memberId;
     private String networkPartitionId;
 
-    public AverageMemoryConsumptionBean(String clusterId, String clusterInstanceId, Double memberAverageMemoryConsumption, Integer timeStamp, String memberId, String networkPartitionId) {
+    public AverageMemoryConsumptionBean(String clusterId, String clusterInstanceId, Double memberAverageMemoryConsumption, Long timeStamp, String memberId, String networkPartitionId) {
         this.clusterId = clusterId;
         this.clusterInstanceId = clusterInstanceId;
         this.memberAverageMemoryConsumption = memberAverageMemoryConsumption;
@@ -62,11 +62,11 @@ public class AverageMemoryConsumptionBean {
         this.memberAverageMemoryConsumption = memberAverageMemoryConsumption;
     }
 
-    public Integer getTimeStamp() {
+    public Long getTimeStamp() {
         return timeStamp;
     }
 
-    public void setTimeStamp(Integer timeStamp) {
+    public void setTimeStamp(Long timeStamp) {
         this.timeStamp = timeStamp;
     }
 
