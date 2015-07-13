@@ -3675,7 +3675,7 @@ public class StratosApiV41Utils {
 log.error(result);
         try {
             while (result.next()) {
-                averageMemberMemoryList.add(new AverageMemoryConsumptionBean("", "", result.getDouble("MEMBER_AVERAGE_MEMORY_CONSUMPTION"), result.getLong("TIMESTAMP"), "", ""));
+                averageMemberMemoryList.add(new AverageMemoryConsumptionBean("", "", result.getDouble("MEMBER_AVERAGE_MEMORY_CONSUMPTION"), result.getInt("TIMESTAMP"), "", ""));
             }
         } catch (SQLException e) {
             throw new RestAPIException(e.getMessage(), e);
