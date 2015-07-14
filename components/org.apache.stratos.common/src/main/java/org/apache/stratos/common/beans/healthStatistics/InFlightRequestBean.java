@@ -25,17 +25,13 @@ public class InFlightRequestBean {
     private static final long serialVersionUID = -7788619177798333712L;
 
     private String clusterId;
-    private String clusterInstanceId;
     private Long timeStamp;
     private Double inFlightRequestCount;
-    private String networkPartitionId;
 
-    public InFlightRequestBean(String clusterId, String clusterInstanceId, Long timeStamp, Double inFlightRequestCount, String networkPartitionId) {
+    public InFlightRequestBean(String clusterId, Long timeStamp, Double inFlightRequestCount) {
         this.clusterId = clusterId;
-        this.clusterInstanceId = clusterInstanceId;
         this.timeStamp = timeStamp;
         this.inFlightRequestCount = inFlightRequestCount;
-        this.networkPartitionId = networkPartitionId;
     }
 
     
@@ -47,14 +43,6 @@ public class InFlightRequestBean {
 
     public void setClusterId(String clusterId) {
         this.clusterId = clusterId;
-    }
-
-    public String getClusterInstanceId() {
-        return clusterInstanceId;
-    }
-
-    public void setClusterInstanceId(String clusterInstanceId) {
-        this.clusterInstanceId = clusterInstanceId;
     }
 
     public Double getInFlightRequestCount() {
@@ -72,14 +60,6 @@ public class InFlightRequestBean {
 
     public void setTimeStamp(Long timeStamp) {
         this.timeStamp = timeStamp;
-    }
-
-    public String getNetworkPartitionId() {
-        return networkPartitionId;
-    }
-
-    public void setNetworkPartitionId(String networkPartitionId) {
-        this.networkPartitionId = networkPartitionId;
     }
 
 }

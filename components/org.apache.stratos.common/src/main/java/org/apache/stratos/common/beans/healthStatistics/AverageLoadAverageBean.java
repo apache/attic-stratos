@@ -24,21 +24,15 @@ public class AverageLoadAverageBean {
     private static final long serialVersionUID = -7788619177798333712L;
 
     private String clusterId;
-    private String clusterInstanceId;
     private Long timeStamp;
     private Double memberAverageLoadAverage;
     private String memberId;
-    private String networkPartitionId;
 
-    public AverageLoadAverageBean(String clusterId, String clusterInstanceId, Long timeStamp, Double memberAverageLoadAverage, String memberId, String networkPartitionId) {
+    public AverageLoadAverageBean(String clusterId, Long timeStamp, Double memberAverageLoadAverage, String memberId) {
         this.clusterId = clusterId;
-        this.clusterInstanceId = clusterInstanceId;
         this.timeStamp = timeStamp;
         this.memberAverageLoadAverage = memberAverageLoadAverage;
         this.memberId = memberId;
-        this.networkPartitionId = networkPartitionId;
-
-
     }
     
     
@@ -51,13 +45,6 @@ public class AverageLoadAverageBean {
         this.clusterId = clusterId;
     }
 
-    public String getClusterInstanceId() {
-        return clusterInstanceId;
-    }
-
-    public void setClusterInstanceId(String clusterInstanceId) {
-        this.clusterInstanceId = clusterInstanceId;
-    }
 
     public Double getMemberAverageLoadAverage() {
         return memberAverageLoadAverage;
@@ -83,12 +70,5 @@ public class AverageLoadAverageBean {
         this.memberId = memberId;
     }
 
-    public String getNetworkPartitionId() {
-        return networkPartitionId;
-    }
-
-    public void setNetworkPartitionId(String networkPartitionId) {
-        this.networkPartitionId = networkPartitionId;
-    }
     
 }

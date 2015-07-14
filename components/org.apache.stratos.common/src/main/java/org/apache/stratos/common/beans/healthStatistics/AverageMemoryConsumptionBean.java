@@ -23,19 +23,15 @@ public class AverageMemoryConsumptionBean {
     private static final long serialVersionUID = -7788619177798333711L;
 
     private String clusterId;
-    private String clusterInstanceId;
     private Double memberAverageMemoryConsumption;
     private Long timeStamp;
     private String memberId;
-    private String networkPartitionId;
 
-    public AverageMemoryConsumptionBean(String clusterId, String clusterInstanceId, Double memberAverageMemoryConsumption, Long timeStamp, String memberId, String networkPartitionId) {
+    public AverageMemoryConsumptionBean(String clusterId, Double memberAverageMemoryConsumption, Long timeStamp, String memberId) {
         this.clusterId = clusterId;
-        this.clusterInstanceId = clusterInstanceId;
         this.memberAverageMemoryConsumption = memberAverageMemoryConsumption;
         this.timeStamp = timeStamp;
         this.memberId = memberId;
-        this.networkPartitionId = networkPartitionId;
     }
 
     public String getClusterId() {
@@ -44,14 +40,6 @@ public class AverageMemoryConsumptionBean {
 
     public void setClusterId(String clusterId) {
         this.clusterId = clusterId;
-    }
-
-    public String getClusterInstanceId() {
-        return clusterInstanceId;
-    }
-
-    public void setClusterInstanceId(String clusterInstanceId) {
-        this.clusterInstanceId = clusterInstanceId;
     }
 
     public Double getMemberAverageMemoryConsumption() {
@@ -77,15 +65,6 @@ public class AverageMemoryConsumptionBean {
     public void setMemberId(String memberId) {
         this.memberId = memberId;
     }
-
-    public String getNetworkPartitionId() {
-        return networkPartitionId;
-    }
-
-    public void setNetworkPartitionId(String networkPartitionId) {
-        this.networkPartitionId = networkPartitionId;
-    }
-
 
 }
 
