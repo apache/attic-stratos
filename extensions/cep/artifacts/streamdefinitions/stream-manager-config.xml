@@ -63,6 +63,7 @@
          <payloadData>
              <property name="cluster_id" type="String"/>
              <property name="cluster_instance_id" type="String"/>
+             <property name="timeStamp" type="long" />
              <property name="network_partition_id" type="String"/>
              <property name="count" type="double"/>
          </payloadData>

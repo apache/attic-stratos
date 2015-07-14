@@ -19,7 +19,6 @@
  under the License.
 
 -->
-
 <executionPlan name="AverageInFlightRequestsFinder" statistics="disable"
                trace="enable" xmlns="http://wso2.org/carbon/eventprocessor">
     <description>This will average the number of requests in flight over a minute.</description>
@@ -32,12 +31,12 @@
     </importedStreams>
     <queryExpressions><![CDATA[
 	from avg_rif_stat
-		select cluster_id, cluster_instance_id, network_partition_id, in_flight_request_count,
+		select cluster_id, cluster_instance_id,timeStamp, network_partition_id, in_flight_request_count,
 		stratos:concat(cluster_id, '-' ,cluster_instance_id) as avg_rif_cluster_network
 		insert into avg_rif_concat;
 	define partition avg_rif_cluster_partition by avg_rif_concat.avg_rif_cluster_network;
 	from avg_rif_concat#window.timeBatch(1 min)
-		select cluster_id, cluster_instance_id, network_partition_id, avg(in_flight_request_count) as count
+		select cluster_id, cluster_instance_id,timeStamp, network_partition_id, avg(in_flight_request_count) as count
 		insert into average_in_flight_requests 
 		partition by avg_rif_cluster_partition;
     ]]></queryExpressions>
@@ -46,3 +45,4 @@
                 valueOf="average_in_flight_requests" version="1.0.0"/>
     </exportedStreams>
 </executionPlan>
+                                    
