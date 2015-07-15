@@ -3652,6 +3652,13 @@ public class StratosApiV41Utils {
         }
     }
 
+    /**
+     *
+     * @param Id
+     * @param Interval
+     * @return Average of Cluster Memory Data
+     * @throws RestAPIException
+     */
 
     public static String getAverageClusterMemoryByClusterId(String Id, String Interval) throws RestAPIException {
 
@@ -3678,6 +3685,13 @@ public class StratosApiV41Utils {
         return json;
     }
 
+    /**
+     *
+     * @param Id
+     * @param Interval
+     * @return Average Cluster Load average data
+     * @throws RestAPIException
+     */
 
     public static String getAverageClusterLoadByClusterId(String Id, String Interval) throws RestAPIException {
 
@@ -3704,10 +3718,18 @@ public class StratosApiV41Utils {
         return json;
     }
 
+    /**
+     *
+     * @param Id
+     * @param Interval
+     * @return Average Member Memory Average data
+     * @throws RestAPIException
+     */
+
 
     public static String getAverageMemberMemoryByMemberId(String Id, String Interval) throws RestAPIException {
 
-        String memberIDQuery = "SELECT TIMESTAMP," +
+        String memberIfQueryforMemory = "SELECT TIMESTAMP," +
                 "MEMBER_AVERAGE_MEMORY_CONSUMPTION FROM MemberAverageMemoryAverageEventFormatterHealthStat WHERE " +
                 "from_unixtime(TIMESTAMP/1000,\"%Y-%m-%d %H:%i\") " +
                 "> NOW() - INTERVAL " + Interval + " HOUR AND MEMBER_ID =\"" + Id + "\"";
@@ -3716,7 +3738,7 @@ public class StratosApiV41Utils {
         List<AverageMemoryConsumptionBean> averageMemberMemoryList = new ArrayList<AverageMemoryConsumptionBean>();
         ConnectionHandler connectionHandler = new ConnectionHandler();
 
-        ResultSet result = connectionHandler.getsqlConnection(memberIDQuery);
+        ResultSet result = connectionHandler.getsqlConnection(memberIfQueryforMemory);
 
         try {
             while (result.next()) {
@@ -3730,9 +3752,17 @@ public class StratosApiV41Utils {
         return json;
     }
 
+    /**
+     *
+     * @param Id
+     * @param Interval
+     * @return Average Member Load Average data
+     * @throws RestAPIException
+     */
+
     public static String getAverageMemberLoadByMemberId(String Id, String Interval) throws RestAPIException {
 
-        String memberIDLoadQuery = "SELECT TIMESTAMP," +
+        String memberLoadAverageQuery = "SELECT TIMESTAMP," +
                 "MEMBER_AVERAGE_LOAD_AVERAGE FROM MemberAverageLoadAverageEventFormatterHealthStat WHERE " +
                 "from_unixtime(TIMESTAMP/1000,\"%Y-%m-%d %H:%i\") " +
                 "> NOW() - INTERVAL " + Interval + " HOUR AND MEMBER_ID =\"" + Id + "\"";
@@ -3741,7 +3771,7 @@ public class StratosApiV41Utils {
         List<AverageLoadAverageBean> averageMemberLoadList = new ArrayList<AverageLoadAverageBean>();
         ConnectionHandler connectionHandler = new ConnectionHandler();
 
-        ResultSet result = connectionHandler.getsqlConnection(memberIDLoadQuery);
+        ResultSet result = connectionHandler.getsqlConnection(memberLoadAverageQuery);
 
         try {
             while (result.next()) {
@@ -3756,10 +3786,17 @@ public class StratosApiV41Utils {
         return json;
     }
 
+    /**
+     *
+     * @param Id
+     * @param Interval
+     * @return Average Cluster Flight request Count data
+     * @throws RestAPIException
+     */
 
     public static String getAverageClusterFlightRequestCountByClusterId(String Id, String Interval) throws RestAPIException {
 
-        String clusterIDQueryFlightCount = "SELECT SUM(FLIGHT_REQUEST_COUNT) AS FLIGHT_REQUEST_COUNT,TIMESTAMP FROM " +
+        String clusterIDQueryforFlightCount = "SELECT SUM(FLIGHT_REQUEST_COUNT) AS FLIGHT_REQUEST_COUNT,TIMESTAMP FROM " +
                 "FlightRequestEventFormatterHealthStat WHERE from_unixtime(TIMESTAMP/1000,\"%Y-%m-%d %H:%i\") > NOW() - " +
                 "INTERVAL " + Interval + " HOUR AND CLUSTER_ID = \"" + Id + "\"" +
                 "GROUP BY from_unixtime(TIMESTAMP/1000,\"%Y-%m-%d %H:%i\");";
@@ -3768,7 +3805,7 @@ public class StratosApiV41Utils {
         List<InFlightRequestBean> inFlightRequestBeanList = new ArrayList<InFlightRequestBean>();
         ConnectionHandler connectionHandler = new ConnectionHandler();
 
-        ResultSet result = connectionHandler.getsqlConnection(clusterIDQueryFlightCount);
+        ResultSet result = connectionHandler.getsqlConnection(clusterIDQueryforFlightCount);
 
         try {
             while (result.next()) {

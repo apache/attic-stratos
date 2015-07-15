@@ -2128,6 +2128,13 @@ public class StratosApiV41 extends AbstractApi {
         return Response.ok(iaasProviderInfoBean).build();
     }
 
+    /**
+     *
+     * @param Id
+     * @param Interval
+     * @return 200 if average memory consumption can get and memory consumption values
+     * @throws RestAPIException
+     */
     @GET
     @Path("/cluster/averageMemory/{Id}/{Interval}")
     @Consumes("application/json")
@@ -2149,6 +2156,13 @@ public class StratosApiV41 extends AbstractApi {
 
     }
 
+    /**
+     *
+     * @param Id
+     * @param Interval
+     * @return 200 if average memory consumption can get and memory consumption values
+     * @throws RestAPIException
+     */
     @GET
     @Path("/member/averageMemory/{Id}/{Interval}")
     @Consumes("application/json")
@@ -2169,6 +2183,14 @@ public class StratosApiV41 extends AbstractApi {
         return Response.ok(averageMemberMemoryList).build();
 
     }
+
+    /**
+     *
+     * @param Id
+     * @param Interval
+     * @return 200 if average load consumption can get and load average consumption values
+     * @throws RestAPIException
+     */
 
     @GET
     @Path("/member/averageLoad/{Id}/{Interval}")
@@ -2191,6 +2213,13 @@ public class StratosApiV41 extends AbstractApi {
 
     }
 
+    /**
+     *
+     * @param Id
+     * @param Interval
+     * @return 200 if average load consumption can get and load average consumption values
+     * @throws RestAPIException
+     */
 
     @GET
     @Path("/cluster/averageLoad/{Id}/{Interval}")
@@ -2213,6 +2242,13 @@ public class StratosApiV41 extends AbstractApi {
 
     }
 
+    /**
+     *
+     * @param Id
+     * @param Interval
+     * @return 200 if average request in flight can get and in flight request count
+     * @throws RestAPIException
+     */
 
     @GET
     @Path("/cluster/flightRequestCount/{Id}/{Interval}")
