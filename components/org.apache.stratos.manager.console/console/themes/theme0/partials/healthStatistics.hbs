@@ -3,10 +3,13 @@
 
 <body onload="bodyOnLoad({{Json}})">
 
+<body onload="getClusters()">
+
 <div class="container-fluid" style="padding-bottom:40px">
     <div class="row title">
         <div class="title-main text-center">
-            <h1 id="mainTitle">Health statistics</h1>
+            <h1 id="mainTitle">{{Id}}</h1>
+            <h3 id="mainTitle">Type : {{Type}}</h3>
         </div>
     </div>
 
@@ -17,6 +20,7 @@
 
     <div id="menu" style="display:none;">
         <div class="page-container">
+            <table>e-container">
             <table>
                 <tr>
                     <td style="vertical-align: top;">
@@ -33,6 +37,7 @@
                             <div id="chart2" style="background-color: #FFFAF0; height:400px ; width: 800px ; margin: 0 auto"></div><br>
                             <h3 style="color:white">Memory Consumption</h3>
                             <div id="chart3" style="background-color: #FFFAF0; height:400px ; width: 800px ; margin: 0 auto"></div>
+                            <h1>{{newtRY2}}</h1>
                         </div>
                     </td>
                 </tr>
@@ -49,8 +54,79 @@
     </div>
 </div>
 
+<script>
+   
+    function getClusters(){
+        jQuery.ajax({
+            type:"POST",
+            url: "{{url ""}}/healthStatistics/",
+            data:{
+                action:"memoryConsumption"
+            },
+            async:true,
+            cache:false,
+            success: function (cluster) {
+                alert("Item"+cluster)
+
+            }
+        });
+    }
+
+    function getMemoryAverageData(){
+
+        jQuery.ajax({
+            type:"POST",
+            url: "{{url ""}}/healthStatistics/",
+            data:{
+                action:"MemoryAverageData"
+            },
+            async:true,
+            cache:false,
+            success: function (cluster) {
+                alert("Item")
+
+            }
+        });
+    }
+
+    function getFlightRequestCountData(){
+
+        jQuery.ajax({
+            type:"POST",
+            url: "{{url ""}}/healthStatistics/",
+            data:{
+                action:"FlightRequestCountData"
+            },
+            async:true,
+            cache:false,
+            success: function (cluster) {
+                alert("Item")
+
+            }
+        });
+    }
+
+    function getLoadAverageData(){
+
+        jQuery.ajax({
+            type:"POST",
+            url: "{{url ""}}/healthStatistics/",
+            data:{
+                action:"LoadAverageData"
+            },
+            async:true,
+            cache:false,
+            success: function (cluster) {
+                alert("Item")
+
+            }
+        });
+    }
+
+</script>
+
 <script type="text/javascript" src="{{url "/themes/theme0/js/c3/d3.v3.min.js"}}"></script>
 <script type="text/javascript" src="{{url "/themes/theme0/js/c3/c3.min.js"}}"></script>
-<script type="text/javascript" src="{{url "/themes/theme0/js/healthStat/healthstat.js"}}"></script>
+<script type="text/javascript" src="{{url "/themes/theme0/js/healthStat/healthStatistics.js"}}"></script>
 </body>
 
