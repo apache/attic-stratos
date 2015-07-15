@@ -26,39 +26,76 @@ include('/controllers/menu/menu_generator.jag');
 var log = new Log("apacheStratos.appconfig"),
         error = [],
         caramel = require('caramel'),
-// dataTSV=require('/controllers/datatsv/data2.json'),
         context = caramel.configs().context,
+        util = require('/controllers/rest/rest_calls.jag'),
         menuJson = require('/controllers/menu/menu.json'),
-        JsonFile = require("/controllers/datatsv/json.json"),
+        util = require('/controllers/rest/rest_calls.jag'),
+        Id = request.getParameter('Id'),
+        Type = request.getParameter('Type'),
         userPermissions = session.get('PERMISSIONS');
 
 //create left menu
 var leftMenu = menuGenerator(context, menuJson.menu, userPermissions);
 //create metro block
-var metro_menu = metroGenerator('/healthStatistics', menuJson.menu, userPermissions);
+var metro_menu = metroGenerator('/health', menuJson.menu, userPermissions);
 
 var log = new Log();
 var config = {"driverClassName":"org.apache.cassandra.cql.jdbc.CassandraDriver"};
-log.info(JsonFile);
+log.debug(Id);
 var db = null;
 var result = null;
 
-/*try {
- db = new Database("WSO2BAM_CASSANDRA_DATASOURCE_3");
- db.query("USE AGENTHEALTH_STAT");
+log.info(")))))))))))))))))))))))))))))))))))))))))1");
+//var newtRY = util.RESTCalls.getMemberDetails();        
+//log.info(newtRY+")))))))))))))))))))))))))))))))))))))))))2");
+var newtRY2 = util.RESTCalls.getClusterDetails(); 
+log.info(newtRY2+")))))))))))))))))))))))))))))))))))))))))2");
 
- result = db.query("SELECT * FROM AGENTHEALTH_STAT");
+(function () {
 
- } finally {
- if (db != null) {
- db.close();
- }
- }
- */
+    var action = request.getParameter("action");
+
+    if(action == "memoryConsumption") {
+        try {
+
+            cluster= getData();
+            log.info("@@@@@@@@@@@@@@@@"+cluster);
+
+            log.info("DDDDDDDDDDDDDDDDDDDDDDDDDDDDD"+action);
+
+        } catch (e) {
+            throw new Error("Error while getting Category Activity data for "+ e);
+        }
+
+    }else if(action == "loadAverage"){
+        try {
+            log.info("DDDDDDDDDDDDDDDDDDDDDDDDDDDDD"+action);
+
+        } catch (e) {
+            throw new Error("Error while getting Category Activity data for "+ e);
+        }
+
+    }else if(action == "requestInFlight"){
+        try {
+
+            log.info("DDDDDDDDDDDDDDDDDDDDDDDDDDDDD"+action);
+
+        } catch (e) {
+            throw new Error("Error while getting Category Activity data for "+ e);
+        }
+
+    }
+    return cluster;
+
+}());
+
+
 caramel.render({
     breadcrumbPathLevelOne: 'healthStatistics',
-    //dataTSV: JSON.stringify(dataTSV),
-    Json: JSON.stringify(JsonFile),
+    Id:Id,
+    //newtRY:JSON.stringify(newtRY),
+    newtRY2:JSON.stringify(newtRY2),    
+    Type: Type,
     result:result,
     error: error
 });

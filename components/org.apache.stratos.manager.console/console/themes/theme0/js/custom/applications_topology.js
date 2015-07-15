@@ -48,7 +48,7 @@ function genTree(data){
     function clusterInstances(items, collector, parent){
         for(var prop in items){
             if (items.hasOwnProperty(prop)) {
-                var cur_name = items[prop].clusterId + items[prop].instanceId,
+               var cur_name = items[prop].clusterId,
                     alias = items[prop].alias,
                     hostNames = items[prop].hostNames.toString(),
                     serviceName = items[prop].serviceName,
@@ -139,7 +139,7 @@ function genTree(data){
 
 function update(source) {
 
-    // ************** Generate the tree diagram	 *****************
+    // ************** Generate the tree diagram  *****************
     var margin = {top: 80, right: 120, bottom: 20, left: 120},
         width = 900 - margin.right - margin.left,
         height = 900 - margin.top - margin.bottom;
@@ -203,12 +203,14 @@ function update(source) {
                 }else{
                     var accessURLHTML ='';
                 }
+
                 div_html = "<strong>Cluster Id: </strong>" + d.name + "<br/>" +
                             "<strong>Cluster Alias: </strong>" + d.alias + "<br/>" +
                             accessURLHTML +
                             "<strong>HostNames: </strong>" + d.hostNames + "<br/>" +
                             "<strong>Service Name: </strong>" + d.serviceName + "<br/>" +
-                            "<strong>Status: </strong>" + d.status;
+                            "<strong>Status: </strong>" + d.status + "<br/><br/>" +
+                            "<button id="+d.name+" name='cluster' onClick='return showHealthStat(this)'>Show Health Status</button>";
 
             } else if (d.type == 'members') {
                 if((typeof d.ports != 'undefined') && (d.ports.length > 0)) {
@@ -224,13 +226,15 @@ function update(source) {
                 } else{
                     var portsHTML ='';
                 }
+
                 div_html = "<strong>Member Id: </strong>" + d.name + "<br/>" +
                         "<strong>Default Private IP: </strong>" + d.defaultPrivateIP + "<br/>" +
                         "<strong>Default Public IP: </strong>" + d.defaultPublicIP + "<br/>" +
                         portsHTML +
                         "<strong>Network Partition Id: </strong>" + d.networkPartitionId + "<br/>" +
                         "<strong>Partition Id: </strong>" + d.partitionId + "<br/>" +
-                        "<strong>Status: </strong>" + d.status;
+                        "<strong>Status: </strong>" + d.status + "<br/><br/>" +
+                        "<button id="+d.name+" name='member' onClick='return showHealthStat(this)'>Show Health Status</button>";
             } else if (d.type == 'groups') {
 
                 div_html = "<strong>Group Instance Id: </strong>" + d.instanceId + "<br/>" +
@@ -247,7 +251,8 @@ function update(source) {
             }
            return div_html;
         });
-        // add popover on nodes
+
+    // add popover on nodes
     nodeEnter.append("rect")
         .attr("x", -15)
         .attr("y", -15)
@@ -565,9 +570,6 @@ function addJsplumbGroup(groupJSON, cartridgeCounter){
             }
         }
     }
-
-
-
 }
 
 var initapp = 0;
@@ -580,6 +582,19 @@ $("a[href='#application']").on('shown.bs.tab', function(e) {
         initapp++;
     }
 });
+
+function showHealthStat(element){
+    var currentURL = window.location.href;
+    var splitTense = currentURL.split('console');
+    var newURL = splitTense[0] + "console/healthStatistics/";
+
+    var form = $('<form action="' + newURL + '" method="post">' +
+    '<input type="hidden" name="Id" value="' + element.id + '"></input>' +
+    '<input type="hidden" name="Type" value="' + element.name + '"></input>' + '</form>');
+
+    $('body').append(form);
+    $(form).submit();
+}
 
 
 

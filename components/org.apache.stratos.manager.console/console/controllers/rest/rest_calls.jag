@@ -28,7 +28,19 @@ RESTCalls = new function(){
     };
 
     this.getClusterDetails = function(){
-        return this.sendReceive("GET","/averageMemberMemory/getByClusterId",{});
+     var Id="single-cartridge-app.my-php.php.domain";
+ 
+    var Interval="500";
+    
+        return this.sendReceive("GET","/averageClusterLoad/" +Id+"/"+Interval,{});
+    };
+
+    this.getMemberDetails = function(){
+      var Id="tomcat-single-signon.mywso2is.wso2is.domain795dc7af-8317-4071-bbbd-5ac006e3a9ea";
+    
+    var Interval="500";
+
+        return this.sendReceive("GET","/averageMemberLoad/" +Id+"/"+Interval,{});
     };
 
     this.deployPartitionDefinition = function(partitionDefinition){
@@ -374,18 +386,22 @@ RESTCalls = new function(){
             }
             if (responseREST.xhr.status >= 200 && responseREST.xhr.status < 300) { //if success
                 if (responseREST.data != null && responseREST.data != undefined) {
+                log.info("******************1"+responseREST.data);
                     session.put("get-status", { "message": parse(responseREST.data).message, "status": "success" });
                 }
             } else if (responseREST.xhr.status >= 300 && responseREST.xhr.status < 400) { //if redirects
                 if (responseREST.data != null && responseREST.data != undefined) {
+                   log.info("******************2"+responseREST.data);
                     session.put("get-status", { "message": parse(responseREST.data).message, "status": "warning" });
                 }
             } else if (responseREST.xhr.status >= 400 && responseREST.xhr.status < 500) { //if client error
                 if (responseREST.data != null && responseREST.data != undefined) {
+                    log.info("******************3"+responseREST.data);
                     session.put("get-status", { "message": parse(responseREST.data).message, "status": "error" });
                 }
             } else if (responseREST.xhr.status >= 500 && responseREST.xhr.status < 600) { //if server error
                 if (responseREST.data != null && responseREST.data != undefined) {
+                   log.info("******************4"+responseREST.data);
                     session.put("get-status", { "message": parse(responseREST.data).message, "status": "error" });
                 }
             } else {

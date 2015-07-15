@@ -50,10 +50,12 @@ var render = function (theme, data, meta, require) {
                 {
                     partial: 'healthStatistics',
                     context:{
-                        dataTSV:data.dataTSV,
-                        Json:data.Json,
+                        Id:data.Id,
+                        newtRY:data.newtRY,
+                        newtRY2:data.newtRY2,
+                        Type: data.Type,
                         result:data.result,
-                        content_title:'Health Statistics'
+                        content_title:'Health Stats'
                     }
                 }
             ]
