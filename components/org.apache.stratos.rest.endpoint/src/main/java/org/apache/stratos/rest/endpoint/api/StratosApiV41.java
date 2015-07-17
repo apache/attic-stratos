@@ -2143,16 +2143,16 @@ public class StratosApiV41 extends AbstractApi {
     public Response getAverageClusterMemoryByClusterId(
             @PathParam("Id") String Id, @PathParam("Interval") String Interval) throws RestAPIException {
 
-        String averageMemberMemoryList = null;
+        String averageClusterMemoryList = null;
         try {
-            averageMemberMemoryList = StratosApiV41Utils.getAverageClusterMemoryByClusterId(Id, Interval);
+            averageClusterMemoryList = StratosApiV41Utils.getAverageClusterMemoryByClusterId(Id, Interval);
 
         } catch (RestAPIException ex) {
             return Response.status(Response.Status.NOT_FOUND).entity(new ResponseMessageBean(
                     ResponseMessageBean.ERROR, "Could Not get Cluster Memory Average Data")).build();
         }
 
-        return Response.ok(averageMemberMemoryList).build();
+        return Response.ok().entity(averageClusterMemoryList).build();
 
     }
 
@@ -2180,7 +2180,7 @@ public class StratosApiV41 extends AbstractApi {
                     ResponseMessageBean.ERROR, "Could Not get Member Memory Average Data")).build();
         }
 
-        return Response.ok(averageMemberMemoryList).build();
+        return Response.ok().entity(averageMemberMemoryList).build();
 
     }
 
@@ -2209,7 +2209,8 @@ public class StratosApiV41 extends AbstractApi {
                     ResponseMessageBean.ERROR, "Could Not get Member Load Average Data")).build();
         }
 
-        return Response.ok(averageMemberLoadList).build();
+
+        return Response.ok().entity(averageMemberLoadList).build();
 
     }
 
@@ -2229,16 +2230,17 @@ public class StratosApiV41 extends AbstractApi {
     public Response getAverageClusterLoadByClusterId(
             @PathParam("Id") String Id, @PathParam("Interval") String Interval) throws RestAPIException {
 
-        String averageMemberLoadList = null;
+        String averageClusterLoadList = null;
         try {
-            averageMemberLoadList = StratosApiV41Utils.getAverageClusterLoadByClusterId(Id, Interval);
+            averageClusterLoadList = StratosApiV41Utils.getAverageClusterLoadByClusterId(Id, Interval);
 
         } catch (RestAPIException ex) {
             return Response.status(Response.Status.NOT_FOUND).entity(new ResponseMessageBean(
                     ResponseMessageBean.ERROR, "Could Not get Cluster Load Average Data")).build();
         }
 
-        return Response.ok(averageMemberLoadList).build();
+        return Response.ok().entity(averageClusterLoadList).build();
+
 
     }
 
@@ -2267,7 +2269,7 @@ public class StratosApiV41 extends AbstractApi {
                     ResponseMessageBean.ERROR, "Could Not get In Flight Request Data")).build();
         }
 
-        return Response.ok(averageClusterFlightRequestCount).build();
+        return Response.ok().entity(averageClusterFlightRequestCount).build();
 
     }
 
