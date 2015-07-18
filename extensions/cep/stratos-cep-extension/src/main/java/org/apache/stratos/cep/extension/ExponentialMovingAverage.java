@@ -11,7 +11,7 @@ public class ExponentialMovingAverage {
      * @param value
      * @return
      */
-    public double getAverage(double value){
+    public double getSmoothedValue(double value){
         if(this.value == null){
             this.value = value;
             return value;
@@ -29,4 +29,5 @@ public class ExponentialMovingAverage {
     public Double getValue() {
         return value;
     }
+
 }

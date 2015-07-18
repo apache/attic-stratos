@@ -7,10 +7,10 @@ import org.apache.log4j.Logger;
 
 public class CurveFitter {
     private final Logger log = Logger.getLogger(CurveFitter.class);
-    private double[] timeStampValues;
+    private long[] timeStampValues;
     private double[] dataValues;
 
-    public CurveFitter(double[] timeStampValues, double[] dataValues){
+    public CurveFitter(long[] timeStampValues, double[] dataValues){
         this.timeStampValues = timeStampValues;
         this.dataValues = dataValues;
     }

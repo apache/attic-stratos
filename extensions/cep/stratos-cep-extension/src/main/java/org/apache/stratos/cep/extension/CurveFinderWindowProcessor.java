@@ -2,32 +2,36 @@ package org.apache.stratos.cep.extension;
 
 import org.apache.log4j.Logger;
 import org.wso2.siddhi.core.config.SiddhiContext;
+import org.wso2.siddhi.core.event.AtomicEvent;
+import org.wso2.siddhi.core.event.ListEvent;
 import org.wso2.siddhi.core.event.StreamEvent;
 import org.wso2.siddhi.core.event.in.InEvent;
 import org.wso2.siddhi.core.event.in.InListEvent;
 import org.wso2.siddhi.core.event.remove.RemoveEvent;
 import org.wso2.siddhi.core.event.remove.RemoveListEvent;
+import org.wso2.siddhi.core.event.remove.RemoveStream;
 import org.wso2.siddhi.core.persistence.ThreadBarrier;
 import org.wso2.siddhi.core.query.QueryPostProcessingElement;
 import org.wso2.siddhi.core.query.processor.window.RunnableWindowProcessor;
 import org.wso2.siddhi.core.query.processor.window.WindowProcessor;
+import org.wso2.siddhi.core.util.EventConverter;
 import org.wso2.siddhi.core.util.collection.queue.scheduler.ISchedulerSiddhiQueue;
 import org.wso2.siddhi.core.util.collection.queue.scheduler.SchedulerSiddhiQueue;
 import org.wso2.siddhi.core.util.collection.queue.scheduler.SchedulerSiddhiQueueGrid;
+import org.wso2.siddhi.core.util.collection.queue.scheduler.timestamp.SchedulerTimestampSiddhiQueue;
+import org.wso2.siddhi.core.util.collection.queue.scheduler.timestamp.SchedulerTimestampSiddhiQueueGrid;
 import org.wso2.siddhi.query.api.definition.AbstractDefinition;
-import org.wso2.siddhi.query.api.definition.Attribute;
-import org.wso2.siddhi.query.api.definition.Attribute.Type;
-import org.wso2.siddhi.query.api.expression.Expression;
-import org.wso2.siddhi.query.api.expression.Variable;
+import org.wso2.siddhi.query.api.expression.Expression;;
 import org.wso2.siddhi.query.api.expression.constant.IntConstant;
 import org.wso2.siddhi.query.api.expression.constant.LongConstant;
 import org.wso2.siddhi.query.api.extension.annotation.SiddhiExtension;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 @SiddhiExtension(namespace = "stratos", function = "curveFitting")
@@ -40,34 +44,42 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
     public static final double ALPHA = 0.8000;
     private ScheduledExecutorService eventRemoverScheduler;
     private long timeToKeep;
-    private int subjectedAttrIndex;
-    private Attribute.Type subjectedAttrType;
+    private ScheduledFuture<?> lastSchedule = null;
+    private long constantSchedulingInterval = -1;
+    private boolean isConstantSchedulingMode = false;
     private List<InEvent> newEventList;
     private List<RemoveEvent> oldEventList;
     private ThreadBarrier threadBarrier;
     private ISchedulerSiddhiQueue<StreamEvent> window;
-    private double[] timeStampValues;
+    private long[] timeStamps;
     private double[] dataValues;
+    private double[] smoothedValues;
 
 
     @Override
-    protected void processEvent(InEvent inEvent) {
+    protected void processEvent(InEvent event) {
         acquireLock();
         try {
-            newEventList.add(inEvent);
+            window.put(new RemoveEvent(event, System.currentTimeMillis() + timeToKeep));
+            nextProcessor.process(event);
         } finally {
             releaseLock();
         }
     }
 
     @Override
-    protected void processEvent(InListEvent inListEvent) {
+    protected void processEvent(InListEvent listEvent) {
         acquireLock();
         try {
-            System.out.println(inListEvent);
-            for (int i = 0, size = inListEvent.getActiveEvents(); i < size; i++) {
-                newEventList.add((InEvent) inListEvent.getEvent(i));
+            if (!async && siddhiContext.isDistributedProcessingEnabled()) {
+                long expireTime = System.currentTimeMillis() + timeToKeep;
+                for (int i = 0, activeEvents = listEvent.getActiveEvents(); i < activeEvents; i++) {
+                    window.put(new RemoveEvent(listEvent.getEvent(i), expireTime));
+                }
+            } else {
+                window.put(new RemoveListEvent(EventConverter.toRemoveEventArray(listEvent.getEvents(), listEvent.getActiveEvents(), System.currentTimeMillis() + timeToKeep)));
             }
+            nextProcessor.process(listEvent);
         } finally {
             releaseLock();
         }
@@ -110,24 +122,28 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
             timeToKeep = ((LongConstant) parameters[0]).getValue();
         }
 
-        String subjectedAttr = ((Variable)parameters[1]).getAttributeName();
-        subjectedAttrIndex = streamDefinition.getAttributePosition(subjectedAttr);
-        subjectedAttrType = streamDefinition.getAttributeType(subjectedAttr);
-
-        oldEventList = new ArrayList<RemoveEvent>();
-        if (this.siddhiContext.isDistributedProcessingEnabled()) {
-            newEventList = this.siddhiContext.getHazelcastInstance().getList(elementId + "-newEventList");
-        } else {
-            newEventList = new ArrayList<InEvent>();
+        if (parameters.length == 2) {
+            constantSchedulingInterval = ((IntConstant) parameters[1]).getValue();
+            if (constantSchedulingInterval > 0) {
+                isConstantSchedulingMode = true;
+            }
         }
 
-        if (this.siddhiContext.isDistributedProcessingEnabled()) {
-            window = new SchedulerSiddhiQueueGrid<StreamEvent>(elementId, this, this.siddhiContext, this.async);
+        if (!isConstantSchedulingMode) {
+            if (this.siddhiContext.isDistributedProcessingEnabled()) {
+                window = new SchedulerTimestampSiddhiQueueGrid<StreamEvent>(elementId, this, this.siddhiContext, this.async);
+            } else {
+                window = new SchedulerTimestampSiddhiQueue<StreamEvent>(this);
+            }
         } else {
-            window = new SchedulerSiddhiQueue<StreamEvent>(this);
+            if (this.siddhiContext.isDistributedProcessingEnabled()) {
+                throw new UnsupportedOperationException("Constant time sliding not supported for distributed processing.");
+                //TODO : Implement constant time sliding window grid for distributed case
+            } else {
+                window = new TimeStampSiddhiQueue<StreamEvent>(constantSchedulingInterval);
+                this.schedule();
+            }
         }
-        //Ordinary scheduling
-        window.schedule();
 
     }
 
@@ -135,56 +151,62 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
     public void run() {
         acquireLock();
         try {
-            long scheduledTime = System.currentTimeMillis();
-            try {
-                oldEventList.clear();
-                while (true) {
-                    threadBarrier.pass();
-                    RemoveEvent removeEvent = (RemoveEvent) window.poll();
-                    if (removeEvent == null) {
-                        if (oldEventList.size() > 0) {
-                            nextProcessor.process(new RemoveListEvent(
-                                    oldEventList.toArray(new RemoveEvent[oldEventList.size()])));
-                            oldEventList.clear();
-                        }
-
-                        if (newEventList.size() > 0) {
-                            InEvent[] inEvents =
-                                    newEventList.toArray(new InEvent[newEventList.size()]);
-                            for (InEvent inEvent : inEvents) {
-                                window.put(new RemoveEvent(inEvent, -1));
-                            }
-
-                            // in order to find second order polynomial, we need at least 3 events.
-                            if (newEventList.size() > 2) {
-
-                            } else {
-                                log.debug("Insufficient events to calculate second derivative. We need at least 3 events. Current event count: " +
-                                        newEventList.size());
-                            }
-
-                            newEventList.clear();
-                        }
-
-                        long diff = timeToKeep - (System.currentTimeMillis() - scheduledTime);
-                        if (diff > 0) {
-                            try {
-                                eventRemoverScheduler.schedule(this, diff, TimeUnit.MILLISECONDS);
-                            } catch (RejectedExecutionException ex) {
-                                log.warn("scheduling cannot be accepted for execution: elementID " +
-                                        elementId);
-                            }
-                            break;
-                        }
-                        scheduledTime = System.currentTimeMillis();
-                    } else {
-                        oldEventList.add(new RemoveEvent(removeEvent, System.currentTimeMillis()));
+            while (true) {
+                threadBarrier.pass();
+                StreamEvent streamEvent = window.peek();
+                try {
+                    if (streamEvent == null) {
+                        break;
                     }
+                    long timeDiff = ((RemoveStream) streamEvent).getExpiryTime() - System.currentTimeMillis();
+                    try {
+                        if (timeDiff > 0) {
+                            if (!isConstantSchedulingMode) {
+                                if (siddhiContext.isDistributedProcessingEnabled()) {
+
+                                    if (lastSchedule != null) {
+                                        lastSchedule.cancel(false);
+                                    }
+                                    //should not use sleep as it will not release the lock, hence it will fail in distributed case
+                                    lastSchedule = eventRemoverScheduler.schedule(this, timeDiff,
+                                            TimeUnit.MILLISECONDS);
+                                    break;
+                                } else {
+                                    //this cannot be used for distributed case as it will course concurrency issues
+                                    releaseLock();
+                                    Thread.sleep(timeDiff);
+                                    acquireLock();
+                                }
+                            } else {
+                                break;
+                            }
+                        }
+
+                        Collection<StreamEvent> resultList = window.poll(System.currentTimeMillis());
+                        if (resultList != null) {
+                            for (StreamEvent event : resultList) {
+                                if (streamEvent instanceof AtomicEvent) {
+                                    nextProcessor.process((AtomicEvent) event);
+                                } else {
+                                    nextProcessor.process((ListEvent) event);
+                                }
+                            }
+                        }
+                    } catch (InterruptedException e) {
+                        log.warn("Time window sleep interrupted at elementId " + elementId);
+                    }
+                } catch (Throwable e) {
+                    e.printStackTrace();
                 }
-            } catch (Throwable t) {
-                log.error(t.getMessage(), t);
             }
+        } catch (Throwable t) {
+            log.error(t.getMessage(), t);
         } finally {
+            // If this is constant scheduling, reschedule after every execution since
+            // arrival of events won't do any scheduling
+            if (isConstantSchedulingMode) {
+                this.scheduleConstantTime();
+            }
             releaseLock();
         }
     }
@@ -196,24 +218,52 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
      * @return
      */
     public InEvent[] curvePredictor(InEvent[] inEvents){
+        findEMA();
+
+        CurveFitter curveFitter = new CurveFitter(timeStamps, smoothedValues);
+        double[] coefficients = curveFitter.fit();
         return null;
     }
 
     /**
      * need to implement find exponential moving average
      */
-    public void findEMA(){
+    private void findEMA(){
+        timeStamps = new long[newEventList.size()];
+        dataValues = new double[newEventList.size()];
+        smoothedValues = new double[newEventList.size()];
 
+        for(int i = 0 ; i < newEventList.size() ; i++){
+            timeStamps[i] = newEventList.get(i).getTimeStamp();
+            //Problem need to ask question
+            //dataValues[i] = newEventList.get(i).
+        }
+
+        if(timeStamps.length > 2){
+            smoothedValues[0] = 0.0D;
+            smoothedValues[1] = dataValues[1];
+           for(int i = 2 ; i < newEventList.size() ; i++){
+               smoothedValues[i] = ALPHA * dataValues[i-1] + (1.0 - ALPHA) * smoothedValues[i-1];
+           }
+        }
     }
 
     @Override
     public void schedule() {
-        eventRemoverScheduler.schedule(this, timeToKeep, TimeUnit.MILLISECONDS);
+        if (lastSchedule != null) {
+            lastSchedule.cancel(false);
+        }
+        lastSchedule= eventRemoverScheduler.schedule(this, timeToKeep, TimeUnit.MILLISECONDS);
     }
 
     @Override
     public void scheduleNow() {
-        eventRemoverScheduler.schedule(this, 0, TimeUnit.MILLISECONDS);
+        if (lastSchedule != null) {
+            lastSchedule.cancel(false);
+        } else {
+            lastSchedule = null;
+        }
+        eventRemoverScheduler.execute(this);
     }
 
     @Override
@@ -221,6 +271,9 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
         this.eventRemoverScheduler = scheduledExecutorService;
     }
 
+    public void scheduleConstantTime() {
+        eventRemoverScheduler.schedule(this, constantSchedulingInterval, TimeUnit.MILLISECONDS);
+    }
     @Override
     public void setThreadBarrier(ThreadBarrier threadBarrier) {
         this.threadBarrier = threadBarrier;
