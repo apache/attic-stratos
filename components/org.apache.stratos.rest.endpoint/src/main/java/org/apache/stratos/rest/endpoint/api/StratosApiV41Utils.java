@@ -3668,21 +3668,27 @@ public class StratosApiV41Utils {
                 "WHERE CLUSTER_ID = \"" + Id + "\" AND from_unixtime(TIMESTAMP/1000,\"%Y-%m-%d %H:%i\") > " +
                 "NOW() - INTERVAL " + Interval + " HOUR GROUP BY from_unixtime(TIMESTAMP/1000,\"%Y-%m-%d %H : %i\");";
 
-        List<AverageMemoryConsumptionBean> averageMemberMemoryList = new ArrayList<AverageMemoryConsumptionBean>();
+        List<AverageMemoryConsumptionBean> averageClusterMemoryList = new ArrayList<AverageMemoryConsumptionBean>();
 
         ConnectionHandler connectionHandler = new ConnectionHandler();
         ResultSet result = connectionHandler.getsqlConnection(averageClusterMemoryQuery);
 
         try {
             while (result.next()) {
-                averageMemberMemoryList.add(new AverageMemoryConsumptionBean("", result.getDouble("MEMBER_AVERAGE_MEMORY_CONSUMPTION"), result.getLong("TIMESTAMP"), ""));
+                averageClusterMemoryList.add(new AverageMemoryConsumptionBean("", result.getDouble("MEMBER_AVERAGE_MEMORY_CONSUMPTION"), result.getLong("TIMESTAMP"), ""));
             }
         } catch (SQLException e) {
             throw new RestAPIException(e.getMessage(), e);
         }
-        String json = new Gson().toJson(averageMemberMemoryList);
 
-        return json;
+        if(averageClusterMemoryList.isEmpty()==true)
+        {
+            return null;
+        }else {
+
+            String json = new Gson().toJson(averageClusterMemoryList);
+            return json;
+        }
     }
 
     /**
@@ -3713,9 +3719,16 @@ public class StratosApiV41Utils {
         } catch (SQLException e) {
             throw new RestAPIException(e.getMessage(), e);
         }
-        String json = new Gson().toJson(averageMemberLoadList);
 
-        return json;
+        if(averageMemberLoadList.isEmpty()==true)
+        {
+            return null;
+        }else{
+
+            String json = new Gson().toJson(averageMemberLoadList);
+            return json;
+
+        }
     }
 
     /**
@@ -3747,9 +3760,16 @@ public class StratosApiV41Utils {
         } catch (SQLException e) {
             throw new RestAPIException(e.getMessage(), e);
         }
-        String json = new Gson().toJson(averageMemberMemoryList);
 
-        return json;
+        if(averageMemberMemoryList.isEmpty()==true) {
+
+            return null;
+
+        }else{
+            String json = new Gson().toJson(averageMemberMemoryList);
+            return json;
+
+        }
     }
 
     /**
@@ -3781,9 +3801,16 @@ public class StratosApiV41Utils {
         } catch (SQLException e) {
             throw new RestAPIException(e.getMessage(), e);
         }
-        String json = new Gson().toJson(averageMemberLoadList);
 
+
+        if(averageMemberLoadList.isEmpty()==true) {
+
+            return null;
+
+        }else{
+        String json = new Gson().toJson(averageMemberLoadList);
         return json;
+         }
     }
 
     /**
@@ -3814,10 +3841,16 @@ public class StratosApiV41Utils {
         } catch (SQLException e) {
             throw new RestAPIException(e.getMessage(), e);
         }
-        String json = new Gson().toJson(inFlightRequestBeanList);
 
-        return json;
+        if (inFlightRequestBeanList.isEmpty() == true) {
+
+            return null;
+
+        } else {
+            String json = new Gson().toJson(inFlightRequestBeanList);
+
+            return json;
+        }
     }
-
 
 }

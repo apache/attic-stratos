@@ -2151,6 +2151,10 @@ public class StratosApiV41 extends AbstractApi {
             return Response.status(Response.Status.NOT_FOUND).entity(new ResponseMessageBean(
                     ResponseMessageBean.ERROR, "Could Not get Cluster Memory Average Data")).build();
         }
+        if (averageClusterMemoryList == null) {
+            return Response.status(Response.Status.NOT_FOUND).entity(new ResponseMessageBean(
+                    ResponseMessageBean.ERROR, "Cluster Memory Average is Null!")).build();
+        }
 
         return Response.ok().entity(averageClusterMemoryList).build();
 
@@ -2178,6 +2182,10 @@ public class StratosApiV41 extends AbstractApi {
         } catch (RestAPIException ex) {
             return Response.status(Response.Status.NOT_FOUND).entity(new ResponseMessageBean(
                     ResponseMessageBean.ERROR, "Could Not get Member Memory Average Data")).build();
+        }
+        if (averageMemberMemoryList == null) {
+            return Response.status(Response.Status.NOT_FOUND).entity(new ResponseMessageBean(
+                    ResponseMessageBean.ERROR, "Member Memory Average Data is Null!")).build();
         }
 
         return Response.ok().entity(averageMemberMemoryList).build();
@@ -2209,6 +2217,10 @@ public class StratosApiV41 extends AbstractApi {
                     ResponseMessageBean.ERROR, "Could Not get Member Load Average Data")).build();
         }
 
+        if (averageMemberLoadList == null) {
+            return Response.status(Response.Status.NOT_FOUND).entity(new ResponseMessageBean(
+                    ResponseMessageBean.ERROR, "Member Load Average Data is Null!")).build();
+        }
 
         return Response.ok().entity(averageMemberLoadList).build();
 
@@ -2238,9 +2250,12 @@ public class StratosApiV41 extends AbstractApi {
             return Response.status(Response.Status.NOT_FOUND).entity(new ResponseMessageBean(
                     ResponseMessageBean.ERROR, "Could Not get Cluster Load Average Data")).build();
         }
+        if (averageClusterLoadList == null) {
+            return Response.status(Response.Status.NOT_FOUND).entity(new ResponseMessageBean(
+                    ResponseMessageBean.ERROR, "Cluster Load Average Data is Null!")).build();
+        }
 
         return Response.ok().entity(averageClusterLoadList).build();
-
 
     }
 
@@ -2267,6 +2282,11 @@ public class StratosApiV41 extends AbstractApi {
         } catch (RestAPIException ex) {
             return Response.status(Response.Status.NOT_FOUND).entity(new ResponseMessageBean(
                     ResponseMessageBean.ERROR, "Could Not get In Flight Request Data")).build();
+        }
+
+        if (averageClusterFlightRequestCount == null) {
+            return Response.status(Response.Status.NOT_FOUND).entity(new ResponseMessageBean(
+                    ResponseMessageBean.ERROR, "Cluster In Flight Request Data is Null!")).build();
         }
 
         return Response.ok().entity(averageClusterFlightRequestCount).build();
