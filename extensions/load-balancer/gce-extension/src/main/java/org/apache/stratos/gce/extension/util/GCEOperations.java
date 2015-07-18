@@ -92,11 +92,11 @@ public class GCEOperations {
      * @return instanceList - list of instances(members in Stratos side)
      * @throws IOException
      */
-    public static InstanceList getInstanceList(String zoneName) {
+    public static InstanceList getInstanceList(String zoneName , String filter) {
         Compute.Instances.List instances = null;
         try {
             instances = compute.instances().
-                    list(PROJECT_ID, zoneName).setFilter(RUNNING_FILTER);
+                    list(PROJECT_ID, zoneName).setFilter(filter);
             InstanceList instanceList = instances.execute();
             if (instanceList.getItems() == null) {
                 log.info("No instances found for specified zone");
@@ -124,8 +124,9 @@ public class GCEOperations {
 
         String instanceURL = null;
         String zoneName = getZoneNameFromInstanceId(instanceId);
+        String filter = "name eq " + getInstanceNameFromInstanceId(instanceId);
         //check whether the given instance is available
-        InstanceList instanceList = getInstanceList(zoneName);
+        InstanceList instanceList = getInstanceList(zoneName,filter);
         for (Instance instance : instanceList.getItems()) {
             String instanceIdInIaaS = zoneName + "/" + instance.getName();
             if (instanceIdInIaaS.equals(instanceId)) {
@@ -146,7 +147,7 @@ public class GCEOperations {
      */
     public static String getHealthCheckURLFromName(String healthCheckName) {
 
-        String healthCheckURL;
+        String healthCheckURL = null;
 
         //check whether the given instance is available
         HttpHealthCheckList healthCheckList;
@@ -159,7 +160,7 @@ public class GCEOperations {
                 return healthCheckURL;
             }
         }
-        return null;
+        return healthCheckURL;
     }
 
     /**
@@ -683,5 +684,13 @@ public class GCEOperations {
         String zoneName = instanceId.substring(0,lastIndexOfSlash);
         return zoneName;
     }
+
+    private static String getInstanceNameFromInstanceId(String instanceId){
+        int lastIndexOfSlash = instanceId.lastIndexOf("/");
+        String instanceName = instanceId.substring(lastIndexOfSlash+1);
+        return instanceName;
+    }
+
+
 
 }
