@@ -122,11 +122,15 @@ public class GCEOperations {
      */
     public static String getInstanceURLFromId(String instanceId) {
 
-        String instanceURL = null;
+        String instanceURL;
         String zoneName = getZoneNameFromInstanceId(instanceId);
         String filter = "name eq " + getInstanceNameFromInstanceId(instanceId);
         //check whether the given instance is available
         InstanceList instanceList = getInstanceList(zoneName,filter);
+        if (instanceList.getItems().size() == 0){
+            log.warn("No matching instance found for filter " + filter);
+            return null;
+        }
         for (Instance instance : instanceList.getItems()) {
             String instanceIdInIaaS = zoneName + "/" + instance.getName();
             if (instanceIdInIaaS.equals(instanceId)) {
@@ -136,7 +140,8 @@ public class GCEOperations {
                 return instanceURL;
             }
         }
-        return instanceURL;
+        log.warn("No matching instance found for filter " + filter);
+        return null;
     }
 
     /**
