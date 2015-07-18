@@ -430,17 +430,24 @@ public class GCEOperations {
         //add instance to instance reference list, we should use the instance URL
         for (String instanceId : instancesIdsList) { //for all instances
 
-            instanceReferenceList.add(new InstanceReference().
-                    setInstance(getInstanceURLFromId(instanceId)));
-
-            //remove them from configuration holder too
-
+            String instanceUrl = getInstanceURLFromId(instanceId);
+            if(instanceUrl != null) {
+                instanceReferenceList.add(new InstanceReference().
+                        setInstance(instanceUrl));
+            }
+            else {
+                log.warn("failed to get instance URL for instance: " + instanceId);
+            }
 
         }
 
         //create target pools add instance request and set instance to it
         TargetPoolsRemoveInstanceRequest targetPoolsRemoveInstanceRequest = new
                 TargetPoolsRemoveInstanceRequest();
+        if(instanceReferenceList.size() == 0){
+            log.warn("Could not remove instances from target pool " + targetPoolName + " because instance reference list is null");
+            return;
+        }
         targetPoolsRemoveInstanceRequest.setInstances(instanceReferenceList);
 
         try {
@@ -488,14 +495,22 @@ public class GCEOperations {
         //add instance to instance reference list, we should use the instance URL
         for (String instanceId : instancesIdsList) { //for all instances
 
-            instanceReferenceList.add(new InstanceReference().
-                    setInstance(getInstanceURLFromId(instanceId)));
+            String instanceUrl = getInstanceURLFromId(instanceId);
+            if(instanceUrl != null){
+                instanceReferenceList.add(new InstanceReference().
+                        setInstance(instanceUrl));
+            }
 
         }
 
         //create target pools add instance request and set instance to it
         TargetPoolsAddInstanceRequest targetPoolsAddInstanceRequest = new
                 TargetPoolsAddInstanceRequest();
+        if (instanceReferenceList.size() == 0) {
+            log.warn("Could not add instances to target pool " + targetPoolName + " because instance reference list is null");
+            return;
+        }
+
         targetPoolsAddInstanceRequest.setInstances(instanceReferenceList);
 
         try {
