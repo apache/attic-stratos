@@ -76,9 +76,6 @@ public class GCEOperations {
     /**
      * Constructor for GCE Operations Class
      *
-     * @throws LoadBalancerExtensionException
-     * @throws GeneralSecurityException
-     * @throws IOException
      */
     public GCEOperations() {
         buildComputeEngineObject();
@@ -90,10 +87,9 @@ public class GCEOperations {
      * and zone)
      *
      * @return instanceList - list of instances(members in Stratos side)
-     * @throws IOException
      */
     public static InstanceList getInstanceList(String zoneName , String filter) {
-        Compute.Instances.List instances = null;
+        Compute.Instances.List instances;
         try {
             instances = compute.instances().
                     list(PROJECT_ID, zoneName).setFilter(filter);
@@ -127,7 +123,7 @@ public class GCEOperations {
         String filter = "name eq " + getInstanceNameFromInstanceId(instanceId);
         //check whether the given instance is available
         InstanceList instanceList = getInstanceList(zoneName,filter);
-        if (instanceList.getItems().size() == 0){
+        if (instanceList == null){
             log.warn("No matching instance found for filter " + filter);
             return null;
         }
@@ -152,11 +148,15 @@ public class GCEOperations {
      */
     public static String getHealthCheckURLFromName(String healthCheckName) {
 
-        String healthCheckURL = null;
+        String healthCheckURL;
 
         //check whether the given instance is available
         HttpHealthCheckList healthCheckList;
         healthCheckList = getHealthCheckList();
+        if(healthCheckList == null){
+            log.warn("Could not found health check " + healthCheckName + "since healthcheck is null");
+            return null;
+        }
         for (HttpHealthCheck httpHealthCheck : healthCheckList.getItems()) {
             if (httpHealthCheck.getName().equals(healthCheckName)) {
                 //instance is available
@@ -165,7 +165,7 @@ public class GCEOperations {
                 return healthCheckURL;
             }
         }
-        return healthCheckURL;
+        return null;
     }
 
     /**
@@ -196,8 +196,6 @@ public class GCEOperations {
     /**
      * Authorize and build compute engine object
      *
-     * @throws GeneralSecurityException
-     * @throws IOException
      */
     private void buildComputeEngineObject() {
 
