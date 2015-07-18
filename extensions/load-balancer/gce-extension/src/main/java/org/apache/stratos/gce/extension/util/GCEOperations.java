@@ -46,7 +46,7 @@ import java.util.List;
 
 public class GCEOperations {
 
-    private static final Log log = LogFactory.getLog(GCELoadBalancer.class);
+    private static final Log log = LogFactory.getLog(GCEOperations.class);
 
     //project related
     private static final String PROJECT_NAME = GCEContext.getInstance().getProjectName();
