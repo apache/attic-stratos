@@ -44,7 +44,6 @@ import java.util.List;
  * All the GCE API calls will be done using this class
  */
 
-//TODO: exception handling
 public class GCEOperations {
 
     private static final Log log = LogFactory.getLog(GCELoadBalancer.class);
