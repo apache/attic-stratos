@@ -26,6 +26,7 @@ include('/controllers/menu/menu_generator.jag');
 var log = new Log("apacheStratos.appconfig"),
         error = [],
         caramel = require('caramel'),
+        Alias = request.getParameter('Alias'),
         context = caramel.configs().context,
         util = require('/controllers/rest/rest_calls.jag'),
         menuJson = require('/controllers/menu/menu.json'),
@@ -37,70 +38,74 @@ var log = new Log("apacheStratos.appconfig"),
 //create left menu
 var leftMenu = menuGenerator(context, menuJson.menu, userPermissions);
 //create metro block
-var metro_menu = metroGenerator('/health', menuJson.menu, userPermissions);
+var metro_menu = metroGenerator('/healthStatistics', menuJson.menu, userPermissions);
 
 var log = new Log();
-var config = {"driverClassName":"org.apache.cassandra.cql.jdbc.CassandraDriver"};
-log.debug(Id);
-var db = null;
-var result = null;
 
-log.info(")))))))))))))))))))))))))))))))))))))))))1");
-//var newtRY = util.RESTCalls.getMemberDetails();        
-//log.info(newtRY+")))))))))))))))))))))))))))))))))))))))))2");
-var newtRY2 = util.RESTCalls.getClusterDetails(); 
-log.info(newtRY2+")))))))))))))))))))))))))))))))))))))))))2");
+var loadAverageData,
+        flightRequestDetails,
+        memoryAverageDetails = null;
 
-(function () {
+if (Type != 'cluster') {
 
-    var action = request.getParameter("action");
+    try {
 
-    if(action == "memoryConsumption") {
-        try {
+        memoryAverageDetails = util.RESTCalls.getMemberMemoryAvrageDetails(Id, 800);
 
-            cluster= getData();
-            log.info("@@@@@@@@@@@@@@@@"+cluster);
+    } catch (e) {
+        throw new Error("Error while getting Category Activity data for " + e);
+    }
 
-            log.info("DDDDDDDDDDDDDDDDDDDDDDDDDDDDD"+action);
+    try {
 
-        } catch (e) {
-            throw new Error("Error while getting Category Activity data for "+ e);
-        }
+        loadAverageData = util.RESTCalls.getMemberLoadAverageDetails(Id, 800);
 
-    }else if(action == "loadAverage"){
-        try {
-            log.info("DDDDDDDDDDDDDDDDDDDDDDDDDDDDD"+action);
+    } catch (e) {
 
-        } catch (e) {
-            throw new Error("Error while getting Category Activity data for "+ e);
-        }
+        throw new Error("Error while getting Category Activity data for " + e);
+    }
 
-    }else if(action == "requestInFlight"){
-        try {
+    flightRequestDetails = null;
 
-            log.info("DDDDDDDDDDDDDDDDDDDDDDDDDDDDD"+action);
+} else {
 
-        } catch (e) {
-            throw new Error("Error while getting Category Activity data for "+ e);
-        }
+    try {
+
+        memoryAverageDetails = util.RESTCalls.getClusterMemoryAverageDetails(Id, 800);
+
+    } catch (e) {
+        throw new Error("Error while getting Category Activity data for " + e);
 
     }
-    return cluster;
 
-}());
+    try {
 
+        flightRequestDetails = util.RESTCalls.getFlightRequestDetails(Id, 800);
+
+    } catch (e) {
+
+        throw new Error("Error while getting Category Activity data for " + e);
+    }
+
+    try {
+        loadAverageData = util.RESTCalls.getClusterLoadAverageDetails(Id, 800);
+
+    } catch (e) {
+
+        throw new Error("Error while getting Category Activity data for " + e);
+    }
+
+}
 
 caramel.render({
     breadcrumbPathLevelOne: 'healthStatistics',
-    Id:Id,
-    //newtRY:JSON.stringify(newtRY),
-    newtRY2:JSON.stringify(newtRY2),    
+    Id: Id,
     Type: Type,
-    result:result,
+    Alias: Alias,
+    loadAverageData: JSON.stringify(loadAverageData),
+    memoryAverageDetails: JSON.stringify(memoryAverageDetails),
+    flightRequestDetails: JSON.stringify(flightRequestDetails),
     error: error
 });
-
-
-
 
 %>
