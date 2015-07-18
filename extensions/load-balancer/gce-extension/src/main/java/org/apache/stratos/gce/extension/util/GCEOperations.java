@@ -433,6 +433,9 @@ public class GCEOperations {
             instanceReferenceList.add(new InstanceReference().
                     setInstance(getInstanceURLFromId(instanceId)));
 
+            //remove them from configuration holder too
+
+
         }
 
         //create target pools add instance request and set instance to it

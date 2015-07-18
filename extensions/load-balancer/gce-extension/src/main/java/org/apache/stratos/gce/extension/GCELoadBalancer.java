@@ -150,7 +150,6 @@ public class GCELoadBalancer implements LoadBalancer {
                                 if (member.getInstanceId() != null) {
                                     if (!gceClusterConfigurationHolder.getMemberList().contains(member.getInstanceId())) {
                                         membersToBeAddedToTargetPool.add(member.getInstanceId());
-                                        gceClusterConfigurationHolder.addMember(member.getInstanceId());
                                     }
                                 }
 
@@ -160,7 +159,14 @@ public class GCELoadBalancer implements LoadBalancer {
 
                                 log.info("New members in cluster" + cluster.getClusterId() + " found. Adding new members " +
                                         "to cluster");
-                                //add to target pool
+
+                                //add them to configuration holder
+                                for (String memberId : membersToBeAddedToTargetPool) {
+                                    gceClusterConfigurationHolder.addMember(memberId);
+
+                                }
+
+                                //add them to target pool too
                                 gceOperations.addInstancesToTargetPool(membersToBeAddedToTargetPool,
                                         gceClusterConfigurationHolder.getTargetPoolName());
                             }
@@ -177,8 +183,7 @@ public class GCELoadBalancer implements LoadBalancer {
                                     }
                                 }
                                 if (found == false) {
-                                    //remove member from map
-                                    gceClusterConfigurationHolder.removeMember(memberId);
+                                    //add member id to membersToBeRemovedFromTargetPool in order remove member from map
                                     membersToBeRemovedFromTargetPool.add(memberId);
                                 }
                             }
@@ -187,7 +192,13 @@ public class GCELoadBalancer implements LoadBalancer {
 
                                 log.info("Terminated members found in cluster " + cluster.getClusterId() + ". Removing them");
 
-                                //remove them
+                                //remove them from configuration holder
+                                for (String memberId : membersToBeRemovedFromTargetPool) {
+                                    gceClusterConfigurationHolder.removeMember(memberId);
+
+                                }
+
+                                //remove them from GCE too
                                 gceOperations.removeInstancesFromTargetPool(membersToBeRemovedFromTargetPool,
                                         gceClusterConfigurationHolder.getTargetPoolName());
                             }
