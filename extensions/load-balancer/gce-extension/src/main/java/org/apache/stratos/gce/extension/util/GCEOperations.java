@@ -122,7 +122,7 @@ public class GCEOperations {
      */
     public static String getInstanceURLFromId(String instanceId) {
 
-        String instanceURL;
+        String instanceURL = null;
         String zoneName = getZoneNameFromInstanceId(instanceId);
         //check whether the given instance is available
         InstanceList instanceList = getInstanceList(zoneName);
@@ -135,7 +135,7 @@ public class GCEOperations {
                 return instanceURL;
             }
         }
-        return null;
+        return instanceURL;
     }
 
     /**
