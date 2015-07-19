@@ -26,15 +26,19 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 
 public class ConnectionHandler {
+    Connection connection;
+    DataSource dataSource = null;
+    String stringSql = null;
+    ResultSet resultSet = null;
     public ResultSet getsqlConnection(String sql) {
 
-        DataSource dataSource = null;
-        String stringSql = sql;
-        ResultSet resultSet = null;
-
+        dataSource = null;
+        stringSql = sql;
+        resultSet = null;
         try{
             boolean isJndiLookup = true;
 
@@ -53,7 +57,7 @@ public class ConnectionHandler {
 
 
             if (dataSource != null) {
-                Connection connection = dataSource.getConnection();
+                connection = dataSource.getConnection();
                 Statement statement = connection.createStatement();
                 resultSet = statement.executeQuery(stringSql);
 
@@ -66,5 +70,14 @@ public class ConnectionHandler {
         }
         return resultSet;
     }
+
+    public void closeConnection() throws SQLException {
+        if (connection != null) {
+            connection.close();
+            connection = null;
+        }
+
+    }
+
 }
 
