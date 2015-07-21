@@ -344,8 +344,8 @@ public class GCELoadBalancer implements LoadBalancer {
             }
 
             //create the forwarding rule
-            gceOperations.createForwardingRule(gceClusterConfigurationHolder.getForwardingRuleName(),
-                    gceClusterConfigurationHolder.getTargetPoolName(), protocol, portRange);
+            //gceOperations.createForwardingRule(gceClusterConfigurationHolder.getForwardingRuleName(),
+              //      gceClusterConfigurationHolder.getTargetPoolName(), protocol, portRange);
             log.info("Created configuration for cluster");
         } catch (Exception e) {
             if (log.isErrorEnabled()) {
