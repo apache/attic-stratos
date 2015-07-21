@@ -61,6 +61,7 @@ public class GCEOperations {
     private static final String HEALTH_CHECK_REQUEST_PATH = GCEContext.getInstance().getHealthCheckRequestPath();
     private static final String HEALTH_CHECK_PORT = GCEContext.getInstance().getHealthCheckPort();
     private static final String HEALTH_CHECK_TIME_OUT_SEC = GCEContext.getInstance().getHealthCheckTimeOutSec();
+    private static final String HEALTH_CHECK_INTERVAL_SEC = GCEContext.getInstance().getHealthCheckIntervalSec();
     private static final String HEALTH_CHECK_UNHEALTHY_THRESHOLD = GCEContext.getInstance().getHealthCheckUnhealthyThreshold();
     private static final String NETWORK_NAME = GCEContext.getInstance().getNetworkName();
 
@@ -539,6 +540,7 @@ public class GCEOperations {
         httpHealthCheck.setRequestPath(HEALTH_CHECK_REQUEST_PATH);
         httpHealthCheck.setPort(Integer.parseInt(HEALTH_CHECK_PORT));
         httpHealthCheck.setTimeoutSec(Integer.parseInt(HEALTH_CHECK_TIME_OUT_SEC));
+        httpHealthCheck.setCheckIntervalSec(Integer.parseInt(HEALTH_CHECK_INTERVAL_SEC));
         httpHealthCheck.setUnhealthyThreshold(Integer.parseInt(HEALTH_CHECK_UNHEALTHY_THRESHOLD));
         try {
             Operation operation = compute.httpHealthChecks().insert(PROJECT_ID, httpHealthCheck).execute();

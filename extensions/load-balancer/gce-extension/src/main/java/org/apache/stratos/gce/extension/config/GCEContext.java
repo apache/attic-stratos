@@ -48,6 +48,7 @@ public class GCEContext {
     private String healthCheckRequestPath;
     private String healthCheckPort;
     private String healthCheckTimeOutSec;
+    private String healthCheckIntervalSec;
     private String healthCheckUnhealthyThreshold;
 
     //other properties
@@ -130,6 +131,7 @@ public class GCEContext {
         validateSystemProperty(Constants.HEALTH_CHECK_REQUEST_PATH);
         validateSystemProperty(Constants.HEALTH_CHECK_PORT);
         validateSystemProperty(Constants.HEALTH_CHECK_TIME_OUT_SEC);
+        validateSystemProperty(Constants.HEALTH_CHECK_INTERVAL_SEC);
         validateSystemProperty(Constants.HEALTH_CHECK_UNHEALTHY_THRESHOLD);
         validateSystemProperty(Constants.NETWORK_NAME);
         validateSystemProperty(Constants.OPERATION_TIMEOUT);
@@ -145,6 +147,14 @@ public class GCEContext {
         if (StringUtils.isEmpty(value)) {
             throw new RuntimeException("System property was not found: " + propertyName);
         }
+    }
+
+    public String getHealthCheckIntervalSec() {
+        return healthCheckIntervalSec;
+    }
+
+    public void setHealthCheckIntervalSec(String healthCheckIntervalSec) {
+        this.healthCheckIntervalSec = healthCheckIntervalSec;
     }
 
     public boolean isCEPStatsPublisherEnabled() {

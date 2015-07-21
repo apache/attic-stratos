@@ -46,6 +46,7 @@ public class Constants {
     public static final String HEALTH_CHECK_PROPERTIES_ELEMENT = "healthCheckProperties";
     public static final String HEALTH_CHECK_REQUEST_PATH = "healthCheckRequestPath";
     public static final String HEALTH_CHECK_PORT = "healthCheckPort";
+    public static final String HEALTH_CHECK_INTERVAL_SEC= "healthCheckIntervalSec";
     public static final String HEALTH_CHECK_TIME_OUT_SEC = "healthCheckTimeoutSec";
     public static final String HEALTH_CHECK_UNHEALTHY_THRESHOLD = "healthCheckUnhealthyThreshold";
 

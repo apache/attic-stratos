@@ -128,11 +128,13 @@ public class GCEConfigParser {
         String healthCheckPort = AxiomXpathParserUtil.getFirstChildElement(healthCheckPropertiesElement, Constants.HEALTH_CHECK_PORT).getText();
         String healthCheckTimeoutSec = AxiomXpathParserUtil.getFirstChildElement(healthCheckPropertiesElement, Constants.HEALTH_CHECK_TIME_OUT_SEC).getText();
         String healthCheckUnhealthyThreshold = AxiomXpathParserUtil.getFirstChildElement(healthCheckPropertiesElement, Constants.HEALTH_CHECK_UNHEALTHY_THRESHOLD).getText();
+        String heathCheckIntervalSec = AxiomXpathParserUtil.getFirstChildElement(healthCheckPropertiesElement, Constants.HEALTH_CHECK_UNHEALTHY_THRESHOLD).getText();
 
         //set extracted properties to gceContext object
         gceContext.setHealthCheckRequestPath(healthCheckRequestPath);
         gceContext.setHealthCheckPort(healthCheckPort);
         gceContext.setHealthCheckTimeOutSec(healthCheckTimeoutSec);
+        gceContext.setHealthCheckIntervalSec(heathCheckIntervalSec);
         gceContext.setHealthCheckUnhealthyThreshold(healthCheckUnhealthyThreshold);
     }
 
