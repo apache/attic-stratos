@@ -351,6 +351,7 @@ public class GCELoadBalancer implements LoadBalancer {
             if (log.isErrorEnabled()) {
                 log.error("Could not create configuration for cluster " + clusterId);
             }
+            log.error(e.getMessage());
             throw new LoadBalancerExtensionException();
         }
 
