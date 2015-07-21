@@ -3659,12 +3659,11 @@ public class StratosApiV41Utils {
      * @return Average of Cluster Memory Data
      * @throws RestAPIException
      */
-
     public static String getAverageClusterMemoryByClusterId(String Id, String Interval) throws RestAPIException {
 
 
         String averageClusterMemoryQuery = "SELECT SUM(MEMBER_AVERAGE_MEMORY_CONSUMPTION) AS 'MEMBER_AVERAGE_MEMORY_CONSUMPTION'," +
-                " TIMESTAMP From MemberAverageMemoryAverageEventFormatterHealthStat " +
+                "CLUSTER_ID, TIMESTAMP From MemberAverageMemoryAverageEventFormatterHealthStat " +
                 "WHERE CLUSTER_ID = \"" + Id + "\" AND from_unixtime(TIMESTAMP/1000,\"%Y-%m-%d %H:%i\") > " +
                 "NOW() - INTERVAL " + Interval + " HOUR GROUP BY from_unixtime(TIMESTAMP/1000,\"%Y-%m-%d %H : %i\");";
 
@@ -3675,11 +3674,25 @@ public class StratosApiV41Utils {
 
         try {
             while (result.next()) {
-                averageClusterMemoryList.add(new AverageMemoryConsumptionBean("", result.getDouble("MEMBER_AVERAGE_MEMORY_CONSUMPTION"), result.getLong("TIMESTAMP"), ""));
+                averageClusterMemoryList.add(new AverageMemoryConsumptionBean(result.getString("CLUSTER_ID"), result.getDouble("MEMBER_AVERAGE_MEMORY_CONSUMPTION"), result.getLong("TIMESTAMP"), ""));
             }
-        } catch (SQLException e) {
-            throw new RestAPIException(e.getMessage(), e);
+        } catch (SQLException ex) {
+            log.error("SQLException: ", ex);
+            throw new RestAPIException(ex.getMessage());
+        } catch (Exception ex) {
+            log.error("Exception: ", ex);
+            throw new RestAPIException(ex.getMessage());
+        } finally {
+            try {
+                if (connectionHandler != null) {
+                    connectionHandler.closeConnection();
+                }
+            } catch (SQLException ex) {
+                log.error("SQLException: ", ex);
+                throw new RestAPIException(ex.getMessage());
+            }
         }
+
 
         if(averageClusterMemoryList.isEmpty()==true)
         {
@@ -3698,12 +3711,11 @@ public class StratosApiV41Utils {
      * @return Average Cluster Load average data
      * @throws RestAPIException
      */
-
     public static String getAverageClusterLoadByClusterId(String Id, String Interval) throws RestAPIException {
 
 
         String averageClusterLoadQuery = "SELECT SUM(MEMBER_AVERAGE_LOAD_AVERAGE) AS 'MEMBER_AVERAGE_LOAD_AVERAGE'," +
-                " TIMESTAMP From MemberAverageLoadAverageEventFormatterHealthStat " +
+                "CLUSTER_ID, TIMESTAMP From MemberAverageLoadAverageEventFormatterHealthStat " +
                 "WHERE CLUSTER_ID = \"" + Id + "\" AND from_unixtime(TIMESTAMP/1000,\"%Y-%m-%d %H:%i\") > " +
                 "NOW() - INTERVAL " + Interval + " HOUR GROUP BY from_unixtime(TIMESTAMP/1000,\"%Y-%m-%d %H : %i\");";
 
@@ -3714,11 +3726,25 @@ public class StratosApiV41Utils {
 
         try {
             while (result.next()) {
-                averageMemberLoadList.add(new AverageLoadAverageBean("", result.getLong("TIMESTAMP"), result.getDouble("MEMBER_AVERAGE_LOAD_AVERAGE"), ""));
+                averageMemberLoadList.add(new AverageLoadAverageBean(result.getString("CLUSTER_ID"), result.getLong("TIMESTAMP"), result.getDouble("MEMBER_AVERAGE_LOAD_AVERAGE"), ""));
             }
-        } catch (SQLException e) {
-            throw new RestAPIException(e.getMessage(), e);
+        } catch (SQLException ex) {
+            log.error("SQLException: ", ex);
+            throw new RestAPIException(ex.getMessage());
+        } catch (Exception ex) {
+            log.error("Exception: ", ex);
+            throw new RestAPIException(ex.getMessage());
+        } finally {
+            try {
+                if (connectionHandler != null) {
+                    connectionHandler.closeConnection();
+                }
+            } catch (SQLException ex) {
+                log.error("SQLException: ", ex);
+                throw new RestAPIException(ex.getMessage());
+            }
         }
+
 
         if(averageMemberLoadList.isEmpty()==true)
         {
@@ -3738,11 +3764,9 @@ public class StratosApiV41Utils {
      * @return Average Member Memory Average data
      * @throws RestAPIException
      */
-
-
     public static String getAverageMemberMemoryByMemberId(String Id, String Interval) throws RestAPIException {
 
-        String memberIfQueryforMemory = "SELECT TIMESTAMP," +
+        String memberIfQueryforMemory = "SELECT TIMESTAMP,MEMBER_ID," +
                 "MEMBER_AVERAGE_MEMORY_CONSUMPTION FROM MemberAverageMemoryAverageEventFormatterHealthStat WHERE " +
                 "from_unixtime(TIMESTAMP/1000,\"%Y-%m-%d %H:%i\") " +
                 "> NOW() - INTERVAL " + Interval + " HOUR AND MEMBER_ID =\"" + Id + "\"";
@@ -3755,10 +3779,23 @@ public class StratosApiV41Utils {
 
         try {
             while (result.next()) {
-                averageMemberMemoryList.add(new AverageMemoryConsumptionBean("", result.getDouble("MEMBER_AVERAGE_MEMORY_CONSUMPTION"), result.getLong("TIMESTAMP"), ""));
+                averageMemberMemoryList.add(new AverageMemoryConsumptionBean("", result.getDouble("MEMBER_AVERAGE_MEMORY_CONSUMPTION"), result.getLong("TIMESTAMP"),result.getString("MEMBER_ID")));
             }
-        } catch (SQLException e) {
-            throw new RestAPIException(e.getMessage(), e);
+        } catch (SQLException ex) {
+            log.error("SQLException: ", ex);
+            throw new RestAPIException(ex.getMessage());
+        } catch (Exception ex) {
+            log.error("Exception: ", ex);
+            throw new RestAPIException(ex.getMessage());
+        } finally {
+            try {
+                if (connectionHandler != null) {
+                    connectionHandler.closeConnection();
+                }
+            } catch (SQLException ex) {
+                log.error("SQLException: ", ex);
+                throw new RestAPIException(ex.getMessage());
+            }
         }
 
         if(averageMemberMemoryList.isEmpty()==true) {
@@ -3779,10 +3816,9 @@ public class StratosApiV41Utils {
      * @return Average Member Load Average data
      * @throws RestAPIException
      */
-
     public static String getAverageMemberLoadByMemberId(String Id, String Interval) throws RestAPIException {
 
-        String memberLoadAverageQuery = "SELECT TIMESTAMP," +
+        String memberLoadAverageQuery = "SELECT TIMESTAMP,MEMBER_ID," +
                 "MEMBER_AVERAGE_LOAD_AVERAGE FROM MemberAverageLoadAverageEventFormatterHealthStat WHERE " +
                 "from_unixtime(TIMESTAMP/1000,\"%Y-%m-%d %H:%i\") " +
                 "> NOW() - INTERVAL " + Interval + " HOUR AND MEMBER_ID =\"" + Id + "\"";
@@ -3796,14 +3832,26 @@ public class StratosApiV41Utils {
         try {
             while (result.next()) {
 
-                averageMemberLoadList.add(new AverageLoadAverageBean("", result.getLong("TIMESTAMP"), result.getDouble("MEMBER_AVERAGE_LOAD_AVERAGE"), ""));
+                averageMemberLoadList.add(new AverageLoadAverageBean("", result.getLong("TIMESTAMP"), result.getDouble("MEMBER_AVERAGE_LOAD_AVERAGE"), result.getString("MEMBER_ID")));
             }
-        } catch (SQLException e) {
-            throw new RestAPIException(e.getMessage(), e);
-        }
+            } catch (SQLException ex) {
+                log.error("SQLException: ", ex);
+                throw new RestAPIException(ex.getMessage());
+            } catch (Exception ex) {
+                log.error("Exception: ", ex);
+                throw new RestAPIException(ex.getMessage());
+            } finally {
+                try {
+                    if (connectionHandler != null) {
+                        connectionHandler.closeConnection();
+                    }
+                } catch (SQLException ex) {
+                    log.error("SQLException: ", ex);
+                    throw new RestAPIException(ex.getMessage());
+                }
+            }
 
-
-        if(averageMemberLoadList.isEmpty()==true) {
+            if(averageMemberLoadList.isEmpty()==true) {
 
             return null;
 
@@ -3820,10 +3868,9 @@ public class StratosApiV41Utils {
      * @return Average Cluster Flight request Count data
      * @throws RestAPIException
      */
-
     public static String getAverageClusterFlightRequestCountByClusterId(String Id, String Interval) throws RestAPIException {
 
-        String clusterIDQueryforFlightCount = "SELECT SUM(FLIGHT_REQUEST_COUNT) AS FLIGHT_REQUEST_COUNT,TIMESTAMP FROM " +
+        String clusterIDQueryforFlightCount = "SELECT SUM(FLIGHT_REQUEST_COUNT) AS FLIGHT_REQUEST_COUNT,CLUSTER_ID,TIMESTAMP FROM " +
                 "FlightRequestEventFormatterHealthStat WHERE from_unixtime(TIMESTAMP/1000,\"%Y-%m-%d %H:%i\") > NOW() - " +
                 "INTERVAL " + Interval + " HOUR AND CLUSTER_ID = \"" + Id + "\"" +
                 "GROUP BY from_unixtime(TIMESTAMP/1000,\"%Y-%m-%d %H:%i\");";
@@ -3836,10 +3883,23 @@ public class StratosApiV41Utils {
 
         try {
             while (result.next()) {
-                inFlightRequestBeanList.add(new InFlightRequestBean("", result.getLong("TIMESTAMP"), result.getDouble("FLIGHT_REQUEST_COUNT")));
+                inFlightRequestBeanList.add(new InFlightRequestBean(result.getString("CLUSTER_ID"), result.getLong("TIMESTAMP"), result.getDouble("FLIGHT_REQUEST_COUNT")));
             }
-        } catch (SQLException e) {
-            throw new RestAPIException(e.getMessage(), e);
+        } catch (SQLException ex) {
+            log.error("SQLException: ", ex);
+            throw new RestAPIException(ex.getMessage());
+        } catch (Exception ex) {
+            log.error("Exception: ", ex);
+            throw new RestAPIException(ex.getMessage());
+        } finally {
+            try {
+                if (connectionHandler != null) {
+                    connectionHandler.closeConnection();
+                }
+            } catch (SQLException ex) {
+                log.error("SQLException: ", ex);
+                throw new RestAPIException(ex.getMessage());
+            }
         }
 
         if (inFlightRequestBeanList.isEmpty() == true) {
