@@ -89,22 +89,26 @@ public class AutoscalerTopologyEventReceiver {
                         ApplicationHolder.acquireReadLock();
                         Applications applications = ApplicationHolder.getApplications();
                         if (applications != null) {
-                            for (Application application : applications.getApplications().values()) {
-                                if (AutoscalerUtil.allClustersInitialized(application)) {
-                                    ApplicationContext applicationContext = AutoscalerContext.getInstance().
-                                            getApplicationContext(application.getUniqueIdentifier());
-                                    if (applicationContext != null && applicationContext.getStatus().equals(
-                                            ApplicationContext.STATUS_DEPLOYED)) {
-                                        AutoscalerUtil.getInstance().startApplicationMonitor(application.getUniqueIdentifier());
-                                    } else {
-                                        log.info("The application is not yet " +
-                                                "deployed for this [application] " +
+                            for (Application application : applications.
+                                    getApplications().values()) {
+                                ApplicationContext applicationContext =
+                                        AutoscalerContext.getInstance().
+                                        getApplicationContext(application.getUniqueIdentifier());
+                                if (applicationContext != null && applicationContext.getStatus().
+                                        equals(ApplicationContext.STATUS_DEPLOYED)) {
+                                    if (AutoscalerUtil.allClustersInitialized(application)) {
+                                        AutoscalerUtil.getInstance().startApplicationMonitor(
                                                 application.getUniqueIdentifier());
+                                    } else {
+                                        log.error("Complete Topology is not consistent with " +
+                                                "the applications which got persisted");
                                     }
                                 } else {
-                                    log.error("Complete Topology is not consistent with the applications " +
-                                            "which got persisted");
+                                    log.info("The application is not yet " +
+                                            "deployed for this [application] " +
+                                            application.getUniqueIdentifier());
                                 }
+
                             }
                             topologyInitialized = true;
                         } else {
@@ -277,10 +281,16 @@ public class AutoscalerTopologyEventReceiver {
                 //changing the status in the monitor, will notify its parent monitor
                 ClusterInstance clusterInstance = (ClusterInstance) monitor.getInstance(clusterInstanceId);
                 if (clusterInstance.getPreviousState() == ClusterStatus.Active) {
-                    // terminated gracefully
+                    // terminating all the active members gracefully
                     monitor.notifyParentMonitor(ClusterStatus.Terminating, clusterInstanceId);
                     InstanceNotificationPublisher.getInstance().
                             sendInstanceCleanupEventForCluster(clusterId, clusterInstanceId);
+                    //Terminating the pending members
+                    monitor.terminatePendingMembers(clusterInstanceId,
+                            clusterInstance.getNetworkPartitionId());
+                    //Move all members to terminating pending list
+                    monitor.moveMembersToTerminatingPending(clusterInstanceId,
+                            clusterInstance.getNetworkPartitionId());
                 } else {
                     monitor.notifyParentMonitor(ClusterStatus.Terminating, clusterInstanceId);
                     monitor.terminateAllMembers(clusterInstanceId, clusterInstance.getNetworkPartitionId());

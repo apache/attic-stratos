@@ -244,7 +244,14 @@ public abstract class ParentComponentMonitor extends Monitor {
                     Monitor monitor = aliasToActiveChildMonitorsMap.get(context.getId());
                     // Creating new instance
                     for (String instanceId : parentInstanceIds) {
-                        monitor.createInstanceOnDemand(instanceId);
+                        if(monitor.getInstancesByParentInstanceId(instanceId) == null ||
+                                monitor.getInstancesByParentInstanceId(instanceId).isEmpty()) {
+                            monitor.createInstanceOnDemand(instanceId);
+                        } else {
+                            log.info(String.format("Instance has already exists for [application] " +
+                                    "%s [component] %s [instance-id] %s", getAppId(),
+                                    context.getId(), instanceId));
+                        }
                     }
                 }
             }
@@ -656,6 +663,13 @@ public abstract class ParentComponentMonitor extends Monitor {
             }
         }
 
+        if(log.isDebugEnabled()) {
+            log.debug(String.format("Calculating the group instances status for [application] " +
+                    "%s [group] %s [group-instance] %s [required-status] %s [no-of-instances] %s",
+                    appId, childId, instanceId, requiredStatus.toString(),
+                    noOfInstancesOfRequiredStatus));
+        }
+
         if (!groupInstances.isEmpty()) {
             ParentLevelNetworkPartitionContext networkPartitionContext =
                     (ParentLevelNetworkPartitionContext) ((GroupMonitor) monitor).
@@ -664,12 +678,27 @@ public abstract class ParentComponentMonitor extends Monitor {
             //if terminated all the instances in this instances map should be in terminated state
             if (noOfInstancesOfRequiredStatus == this.inactiveInstancesMap.size() &&
                     requiredStatus == GroupStatus.Terminated) {
+                if(log.isDebugEnabled()) {
+                    log.debug(String.format("Group instances in required status for [application] " +
+                                    "%s [group] %s [group-instance] %s [required-status] %s",
+                            appId, childId, instanceId, GroupStatus.Terminated.toString()));
+                }
                 return true;
             } else if (noOfInstancesOfRequiredStatus >= minInstances) {
+                if(log.isDebugEnabled()) {
+                    log.debug(String.format("Group instances in required status for [application] " +
+                                    "%s [group] %s [group-instance] %s [required-status] %s",
+                            appId, childId, instanceId, requiredStatus.toString()));
+                }
                 return true;
             } else {
                 //of only one is inActive implies that the whole group is Inactive
                 if (requiredStatus == GroupStatus.Inactive && noOfInstancesOfRequiredStatus >= 1) {
+                    if(log.isDebugEnabled()) {
+                        log.debug(String.format("Group instances in required status for [application] " +
+                                        "%s [group] %s [group-instance] %s [required-status] %s",
+                                appId, childId, instanceId, GroupStatus.Inactive.toString()));
+                    }
                     return true;
                 }
             }
@@ -919,6 +948,15 @@ public abstract class ParentComponentMonitor extends Monitor {
      */
     public Map<String, NetworkPartitionContext> getNetworkPartitionContextsMap() {
         return networkPartitionContextsMap;
+    }
+
+    /**
+     * This will give the network partitions used by this monitor
+     *
+     * @return network-partition-contexts
+     */
+    public void removeNetworkPartitionContext(String networkPartitionId) {
+        networkPartitionContextsMap.remove(networkPartitionId);
     }
 
     /**

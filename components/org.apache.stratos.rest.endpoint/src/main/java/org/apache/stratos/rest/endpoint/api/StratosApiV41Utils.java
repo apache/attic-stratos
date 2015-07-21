@@ -127,10 +127,14 @@ public class StratosApiV41Utils {
                         cartridgeBean.getType()));
             }
 
-            for(PortMappingBean portMapping : cartridgeBean.getPortMapping()) {
-                if(StringUtils.isBlank(portMapping.getName())) {
-                    throw new RestAPIException(String.format("A name is required for each port mapping: " +
-                            "[cartridge] %s", cartridgeBean.getType()));
+            for (PortMappingBean portMapping : cartridgeBean.getPortMapping()) {
+                if (StringUtils.isBlank(portMapping.getName())) {
+                    portMapping.setName(portMapping.getProtocol() + "-" + portMapping.getPort());
+                    if (log.isInfoEnabled()) {
+                        log.info(String.format("Port mapping name not found, default value generated: " +
+                                        "[cartridge-type] %s [port-mapping-name] %s",
+                                cartridgeBean.getType(), portMapping.getName()));
+                    }
                 }
             }
 
@@ -1392,7 +1396,8 @@ public class StratosApiV41Utils {
                     usedCartridgeGroups.toArray(new String[usedCartridgeGroups.size()]));
 
         } catch (AutoscalerServiceApplicationDefinitionExceptionException e) {
-            throw new RestAPIException(e);
+            String message = e.getFaultMessage().getApplicationDefinitionException().getMessage();
+            throw new RestAPIException(message, e);
         } catch (RemoteException e) {
             throw new RestAPIException(e);
         }
@@ -1439,7 +1444,8 @@ public class StratosApiV41Utils {
         try {
             AutoscalerServiceClient.getInstance().updateApplication(applicationContext);
         } catch (AutoscalerServiceApplicationDefinitionExceptionException e) {
-            throw new RestAPIException(e);
+            String message = e.getFaultMessage().getApplicationDefinitionException().getMessage();
+            throw new RestAPIException(message, e);
         } catch (RemoteException e) {
             throw new RestAPIException(e);
         }
@@ -1640,7 +1646,7 @@ public class StratosApiV41Utils {
 
             if (group.getDeploymentPolicy() != null) {
                 if (hasDeploymentPolicy) {
-                    String message = "Parent Group has a deployment policy. Remove deployment policy from the" +
+                    String message = "Parent group has a deployment policy. Remove deployment policy from the" +
                             " group: [group-alias] " + group.getAlias();
                     throw new RestAPIException(message);
                 } else {
@@ -1904,18 +1910,21 @@ public class StratosApiV41Utils {
 
         try {
             ApplicationManager.acquireReadLockForApplication(applicationId);
-            Application application = ApplicationManager.getApplications().getApplication(applicationId);
-            if (application.getInstanceContextCount() > 0
-                    || (applicationContext != null &&
-                    applicationContext.getStatus().equals("Deployed"))) {
+            Application application = ApplicationManager.getApplications().
+                    getApplication(applicationId);
+            if(application != null) {
+                if (application.getInstanceContextCount() > 0
+                        || (applicationContext != null &&
+                        applicationContext.getStatus().equals("Deployed"))) {
 
-                if (application == null) {
-                    return null;
-                }
-                applicationBean = ObjectConverter.convertApplicationToApplicationInstanceBean(application);
-                for (ApplicationInstanceBean instanceBean : applicationBean.getApplicationInstances()) {
-                    addClustersInstancesToApplicationInstanceBean(instanceBean, application);
-                    addGroupsInstancesToApplicationInstanceBean(instanceBean, application);
+                    if (application == null) {
+                        return null;
+                    }
+                    applicationBean = ObjectConverter.convertApplicationToApplicationInstanceBean(application);
+                    for (ApplicationInstanceBean instanceBean : applicationBean.getApplicationInstances()) {
+                        addClustersInstancesToApplicationInstanceBean(instanceBean, application);
+                        addGroupsInstancesToApplicationInstanceBean(instanceBean, application);
+                    }
                 }
             }
         } finally {
@@ -2718,8 +2727,9 @@ public class StratosApiV41Utils {
                         if (networkPartitions != null) {
                             for (int i = 0; i < networkPartitions.length; i++) {
                                 if (networkPartitions[i].equals(networkPartitionId)) {
-                                    String message = String.format("Cannot remove the network partition %s, since" +
-                                                    " it is used in application %s", networkPartitionId,
+                                    String message = String.format("Cannot remove the network partition " +
+                                                    "[network-partition-id] %s, since it is used in application " +
+                                                    "[application-id] %s", networkPartitionId,
                                             applicationContext.getApplicationId());
                                     log.error(message);
                                     throw new RestAPIException(message);
