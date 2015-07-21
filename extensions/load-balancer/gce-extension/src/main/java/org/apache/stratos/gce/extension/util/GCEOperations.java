@@ -614,12 +614,7 @@ public class GCEOperations {
                 if (operation.getStatus().equals("DONE")) {
                     return;
                 }
-                if(operation.getError().getErrors().size()>0){
-                    //operation has one or more errors
-                    for (Operation.Error.Errors error :operation.getError().getErrors()){
-                        log.error(error.getMessage());
-                    }
-                }
+
                 if (timeout >= OPERATION_TIMEOUT) {
                     log.warn("Timeout reached for operation " + operationName + ". Existing..");
                     return;
@@ -652,12 +647,6 @@ public class GCEOperations {
 
                 if (operation.getStatus().equals("DONE")) {
                     return;
-                }
-                if(operation.getError().getErrors().size()>0){
-                    //operation has one or more errors
-                    for (Operation.Error.Errors error :operation.getError().getErrors()){
-                        log.error(error.getMessage());
-                    }
                 }
                 if (timeout >= OPERATION_TIMEOUT) {
                     log.warn("Timeout reached for operation " + operationName + ". Existing..");
