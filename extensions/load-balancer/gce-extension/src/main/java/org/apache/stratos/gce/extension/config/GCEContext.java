@@ -50,6 +50,7 @@ public class GCEContext {
     private String healthCheckTimeOutSec;
     private String healthCheckIntervalSec;
     private String healthCheckUnhealthyThreshold;
+    private String healthCheckHealthyThreshold;
 
     //other properties
     private String namePrefix;
@@ -133,6 +134,7 @@ public class GCEContext {
         validateSystemProperty(Constants.HEALTH_CHECK_TIME_OUT_SEC);
         validateSystemProperty(Constants.HEALTH_CHECK_INTERVAL_SEC);
         validateSystemProperty(Constants.HEALTH_CHECK_UNHEALTHY_THRESHOLD);
+        validateSystemProperty(Constants.HEALTH_CHECK_HEALTHY_THRESHOLD);
         validateSystemProperty(Constants.NETWORK_NAME);
         validateSystemProperty(Constants.OPERATION_TIMEOUT);
 
@@ -215,6 +217,14 @@ public class GCEContext {
 
     public void setHealthCheckRequestPath(String healthCheckRequestPath) {
         this.healthCheckRequestPath = healthCheckRequestPath;
+    }
+
+    public String getHealthCheckHealthyThreshold() {
+        return healthCheckHealthyThreshold;
+    }
+
+    public void setHealthCheckHealthyThreshold(String healthCheckHealthyThreshold) {
+        this.healthCheckHealthyThreshold = healthCheckHealthyThreshold;
     }
 
     public String getHealthCheckPort() {

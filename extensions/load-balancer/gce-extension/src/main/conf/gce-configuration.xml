@@ -40,6 +40,7 @@
         <healthCheckTimeoutSec>2</healthCheckTimeoutSec>
         <healthCheckIntervalSec>5</healthCheckIntervalSec>
         <healthCheckUnhealthyThreshold>2</healthCheckUnhealthyThreshold>
+        <healthCheckHealthyThreshold>2</healthCheckHealthyThreshold>
     </healthCheckProperties>
 
     <operationTimeout>10000</operationTimeout>

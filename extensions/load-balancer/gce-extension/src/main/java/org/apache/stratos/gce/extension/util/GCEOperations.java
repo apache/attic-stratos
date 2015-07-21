@@ -63,6 +63,7 @@ public class GCEOperations {
     private static final String HEALTH_CHECK_TIME_OUT_SEC = GCEContext.getInstance().getHealthCheckTimeOutSec();
     private static final String HEALTH_CHECK_INTERVAL_SEC = GCEContext.getInstance().getHealthCheckIntervalSec();
     private static final String HEALTH_CHECK_UNHEALTHY_THRESHOLD = GCEContext.getInstance().getHealthCheckUnhealthyThreshold();
+    private static final String HEALTH_CHECK_HEALTHY_THRESHOLD = GCEContext.getInstance().getHealthCheckHealthyThreshold();
     private static final String NETWORK_NAME = GCEContext.getInstance().getNetworkName();
 
     //a filter for get only running instances from IaaS side
@@ -542,6 +543,7 @@ public class GCEOperations {
         httpHealthCheck.setTimeoutSec(Integer.parseInt(HEALTH_CHECK_TIME_OUT_SEC));
         httpHealthCheck.setCheckIntervalSec(Integer.parseInt(HEALTH_CHECK_INTERVAL_SEC));
         httpHealthCheck.setUnhealthyThreshold(Integer.parseInt(HEALTH_CHECK_UNHEALTHY_THRESHOLD));
+        httpHealthCheck.setHealthyThreshold(Integer.parseInt(HEALTH_CHECK_HEALTHY_THRESHOLD));
         try {
             Operation operation = compute.httpHealthChecks().insert(PROJECT_ID, httpHealthCheck).execute();
             waitForGlobalOperationCompletion(operation.getName());
@@ -550,6 +552,7 @@ public class GCEOperations {
             if (log.isErrorEnabled()) {
                 log.error("Could not create health check " + healthCheckName);
             }
+            log.error(e.getMessage());
             throw new RuntimeException(e);
         }
         log.info("Created health check: " + healthCheckName);
