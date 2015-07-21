@@ -85,7 +85,14 @@ try {
             session.put("deploy-status", { "message": "Sorry Endpoint Error", "status": "error" });
     }
 
-    print(formSubmit);
+    if (formSubmit==undefined)
+    {
+        print({"status": 'error', "message": "No Data found!"});
+
+    }else{
+        print(formSubmit);
+    }
+
 } catch (e) {
     log.warn(e);
     print({"status": 'error', "message": e.toString()});
