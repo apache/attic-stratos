@@ -91,8 +91,10 @@ public class GCEOperations {
     public static InstanceList getInstanceList(String zoneName , String filter) {
         Compute.Instances.List instances;
         try {
+            /*instances = compute.instances().
+                    list(PROJECT_ID, zoneName).setFilter(filter);*/
             instances = compute.instances().
-                    list(PROJECT_ID, zoneName).setFilter(filter);
+                    list(PROJECT_ID, zoneName);
             InstanceList instanceList = instances.execute();
             if (instanceList.getItems() == null) {
                 log.info("No instances found for specified zone");
