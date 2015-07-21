@@ -540,7 +540,7 @@ public class GCEOperations {
         httpHealthCheck.setRequestPath(HEALTH_CHECK_REQUEST_PATH);
         httpHealthCheck.setPort(Integer.parseInt(HEALTH_CHECK_PORT));
         httpHealthCheck.setTimeoutSec(Integer.parseInt(HEALTH_CHECK_TIME_OUT_SEC));
-       // httpHealthCheck.setCheckIntervalSec(Integer.parseInt(HEALTH_CHECK_INTERVAL_SEC));
+        httpHealthCheck.setCheckIntervalSec(Integer.parseInt(HEALTH_CHECK_INTERVAL_SEC));
         httpHealthCheck.setUnhealthyThreshold(Integer.parseInt(HEALTH_CHECK_UNHEALTHY_THRESHOLD));
         try {
             Operation operation = compute.httpHealthChecks().insert(PROJECT_ID, httpHealthCheck).execute();

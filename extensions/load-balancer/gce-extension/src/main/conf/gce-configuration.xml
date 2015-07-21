@@ -37,7 +37,7 @@
     <healthCheckProperties>
         <healthCheckRequestPath>/</healthCheckRequestPath>
         <healthCheckPort>80</healthCheckPort>
-        <healthCheckTimeoutSec>5</healthCheckTimeoutSec>
+        <healthCheckTimeoutSec>2</healthCheckTimeoutSec>
         <healthCheckIntervalSec>5</healthCheckIntervalSec>
         <healthCheckUnhealthyThreshold>2</healthCheckUnhealthyThreshold>
     </healthCheckProperties>
