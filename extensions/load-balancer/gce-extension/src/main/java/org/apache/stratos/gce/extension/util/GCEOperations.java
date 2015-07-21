@@ -91,13 +91,11 @@ public class GCEOperations {
     public static InstanceList getInstanceList(String zoneName , String filter) {
         Compute.Instances.List instances;
         try {
-            /*instances = compute.instances().
-                    list(PROJECT_ID, zoneName).setFilter(filter);*/
             instances = compute.instances().
-                    list(PROJECT_ID, zoneName);
+                    list(PROJECT_ID, zoneName).setFilter(filter);
             InstanceList instanceList = instances.execute();
             if (instanceList.getItems() == null) {
-                log.info("No instances found for specified zone");
+                log.info("No instances found for filter " + filter + " and zone " + zoneName);
                 return null;
             } else {
                 return instanceList;
@@ -435,15 +433,9 @@ public class GCEOperations {
         //add instance to instance reference list, we should use the instance URL
         for (String instanceId : instancesIdsList) { //for all instances
 
-            String instanceUrl = getInstanceURLFromId(instanceId);
-            if(instanceUrl != null) {
+            String instanceUrl = createInstanceSelfLink(instanceId);
                 instanceReferenceList.add(new InstanceReference().
                         setInstance(instanceUrl));
-            }
-            else {
-                log.warn("failed to get instance URL for instance: " + instanceId);
-            }
-
         }
 
         //create target pools add instance request and set instance to it
@@ -709,6 +701,17 @@ public class GCEOperations {
         int lastIndexOfSlash = instanceId.lastIndexOf("/");
         String instanceName = instanceId.substring(lastIndexOfSlash+1);
         return instanceName;
+    }
+
+    /**
+     * Manually create the self link for an instance. This method is useful when the instance is deleted from IaaS
+     * @return
+     */
+    private static String createInstanceSelfLink(String instanceId){
+
+        String selfLink = "https://www.googleapis.com/compute/v1/projects/"+PROJECT_ID+
+                "/zones/"+getZoneNameFromInstanceId(instanceId)+"/instances/"+getInstanceNameFromInstanceId(instanceId);
+        return selfLink;
     }
 
 
