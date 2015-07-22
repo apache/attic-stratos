@@ -26,11 +26,9 @@ import org.apache.stratos.common.exception.MalformedConfigurationFileException;
 import org.apache.stratos.common.util.AxiomXpathParserUtil;
 import org.apache.stratos.gce.extension.config.Constants;
 import org.apache.stratos.gce.extension.config.GCEContext;
-
 import javax.xml.namespace.QName;
 
 public class GCEConfigParser {
-    private static final Log log = LogFactory.getLog(GCEConfigParser.class);
     private static GCEContext gceContext;
 
     /**
@@ -40,7 +38,6 @@ public class GCEConfigParser {
      * @throws MalformedConfigurationFileException
      */
     public static void parse(OMElement documentElement) throws MalformedConfigurationFileException {
-
         //get cep info
         OMElement cepInfoElement = AxiomXpathParserUtil.getFirstChildElement(documentElement,
                 Constants.CEP_STATS_PUBLISHER_ELEMENT);
@@ -59,20 +56,16 @@ public class GCEConfigParser {
         //extract other properties
         extractOtherProperties(documentElement);
 
-        //validate extracted properties
+        //validate all extracted properties - just a null check
         gceContext.validate();
-
-
-
     }
 
     /**
      * Extract cep ip and port and store in gceContext object
      *
-     * @param cepInfoElement
+     * @param cepInfoElement - OMElement which is containing the cep information
      */
     private static void extractCepConfiguration(OMElement cepInfoElement) {
-
         //Check whether the cep stat publisher enabled or not
         QName qName = new QName(Constants.CEP_STATS_PUBLISHER_ENABLED);
         String enabled = cepInfoElement.getAttributeValue(qName);
@@ -84,65 +77,104 @@ public class GCEConfigParser {
         if (Boolean.parseBoolean(enabled)) {
             //extract rest configuration of cep
 
-            String thriftReceiverIp = AxiomXpathParserUtil.getFirstChildElement(cepInfoElement, Constants.THRIFT_RECEIVER_IP).getText();
-            String thriftReceiverPort = AxiomXpathParserUtil.getFirstChildElement(cepInfoElement, Constants.THRIFT_RECEIVER_PORT).getText();
+            OMElement thriftReceiverIpElement = AxiomXpathParserUtil.getFirstChildElement(cepInfoElement,
+                    Constants.THRIFT_RECEIVER_IP);
+            OMElement thriftReceiverPortElement = AxiomXpathParserUtil.getFirstChildElement(cepInfoElement,
+                    Constants.THRIFT_RECEIVER_PORT);
 
-            //set extracted ip and port to gceContext object
-            gceContext.setThriftReceiverIp(thriftReceiverIp);
-            gceContext.setThriftReceiverPort(thriftReceiverPort);
+            if (thriftReceiverIpElement != null) {
+                //set extracted ip to gceContext object
+                gceContext.setThriftReceiverIp(thriftReceiverIpElement.getText());
+            }
 
-            //validate above properties
-
+            if (thriftReceiverPortElement != null) {
+                //set extracted port to gceContext object
+                gceContext.setThriftReceiverPort(thriftReceiverPortElement.getText());
+            }
         }
-
     }
 
     /**
-     * extract Iaas propreties from given OMElement and store it in gceContext object
+     * extract Iaas properties from given OMElement and store it in gceContext object
      *
      * @param gceIaasInfoElement - OMElement which contains Iaas properties
      */
     private static void extractGceIaasInformation(OMElement gceIaasInfoElement) {
-
-        String projectName = AxiomXpathParserUtil.getFirstChildElement(gceIaasInfoElement, Constants.PROJECT_NAME).getText();
-        String projectId = AxiomXpathParserUtil.getFirstChildElement(gceIaasInfoElement, Constants.PROJECT_ID).getText();
-        String regionName = AxiomXpathParserUtil.getFirstChildElement(gceIaasInfoElement, Constants.REGION_NAME).getText();
-        String keyFilePath = AxiomXpathParserUtil.getFirstChildElement(gceIaasInfoElement, Constants.KEY_FILE_PATH).getText();
-        String gceAccountId = AxiomXpathParserUtil.getFirstChildElement(gceIaasInfoElement, Constants.GCE_ACCOUNT_ID).getText();
-        String networkName = AxiomXpathParserUtil.getFirstChildElement(gceIaasInfoElement, Constants.NETWORK_NAME).getText();
+        OMElement projectNameElement = AxiomXpathParserUtil.getFirstChildElement(gceIaasInfoElement, Constants.PROJECT_NAME);
+        OMElement projectIdElement = AxiomXpathParserUtil.getFirstChildElement(gceIaasInfoElement, Constants.PROJECT_ID);
+        OMElement regionNameElement = AxiomXpathParserUtil.getFirstChildElement(gceIaasInfoElement, Constants.REGION_NAME);
+        OMElement keyFilePathElement = AxiomXpathParserUtil.getFirstChildElement(gceIaasInfoElement, Constants.KEY_FILE_PATH);
+        OMElement gceAccountIdElement = AxiomXpathParserUtil.getFirstChildElement(gceIaasInfoElement, Constants.GCE_ACCOUNT_ID);
+        OMElement networkNameElement = AxiomXpathParserUtil.getFirstChildElement(gceIaasInfoElement, Constants.NETWORK_NAME);
 
         //set extracted properties to gceContext object
-        gceContext.setProjectName(projectName);
-        gceContext.setProjectID(projectId);
-        gceContext.setRegionName(regionName);
-        gceContext.setKeyFilePath(keyFilePath);
-        gceContext.setGceAccountID(gceAccountId);
-        gceContext.setNetworkName(networkName);
+        if(projectNameElement != null){
+            gceContext.setProjectName(projectNameElement.getText());
+        }
 
+        if(projectIdElement != null){
+            gceContext.setProjectID(projectIdElement.getText());
+        }
+
+        if(regionNameElement != null){
+            gceContext.setRegionName(regionNameElement.getText());
+        }
+
+        if(keyFilePathElement != null){
+            gceContext.setKeyFilePath(keyFilePathElement.getText());
+        }
+
+        if(gceAccountIdElement != null){
+            gceContext.setGceAccountID(gceAccountIdElement.getText());
+        }
+        if(networkNameElement != null){
+            gceContext.setNetworkName(networkNameElement.getText());
+        }
     }
 
     /**
      * extract health check properties from given OMElement and store it in gceContext object
+     *
      * @param healthCheckPropertiesElement - OMElement which contains health check properties
      */
     private static void extractHealthCheckProperties(OMElement healthCheckPropertiesElement) {
-
-        String healthCheckRequestPath = AxiomXpathParserUtil.getFirstChildElement(healthCheckPropertiesElement, Constants.HEALTH_CHECK_REQUEST_PATH).getText();
-        String healthCheckPort = AxiomXpathParserUtil.getFirstChildElement(healthCheckPropertiesElement, Constants.HEALTH_CHECK_PORT).getText();
-        String healthCheckTimeoutSec = AxiomXpathParserUtil.getFirstChildElement(healthCheckPropertiesElement, Constants.HEALTH_CHECK_TIME_OUT_SEC).getText();
-        String healthCheckUnhealthyThreshold = AxiomXpathParserUtil.getFirstChildElement(healthCheckPropertiesElement, Constants.HEALTH_CHECK_UNHEALTHY_THRESHOLD).getText();
-        String heathCheckIntervalSec = AxiomXpathParserUtil.getFirstChildElement(healthCheckPropertiesElement, Constants.HEALTH_CHECK_INTERVAL_SEC).getText();
-        String healthCheckHealthyThreshold = AxiomXpathParserUtil.getFirstChildElement(healthCheckPropertiesElement, Constants.HEALTH_CHECK_HEALTHY_THRESHOLD).getText();
-
+        OMElement healthCheckRequestPathElement = AxiomXpathParserUtil.getFirstChildElement(healthCheckPropertiesElement,
+                Constants.HEALTH_CHECK_REQUEST_PATH);
+        OMElement healthCheckPortElement = AxiomXpathParserUtil.getFirstChildElement(healthCheckPropertiesElement,
+                Constants.HEALTH_CHECK_PORT);
+        OMElement healthCheckTimeoutSecElement = AxiomXpathParserUtil.getFirstChildElement(healthCheckPropertiesElement,
+                Constants.HEALTH_CHECK_TIME_OUT_SEC);
+        OMElement healthCheckUnhealthyThresholdElement = AxiomXpathParserUtil.getFirstChildElement(healthCheckPropertiesElement,
+                Constants.HEALTH_CHECK_UNHEALTHY_THRESHOLD);
+        OMElement heathCheckIntervalSecElement = AxiomXpathParserUtil.getFirstChildElement(healthCheckPropertiesElement,
+                Constants.HEALTH_CHECK_INTERVAL_SEC);
+        OMElement healthCheckHealthyThresholdElement = AxiomXpathParserUtil.getFirstChildElement(healthCheckPropertiesElement,
+                Constants.HEALTH_CHECK_HEALTHY_THRESHOLD);
 
         //set extracted properties to gceContext object
-        gceContext.setHealthCheckRequestPath(healthCheckRequestPath);
-        gceContext.setHealthCheckPort(healthCheckPort);
-        gceContext.setHealthCheckTimeOutSec(healthCheckTimeoutSec);
-        gceContext.setHealthCheckUnhealthyThreshold(healthCheckUnhealthyThreshold);
-        gceContext.setHealthCheckIntervalSec(heathCheckIntervalSec);
-        gceContext.setHealthCheckHealthyThreshold(healthCheckHealthyThreshold);
+        if(healthCheckRequestPathElement != null){
+            gceContext.setHealthCheckRequestPath(healthCheckRequestPathElement.getText());
+        }
 
+        if(healthCheckPortElement != null){
+            gceContext.setHealthCheckPort(healthCheckPortElement.getText());
+        }
+
+        if(healthCheckTimeoutSecElement != null){
+            gceContext.setHealthCheckTimeOutSec(healthCheckTimeoutSecElement.getText());
+        }
+
+        if(healthCheckUnhealthyThresholdElement != null){
+            gceContext.setHealthCheckUnhealthyThreshold(healthCheckUnhealthyThresholdElement.getText());
+        }
+
+        if(heathCheckIntervalSecElement != null){
+            gceContext.setHealthCheckIntervalSec(heathCheckIntervalSecElement.getText());
+        }
+
+        if(healthCheckHealthyThresholdElement != null){
+            gceContext.setHealthCheckHealthyThreshold(healthCheckHealthyThresholdElement.getText());
+        }
     }
 
     /**
@@ -151,14 +183,23 @@ public class GCEConfigParser {
      * @param documentElement - OMElement which contains other properties
      */
     private static void extractOtherProperties(OMElement documentElement) {
-        String operationTimeout = AxiomXpathParserUtil.getFirstChildElement(documentElement, Constants.OPERATION_TIMEOUT).getText();
-        String namePrefix = AxiomXpathParserUtil.getFirstChildElement(documentElement, Constants.NAME_PREFIX).getText();
-        String log4jPropertiesFileName = AxiomXpathParserUtil.getFirstChildElement(documentElement, Constants.LOG4J_PROPERTIES_FILE_NAME).getText();
+        OMElement operationTimeoutElement = AxiomXpathParserUtil.getFirstChildElement(documentElement, Constants.
+                OPERATION_TIMEOUT);
+        OMElement namePrefixElement = AxiomXpathParserUtil.getFirstChildElement(documentElement, Constants.NAME_PREFIX);
+        OMElement log4jPropertiesFileNameElement = AxiomXpathParserUtil.getFirstChildElement(documentElement, Constants.
+                LOG4J_PROPERTIES_FILE_NAME);
 
         //set extracted properties to gceContext object
-        gceContext.setOperationTimeout(operationTimeout);
-        gceContext.setNamePrefix(namePrefix);
-        gceContext.setLog4jPropertiesFileName(log4jPropertiesFileName);
-    }
+        if(operationTimeoutElement != null){
+            gceContext.setOperationTimeout(operationTimeoutElement.getText());
+        }
 
+        if(namePrefixElement != null){
+            gceContext.setNamePrefix(namePrefixElement.getText());
+        }
+
+        if(log4jPropertiesFileNameElement != null){
+            gceContext.setLog4jPropertiesFileName(log4jPropertiesFileNameElement.getText());
+        }
+    }
 }

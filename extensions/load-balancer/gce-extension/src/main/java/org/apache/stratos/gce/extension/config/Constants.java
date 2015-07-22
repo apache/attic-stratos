@@ -23,7 +23,6 @@ package org.apache.stratos.gce.extension.config;
  * GCE extension constants.
  */
 public class Constants {
-
     public static final String CONFIG_FILE_NAME = "gce-configuration.xml";
     public static final String CONFIG_FOLDER_NAME = "conf";
 
