@@ -20,8 +20,6 @@ package org.apache.stratos.gce.extension.config.parser;
  */
 
 import org.apache.axiom.om.OMElement;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.stratos.common.exception.MalformedConfigurationFileException;
 import org.apache.stratos.common.util.AxiomXpathParserUtil;
 import org.apache.stratos.gce.extension.config.Constants;

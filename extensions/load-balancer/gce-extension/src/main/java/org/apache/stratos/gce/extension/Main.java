@@ -66,7 +66,7 @@ public class Main {
                 public void run() {
                     try {
                         if (finalExtension != null) {
-                            log.info("GCE gce instance...");
+                            log.info("GCE instance is stopping...");
                             finalExtension.stop();
                         }
                         mainThread.join();
@@ -107,7 +107,6 @@ public class Main {
      */
     private static String getFilePathOfConfigFile(String fileName) {
         String workingDirectory = System.getProperty("user.dir");
-        String FilePath = workingDirectory + File.separator + ".." + File.separator + Constants.CONFIG_FOLDER_NAME + File.separator + fileName;
-        return FilePath;
+        return workingDirectory + File.separator + ".." + File.separator + Constants.CONFIG_FOLDER_NAME + File.separator + fileName;
     }
 }

@@ -29,10 +29,7 @@ import com.google.api.services.compute.ComputeScopes;
 import com.google.api.services.compute.model.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.stratos.gce.extension.GCELoadBalancer;
 import org.apache.stratos.gce.extension.config.GCEContext;
-import org.apache.stratos.load.balancer.extension.api.exception.LoadBalancerExtensionException;
-
 import java.io.File;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -45,7 +42,6 @@ import java.util.List;
  */
 
 public class GCEOperations {
-
     private static final Log log = LogFactory.getLog(GCEOperations.class);
 
     //project related
@@ -71,9 +67,7 @@ public class GCEOperations {
 
     //a timeout for operation completion
     private static final int OPERATION_TIMEOUT = Integer.parseInt(GCEContext.getInstance().getOperationTimeout());
-
     static Compute compute;
-
 
     /**
      * Constructor for GCE Operations Class
@@ -365,29 +359,6 @@ public class GCEOperations {
     }
 
     /**
-     * Check whether a given forwarding rule is exists or not in the IaaS
-     *
-     * @param forwardingRuleName - forwarding rule name in IaaS
-     * @return - if forwarding rule exists in GCE return true. else return false
-     */
-    public boolean isForwardingRuleExists(String forwardingRuleName) {
-        try {
-            Compute.ForwardingRules.List forwardingRules = compute.forwardingRules().list(PROJECT_ID, REGION_NAME);
-            ForwardingRuleList forwardingRuleList = forwardingRules.execute();
-            for (ForwardingRule forwardingRule : forwardingRuleList.getItems()) {
-                if (forwardingRule.getName().equals(forwardingRuleName)) {
-                    return true;
-                }
-            }
-        } catch (IOException e) {
-            if (log.isErrorEnabled()) {
-                log.error("Could not get check for forwarding rule " + forwardingRuleName);
-            }
-        }
-        return false;
-    }
-
-    /**
      * Get a target pool already created in GCE
      *
      * @param targetPoolName - target pool name in IaaS
@@ -471,7 +442,7 @@ public class GCEOperations {
      * This method is used for set port rage for forwarding rule
      */
     public void setPortRangeToForwardingRule() {
-        //todo:implement this method
+        //todo:discuss and implement this method
     }
 
     /**
@@ -574,32 +545,6 @@ public class GCEOperations {
     }
 
     /**
-     * Checking whether a given health check is exists or not
-     *
-     * @param healthCheckName - name of the health check
-     * @return - if the health check exists in IaaS return true, else return false
-     */
-    public boolean isHealthCheckExists(String healthCheckName) {
-        try {
-            HttpHealthCheckList httpHealthCheckList = compute.httpHealthChecks().list(PROJECT_ID).execute();
-            if (httpHealthCheckList.size() == 0) {
-                return false;
-            }
-            for (HttpHealthCheck httpHealthCheck : httpHealthCheckList.getItems()) {
-                if (httpHealthCheck.getName().equals(healthCheckName)) {
-                    return true;
-                }
-            }
-        } catch (IOException e) {
-            if (log.isErrorEnabled()) {
-                log.error("Exception caused when checking for health checks ");
-            }
-            throw new RuntimeException(e);
-        }
-        return false;
-    }
-
-    /**
      * Wait for a global operation completion. If the operation is related to whole project
      * that is a global operation
      *
@@ -699,27 +644,20 @@ public class GCEOperations {
 
     private static String getZoneNameFromInstanceId(String instanceId){
         int lastIndexOfSlash = instanceId.lastIndexOf("/");
-        String zoneName = instanceId.substring(0,lastIndexOfSlash);
-        return zoneName;
+        return instanceId.substring(0,lastIndexOfSlash);
     }
 
     private static String getInstanceNameFromInstanceId(String instanceId){
         int lastIndexOfSlash = instanceId.lastIndexOf("/");
-        String instanceName = instanceId.substring(lastIndexOfSlash+1);
-        return instanceName;
+        return instanceId.substring(lastIndexOfSlash+1);
     }
 
     /**
      * Manually create the self link for an instance. This method is useful when the instance is deleted from IaaS
-     * @return
+     * @return - the self link of the instance
      */
     private static String createInstanceSelfLink(String instanceId){
-
-        String selfLink = "https://www.googleapis.com/compute/v1/projects/"+PROJECT_ID+
+        return "https://www.googleapis.com/compute/v1/projects/"+PROJECT_ID+
                 "/zones/"+getZoneNameFromInstanceId(instanceId)+"/instances/"+getInstanceNameFromInstanceId(instanceId);
-        return selfLink;
     }
-
-
-
 }

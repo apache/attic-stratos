@@ -51,10 +51,6 @@ public class GCEClusterConfigurationHolder {
         return ipList;
     }
 
-    public void setIpList(List<Integer> ipList) {
-        this.ipList = ipList;
-    }
-
     public String getForwardingRuleName() {
         return forwardingRuleName;
     }
@@ -66,11 +62,6 @@ public class GCEClusterConfigurationHolder {
     public List<String> getMemberList() {
         return memberList;
     }
-
-    public void setMemberList(List<String> memberList) {
-        this.memberList = memberList;
-    }
-
 
     public String getClusterID() {
         return clusterID;
@@ -98,13 +89,5 @@ public class GCEClusterConfigurationHolder {
 
     public void removeMember(String memberId) {
         this.memberList.remove(memberId);
-    }
-
-    public void addIp(int ip) {
-        this.ipList.add(ip);
-    }
-
-    public void removeIp(int ip) {
-        this.ipList.remove(ip);
     }
 }
