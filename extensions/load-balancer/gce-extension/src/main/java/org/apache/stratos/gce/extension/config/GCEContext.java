@@ -24,11 +24,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * This class is used to read and store system properties
+ * This class is used to store configuration properties for gce-extension
  */
 public class GCEContext {
     private static final Log log = LogFactory.getLog(GCEContext.class);
-
     private static volatile GCEContext context;
 
     //cep stat publisher properties
@@ -57,48 +56,8 @@ public class GCEContext {
     private String operationTimeout;
     private String log4jPropertiesFileName;
 
+    //private constructor
     private GCEContext() {
-
-       /* this.cepStatsPublisherEnabled = Boolean.getBoolean(Constants.CEP_STATS_PUBLISHER_ENABLED);
-        this.thriftReceiverIp = System.getProperty(Constants.THRIFT_RECEIVER_IP);
-        this.thriftReceiverPort = System.getProperty(Constants.THRIFT_RECEIVER_PORT);
-        this.namePrefix = System.getProperty(Constants.NAME_PREFIX);
-        this.projectName = System.getProperty(Constants.PROJECT_NAME);
-        this.projectID = System.getProperty(Constants.PROJECT_ID);
-        this.zoneName = System.getProperty(Constants.ZONE_NAME);
-        this.regionName = System.getProperty(Constants.REGION_NAME);
-        this.keyFilePath = System.getProperty(Constants.KEY_FILE_PATH);
-        this.gceAccountID = System.getProperty(Constants.GCE_ACCOUNT_ID);
-        this.healthCheckRequestPath = System.getProperty(Constants.HEALTH_CHECK_REQUEST_PATH);
-        this.healthCheckPort = System.getProperty(Constants.HEALTH_CHECK_PORT);
-        this.healthCheckTimeOutSec = System.getProperty(Constants.HEALTH_CHECK_TIME_OUT_SEC);
-        this.healthCheckUnhealthyThreshold = System.getProperty(Constants.HEALTH_CHECK_UNHEALTHY_THRESHOLD);
-        this.networkName = System.getProperty(Constants.NETWORK_NAME);
-        this.operationTimeout = System.getProperty(Constants.OPERATION_TIMEOUT);
-
-
-        if (log.isDebugEnabled()) {
-            log.debug(Constants.CEP_STATS_PUBLISHER_ENABLED + " = " + cepStatsPublisherEnabled);
-            log.debug(Constants.THRIFT_RECEIVER_IP + " = " + thriftReceiverIp);
-            log.debug(Constants.THRIFT_RECEIVER_PORT + " = " + thriftReceiverPort);
-            log.debug(Constants.THRIFT_RECEIVER_PORT + " = " + thriftReceiverPort);
-            log.debug(Constants.NAME_PREFIX + " = " + namePrefix);
-            log.debug(Constants.PROJECT_NAME + " = " + projectName);
-            log.debug(Constants.PROJECT_ID + " = " + projectID);
-            log.debug(Constants.ZONE_NAME + " = " + zoneName);
-            log.debug(Constants.REGION_NAME + " = " + regionName);
-            log.debug(Constants.KEY_FILE_PATH + " = " + keyFilePath);
-            log.debug(Constants.GCE_ACCOUNT_ID + " = " + gceAccountID);
-            log.debug(Constants.HEALTH_CHECK_REQUEST_PATH + " = " + healthCheckRequestPath);
-            log.debug(Constants.HEALTH_CHECK_PORT + " = " + healthCheckPort);
-            log.debug(Constants.HEALTH_CHECK_TIME_OUT_SEC + " = " + healthCheckTimeOutSec);
-            log.debug(Constants.HEALTH_CHECK_UNHEALTHY_THRESHOLD + " = " + healthCheckUnhealthyThreshold);
-            log.debug(Constants.NETWORK_NAME + "=" + networkName);
-            log.debug(Constants.OPERATION_TIMEOUT + "=" + operationTimeout);
-
-        }
-        */
-
     }
 
     public static GCEContext getInstance() {
@@ -121,33 +80,31 @@ public class GCEContext {
     }
 
     public void validate() {
-
-        validateSystemProperty(Constants.CEP_STATS_PUBLISHER_ENABLED);
-        validateSystemProperty(Constants.NAME_PREFIX);
-        validateSystemProperty(Constants.PROJECT_NAME);
-        validateSystemProperty(Constants.PROJECT_ID);
-        validateSystemProperty(Constants.REGION_NAME);
-        validateSystemProperty(Constants.KEY_FILE_PATH);
-        validateSystemProperty(Constants.GCE_ACCOUNT_ID);
-        validateSystemProperty(Constants.HEALTH_CHECK_REQUEST_PATH);
-        validateSystemProperty(Constants.HEALTH_CHECK_PORT);
-        validateSystemProperty(Constants.HEALTH_CHECK_TIME_OUT_SEC);
-        validateSystemProperty(Constants.HEALTH_CHECK_INTERVAL_SEC);
-        validateSystemProperty(Constants.HEALTH_CHECK_UNHEALTHY_THRESHOLD);
-        validateSystemProperty(Constants.HEALTH_CHECK_HEALTHY_THRESHOLD);
-        validateSystemProperty(Constants.NETWORK_NAME);
-        validateSystemProperty(Constants.OPERATION_TIMEOUT);
+        validateProperty(Boolean.toString(cepStatsPublisherEnabled));
+        validateProperty(namePrefix);
+        validateProperty(projectName);
+        validateProperty(projectID);
+        validateProperty(regionName);
+        validateProperty(keyFilePath);
+        validateProperty(gceAccountID);
+        validateProperty(healthCheckRequestPath);
+        validateProperty(healthCheckPort);
+        validateProperty(healthCheckTimeOutSec);
+        validateProperty(healthCheckIntervalSec);
+        validateProperty(healthCheckHealthyThreshold);
+        validateProperty(healthCheckHealthyThreshold);
+        validateProperty(networkName);
+        validateProperty(operationTimeout);
 
         if (cepStatsPublisherEnabled) {
-            validateSystemProperty(Constants.THRIFT_RECEIVER_IP);
-            validateSystemProperty(Constants.THRIFT_RECEIVER_PORT);
+            validateProperty(Constants.THRIFT_RECEIVER_IP);
+            validateProperty(Constants.THRIFT_RECEIVER_PORT);
         }
     }
 
-    private void validateSystemProperty(String propertyName) {
-        String value = System.getProperty(propertyName);
-        if (StringUtils.isEmpty(value)) {
-            throw new RuntimeException("System property was not found: " + propertyName);
+    private void validateProperty(String propertyName) {
+        if (StringUtils.isEmpty(propertyName)) {
+            throw new RuntimeException("Property was not found: " + propertyName);
         }
     }
 

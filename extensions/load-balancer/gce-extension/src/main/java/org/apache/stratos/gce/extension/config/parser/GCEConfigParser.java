@@ -34,7 +34,7 @@ public class GCEConfigParser {
     private static GCEContext gceContext;
 
     /**
-     * Parse the gce-configuration.xml file.
+     * Parse the gce-configuration.xml file when the extension is starting up.
      *
      * @param documentElement axiom document element.
      * @throws MalformedConfigurationFileException
@@ -42,22 +42,25 @@ public class GCEConfigParser {
     public static void parse(OMElement documentElement) throws MalformedConfigurationFileException {
 
         //get cep info
-        OMElement cepInfoElement = AxiomXpathParserUtil.getFirstChildElement(documentElement, Constants.CEP_STATS_PUBLISHER_ELEMENT);
+        OMElement cepInfoElement = AxiomXpathParserUtil.getFirstChildElement(documentElement,
+                Constants.CEP_STATS_PUBLISHER_ELEMENT);
         extractCepConfiguration(cepInfoElement);
 
         //get GCE IaaS info
-        OMElement gceIaasInfoElement = AxiomXpathParserUtil.getFirstChildElement(documentElement, Constants.IAAS_PROPERTIES_ELEMENT);
+        OMElement gceIaasInfoElement = AxiomXpathParserUtil.getFirstChildElement(documentElement,
+                Constants.IAAS_PROPERTIES_ELEMENT);
         extractGceIaasInformation(gceIaasInfoElement);
 
         //get heath check info
-        OMElement healthCheckPropertiesElement = AxiomXpathParserUtil.getFirstChildElement(documentElement, Constants.HEALTH_CHECK_PROPERTIES_ELEMENT);
+        OMElement healthCheckPropertiesElement = AxiomXpathParserUtil.getFirstChildElement(documentElement,
+                Constants.HEALTH_CHECK_PROPERTIES_ELEMENT);
         extractHealthCheckProperties(healthCheckPropertiesElement);
 
         //extract other properties
         extractOtherProperties(documentElement);
 
-        //validate extradted properties
-        //gceContext.validate();
+        //validate extracted properties
+        gceContext.validate();
 
 
 
