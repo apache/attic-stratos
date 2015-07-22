@@ -1,132 +1,611 @@
-<link rel="stylesheet" href="{{url "/themes/theme0/css/style.css"}}" type="text/css" >
-<link rel="stylesheet" href="{{url "/themes/theme0/css/c3/c3.css"}}" type="text/css" >
+<style>
+    svg {
+        font: 10px sans-serif;
+    }
 
-<body onload="bodyOnLoad({{Json}})">
+    .area {
+        fill: #00BFFF;
+        clip-path: url(#clip);
+    }
 
-<body onload="getClusters()">
+    .axis path,
+    .axis line {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+    }
+
+    .d3-tip {
+        line-height: 1;
+        font-weight: bold;
+        padding: 12px;
+        background: rgba(0, 0, 0, 0.8);
+        color: #fff;
+        border-radius: 2px;
+    }
+
+    /* Creates a small triangle extender for the tooltip */
+    .d3-tip:after {
+        box-sizing: border-box;
+        display: inline;
+        font-size: 10px;
+        width: 100%;
+        line-height: 1;
+        color: rgba(0, 0, 0, 0.8);
+        content: "\25BC";
+        position: absolute;
+        text-align: center;
+    }
+
+    /* Style northward tooltips differently */
+    .d3-tip.n:after {
+        margin: -1px 0 0 0;
+        top: 100%;
+        left: 0;
+    }
+
+    .brush .extent {
+        stroke: #fff;
+        fill-opacity: .125;
+        shape-rendering: crispEdges;
+    }
+    svg {
+        font: 10px sans-serif;
+    }
+
+    .axis path,
+    .axis line {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+    }
+
+    .brush .extent {
+        stroke: #fff;
+        fill-opacity: .125;
+        shape-rendering: crispEdges;
+    }
+    .axis path,
+    .axis line {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+    }
+
+    .x.axis path {
+        display: none;
+    }
+
+    .line {
+        fill: none;
+        stroke: green;
+        stroke-width: 1.5px;
+    }
+
+    body {
+        font: 10px sans-serif;
+    }
+
+    .axis path,
+    .axis line {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+    }
+
+    .area1 {
+        fill: orange;
+    }
+
+    .area2 {
+        fill: red;
+    }
+
+
+</style>
+
 
 <div class="container-fluid" style="padding-bottom:40px">
     <div class="row title">
         <div class="title-main text-center">
-            <h1 id="mainTitle">{{Id}}</h1>
-            <h3 id="mainTitle">Type : {{Type}}</h3>
+            <h1 id="mainTitle">{{Type}} : {{Id}}</h1>
+            <input type="hidden" value={{Type}} id='chartType'>
+            <input type="hidden" value={{Id}} id='IdValue'>
         </div>
     </div>
 
-    <div class="container content">
-        <div class="row text-center" id="rowTable">
-        </div>
-    </div>
+    <a class="btn btn-default" href="{{url "/applications/"}}{{Alias}}/" role="button">Back</a>
 
-    <div id="menu" style="display:none;">
-        <div class="page-container">
-            <table>e-container">
-            <table>
-                <tr>
-                    <td style="vertical-align: top;">
-                        <div class="page-sidebar-wrapper" style="width:200px">
-                            <ul id="sideMenu" class="page-sidebar-menu">
-                            </ul>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title" style="color:Black">Memory Consumption Average</h3>
+                </div>
+                <div class="panel-body">
+                    <button class="btn btn-default btn-xs" name="MemoryConsumption" id="30Min" onclick="return DurationOnClick(this)">30 mins</button>
+                    <button class="btn btn-default btn-xs" name="MemoryConsumption" id="1Hour" style="color:Red" onclick="return DurationOnClick(this)">1 hour</button>
+                    <button class="btn btn-default btn-xs" name="MemoryConsumption" id="1Day" onclick="return DurationOnClick(this)">1 day</button>
+                    <button class="btn btn-default btn-xs" name="MemoryConsumption" id="1Week" onclick="return DurationOnClick(this)">1 week</button>
+                    <button class="btn btn-default btn-xs" name="MemoryConsumption" id="1Month" onclick="return DurationOnClick(this)">1 month</button>
+                    <div class="container content" style="width: 600px;">
+                        <div class="row text-center" id="rowTable3">
                         </div>
-                    </td>
-                    <td style="padding-left:5%">
-                        <div id="charts">
-                            <h3 style="color:white">Load Average</h3>
-                            <div id="chart1" style="background-color: #FFFAF0; height:400px ; width: 800px ; margin: 0 auto"></div><br>
-                            <h3 style="color:white">Request in Flight<h3>
-                            <div id="chart2" style="background-color: #FFFAF0; height:400px ; width: 800px ; margin: 0 auto"></div><br>
-                            <h3 style="color:white">Memory Consumption</h3>
-                            <div id="chart3" style="background-color: #FFFAF0; height:400px ; width: 800px ; margin: 0 auto"></div>
-                            <h1>{{newtRY2}}</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title" style="color:Black">Load Average</h3>
+                </div>
+                <div class="panel-body">
+                    <button class="btn btn-default btn-xs" name="LoadAverage" id="30Min" onclick="return DurationOnClick(this)">30 mins</button>
+                    <button class="btn btn-default btn-xs" name="LoadAverage" id="1Hour" style="color:Red" onclick="return DurationOnClick(this)">1 hour</button>
+                    <button class="btn btn-default btn-xs" name="LoadAverage" id="1Day" onclick="return DurationOnClick(this)">1 day</button>
+                    <button class="btn btn-default btn-xs" name="LoadAverage" id="1Week" onclick="return DurationOnClick(this)">1 week</button>
+                    <button class="btn btn-default btn-xs" name="LoadAverage" id="1Month" onclick="return DurationOnClick(this)">1 month</button>
+                    <div class="container content" style="width: 600px;">
+                        <div class="row text-center" id="rowTable2">
                         </div>
-                    </td>
-                </tr>
-            </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</div>
-
-<div style="background:#fff; height:15px; bottom:0; left:0; margin-top:5px; width:100%; position:fixed">
-    <div class="row title">
-        <div class="title-main text-center">
-
+    {{#if condition}}
+        <div class="col-md-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title" style="color:Black">In Flight Request Count</h3>
+                </div>
+                <div class="panel-body">
+                    <button class="btn btn-default btn-xs" name="InFlight" id="30Min" onclick="return DurationOnClick(this)">30 mins</button>
+                    <button class="btn btn-default btn-xs" name="InFlight" id="1Hour" style="color:Red" onclick="return DurationOnClick(this)">1 hour</button>
+                    <button class="btn btn-default btn-xs" name="InFlight" id="1Day" onclick="return DurationOnClick(this)">1 day</button>
+                    <button class="btn btn-default btn-xs" name="InFlight" id="1Week" onclick="return DurationOnClick(this)">1 week</button>
+                    <button class="btn btn-default btn-xs" name="InFlight" id="1Month" onclick="return DurationOnClick(this)">1 month</button>
+                    <div class="container content" style="width: 600px;">
+                        <div class="row text-center" id="rowTable1">
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
-</div>
+    {{/if}}
 
-<script>
-   
-    function getClusters(){
-        jQuery.ajax({
-            type:"POST",
-            url: "{{url ""}}/healthStatistics/",
-            data:{
-                action:"memoryConsumption"
-            },
-            async:true,
-            cache:false,
-            success: function (cluster) {
-                alert("Item"+cluster)
+    <body onload="bodyOnLoad()">
 
-            }
-        });
-    }
+    </body>
 
-    function getMemoryAverageData(){
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="{{url "/themes/theme0/js/d3.tip.v0.6.3.js"}}"></script>
+    <script>
 
-        jQuery.ajax({
-            type:"POST",
-            url: "{{url ""}}/healthStatistics/",
-            data:{
-                action:"MemoryAverageData"
-            },
-            async:true,
-            cache:false,
-            success: function (cluster) {
-                alert("Item")
+        var jsonDataLoadAvg = {{{loadAverageData}}};
+        var jsonDataFlightRequest = {{{flightRequestDetails}}};
+        var jsonDataMemoryAvg = {{{memoryAverageDetails}}};
 
-            }
-        });
-    }
+        function DurationOnClick(element){
+            var buttonId = element.id;
+            var buttonName = element.name;
+            var buttonIds = ["1Hour", "30Min", "1Day" , "1Week", "1Month"];
+            var chartType = $('#chartType').val();
+            var idValue = $('#IdValue').val();
 
-    function getFlightRequestCountData(){
 
-        jQuery.ajax({
-            type:"POST",
-            url: "{{url ""}}/healthStatistics/",
-            data:{
-                action:"FlightRequestCountData"
-            },
-            async:true,
-            cache:false,
-            success: function (cluster) {
-                alert("Item")
+
+            if(buttonName == 'InFlight'){
+                $('#rowTable1').empty();
+                $('#rowTable1').html('<i class="fa fa-spinner fa-pulse fa-4x"></i>');
+
+            }else if(buttonName == 'LoadAverage'){
+                $('#rowTable2').empty();
+                $('#rowTable2').html('<i class="fa fa-spinner fa-pulse fa-4x"></i>');
+
+            }else{
+                $('#rowTable3').empty();
+                $('#rowTable3').html('<i class="fa fa-spinner fa-pulse fa-4x"></i>');
 
             }
-        });
-    }
 
-    function getLoadAverageData(){
+            $(buttonIds).each(function(i, e) {
 
-        jQuery.ajax({
-            type:"POST",
-            url: "{{url ""}}/healthStatistics/",
-            data:{
-                action:"LoadAverageData"
-            },
-            async:true,
-            cache:false,
-            success: function (cluster) {
-                alert("Item")
+                $('#'+e+'[name='+buttonName+']').css("color", "");
+            });
 
+            $('#'+buttonId+'[name='+buttonName+']').css("color", "Red");
+
+            $.ajax({
+                type: "GET",
+                url: caramel.context + "/controllers/healthStatistics/healthStatistics_getrequest.jag",
+                dataType: 'json',
+                data: {"formtype": buttonName, "idValue":idValue, "chartType": chartType, "duration": buttonId},
+                success: function (data) {
+
+                    if(data.status!='error'){
+                        if(buttonName == 'InFlight'){
+                            $('#rowTable1').empty();
+                            jsonDataFlightRequest = data;
+                            inFlightRequestCountChart();
+                        }
+                        else if(buttonName == 'LoadAverage'){
+                            $('#rowTable2').empty();
+                            jsonDataLoadAvg = data;
+                            loadAverageChart();
+                        }
+                        else{
+                            $('#rowTable3').empty();
+                            jsonDataMemoryAvg = data;
+                            memoryAverageDataChart();
+                        }
+
+                    }else{
+
+                        var n = noty({text: data.message, layout: 'bottomRight', type: 'error'});
+                    }
+
+
+                }
+            }).always(function () {});
+        }
+
+        function bodyOnLoad () {
+            var type="{{{Type}}}";
+            console.info(type);
+            if (type!="cluster") {
+                loadAverageChart();
+                memoryAverageDataChart();
             }
-        });
-    }
+            else{
+                loadAverageChart();
+                memoryAverageDataChart();
+                inFlightRequestCountChart();
+            }
+        }
 
-</script>
+        function loadAverageChart () {
+            var margin = {top: 20, right: 20, bottom: 30, left: 50},
+                    width = 600 - margin.left - margin.right,
+                    height = 300 - margin.top - margin.bottom;
 
-<script type="text/javascript" src="{{url "/themes/theme0/js/c3/d3.v3.min.js"}}"></script>
-<script type="text/javascript" src="{{url "/themes/theme0/js/c3/c3.min.js"}}"></script>
-<script type="text/javascript" src="{{url "/themes/theme0/js/healthStat/healthStatistics.js"}}"></script>
-</body>
+            var parseDate = d3.time.format("%d-%b-%y").parse;
 
+            var x = d3.time.scale()
+                    .range([0, width]);
+
+            var y = d3.scale.linear()
+                    .range([height, 0]);
+
+            var xAxis = d3.svg.axis()
+                    .scale(x)
+                    .orient("bottom");
+
+            var yAxis = d3.svg.axis()
+                    .scale(y)
+                    .orient("left");
+
+            var area = d3.svg.area()
+                    .x(function(d) { return x(d.timeStamp); })
+                    .y0(height)
+                    .y1(function(d) {return y(d.memberAverageLoadAverage); });
+
+            var tip = d3.tip()
+                    .attr('class', 'd3-tip')
+                    .offset([-10, 0])
+                    .html(function(d) {
+                        return "<strong>Load Average:</strong> <span style='color:red'>" + d.memberAverageLoadAverage +
+                                "</span> <strong>Time:</strong> <span style='color:red'>" + new Date(d.timeStamp) + "</span>";
+                    })
+
+            var svg = d3.select("#rowTable2").append("svg")
+                    .attr("width", width + margin.left + margin.right)
+                    .attr("height", height + margin.top + margin.bottom)
+                    .append("g")
+                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+            svg.call(tip);
+
+            var data = jsonDataLoadAvg;
+
+            x.domain(d3.extent(data, function(d) { return d.timeStamp; }));
+            y.domain([0, d3.max(data, function(d) { return d.memberAverageLoadAverage; })]);
+
+            svg.append("path")
+                    .datum(data)
+                    .attr("class", "area1")
+                    .attr("d", area);
+
+            svg.append("g")
+                    .attr("class", "x axis")
+                    .attr("transform", "translate(0," + height + ")")
+                    .call(xAxis);
+
+            svg.append("g")
+                    .attr("class", "y axis")
+                    .call(yAxis)
+                    .append("text")
+                    .attr("transform", "rotate(-90)")
+                    .attr("y", 6)
+                    .attr("dy", ".71em")
+                    .style("text-anchor", "end")
+                    .text("Load Average");
+
+            svg.selectAll(".area")
+                    .data(data)
+                    .enter().append("rect")
+                    .attr("class", "area1")
+                    .attr("x", function(d) { return x(d.timeStamp); })
+                    .attr("width", 1)
+                    .attr("y", function(d) { return y(d.memberAverageLoadAverage); })
+                    .attr("height", function(d) { return height - y(d.memberAverageLoadAverage); })
+                    .on('mouseover', tip.show)
+                    .on('mouseout', tip.hide)
+        }
+
+        function inFlightRequestCountChart () {
+
+            var margin = {top: 10, right: 10, bottom: 100, left: 40},
+                    margin2 = {top: 220, right: 10, bottom: 20, left: 40},
+                    width = 600 - margin.left - margin.right,
+                    height = 300 - margin.top - margin.bottom,
+                    height2 = 300 - margin2.top - margin2.bottom;
+
+            var parseDate = d3.time.format("%b %Y").parse;
+
+            var x = d3.time.scale().range([0, width]),
+                    x2 = d3.time.scale().range([0, width]),
+                    y = d3.scale.linear().range([height, 0]),
+                    y2 = d3.scale.linear().range([height2, 0]);
+
+            var xAxis = d3.svg.axis().scale(x).orient("bottom"),
+                    xAxis2 = d3.svg.axis().scale(x2).orient("bottom"),
+                    yAxis = d3.svg.axis().scale(y).orient("left");
+
+            var brush = d3.svg.brush()
+                    .x(x2)
+                    .on("brush", brushed);
+
+            var line = d3.svg.line()
+                    .interpolate("linear")
+                    .x(function(d) { return x(d.timeStamp); })
+                    .y(function(d) { return y(d.inFlightRequestCount); });
+
+            var tip = d3.tip()
+                    .attr('class', 'd3-tip')
+                    .offset([-10, 0])
+                    .html(function(d) {
+                        return "<strong>Flight Request Count:</strong> <span style='color:red'>" + d.inFlightRequestCount +
+                                "</span> <strong>Time:</strong> <span style='color:red'>" + new Date(d.timeStamp) + "</span>";
+                    })
+
+            var line2 = d3.svg.line()
+                    .interpolate("linear")
+                    .x(function(d) { return x2(d.timeStamp); })
+                    .y(function(d) { return y2(d.inFlightRequestCount); });
+
+            var svg = d3.select("#rowTable1").append("svg")
+                    .attr("width", width + margin.left + margin.right)
+                    .attr("height", height + margin.top + margin.bottom);
+
+            svg.append("defs").append("clipPath")
+                    .attr("id", "clip")
+                    .append("rect")
+                    .attr("width", width)
+                    .attr("height", height);
+
+            var focus = svg.append("g")
+                    .attr("class", "focus")
+                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+            var context = svg.append("g")
+                    .attr("class", "context")
+                    .attr("transform", "translate(" + margin2.left + "," + margin2.top + ")");
+
+
+            svg.call(tip);
+
+            var data = jsonDataFlightRequest;
+
+            x.domain(d3.extent(data, function(d) { return d.timeStamp; }));
+            y.domain([0, d3.max(data, function(d) { return d.inFlightRequestCount; })]);
+
+
+            x.domain(d3.extent(data, function(d) { return d.timeStamp; }));
+            y.domain([0, d3.max(data, function(d) { return d.inFlightRequestCount; })]);
+            x2.domain(x.domain());
+            y2.domain(y.domain());
+
+            focus.append("path")
+                    .datum(data)
+                    .attr("class", "line")
+                    .attr("d", line);
+
+            focus.append("g")
+                    .attr("class", "x axis")
+                    .attr("transform", "translate(0," + height + ")")
+                    .call(xAxis);
+
+            focus.append("g")
+                    .attr("class", "y axis")
+                    .call(yAxis);
+
+            context.append("path")
+                    .datum(data)
+                    .attr("class", "line")
+                    .attr("d", line2);
+
+            context.append("g")
+                    .attr("class", "x axis")
+                    .attr("transform", "translate(0," + height2 + ")")
+                    .call(xAxis2);
+
+            context.append("g")
+                    .attr("class", "x brush")
+                    .call(brush)
+                    .selectAll("rect")
+                    .attr("y", -6)
+                    .attr("height", height2 + 7);
+
+            svg.selectAll(".line2")
+                    .data(data)
+                    .enter().append("rect")
+                    .attr("class", "line")
+                    .attr("x", function(d) { return x(d.timeStamp); })
+                    .attr("width", 1)
+                    .attr("y", function(d) { return y(d.inFlightRequestCount); })
+                    .attr("height", function(d) { return height - y(d.inFlightRequestCount); })
+                    .on('mouseover', tip.show)
+                    .on('mouseout', tip.hide)
+
+
+            function brushed() {
+                x.domain(brush.empty() ? x2.domain() : brush.extent());
+                focus.select(".line").attr("d", line);
+                focus.select(".x.axis").call(xAxis);
+            }
+
+            function type(d) {
+                d.timeStamp = parseDate(d.timeStamp);
+                d.inFlightRequestCount = +d.inFlightRequestCount;
+                return d;
+            }
+        }
+
+        function memoryAverageDataChart () {
+            var margin = {top: 10, right: 10, bottom: 100, left: 40},
+                    margin2 = {top: 220, right: 10, bottom: 20, left: 40},
+                    width = 600 - margin.left - margin.right,
+                    height = 300 - margin.top - margin.bottom,
+                    height2 = 300 - margin2.top - margin2.bottom;
+
+            var parseDate = d3.time.format("%b %Y").parse;
+
+            var x = d3.time.scale().range([0, width]),
+                    x2 = d3.time.scale().range([0, width]),
+                    y = d3.scale.linear().range([height, 0]),
+                    y2 = d3.scale.linear().range([height2, 0]);
+
+            var xAxis = d3.svg.axis().scale(x).orient("bottom"),
+                    xAxis2 = d3.svg.axis().scale(x2).orient("bottom"),
+                    yAxis = d3.svg.axis().scale(y).orient("left");
+
+            var brush = d3.svg.brush()
+                    .x(x2)
+                    .on("brush", brushed);
+
+            var area = d3.svg.area()
+                    .interpolate("linear")
+                    .x(function(d) { return x(d.timeStamp); })
+                    .y0(height)
+                    .y1(function(d) { return y(d.memberAverageMemoryConsumption); });
+
+            var area2 = d3.svg.area()
+                    .interpolate("linear")
+                    .x(function(d) { return x2(d.timeStamp); })
+                    .y0(height2)
+                    .y1(function(d) { return y2(d.memberAverageMemoryConsumption); });
+
+            var svg = d3.select("#rowTable3").append("svg")
+                    .attr("width", width + margin.left + margin.right)
+                    .attr("height", height + margin.top + margin.bottom);
+
+            svg.append("defs").append("clipPath")
+                    .attr("id", "clip")
+                    .append("rect")
+                    .attr("width", width)
+                    .attr("height", height);
+
+            var focus = svg.append("g")
+                    .attr("class", "focus")
+                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+            var context = svg.append("g")
+                    .attr("class", "context")
+                    .attr("transform", "translate(" + margin2.left + "," + margin2.top + ")");
+
+            var data = jsonDataMemoryAvg;
+
+            x.domain(d3.extent(data, function(d) { return d.timeStamp; }));
+            y.domain([-2, d3.max(data, function(d) { return d.memberAverageMemoryConsumption; })]);
+
+
+            x.domain(d3.extent(data, function(d) { return d.timeStamp; }));
+            y.domain([-2, d3.max(data, function(d) { return d.memberAverageMemoryConsumption; })]);
+            x2.domain(x.domain());
+            y2.domain(y.domain());
+
+            focus.append("path")
+                    .datum(data)
+                    .attr("class", "area")
+                    .attr("d", area);
+
+            focus.append("g")
+                    .attr("class", "x axis")
+                    .attr("transform", "translate(0," + height + ")")
+                    .call(xAxis);
+
+            focus.append("g")
+                    .attr("class", "y axis")
+                    .call(yAxis);
+
+            context.append("path")
+                    .datum(data)
+                    .attr("class", "area")
+                    .attr("d", area2);
+
+            context.append("g")
+                    .attr("class", "x axis")
+                    .attr("transform", "translate(0," + height2 + ")")
+                    .call(xAxis2);
+
+            context.append("g")
+                    .attr("class", "x brush")
+                    .call(brush)
+                    .selectAll("rect")
+                    .attr("y", -6)
+                    .attr("height", height2 + 7);
+
+
+            function brushed() {
+                x.domain(brush.empty() ? x2.domain() : brush.extent());
+                focus.select(".area").attr("d", area);
+                focus.select(".x.axis").call(xAxis);
+            }
+
+            function type(d) {
+                d.timeStamp = parseDate(d.timeStamp);
+                d.memberAverageMemoryConsumption = +d.memberAverageMemoryConsumption;
+                return d;
+            }
+        }
+
+        /*function ajaxfirst () {
+            var formtype='applicationtopology';
+
+            $.ajax({
+                type: "GET",
+                url: caramel.context + "/controllers/healthStatistics/healthStatistics_getrequest.jag",
+                dataType: 'json',
+                data: {"formtype": formtype },
+                success: function (data) {
+                    console.info("%%%%%%%"+data)
+
+                    if (data.status == 'error') {
+                        var n = noty({text: data.message, layout: 'bottomRight', type: 'error'});
+                    } else if (data.status == 'warning') {
+                        var n = noty({text: data.message, layout: 'bottomRight', type: 'warning'});
+                    } else {
+                        var n = noty({text: data.message, layout: 'bottomRight', type: 'success'});
+                    }
+                    window.setTimeout(function(){
+                        location.reload();
+                    }, 1000);
+                }
+            }).always(function () {});
+        }*/
+
+    </script>

@@ -40,13 +40,11 @@ var leftMenu = menuGenerator(context, menuJson.menu, userPermissions);
 //create metro block
 var metro_menu = metroGenerator('/healthStatistics', menuJson.menu, userPermissions);
 
-var log = new Log();
-
-var loadAverageData,
+var     loadAverageData,
         flightRequestDetails,
-        memoryAverageDetails = null;
+        memoryAverageDetails=null;
 
-if (Type != 'cluster') {
+if(Type!='cluster'){
 
     try {
 
@@ -92,19 +90,20 @@ if (Type != 'cluster') {
 
     } catch (e) {
 
-        throw new Error("Error while getting Category Activity data for " + e);
+        throw new Error("Error while getting Category Activity data for "+ e);
     }
 
 }
 
+
 caramel.render({
     breadcrumbPathLevelOne: 'healthStatistics',
-    Id: Id,
+    Id:Id,
     Type: Type,
     Alias: Alias,
-    loadAverageData: JSON.stringify(loadAverageData),
-    memoryAverageDetails: JSON.stringify(memoryAverageDetails),
-    flightRequestDetails: JSON.stringify(flightRequestDetails),
+    loadAverageData:JSON.stringify(loadAverageData),
+    memoryAverageDetails:JSON.stringify(memoryAverageDetails),
+    flightRequestDetails:JSON.stringify(flightRequestDetails),
     error: error
 });
 

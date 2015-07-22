@@ -27,20 +27,38 @@ RESTCalls = new function(){
         return this.sendReceive("GET","/tenants",{});
     };
 
-    this.getClusterDetails = function(){
-     var Id="single-cartridge-app.my-php.php.domain";
- 
-    var Interval="500";
-    
-        return this.sendReceive("GET","/averageClusterLoad/" +Id+"/"+Interval,{});
+    this.getFlightRequestDetails = function(Id,DurationVal){
+        var Id=Id;
+        var Interval=DurationVal;
+
+        return this.sendReceive("GET","/cluster/flightRequestCount/" +Id+"/"+DurationVal,{});
     };
 
-    this.getMemberDetails = function(){
-      var Id="tomcat-single-signon.mywso2is.wso2is.domain795dc7af-8317-4071-bbbd-5ac006e3a9ea";
-    
-    var Interval="500";
+    this.getClusterMemoryAverageDetails = function(Id,DurationVal){
+        var Id=Id;
+        var Interval=DurationVal;
+        return this.sendReceive("GET","/cluster/averageMemory/" +Id+"/"+Interval,{});
 
-        return this.sendReceive("GET","/averageMemberLoad/" +Id+"/"+Interval,{});
+    };
+
+    this.getClusterLoadAverageDetails = function(Id,DurationVal){
+        var Id=Id;
+        var Interval=DurationVal;
+        return this.sendReceive("GET","/cluster/averageLoad/" +Id+"/"+Interval,{});
+
+    };
+
+    this.getMemberLoadAverageDetails = function(Id,DurationVal){
+        var Id=Id;
+        var Interval=DurationVal;
+
+        return this.sendReceive("GET","/member/averageLoad/" +Id+"/"+Interval,{});
+    };
+
+    this.getMemberMemoryAvrageDetails = function(Id,DurationVal){
+        var Interval=DurationVal;
+
+        return this.sendReceive("GET","/member/averageMemory/" +Id+"/"+Interval,{});
     };
 
     this.deployPartitionDefinition = function(partitionDefinition){
@@ -362,7 +380,7 @@ RESTCalls = new function(){
         var backendServerURL = config.backendServerConfiguration.url;
         //handle url null issue
         if(backendServerURL.indexOf('null') >= 0 ){
-           return request.getContextPath()+'/login/';
+            return request.getContextPath()+'/login/';
         }else {
             // getting the access token from the session.
             var endpoint = backendServerURL + urlPostFix;
@@ -386,22 +404,22 @@ RESTCalls = new function(){
             }
             if (responseREST.xhr.status >= 200 && responseREST.xhr.status < 300) { //if success
                 if (responseREST.data != null && responseREST.data != undefined) {
-                log.info("******************1"+responseREST.data);
+
                     session.put("get-status", { "message": parse(responseREST.data).message, "status": "success" });
                 }
             } else if (responseREST.xhr.status >= 300 && responseREST.xhr.status < 400) { //if redirects
                 if (responseREST.data != null && responseREST.data != undefined) {
-                   log.info("******************2"+responseREST.data);
+
                     session.put("get-status", { "message": parse(responseREST.data).message, "status": "warning" });
                 }
             } else if (responseREST.xhr.status >= 400 && responseREST.xhr.status < 500) { //if client error
                 if (responseREST.data != null && responseREST.data != undefined) {
-                    log.info("******************3"+responseREST.data);
+
                     session.put("get-status", { "message": parse(responseREST.data).message, "status": "error" });
                 }
             } else if (responseREST.xhr.status >= 500 && responseREST.xhr.status < 600) { //if server error
                 if (responseREST.data != null && responseREST.data != undefined) {
-                   log.info("******************4"+responseREST.data);
+
                     session.put("get-status", { "message": parse(responseREST.data).message, "status": "error" });
                 }
             } else {

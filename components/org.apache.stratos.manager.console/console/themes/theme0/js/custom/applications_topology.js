@@ -18,11 +18,12 @@
  * under the License.
  *
  */
- 
+
 //create JSON from topology
 function genTree(data){
     var rawout = [];
 
+    var alias;
     var rootnode ={};
     rootnode.name = data.id;
     rootnode.parent = null;
@@ -48,7 +49,7 @@ function genTree(data){
     function clusterInstances(items, collector, parent){
         for(var prop in items){
             if (items.hasOwnProperty(prop)) {
-               var cur_name = items[prop].clusterId,
+                var cur_name = items[prop].clusterId,
                     alias = items[prop].alias,
                     hostNames = items[prop].hostNames.toString(),
                     serviceName = items[prop].serviceName,
@@ -156,8 +157,8 @@ function update(source) {
         });
     function redraw() {
         svg.attr("transform",
-                "translate(" + d3.event.translate + ")"
-                + " scale(" + d3.event.scale + ")");
+            "translate(" + d3.event.translate + ")"
+            + " scale(" + d3.event.scale + ")");
     }
 
     var svg = d3.select(".application-topology").append("svg")
@@ -205,12 +206,12 @@ function update(source) {
                 }
 
                 div_html = "<strong>Cluster Id: </strong>" + d.name + "<br/>" +
-                            "<strong>Cluster Alias: </strong>" + d.alias + "<br/>" +
-                            accessURLHTML +
-                            "<strong>HostNames: </strong>" + d.hostNames + "<br/>" +
-                            "<strong>Service Name: </strong>" + d.serviceName + "<br/>" +
-                            "<strong>Status: </strong>" + d.status + "<br/><br/>" +
-                            "<button id="+d.name+" name='cluster' onClick='return showHealthStat(this)'>Show Health Status</button>";
+                    "<strong>Cluster Alias: </strong>" + d.alias + "<br/>" +
+                    accessURLHTML +
+                    "<strong>HostNames: </strong>" + d.hostNames + "<br/>" +
+                    "<strong>Service Name: </strong>" + d.serviceName + "<br/>" +
+                    "<strong>Status: </strong>" + d.status + "<br/><br/>" +
+                    "<button class='btn btn-primary btn-xs' id="+d.name+" name='cluster' onClick='return showHealthStat(this)'>Show Health Status</button>";
 
             } else if (d.type == 'members') {
                 if((typeof d.ports != 'undefined') && (d.ports.length > 0)) {
@@ -228,28 +229,29 @@ function update(source) {
                 }
 
                 div_html = "<strong>Member Id: </strong>" + d.name + "<br/>" +
-                        "<strong>Default Private IP: </strong>" + d.defaultPrivateIP + "<br/>" +
-                        "<strong>Default Public IP: </strong>" + d.defaultPublicIP + "<br/>" +
-                        portsHTML +
-                        "<strong>Network Partition Id: </strong>" + d.networkPartitionId + "<br/>" +
-                        "<strong>Partition Id: </strong>" + d.partitionId + "<br/>" +
-                        "<strong>Status: </strong>" + d.status + "<br/><br/>" +
-                        "<button id="+d.name+" name='member' onClick='return showHealthStat(this)'>Show Health Status</button>";
+                    "<strong>Default Private IP: </strong>" + d.defaultPrivateIP + "<br/>" +
+                    "<strong>Default Public IP: </strong>" + d.defaultPublicIP + "<br/>" +
+                    portsHTML +
+                    "<strong>Network Partition Id: </strong>" + d.networkPartitionId + "<br/>" +
+                    "<strong>Partition Id: </strong>" + d.partitionId + "<br/>" +
+                    "<strong>Status: </strong>" + d.status + "<br/><br/>" +
+                    "<button class='btn btn-primary btn-xs' id="+d.name+" name='member' onClick='return showHealthStat(this)'>Show Health Status</button>";
             } else if (d.type == 'groups') {
 
                 div_html = "<strong>Group Instance Id: </strong>" + d.instanceId + "<br/>" +
-                        "<strong>Status: </strong>" + d.status;
+                    "<strong>Status: </strong>" + d.status;
 
             } else if (d.type == 'applicationInstances') {
                 div_html = "<strong>Instance Id: </strong>" + d.name + "<br/>" +
-                        "<strong>Status: </strong>" + d.status;
+                    "<strong>Status: </strong>" + d.status;
 
             } else {
                 div_html = "<strong>Alias: </strong>" + d.name + "<br/>"+
-                        "<strong>Status: </strong>" + d.status;
+                    "<strong>Status: </strong>" + d.status;
+                alias =d.name;
 
             }
-           return div_html;
+            return div_html;
         });
 
     // add popover on nodes
@@ -589,8 +591,9 @@ function showHealthStat(element){
     var newURL = splitTense[0] + "console/healthStatistics/";
 
     var form = $('<form action="' + newURL + '" method="post">' +
-    '<input type="hidden" name="Id" value="' + element.id + '"></input>' +
-    '<input type="hidden" name="Type" value="' + element.name + '"></input>' + '</form>');
+        '<input type="hidden" name="Id" value="' + element.id + '"></input>' +
+        '<input type="hidden" name="Alias" value="' + alias + '"></input>' +
+        '<input type="hidden" name="Type" value="' + element.name + '"></input>' + '</form>');
 
     $('body').append(form);
     $(form).submit();
