@@ -1,3 +1,21 @@
+/*
+ *     Licensed to the Apache Software Foundation (ASF) under one
+ *     or more contributor license agreements.  See the NOTICE file
+ *     distributed with this work for additional information
+ *     regarding copyright ownership.  The ASF licenses this file
+ *     to you under the Apache License, Version 2.0 (the
+ *     "License"); you may not use this file except in compliance
+ *     with the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *     Unless required by applicable law or agreed to in writing,
+ *     software distributed under the License is distributed on an
+ *     "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *     KIND, either express or implied.  See the License for the
+ *     specific language governing permissions and limitations
+ *     under the License.
+ */
 package org.apache.stratos.cep.extension;
 
 import org.apache.log4j.Logger;
@@ -15,9 +33,8 @@ import org.wso2.siddhi.core.query.QueryPostProcessingElement;
 import org.wso2.siddhi.core.query.processor.window.RunnableWindowProcessor;
 import org.wso2.siddhi.core.query.processor.window.WindowProcessor;
 import org.wso2.siddhi.core.util.EventConverter;
-import org.wso2.siddhi.core.util.collection.queue.scheduler.ISchedulerSiddhiQueue;
-import org.wso2.siddhi.core.util.collection.queue.scheduler.SchedulerSiddhiQueue;
 import org.wso2.siddhi.core.util.collection.queue.scheduler.SchedulerSiddhiQueueGrid;
+import org.wso2.siddhi.core.util.collection.queue.scheduler.timestamp.ISchedulerTimestampSiddhiQueue;
 import org.wso2.siddhi.core.util.collection.queue.scheduler.timestamp.SchedulerTimestampSiddhiQueue;
 import org.wso2.siddhi.core.util.collection.queue.scheduler.timestamp.SchedulerTimestampSiddhiQueueGrid;
 import org.wso2.siddhi.query.api.definition.AbstractDefinition;
@@ -46,11 +63,10 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
     private long timeToKeep;
     private ScheduledFuture<?> lastSchedule = null;
     private long constantSchedulingInterval = -1;
-    private boolean isConstantSchedulingMode = false;
     private List<InEvent> newEventList;
     private List<RemoveEvent> oldEventList;
     private ThreadBarrier threadBarrier;
-    private ISchedulerSiddhiQueue<StreamEvent> window;
+    private ISchedulerTimestampSiddhiQueue<StreamEvent> window;
     private long[] timeStamps;
     private double[] dataValues;
     private double[] smoothedValues;
@@ -122,27 +138,10 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
             timeToKeep = ((LongConstant) parameters[0]).getValue();
         }
 
-        if (parameters.length == 2) {
-            constantSchedulingInterval = ((IntConstant) parameters[1]).getValue();
-            if (constantSchedulingInterval > 0) {
-                isConstantSchedulingMode = true;
-            }
-        }
-
-        if (!isConstantSchedulingMode) {
-            if (this.siddhiContext.isDistributedProcessingEnabled()) {
-                window = new SchedulerTimestampSiddhiQueueGrid<StreamEvent>(elementId, this, this.siddhiContext, this.async);
-            } else {
-                window = new SchedulerTimestampSiddhiQueue<StreamEvent>(this);
-            }
+        if (this.siddhiContext.isDistributedProcessingEnabled()) {
+            window = new SchedulerTimestampSiddhiQueueGrid<StreamEvent>(elementId, this, this.siddhiContext, this.async);
         } else {
-            if (this.siddhiContext.isDistributedProcessingEnabled()) {
-                throw new UnsupportedOperationException("Constant time sliding not supported for distributed processing.");
-                //TODO : Implement constant time sliding window grid for distributed case
-            } else {
-                window = new TimeStampSiddhiQueue<StreamEvent>(constantSchedulingInterval);
-                this.schedule();
-            }
+            window = new SchedulerTimestampSiddhiQueue<StreamEvent>(this);
         }
 
     }
@@ -161,27 +160,22 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
                     long timeDiff = ((RemoveStream) streamEvent).getExpiryTime() - System.currentTimeMillis();
                     try {
                         if (timeDiff > 0) {
-                            if (!isConstantSchedulingMode) {
-                                if (siddhiContext.isDistributedProcessingEnabled()) {
 
-                                    if (lastSchedule != null) {
-                                        lastSchedule.cancel(false);
-                                    }
-                                    //should not use sleep as it will not release the lock, hence it will fail in distributed case
-                                    lastSchedule = eventRemoverScheduler.schedule(this, timeDiff,
-                                            TimeUnit.MILLISECONDS);
-                                    break;
-                                } else {
-                                    //this cannot be used for distributed case as it will course concurrency issues
-                                    releaseLock();
-                                    Thread.sleep(timeDiff);
-                                    acquireLock();
+                            if (siddhiContext.isDistributedProcessingEnabled()) {
+                                if (lastSchedule != null) {
+                                    lastSchedule.cancel(false);
                                 }
-                            } else {
+                                //should not use sleep as it will not release the lock, hence it will fail in distributed case
+                                lastSchedule = eventRemoverScheduler.schedule(this, timeDiff, TimeUnit.MILLISECONDS);
                                 break;
+
+                            } else {
+                                //this cannot be used for distributed case as it will course concurrency issues
+                                releaseLock();
+                                Thread.sleep(timeDiff);
+                                acquireLock();
                             }
                         }
-
                         Collection<StreamEvent> resultList = window.poll(System.currentTimeMillis());
                         if (resultList != null) {
                             for (StreamEvent event : resultList) {
@@ -196,17 +190,12 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
                         log.warn("Time window sleep interrupted at elementId " + elementId);
                     }
                 } catch (Throwable e) {
-                    e.printStackTrace();
+                    log.error(e.getMessage(), e);
                 }
             }
         } catch (Throwable t) {
             log.error(t.getMessage(), t);
         } finally {
-            // If this is constant scheduling, reschedule after every execution since
-            // arrival of events won't do any scheduling
-            if (isConstantSchedulingMode) {
-                this.scheduleConstantTime();
-            }
             releaseLock();
         }
     }
@@ -217,12 +206,22 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
      * @param inEvents
      * @return
      */
-    public InEvent[] curvePredictor(InEvent[] inEvents){
+    public InEvent[] curvePredictor(InEvent firstEvent){
+        /**
+         * to get the smoothed values
+         */
         findEMA();
 
+        /**
+         * fit the curve and return the coefficients as events
+         */
         CurveFitter curveFitter = new CurveFitter(timeStamps, smoothedValues);
         double[] coefficients = curveFitter.fit();
-        return null;
+
+
+        InEvent[] inEvents = new InEvent[3];
+        inEvents[0] = new InEvent(firstEvent.getStreamId(), firstEvent.getTimeStamp(), firstEvent.getD);
+        return inEvents;
     }
 
     /**
@@ -233,7 +232,7 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
         dataValues = new double[newEventList.size()];
         smoothedValues = new double[newEventList.size()];
 
-        for(int i = 0 ; i < newEventList.size() ; i++){
+        for (int i = 0; i < newEventList.size() ; i++){
             timeStamps[i] = newEventList.get(i).getTimeStamp();
             //Problem need to ask question
             //dataValues[i] = newEventList.get(i).

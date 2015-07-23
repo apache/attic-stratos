@@ -36,7 +36,6 @@ import org.apache.stratos.autoscaler.context.partition.network.ClusterLevelNetwo
 import org.apache.stratos.autoscaler.event.publisher.InstanceNotificationPublisher;
 import org.apache.stratos.autoscaler.monitor.cluster.ClusterMonitor;
 import org.apache.stratos.cloud.controller.stub.domain.MemberContext;
-import org.apache.stratos.common.client.CloudControllerServiceClient;
 import org.apache.stratos.common.constants.StratosConstants;
 
 /**
@@ -44,13 +43,12 @@ import org.apache.stratos.common.constants.StratosConstants;
  */
 public class RuleTasksDelegator {
 
-    private static boolean arspiIsSet = false;
-
     private static final Log log = LogFactory.getLog(RuleTasksDelegator.class);
+    private static boolean arspiIsSet = false;
 
     public double getPredictedValueForNextMinute(float average, float gradient, float secondDerivative, int timeInterval) {
         double predictedValue;
-//        s = u * t + 0.5 * a * t * t
+        //        s = u * t + 0.5 * a * t * t
         if (log.isDebugEnabled()) {
             log.debug(String.format("Predicting the value, [average]: %s , [gradient]: %s , [second derivative] " +
                     ": %s , [time intervals]: %s ", average, gradient, secondDerivative, timeInterval));
@@ -61,18 +59,17 @@ public class RuleTasksDelegator {
     }
 
     /**
-     *
-     * @param a coefficent of t^2 term
-     * @param b coefficient of t term
-     * @param c constant term
+     * @param a            coefficient of t^2 term
+     * @param b            coefficient of t term
+     * @param c            constant term
      * @param timeInterval
      * @return predicted value
      */
-    public double getPredictedValueForNextMin(float a, float b, float c, int timeInterval){
+    public double getPredictedValueForNextMin(float a, float b, float c, int timeInterval) {
         double predictedValue;
 
         // f(t) = a * t * t + b * t + c
-        if(log.isDebugEnabled()){
+        if (log.isDebugEnabled()) {
             log.debug(String.format("Predicting the value, [a]: %s , [b]: %s , [c]: " +
                     ": %s , [time intervals]: %s ", a, b, c, timeInterval));
         }
@@ -378,7 +375,7 @@ public class RuleTasksDelegator {
         }
     }
 
-    public double getLoadAveragePredictedValue(){
+    public double getLoadAveragePredictedValue() {
         double loadAveragePredicted = 0.0;
         int totalMemberCount;
         return 0;
