@@ -21,7 +21,6 @@ package org.apache.stratos.messaging.event.health.stat;
 
 import org.apache.stratos.messaging.event.Event;
 
-
 public class CurveFinderOfLoadAverageEvent extends Event{
     private final String networkPartitionId;
     private final String clusterId;
