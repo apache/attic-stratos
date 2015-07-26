@@ -36,7 +36,7 @@
              <property name="network_partition_id" type="String"/>
              <property name="in_flight_request_count" type="double"/>
          </payloadData>
-     </streamDefinition> 
+     </streamDefinition>
 
     <streamDefinition name="gradient_in_flight_requests" version="1.0.0">
          <description>gradient of in flight request count</description>
@@ -105,35 +105,38 @@
          </payloadData>
      </streamDefinition>
 
+
     <streamDefinition name="average_load_average_stats" version="1.0.0">
-         <description>average load average stats</description>
-         <nickName>average load average stats</nickName>
-         <metaData>
-         </metaData>
-         <correlationData>
-         </correlationData>
-         <payloadData>
-	     <property name="cluster_id" type="String" />
-             <property name="cluster_instance_id" type="String"/>
-             <property name="network_partition_id" type="String"/>
-             <property name="average_load_average" type="double"/>
-         </payloadData>
-     </streamDefinition>
+        <description>average load average stats</description>
+        <nickName>average load average stats</nickName>
+        <metaData>
+        </metaData>
+        <correlationData>
+        </correlationData>
+        <payloadData>
+            <property name="cluster_id" type="String" />
+            <property name="cluster_instance_id" type="String"/>
+            <property name="timeStamp" type="long" />
+            <property name="network_partition_id" type="String"/>
+            <property name="average_load_average" type="double"/>
+        </payloadData>
+    </streamDefinition>
 
     <streamDefinition name="average_memory_consumption_stats" version="1.0.0">
-         <description>average memory consumption stats</description>
-         <nickName>average memory consumption stats</nickName>
-         <metaData>
-         </metaData>
-         <correlationData>
-         </correlationData>
-         <payloadData>
-             <property name="cluster_id" type="String"/>
-             <property name="cluster_instance_id" type="String"/>
-             <property name="network_partition_id" type="String"/>
-             <property name="average_memory_consumption" type="double"/>
-         </payloadData>
-     </streamDefinition>
+        <description>average memory consumption stats</description>
+        <nickName>average memory consumption stats</nickName>
+        <metaData>
+        </metaData>
+        <correlationData>
+        </correlationData>
+        <payloadData>
+            <property name="cluster_id" type="String"/>
+            <property name="cluster_instance_id" type="String"/>
+            <property name="timeStamp" type="long" />
+            <property name="network_partition_id" type="String"/>
+            <property name="average_memory_consumption" type="double"/>
+        </payloadData>
+    </streamDefinition>
 
     <streamDefinition name="gradient_load_average_stats" version="1.0.0">
          <description>gradient load average stats</description>
@@ -149,6 +152,21 @@
              <property name="gradient_load_average" type="double"/>
          </payloadData>
      </streamDefinition>
+
+    <streamDefinition name="health_statistics_stats" version="1.0.0">
+        <description>health statistics stats</description>
+        <nickName>health statistics stats</nickName>
+        <metaData>
+        </metaData>
+        <correlationData>
+        </correlationData>
+        <payloadData>
+            <property name="timeStamp" type="long"/>
+            <property name="ID" type="String" />
+            <property name="type" type="String"/>
+            <property name="value" type="double"/>
+        </payloadData>
+    </streamDefinition>
 
     <streamDefinition name="gradient_memory_consumption_stats" version="1.0.0">
          <description>gradient memoryconsumption stats</description>
