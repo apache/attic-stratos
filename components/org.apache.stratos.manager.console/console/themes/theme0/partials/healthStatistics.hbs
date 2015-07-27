@@ -1,121 +1,14 @@
-<style>
-    svg {
-        font: 10px sans-serif;
-    }
-
-    .area {
-        fill: #00BFFF;
-        clip-path: url(#clip);
-    }
-
-    .axis path,
-    .axis line {
-        fill: none;
-        stroke: #000;
-        shape-rendering: crispEdges;
-    }
-
-    .d3-tip {
-        line-height: 1;
-        font-weight: bold;
-        padding: 12px;
-        background: rgba(0, 0, 0, 0.8);
-        color: #fff;
-        border-radius: 2px;
-    }
-
-    /* Creates a small triangle extender for the tooltip */
-    .d3-tip:after {
-        box-sizing: border-box;
-        display: inline;
-        font-size: 10px;
-        width: 100%;
-        line-height: 1;
-        color: rgba(0, 0, 0, 0.8);
-        content: "\25BC";
-        position: absolute;
-        text-align: center;
-    }
-
-    /* Style northward tooltips differently */
-    .d3-tip.n:after {
-        margin: -1px 0 0 0;
-        top: 100%;
-        left: 0;
-    }
-
-    .brush .extent {
-        stroke: #fff;
-        fill-opacity: .125;
-        shape-rendering: crispEdges;
-    }
-    svg {
-        font: 10px sans-serif;
-    }
-
-    .axis path,
-    .axis line {
-        fill: none;
-        stroke: #000;
-        shape-rendering: crispEdges;
-    }
-
-    .brush .extent {
-        stroke: #fff;
-        fill-opacity: .125;
-        shape-rendering: crispEdges;
-    }
-    .axis path,
-    .axis line {
-        fill: none;
-        stroke: #000;
-        shape-rendering: crispEdges;
-    }
-
-    .x.axis path {
-        display: none;
-    }
-
-    .line {
-        fill: none;
-        stroke: green;
-        stroke-width: 1.5px;
-    }
-
-    body {
-        font: 10px sans-serif;
-    }
-
-    .axis path,
-    .axis line {
-        fill: none;
-        stroke: #000;
-        shape-rendering: crispEdges;
-    }
-
-    .area1 {
-        fill: orange;
-    }
-
-    .area2 {
-        fill: red;
-    }
-
-
-</style>
-
-
 <div class="container-fluid" style="padding-bottom:40px">
     <div class="row title">
         <div class="title-main text-center">
-            <h1 id="mainTitle">{{Type}} Statistics</h1>
-            <h3> {{Id}}</h3>
-            <input type="hidden" value={{Type}} id='chartType'>
-            <input type="hidden" value={{Id}} id='IdValue'>
+            <h1 id="mainTitle">{{type}} Statistics</h1>
+            <h3> {{id}}</h3>
+            <input type="hidden" value={{type}} id='chartType'>
+            <input type="hidden" value={{id}} id='IdValue'>
         </div>
     </div>
 
-    <a class="btn btn-default" href="{{url "/applications/"}}{{Alias}}/" role="button">Back</a>
+    <a class="btn btn-default" href="{{url "/applications/"}}{{alias}}/" role="button">Back</a>
 
     <div class="row">
         <div class="col-md-6">
@@ -130,7 +23,7 @@
                     <button class="btn btn-default btn-xs" name="MemoryConsumption" id="1Week" onclick="return DurationOnClick(this)">1 week</button>
                     <button class="btn btn-default btn-xs" name="MemoryConsumption" id="1Month" onclick="return DurationOnClick(this)">1 month</button>
                     <div class="container content" style="width: 600px;">
-                        <div class="row text-center" id="rowTable3">
+                        <div class="row text-center" id="chart3">
                         </div>
                     </div>
                 </div>
@@ -149,7 +42,7 @@
                     <button class="btn btn-default btn-xs" name="LoadAverage" id="1Week" onclick="return DurationOnClick(this)">1 week</button>
                     <button class="btn btn-default btn-xs" name="LoadAverage" id="1Month" onclick="return DurationOnClick(this)">1 month</button>
                     <div class="container content" style="width: 600px;">
-                        <div class="row text-center" id="rowTable2">
+                        <div class="row text-center" id="chart2">
                         </div>
                     </div>
                 </div>
@@ -169,7 +62,7 @@
                     <button class="btn btn-default btn-xs" name="InFlight" id="1Week" onclick="return DurationOnClick(this)">1 week</button>
                     <button class="btn btn-default btn-xs" name="InFlight" id="1Month" onclick="return DurationOnClick(this)">1 month</button>
                     <div class="container content" style="width: 600px;">
-                        <div class="row text-center" id="rowTable1">
+                        <div class="row text-center" id="chart1">
                         </div>
                     </div>
                 </div>
@@ -181,6 +74,7 @@
 
     </body>
 
+    <link rel="stylesheet" href="/console/themes/theme0/css/custom.css" type="text/css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="{{url "/themes/theme0/js/d3.tip.v0.6.3.js"}}"></script>
@@ -200,16 +94,16 @@
 
 
             if(buttonName == 'InFlight'){
-                $('#rowTable1').empty();
-                $('#rowTable1').html('<i class="fa fa-spinner fa-pulse fa-4x"></i>');
+                $('#chart1').empty();
+                $('#chart1').html('<i class="fa fa-spinner fa-pulse fa-4x"></i>');
 
             }else if(buttonName == 'LoadAverage'){
-                $('#rowTable2').empty();
-                $('#rowTable2').html('<i class="fa fa-spinner fa-pulse fa-4x"></i>');
+                $('#chart2').empty();
+                $('#chart2').html('<i class="fa fa-spinner fa-pulse fa-4x"></i>');
 
             }else{
-                $('#rowTable3').empty();
-                $('#rowTable3').html('<i class="fa fa-spinner fa-pulse fa-4x"></i>');
+                $('#chart3').empty();
+                $('#chart3').html('<i class="fa fa-spinner fa-pulse fa-4x"></i>');
 
             }
 
@@ -229,17 +123,17 @@
 
                     if(data.status!='error'){
                         if(buttonName == 'InFlight'){
-                            $('#rowTable1').empty();
+                            $('#chart1').empty();
                             jsonDataFlightRequest = data;
                             inFlightRequestCountChart();
                         }
                         else if(buttonName == 'LoadAverage'){
-                            $('#rowTable2').empty();
+                            $('#chart2').empty();
                             jsonDataLoadAvg = data;
                             loadAverageChart();
                         }
                         else{
-                            $('#rowTable3').empty();
+                            $('#chart3').empty();
                             jsonDataMemoryAvg = data;
                             memoryAverageDataChart();
                         }
@@ -251,11 +145,13 @@
 
 
                 }
+
             }).always(function () {});
         }
 
         function bodyOnLoad () {
-            var type="{{{Type}}}";
+
+            var type="{{{type}}}";
             console.info(type);
             if (type!="Cluster") {
                 loadAverageChart();
@@ -302,7 +198,7 @@
                                 "</span> <strong>Time:</strong> <span style='color:red'>" + new Date(d.timeStamp) + "</span>";
                     })
 
-            var svg = d3.select("#rowTable2").append("svg")
+            var svg = d3.select("#chart2").append("svg")
                     .attr("width", width + margin.left + margin.right)
                     .attr("height", height + margin.top + margin.bottom)
                     .append("g")
@@ -388,7 +284,7 @@
                     .x(function(d) { return x2(d.timeStamp); })
                     .y(function(d) { return y2(d.inFlightRequestCount); });
 
-            var svg = d3.select("#rowTable1").append("svg")
+            var svg = d3.select("#chart1").append("svg")
                     .attr("width", width + margin.left + margin.right)
                     .attr("height", height + margin.top + margin.bottom);
 
@@ -510,7 +406,7 @@
                     .y0(height2)
                     .y1(function(d) { return y2(d.memberAverageMemoryConsumption); });
 
-            var svg = d3.select("#rowTable3").append("svg")
+            var svg = d3.select("#chart3").append("svg")
                     .attr("width", width + margin.left + margin.right)
                     .attr("height", height + margin.top + margin.bottom);
 
