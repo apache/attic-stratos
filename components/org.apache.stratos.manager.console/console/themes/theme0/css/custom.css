@@ -73,8 +73,8 @@ body{ background: url('../images/stratos_background.png')  no-repeat; background
 .slidewindow .tab-handles .slidewindow-handle, .slidewindow.right .tab-handles .slidewindow-handle { display: block; float: none; }
 
 .slidewindow-content {
-    background-color: white; 
-	font-size:16px;
+    background-color: white;
+    font-size:16px;
     position: relative;
     float: left;
     z-index: 1;
@@ -106,7 +106,7 @@ body{ background: url('../images/stratos_background.png')  no-repeat; background
     position: relative;
     float: left;
     z-index: 0;
-	cursor:pointer;
+    cursor:pointer;
 }
 
 
@@ -233,4 +233,88 @@ div#textform>div>h3 {
 
 h3.panel-title {
     color: #999;
+}
+
+
+svg {
+    font: 10px sans-serif;
+}
+
+.area {
+    fill: #00BFFF;
+    clip-path: url(#clip);
+}
+
+.axis path,
+.axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+}
+
+.d3-tip {
+    line-height: 1;
+    font-weight: bold;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    border-radius: 2px;
+}
+
+/* Creates a small triangle extender for the tooltip */
+.d3-tip:after {
+    box-sizing: border-box;
+    display: inline;
+    font-size: 10px;
+    width: 100%;
+    line-height: 1;
+    color: rgba(0, 0, 0, 0.8);
+    content: "\25BC";
+    position: absolute;
+    text-align: center;
+}
+
+/* Style northward tooltips differently */
+.d3-tip.n:after {
+    margin: -1px 0 0 0;
+    top: 100%;
+    left: 0;
+}
+
+.brush .extent {
+    stroke: #fff;
+    fill-opacity: .125;
+    shape-rendering: crispEdges;
+}
+svg {
+    font: 10px sans-serif;
+}
+
+.brush .extent {
+    stroke: #fff;
+    fill-opacity: .125;
+    shape-rendering: crispEdges;
+}
+
+
+.x.axis path {
+    display: none;
+}
+
+.line {
+    fill: none;
+    stroke: green;
+    stroke-width: 1.5px;
+}
+
+body {
+    font: 10px sans-serif;
+}
+
+.area1 {
+    fill: orange;
+}
+
+.area2 {
+    fill: red;
 }
