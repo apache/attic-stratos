@@ -51,11 +51,14 @@ var render = function (theme, data, meta, require) {
                     partial: 'healthStatistics',
                     context:{
                         Id:data.Id,
-                        newtRY:data.newtRY,
-                        newtRY2:data.newtRY2,
+                        Alias:data.Alias,
+                        loadAverageData:data.loadAverageData,
+                        memoryAverageDetails:data.memoryAverageDetails,
+                        flightRequestDetails:data.flightRequestDetails,
                         Type: data.Type,
                         result:data.result,
-                        content_title:'Health Stats'
+                        content_title:'Health Stats',
+                        condition: data.Type != 'member'
                     }
                 }
             ]
