@@ -38,7 +38,8 @@ import java.util.*;
 public class GCELoadBalancer implements LoadBalancer {
 
     private static final Log log = LogFactory.getLog(GCELoadBalancer.class);
-
+    //PROTOCOL should be TCP or UDP
+    private static final String PROTOCOL = "TCP";
     private GCEOperations gceOperations;
     /**
      * We have one configuration per cluster
@@ -47,9 +48,6 @@ public class GCELoadBalancer implements LoadBalancer {
      * So one cluster will have one loadBalancerConfiguration object
      */
     private HashMap<String, GCEClusterConfigurationHolder> clusterToLoadBalancerConfigurationMap;
-
-    //PROTOCOL should be TCP or UDP
-    private static final String PROTOCOL = "TCP";
 
     public GCELoadBalancer() {
         gceOperations = new GCEOperations();
@@ -75,41 +73,14 @@ public class GCELoadBalancer implements LoadBalancer {
         log.info(xstream.toXML(topology));
 
         try {
-            //check whether any cluster is removed. If removed, then remove the cluster from
-            //clusterToLoadBalancerConfigurationMap and remove all objects in IaaS side too
-            Iterator iterator = clusterToLoadBalancerConfigurationMap.entrySet().iterator();
-            while (iterator.hasNext()) { //for each configuration
-                Map.Entry clusterIDLoadBalancerConfigurationPair = (Map.Entry) iterator.next();
-                GCEClusterConfigurationHolder gceClusterConfigurationHolder =
-                        ((GCEClusterConfigurationHolder) clusterIDLoadBalancerConfigurationPair.getValue());
 
-                boolean found = false;
-
-                //check whether cluster is in the map or not
-                for (Service service : topology.getServices()) {
-                    for (Cluster cluster : service.getClusters()) { //for each cluster
-                        if (cluster.getClusterId().equals(gceClusterConfigurationHolder.getClusterID())) {
-                            found = true;
-                            break;
-                        }
-                    }
-                    if (found) {
-                        break;
-                    }
-                }
-                if (!found) {
-                    //remove cluster from map
-                    log.info("Removed cluster is found. Remove it from GCE too. Cluster Id: " +
-                            gceClusterConfigurationHolder.getClusterID());
-                    clusterToLoadBalancerConfigurationMap.remove(gceClusterConfigurationHolder.getClusterID());
-                    deleteConfigurationForCluster(gceClusterConfigurationHolder.getClusterID());
-                }
-            }
+            //this list is used to hold the current clusters available in topology and which has at least one member.
+            List<String> activeClusterIdList = new ArrayList<String>();
 
             for (Service service : topology.getServices()) {
                 for (Cluster cluster : service.getClusters()) { //for each cluster
 
-                    //check whether this cluster has a forwarding rule configuration or not
+                    //check whether this cluster has a load balancer configuration or not
                     if (clusterToLoadBalancerConfigurationMap.containsKey(cluster.getClusterId())) {
 
                         log.info("Reconfiguring the existing cluster: " + cluster.getClusterId());
@@ -119,17 +90,12 @@ public class GCELoadBalancer implements LoadBalancer {
                         GCEClusterConfigurationHolder gceClusterConfigurationHolder = clusterToLoadBalancerConfigurationMap.
                                 get(cluster.getClusterId());
 
-                        //if the cluster does not contain at least one member
-                        if (cluster.getMembers().size() == 0) {
-
-                            log.info("Cluster: " + cluster.getClusterId() + " does not have any member.So remove cluster " +
-                                    "from GCE too");
-                            //remove all
-                            deleteConfigurationForCluster(cluster.getClusterId());
-                            clusterToLoadBalancerConfigurationMap.remove(gceClusterConfigurationHolder.getClusterID());
-
-                        } else {
+                        //if the cluster contains at least one member
+                        if (cluster.getMembers().size() > 0) {
                             //that cluster contains at least one member
+
+                            activeClusterIdList.add(cluster.getClusterId());
+
 
                             //***************detect member changes and update**************//
 
@@ -201,6 +167,7 @@ public class GCELoadBalancer implements LoadBalancer {
                         if (cluster.getMembers().size() == 0) {
                             log.info("Cluster " + cluster.getClusterId() + " does not have any members. So not configuring");
                         } else {
+                            activeClusterIdList.add(cluster.getClusterId());
                             List<String> instancesList = new ArrayList<String>();
                             List<Integer> ipList = new ArrayList<Integer>();
                             for (Member member : cluster.getMembers()) {
@@ -242,6 +209,16 @@ public class GCELoadBalancer implements LoadBalancer {
                         }
                     }
 
+                }
+            }
+
+            //if any cluster is removed from the topology or if any cluster does not have at least one member,
+            //remove those clusters from map and remove the configuration from GCE too
+            for (String clusterId : clusterToLoadBalancerConfigurationMap.keySet()) {
+                if (!activeClusterIdList.contains(clusterId)) {
+                    log.info("Removing the configuration for cluster " + clusterId);
+                    clusterToLoadBalancerConfigurationMap.remove(clusterId);
+                    deleteConfigurationForCluster(clusterId);
                 }
             }
 
@@ -311,7 +288,7 @@ public class GCELoadBalancer implements LoadBalancer {
             String portRange;
             //if the ip list is empty
             if (ipList.isEmpty()) {
-                    log.warn("Ip list is null");
+                log.warn("Ip list is null");
                 //set all ports to be opened
                 portRange = "1-65535";
 
