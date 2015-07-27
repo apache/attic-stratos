@@ -217,8 +217,8 @@ public class GCELoadBalancer implements LoadBalancer {
             for (String clusterId : clusterToLoadBalancerConfigurationMap.keySet()) {
                 if (!activeClusterIdList.contains(clusterId)) {
                     log.info("Removing the configuration for cluster " + clusterId);
-                    clusterToLoadBalancerConfigurationMap.remove(clusterId);
                     deleteConfigurationForCluster(clusterId);
+                    clusterToLoadBalancerConfigurationMap.remove(clusterId);
                 }
             }
 
