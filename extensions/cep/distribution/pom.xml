@@ -22,15 +22,15 @@
     <parent>
         <groupId>org.apache.stratos</groupId>
         <artifactId>stratos-extensions</artifactId>
-        <version>4.1.0</version>
+        <version>4.1.1-SNAPSHOT</version>
 	<relativePath>../../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>apache-stratos-cep-artefacts</artifactId>
+    <artifactId>apache-stratos-cep-artifacts</artifactId>
     <packaging>pom</packaging>
-    <name>Apache Stratos CEP  - Artefacts</name>
-    <description>Apache Stratos CEP  Extensions artefacts</description>
+    <name>Apache Stratos CEP artifacts</name>
+    <description>Apache Stratos CEP artifacts</description>
     <url>http://apache.org</url>
     <profiles>
          <profile>

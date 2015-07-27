@@ -47,7 +47,7 @@ public class StratosTestServerManager extends TestServerManager {
     private static final Log log = LogFactory.getLog(StratosTestServerManager.class);
 
     private final static String CARBON_ZIP = SampleApplicationsTest.class.getResource("/").getPath() +
-            "/../../../distribution/target/apache-stratos-4.1.0.zip";
+            "/../../../distribution/target/apache-stratos-4.1.1-SNAPSHOT.zip";
     private final static int PORT_OFFSET = 0;
     private static final String ACTIVEMQ_BIND_ADDRESS = "tcp://localhost:61617";
     private static final String MOCK_IAAS_XML_FILE = "mock-iaas.xml";
@@ -75,6 +75,8 @@ public class StratosTestServerManager extends TestServerManager {
             long time1 = System.currentTimeMillis();
             log.info("Starting ActiveMQ...");
             BrokerService broker = new BrokerService();
+            broker.setDataDirectory(StratosTestServerManager.class.getResource("/").getPath() +
+                    File.separator + ".." + File.separator + "activemq-data");
             broker.setBrokerName("testBroker");
             broker.addConnector(ACTIVEMQ_BIND_ADDRESS);
             broker.start();
