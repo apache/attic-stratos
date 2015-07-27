@@ -58,7 +58,7 @@ try {
     switch (formtype) {
 
         case "MemoryConsumption":
-            if(ChartType == "cluster"){
+            if(ChartType == "Cluster"){
                 formSubmit = util.RESTCalls.getClusterMemoryAverageDetails(IdValue, DurationVal);
                 break;
             }
@@ -68,7 +68,7 @@ try {
             }
 
         case "LoadAverage":
-            if(ChartType == "cluster"){
+            if(ChartType == "Cluster"){
                 formSubmit = util.RESTCalls.getClusterLoadAverageDetails(IdValue, DurationVal);
                 break;
             }
