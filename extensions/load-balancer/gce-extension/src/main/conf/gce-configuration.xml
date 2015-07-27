@@ -1,29 +1,4 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<!DOCTYPE gceConfiguration [
-        <!ELEMENT gceConfiguration (cepStatsPublisher|iaasProperties|healthCheckProperties|operationTimeout|namePrefix|log4jPropertiesFileName)*>
-        <!ELEMENT cepStatsPublisher (thriftReceiverIp|thriftReceiverPort)*>
-        <!ATTLIST cepStatsPublisher
-                enable CDATA #REQUIRED>
-        <!ELEMENT thriftReceiverIp (#PCDATA)>
-        <!ELEMENT thriftReceiverPort (#PCDATA)>
-        <!ELEMENT iaasProperties (projectName|projectId|regionName|keyFilePath|gceAccountId|networkName)*>
-        <!ELEMENT projectName (#PCDATA)>
-        <!ELEMENT projectId (#PCDATA)>
-        <!ELEMENT regionName (#PCDATA)>
-        <!ELEMENT keyFilePath (#PCDATA)>
-        <!ELEMENT gceAccountId (#PCDATA)>
-        <!ELEMENT networkName (#PCDATA)>
-        <!ELEMENT healthCheckProperties (healthCheckRequestPath|healthCheckPort|healthCheckTimeoutSec|healthCheckIntervalSec|healthCheckUnhealthyThreshold|healthCheckHealthyThreshold)*>
-        <!ELEMENT healthCheckRequestPath (#PCDATA)>
-        <!ELEMENT healthCheckPort (#PCDATA)>
-        <!ELEMENT healthCheckTimeoutSec (#PCDATA)>
-        <!ELEMENT healthCheckIntervalSec (#PCDATA)>
-        <!ELEMENT healthCheckUnhealthyThreshold (#PCDATA)>
-        <!ELEMENT healthCheckHealthyThreshold (#PCDATA)>
-        <!ELEMENT operationTimeout (#PCDATA)>
-        <!ELEMENT namePrefix (#PCDATA)>
-        <!ELEMENT log4jPropertiesFileName (#PCDATA)>
-        ]>
 <gceConfiguration>
 
     <cepStatsPublisher enable="false">
