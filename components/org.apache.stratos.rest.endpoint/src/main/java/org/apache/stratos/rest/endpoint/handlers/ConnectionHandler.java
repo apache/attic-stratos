@@ -22,7 +22,6 @@ package org.apache.stratos.rest.endpoint.handlers;
 
 import org.wso2.carbon.ndatasource.core.DataSourceManager;
 import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -30,17 +29,19 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 public class ConnectionHandler {
+
     Connection connection;
     DataSource dataSource = null;
     String stringSql = null;
     ResultSet resultSet = null;
+    boolean isJndiLookup = true;
+
     public ResultSet getsqlConnection(String sql) {
 
         dataSource = null;
         stringSql = sql;
         resultSet = null;
         try{
-            boolean isJndiLookup = true;
 
             if(isJndiLookup) {
 
