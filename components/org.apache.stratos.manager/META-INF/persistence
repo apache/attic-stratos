@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="http://java.sun.com/xml/ns/persistence" version="2.0">
+
+    <persistence-unit name="NewPersistenceUnit" >
+        <provider>org.apache.openjpa.persistence.PersistenceProviderImpl</provider>
+
+        <class>org.apache.stratos.messaging.domain.application.signup.ApplicationSignUp</class>
+        <class>org.apache.stratos.messaging.domain.application.signup.ArtifactRepository</class>
+        <class>org.apache.stratos.messaging.domain.application.signup.DomainMapping</class>
+        <class>org.apache.stratos.messaging.domain.topology.Cluster</class>
+        <properties>
+            <property name="openjpa.ConnectionURL" value="jdbc:mysql://localhost:3306/StratosManager"/>
+            <property name="openjpa.ConnectionDriverName" value="com.mysql.jdbc.Driver"/>
+            <property name="openjpa.ConnectionUserName" value="root"/>
+            <property name="openjpa.ConnectionPassword" value="1234"/>
+            <property name="openjpa.Log" value="SQL=TRACE, Tool=INFO"/>
+            <property name="openjpa.ConnectionFactoryProperties" value="PrettyPrint=true, PrettyPrintLineLength=72, PrintParameters=true, MaxActive=10, MaxIdle=5, MinIdle=2, MaxWait=60000"/>
+        </properties>
+    </persistence-unit>
+</persistence>
