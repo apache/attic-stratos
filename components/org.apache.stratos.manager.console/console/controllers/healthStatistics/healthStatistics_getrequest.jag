@@ -22,15 +22,12 @@
 var log = new Log("apachestratos.configure_request"),
         util = require('/controllers/rest/rest_calls.jag'),
         formtype = request.getParameter('formtype'),
-        applicationId = request.getParameter('appId'),
-
         ChartType = request.getParameter('chartType'),
         Duration = request.getParameter('duration'),
         IdValue = request.getParameter('idValue');
 
 var formSubmit;
 var DurationVal;
-var MemoryAverageData;
 
 //add login validator for pages
 include('/controllers/login/validator.jag');
@@ -58,7 +55,7 @@ try {
     switch (formtype) {
 
         case "MemoryConsumption":
-            if(ChartType == "Cluster"){
+            if("Cluster" == ChartType){
                 formSubmit = util.RESTCalls.getClusterMemoryAverageDetails(IdValue, DurationVal);
                 break;
             }
@@ -68,7 +65,7 @@ try {
             }
 
         case "LoadAverage":
-            if(ChartType == "Cluster"){
+            if("Cluster" == ChartType){
                 formSubmit = util.RESTCalls.getClusterLoadAverageDetails(IdValue, DurationVal);
                 break;
             }
@@ -85,7 +82,7 @@ try {
             session.put("deploy-status", { "message": "Sorry Endpoint Error", "status": "error" });
     }
 
-    if (formSubmit==undefined)
+    if (formSubmit == undefined)
     {
         print({"status": 'error', "message": "No Data found!"});
 

@@ -28,35 +28,35 @@ RESTCalls = new function(){
     };
 
     this.getFlightRequestDetails = function(Id,DurationVal){
-        var Id=Id;
-        var Interval=DurationVal;
+        var Id = Id;
+        var Interval = DurationVal;
 
         return this.sendReceive("GET","/cluster/flightRequestCount/" +Id+"/"+DurationVal,{});
     };
 
     this.getClusterMemoryAverageDetails = function(Id,DurationVal){
-        var Id=Id;
-        var Interval=DurationVal;
+        var Id = Id;
+        var Interval = DurationVal;
         return this.sendReceive("GET","/cluster/averageMemory/" +Id+"/"+Interval,{});
 
     };
 
     this.getClusterLoadAverageDetails = function(Id,DurationVal){
-        var Id=Id;
-        var Interval=DurationVal;
+        var Id = Id;
+        var Interval = DurationVal;
         return this.sendReceive("GET","/cluster/averageLoad/" +Id+"/"+Interval,{});
 
     };
 
     this.getMemberLoadAverageDetails = function(Id,DurationVal){
-        var Id=Id;
-        var Interval=DurationVal;
+        var Id = Id;
+        var Interval = DurationVal;
 
         return this.sendReceive("GET","/member/averageLoad/" +Id+"/"+Interval,{});
     };
 
     this.getMemberMemoryAvrageDetails = function(Id,DurationVal){
-        var Interval=DurationVal;
+        var Interval = DurationVal;
 
         return this.sendReceive("GET","/member/averageMemory/" +Id+"/"+Interval,{});
     };
