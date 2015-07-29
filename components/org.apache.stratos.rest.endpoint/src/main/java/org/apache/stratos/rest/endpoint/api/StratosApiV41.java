@@ -772,6 +772,7 @@ public class StratosApiV41 extends AbstractApi {
 
     /**
      * Add applicatio
+     *
      * @param applicationDefinition Application Definition
      * @return 201 if application is successfully added
      * @throws RestAPIException
@@ -1285,7 +1286,6 @@ public class StratosApiV41 extends AbstractApi {
             return Response.ok().entity(applicationRuntime).build();
         }
     }
-
 
 
     /**
@@ -2129,7 +2129,6 @@ public class StratosApiV41 extends AbstractApi {
     }
 
     /**
-     *
      * @param Id
      * @param Interval
      * @return 200 if average memory consumption can get and memory consumption values
@@ -2143,7 +2142,7 @@ public class StratosApiV41 extends AbstractApi {
     public Response getAverageClusterMemoryByClusterId(
             @PathParam("Id") String Id, @PathParam("Interval") String Interval) throws RestAPIException {
 
-        String averageClusterMemoryList = null;
+        String averageClusterMemoryList;
         try {
             averageClusterMemoryList = StratosApiV41Utils.getAverageClusterMemoryByClusterId(Id, Interval);
 
@@ -2161,7 +2160,6 @@ public class StratosApiV41 extends AbstractApi {
     }
 
     /**
-     *
      * @param Id
      * @param Interval
      * @return 200 if average memory consumption can get and memory consumption values
@@ -2175,7 +2173,7 @@ public class StratosApiV41 extends AbstractApi {
     public Response getAverageMemberMemoryByMemberId(
             @PathParam("Id") String Id, @PathParam("Interval") String Interval) throws RestAPIException {
 
-        String averageMemberMemoryList = null;
+        String averageMemberMemoryList;
         try {
             averageMemberMemoryList = StratosApiV41Utils.getAverageMemberMemoryByMemberId(Id, Interval);
 
@@ -2193,7 +2191,6 @@ public class StratosApiV41 extends AbstractApi {
     }
 
     /**
-     *
      * @param Id
      * @param Interval
      * @return 200 if average load consumption can get and load average consumption values
@@ -2208,7 +2205,7 @@ public class StratosApiV41 extends AbstractApi {
     public Response getAverageMemberLoadByMemberId(
             @PathParam("Id") String Id, @PathParam("Interval") String Interval) throws RestAPIException {
 
-        String averageMemberLoadList = null;
+        String averageMemberLoadList;
         try {
             averageMemberLoadList = StratosApiV41Utils.getAverageMemberLoadByMemberId(Id, Interval);
 
@@ -2227,7 +2224,6 @@ public class StratosApiV41 extends AbstractApi {
     }
 
     /**
-     *
      * @param Id
      * @param Interval
      * @return 200 if average load consumption can get and load average consumption values
@@ -2242,7 +2238,7 @@ public class StratosApiV41 extends AbstractApi {
     public Response getAverageClusterLoadByClusterId(
             @PathParam("Id") String Id, @PathParam("Interval") String Interval) throws RestAPIException {
 
-        String averageClusterLoadList = null;
+        String averageClusterLoadList;
         try {
             averageClusterLoadList = StratosApiV41Utils.getAverageClusterLoadByClusterId(Id, Interval);
 
@@ -2260,7 +2256,6 @@ public class StratosApiV41 extends AbstractApi {
     }
 
     /**
-     *
      * @param Id
      * @param Interval
      * @return 200 if average request in flight can get and in flight request count
@@ -2275,7 +2270,7 @@ public class StratosApiV41 extends AbstractApi {
     public Response getAverageClusterFlightRequestCountByClusterId(
             @PathParam("Id") String Id, @PathParam("Interval") String Interval) throws RestAPIException {
 
-        String averageClusterFlightRequestCount = null;
+        String averageClusterFlightRequestCount;
         try {
             averageClusterFlightRequestCount = StratosApiV41Utils.getAverageClusterFlightRequestCountByClusterId(Id, Interval);
 
