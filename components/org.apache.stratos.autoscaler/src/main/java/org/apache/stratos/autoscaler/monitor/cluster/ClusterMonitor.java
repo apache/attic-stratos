@@ -840,9 +840,11 @@ public class ClusterMonitor extends Monitor {
                         float averageRequestsInFlight = value * clusterInstanceContext.getActiveMemberCount() /
                                 totalActiveMemberCount;
                         clusterInstanceContext.setAverageRequestsInFlight(averageRequestsInFlight);
-                        log.debug(String.format("Calculated average RIF: [cluster] %s [cluster-instance] %s " +
-                                        "[network-partition] %s [average-rif] %s", clusterId,
-                                clusterInstanceContext.getId(), networkPartitionId, averageRequestsInFlight));
+                        if (log.isDebugEnabled()) {
+                            log.debug(String.format("Calculated average RIF: [cluster] %s [cluster-instance] %s " +
+                                            "[network-partition] %s [average-rif] %s", clusterId,
+                                    clusterInstanceContext.getId(), networkPartitionId, averageRequestsInFlight));
+                        }
                     }
                 }
             } else {
