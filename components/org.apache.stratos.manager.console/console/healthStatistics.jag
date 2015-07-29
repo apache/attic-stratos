@@ -26,13 +26,13 @@ include('/controllers/menu/menu_generator.jag');
 var log = new Log("apacheStratos.appconfig"),
         error = [],
         caramel = require('caramel'),
-        Alias = request.getParameter('Alias'),
+        alias = request.getParameter('Alias'),
         context = caramel.configs().context,
         util = require('/controllers/rest/rest_calls.jag'),
         menuJson = require('/controllers/menu/menu.json'),
         util = require('/controllers/rest/rest_calls.jag'),
-        Id = request.getParameter('Id'),
-        Type = request.getParameter('Type'),
+        id = request.getParameter('Id'),
+        type = request.getParameter('Type'),
         userPermissions = session.get('PERMISSIONS');
 
 //create left menu
@@ -44,11 +44,11 @@ var     loadAverageData,
         flightRequestDetails,
         memoryAverageDetails=null;
 
-if(Type!='cluster'){
+if('Cluster' != type){
 
     try {
 
-        memoryAverageDetails = util.RESTCalls.getMemberMemoryAvrageDetails(Id, 800);
+        memoryAverageDetails = util.RESTCalls.getMemberMemoryAvrageDetails(Id, 1);
 
     } catch (e) {
         throw new Error("Error while getting Category Activity data for " + e);
@@ -56,37 +56,37 @@ if(Type!='cluster'){
 
     try {
 
-        loadAverageData = util.RESTCalls.getMemberLoadAverageDetails(Id, 800);
+        loadAverageData = util.RESTCalls.getMemberLoadAverageDetails(id,1);
 
     } catch (e) {
 
-        throw new Error("Error while getting Category Activity data for " + e);
+        throw new Error("Error while getting Category Activity data for "+ e);
     }
 
     flightRequestDetails = null;
 
-} else {
+}else{
 
     try {
 
-        memoryAverageDetails = util.RESTCalls.getClusterMemoryAverageDetails(Id, 800);
+        memoryAverageDetails = util.RESTCalls.getClusterMemoryAverageDetails(id,1);
 
     } catch (e) {
-        throw new Error("Error while getting Category Activity data for " + e);
+        throw new Error("Error while getting Category Activity data for "+ e);
 
     }
 
     try {
-
-        flightRequestDetails = util.RESTCalls.getFlightRequestDetails(Id, 800);
+        flightRequestDetails = util.RESTCalls.getFlightRequestDetails(id,1);
 
     } catch (e) {
 
-        throw new Error("Error while getting Category Activity data for " + e);
+        throw new Error("Error while getting Category Activity data for "+ e);
     }
 
     try {
-        loadAverageData = util.RESTCalls.getClusterLoadAverageDetails(Id, 800);
+        loadAverageData = util.RESTCalls.getClusterLoadAverageDetails(id,1);
+
 
     } catch (e) {
 
@@ -98,9 +98,9 @@ if(Type!='cluster'){
 
 caramel.render({
     breadcrumbPathLevelOne: 'healthStatistics',
-    Id:Id,
-    Type: Type,
-    Alias: Alias,
+    id:id,
+    type: type,
+    alias: alias,
     loadAverageData:JSON.stringify(loadAverageData),
     memoryAverageDetails:JSON.stringify(memoryAverageDetails),
     flightRequestDetails:JSON.stringify(flightRequestDetails),
