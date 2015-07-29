@@ -160,7 +160,6 @@ function update(source) {
         .projection(function (d) {
             return [d.x, d.y];
         });
-
     function redraw() {
         svg.attr("transform",
             "translate(" + d3.event.translate + ")"
@@ -217,7 +216,7 @@ function update(source) {
                     "<strong>HostNames: </strong>" + d.hostNames + "<br/>" +
                     "<strong>Service Name: </strong>" + d.serviceName + "<br/>" +
                     "<strong>Status: </strong>" + d.status + "<br/><br/>" +
-                    "<button class='btn btn-primary btn-xs' id=" + d.name + " name='cluster' onClick='return showHealthStat(this)'>Show Health Statistics</button>";
+                    "<button class='btn btn-info btn-xs' id="+d.name+" name='Cluster' onClick='return showHealthStat(this)' >Show Health Statistics</button>";
 
             } else if (d.type == 'members') {
                 if ((typeof d.ports != 'undefined') && (d.ports.length > 0)) {
@@ -241,7 +240,7 @@ function update(source) {
                     "<strong>Network Partition Id: </strong>" + d.networkPartitionId + "<br/>" +
                     "<strong>Partition Id: </strong>" + d.partitionId + "<br/>" +
                     "<strong>Status: </strong>" + d.status + "<br/><br/>" +
-                    "<button class='btn btn-primary btn-xs' id=" + d.name + " name='member' onClick='return showHealthStat(this)'>Show Health Status</button>";
+                    "<button class='btn btn-primary btn-xs' id="+d.name+" name='Member' onClick='return showHealthStat(this)'>Show Health Statistics</button>";
             } else if (d.type == 'groups') {
 
                 div_html = "<strong>Group Instance Id: </strong>" + d.instanceId + "<br/>" +
@@ -348,7 +347,6 @@ function update(source) {
 
     var timer,
         popover_parent;
-
     function hidePopover(elem) {
         $(elem).popover('hide');
     }
@@ -463,7 +461,7 @@ var generatedGroupOptions = {
     maxConnections: 1
 };
 
-function dagrePosition() {
+function dagrePosition(){
     // construct dagre graph from JsPlumb graph
     var g = new dagre.graphlib.Graph();
     g.setGraph({ranksep: '80'});
