@@ -25,11 +25,11 @@ var type;
 
 function DurationOnClick(element){
     var buttonId = element.id;
-    var buttonName = element.name;
+    var buttonName = $(element).attr("name");
     var buttonIds = ["1Hour", "30Min", "1Day" , "1Week", "1Month"];
     var chartType = $('#chartType').val();
     var idValue = $('#IdValue').val();
-
+    
     if ('InFlight' != buttonName) {
         if ('LoadAverage' == buttonName) {
             $('#chart2').empty();
@@ -46,12 +46,11 @@ function DurationOnClick(element){
 
     }
 
-    $(buttonIds).each(function(i, e) {
-
-        $('#'+e+'[name='+buttonName+']').css("color", "");
+    $("button[name=" + buttonName + "]").each(function () {
+        $(this).css("color", "");
     });
 
-    $('#'+buttonId+'[name='+buttonName+']').css("color", "Blue");
+    $(element).css("color", "Red");
 
     $.ajax({
         type: "GET",
