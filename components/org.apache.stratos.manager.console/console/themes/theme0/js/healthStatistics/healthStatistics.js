@@ -23,13 +23,26 @@ var jsonDataFlightRequest;
 var jsonDataMemoryAvg;
 var type;
 
+function DurationOnClick(ref) {
+
+    var buttonName = $(ref).attr("name");
+
+    $("button[name=" + buttonName + "]").each(function () {
+        $(this).css("color", "");
+    });
+
+    $(ref).css("color", "Blue");
+}
+
+//onclick function which will trigger the option for 30mints,1 hour etc
 function DurationOnClick(element){
     var buttonId = element.id;
     var buttonName = $(element).attr("name");
     var buttonIds = ["1Hour", "30Min", "1Day" , "1Week", "1Month"];
     var chartType = $('#chartType').val();
     var idValue = $('#IdValue').val();
-    
+
+    //here the spinner will indicate untill the data loads to the map
     if ('InFlight' != buttonName) {
         if ('LoadAverage' == buttonName) {
             $('#chart2').empty();
@@ -45,13 +58,14 @@ function DurationOnClick(element){
         $('#chart1').html('<i class="fa fa-spinner fa-pulse fa-4x"></i>');
 
     }
-
+    //after user click the option here we are changing the option black to red.
     $("button[name=" + buttonName + "]").each(function () {
         $(this).css("color", "");
     });
 
     $(element).css("color", "Red");
 
+    //ajax call to get the data to the charts from the database.
     $.ajax({
         type: "GET",
         url: caramel.context + "/controllers/healthStatistics/healthStatistics_getrequest.jag",
@@ -78,6 +92,7 @@ function DurationOnClick(element){
 
             }else{
 
+                //print error message in any case.
                 var n = noty({text: data.message, layout: 'bottomRight', type: 'error'});
             }
 
@@ -87,6 +102,9 @@ function DurationOnClick(element){
     }).always(function () {});
 }
 
+
+//body onload function will trigger when the page loads at the very first.
+//the charts will feeds with the defuakt data set,
 function bodyOnLoad (loadAverageData,flightRequestDetails,memoryAverageDetails) {
 
 
@@ -96,13 +114,17 @@ function bodyOnLoad (loadAverageData,flightRequestDetails,memoryAverageDetails) 
 
     jsonDataMemoryAvg = memoryAverageDetails;
 
+    //calling the charts
     loadAverageChart();
     memoryAverageDataChart();
     inFlightRequestCountChart();
 
 }
 
+
+//this is the load avergae chart for cluster/member
 function loadAverageChart () {
+
     var margin = {top: 20, right: 20, bottom: 30, left: 50},
         width = 600 - margin.left - margin.right,
         height = 300 - margin.top - margin.bottom;
@@ -112,9 +134,11 @@ function loadAverageChart () {
     var x = d3.time.scale()
         .range([0, width]);
 
+    //defines the maximum and minimum values we have to plot in the available space.
     var y = d3.scale.linear()
         .range([height, 0]);
 
+    //provides an API method called d3.svg.axis to create axes.
     var xAxis = d3.svg.axis()
         .scale(x)
         .orient("bottom");
@@ -136,14 +160,17 @@ function loadAverageChart () {
                 "</span> <strong>Time:</strong> <span style='color:red'>" + new Date(d.timeStamp) + "</span>";
         })
 
+    //selecting the data needs to append
     var svg = d3.select("#chart2").append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
+    //calling the tool tip
     svg.call(tip);
 
+    //initializing the json array list to the map root element
     var data = jsonDataLoadAvg;
 
     x.domain(d3.extent(data, function(d) { return d.timeStamp; }));
@@ -154,11 +181,13 @@ function loadAverageChart () {
         .attr("class", "area1")
         .attr("d", area);
 
+    ////append the created X axis to the svg container
     svg.append("g")
         .attr("class", "x axis")
         .attr("transform", "translate(0," + height + ")")
         .call(xAxis);
 
+    //append the created Y axis to the svg container
     svg.append("g")
         .attr("class", "y axis")
         .call(yAxis)
@@ -193,9 +222,12 @@ function inFlightRequestCountChart () {
 
     var x = d3.time.scale().range([0, width]),
         x2 = d3.time.scale().range([0, width]),
+
+    //defines the maximum and minimum values we have to plot in the available space.
         y = d3.scale.linear().range([height, 0]),
         y2 = d3.scale.linear().range([height2, 0]);
 
+    //provides an API method called d3.svg.axis to create axes.
     var xAxis = d3.svg.axis().scale(x).orient("bottom"),
         xAxis2 = d3.svg.axis().scale(x2).orient("bottom"),
         yAxis = d3.svg.axis().scale(y).orient("left");
@@ -204,6 +236,7 @@ function inFlightRequestCountChart () {
         .x(x2)
         .on("brush", brushed);
 
+    //to draw a line
     var line = d3.svg.line()
         .interpolate("linear")
         .x(function(d) { return x(d.timeStamp); })
@@ -217,6 +250,7 @@ function inFlightRequestCountChart () {
                 "</span> <strong>Time:</strong> <span style='color:red'>" + new Date(d.timeStamp) + "</span>";
         })
 
+    //to draw a line
     var line2 = d3.svg.line()
         .interpolate("linear")
         .x(function(d) { return x2(d.timeStamp); })
@@ -240,7 +274,7 @@ function inFlightRequestCountChart () {
         .attr("class", "context")
         .attr("transform", "translate(" + margin2.left + "," + margin2.top + ")");
 
-
+    //calling the tool tip
     svg.call(tip);
 
     var data = jsonDataFlightRequest;
@@ -259,11 +293,13 @@ function inFlightRequestCountChart () {
         .attr("class", "line")
         .attr("d", line);
 
+    //append the created X axis to the svg container
     focus.append("g")
         .attr("class", "x axis")
         .attr("transform", "translate(0," + height + ")")
         .call(xAxis);
 
+    //append the created Y axis to the svg container
     focus.append("g")
         .attr("class", "y axis")
         .call(yAxis);
@@ -321,9 +357,12 @@ function memoryAverageDataChart () {
 
     var x = d3.time.scale().range([0, width]),
         x2 = d3.time.scale().range([0, width]),
+
+    //defines the maximum and minimum values we have to plot in the available space.
         y = d3.scale.linear().range([height, 0]),
         y2 = d3.scale.linear().range([height2, 0]);
 
+    //provides an API method called d3.svg.axis to create axes.
     var xAxis = d3.svg.axis().scale(x).orient("bottom"),
         xAxis2 = d3.svg.axis().scale(x2).orient("bottom"),
         yAxis = d3.svg.axis().scale(y).orient("left");
@@ -378,11 +417,13 @@ function memoryAverageDataChart () {
         .attr("class", "area")
         .attr("d", area);
 
+    //append the created X axis to the svg container
     focus.append("g")
         .attr("class", "x axis")
         .attr("transform", "translate(0," + height + ")")
         .call(xAxis);
 
+    //append the created Y axis to the svg container
     focus.append("g")
         .attr("class", "y axis")
         .call(yAxis);
