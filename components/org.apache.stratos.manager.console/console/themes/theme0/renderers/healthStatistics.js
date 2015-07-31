@@ -50,15 +50,15 @@ var render = function (theme, data, meta, require) {
                 {
                     partial: 'healthStatistics',
                     context:{
-                        Id:data.Id,
-                        Alias:data.Alias,
+                        id:data.id,
+                        alias:data.alias,
                         loadAverageData:data.loadAverageData,
                         memoryAverageDetails:data.memoryAverageDetails,
                         flightRequestDetails:data.flightRequestDetails,
-                        Type: data.Type,
+                        type: data.type,
                         result:data.result,
                         content_title:'Health Stats',
-                        condition: data.Type != 'member'
+                        condition: data.type != 'Member'
                     }
                 }
             ]

@@ -51,6 +51,7 @@ if('Cluster' != type){
         memoryAverageDetails = util.RESTCalls.getMemberMemoryAvrageDetails(Id, 1);
 
     } catch (e) {
+
         throw new Error("Error while getting Category Activity data for " + e);
     }
 
