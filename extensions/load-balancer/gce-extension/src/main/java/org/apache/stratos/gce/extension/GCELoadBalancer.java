@@ -33,6 +33,7 @@ import org.apache.stratos.load.balancer.common.domain.*;
 import org.apache.stratos.load.balancer.extension.api.LoadBalancer;
 import org.apache.stratos.load.balancer.extension.api.exception.LoadBalancerExtensionException;
 
+import java.io.IOException;
 import java.util.*;
 
 public class GCELoadBalancer implements LoadBalancer {
@@ -42,14 +43,13 @@ public class GCELoadBalancer implements LoadBalancer {
     private static final String PROTOCOL = "TCP";
     private GCEOperations gceOperations;
     /**
-     * We have one configuration per cluster
+     * One configuration object per cluster will be created
      * One cluster  has one target pool , one forwarding rule and a health check
      * This hash map is used to hold cluster IDs and corresponding configuration
-     * So one cluster will have one loadBalancerConfiguration object
      */
     private HashMap<String, GCEClusterConfigurationHolder> clusterToLoadBalancerConfigurationMap;
 
-    public GCELoadBalancer() {
+    public GCELoadBalancer() throws IOException {
         gceOperations = new GCEOperations();
         clusterToLoadBalancerConfigurationMap = new HashMap<String, GCEClusterConfigurationHolder>();
 
@@ -72,190 +72,174 @@ public class GCELoadBalancer implements LoadBalancer {
                 new DomDriver("utf-8"));
         log.info(xstream.toXML(topology));
 
-        try {
+        //this list is used to hold the current clusters available in topology and which has at least one member.
+        List<String> activeClusterIdList = new ArrayList<String>();
 
-            //this list is used to hold the current clusters available in topology and which has at least one member.
-            List<String> activeClusterIdList = new ArrayList<String>();
+        for (Service service : topology.getServices()) {
+            for (Cluster cluster : service.getClusters()) { //for each cluster
 
-            for (Service service : topology.getServices()) {
-                for (Cluster cluster : service.getClusters()) { //for each cluster
+                //check whether this cluster has a load balancer configuration or not
+                if (clusterToLoadBalancerConfigurationMap.containsKey(cluster.getClusterId())) {
 
-                    //check whether this cluster has a load balancer configuration or not
-                    if (clusterToLoadBalancerConfigurationMap.containsKey(cluster.getClusterId())) {
+                    log.info("Reconfiguring the existing cluster: " + cluster.getClusterId());
 
-                        log.info("Reconfiguring the existing cluster: " + cluster.getClusterId());
+                    //It already has a entry in clusterToLoadBalancerConfigurationMap.
+                    //Take it and update it as the given topology.
+                    GCEClusterConfigurationHolder gceClusterConfigurationHolder = clusterToLoadBalancerConfigurationMap.
+                            get(cluster.getClusterId());
 
-                        //It already has a entry in clusterToLoadBalancerConfigurationMap.
-                        //Take it and update it as the given topology.
-                        GCEClusterConfigurationHolder gceClusterConfigurationHolder = clusterToLoadBalancerConfigurationMap.
-                                get(cluster.getClusterId());
+                    //if the cluster contains at least one member
+                    if (cluster.getMembers().size() > 0) {
+                        //that cluster contains at least one member
 
-                        //if the cluster contains at least one member
-                        if (cluster.getMembers().size() > 0) {
-                            //that cluster contains at least one member
+                        activeClusterIdList.add(cluster.getClusterId());
 
-                            activeClusterIdList.add(cluster.getClusterId());
+                        //***************detect member changes and update**************//
 
+                        //check for newly created members
+                        List<String> membersToBeAddedToTargetPool = new ArrayList<String>();
+                        for (Member member : cluster.getMembers()) {
 
-                            //***************detect member changes and update**************//
-
-                            //check for newly created members
-                            List<String> membersToBeAddedToTargetPool = new ArrayList<String>();
-                            for (Member member : cluster.getMembers()) {
-
-                                if (member.getInstanceId() != null) {
-                                    if (!gceClusterConfigurationHolder.getMemberList().contains(member.getInstanceId())) {
-                                        membersToBeAddedToTargetPool.add(member.getInstanceId());
-                                    }
+                            if (member.getInstanceId() != null) {
+                                if (!gceClusterConfigurationHolder.getMemberList().contains(member.getInstanceId())) {
+                                    membersToBeAddedToTargetPool.add(member.getInstanceId());
                                 }
-
-                            }
-
-                            if (membersToBeAddedToTargetPool.size() > 0) { //we have new members
-
-                                log.info("New members in cluster" + cluster.getClusterId() + " found. Adding new members " +
-                                        "to cluster");
-
-                                //add them to configuration holder
-                                for (String memberId : membersToBeAddedToTargetPool) {
-                                    gceClusterConfigurationHolder.addMember(memberId);
-
-                                }
-
-                                //add them to target pool too
-                                gceOperations.addInstancesToTargetPool(membersToBeAddedToTargetPool,
-                                        gceClusterConfigurationHolder.getTargetPoolName());
-                            }
-
-                            //check for terminated members and remove them from cluster
-                            List<String> membersToBeRemovedFromTargetPool = new ArrayList<String>();
-                            for (String memberId : gceClusterConfigurationHolder.getMemberList()) { //for all members in Map
-                                boolean found = false;
-                                for (Member member : cluster.getMembers()) { //for all members in cluster
-                                    if (member.getInstanceId().equals(memberId)) {
-                                        found = true;
-                                        break;
-                                    }
-                                }
-                                if (!found) {
-                                    //add member id to membersToBeRemovedFromTargetPool in order remove member from map
-                                    membersToBeRemovedFromTargetPool.add(memberId);
-                                }
-                            }
-
-                            if (membersToBeRemovedFromTargetPool.size() > 0) { //found terminated members
-                                log.info("Terminated members found in cluster " + cluster.getClusterId() + ". Removing them");
-
-                                //remove them from configuration holder
-                                for (String memberId : membersToBeRemovedFromTargetPool) {
-                                    gceClusterConfigurationHolder.removeMember(memberId);
-
-                                }
-
-                                //remove them from GCE too
-                                gceOperations.removeInstancesFromTargetPool(membersToBeRemovedFromTargetPool,
-                                        gceClusterConfigurationHolder.getTargetPoolName());
                             }
 
                         }
 
-                    } else {
-                        //doesn't have a GCEClusterConfigurationHolder object. So crate a new one and add to hash map
+                        if (membersToBeAddedToTargetPool.size() > 0) { //we have new members
 
-                        log.info("Found a new cluster: " + cluster.getClusterId());
+                            log.info("New members in cluster" + cluster.getClusterId() + " found. Adding new members " +
+                                    "to cluster");
 
-                        if (cluster.getMembers().size() == 0) {
-                            log.info("Cluster " + cluster.getClusterId() + " does not have any members. So not configuring");
-                        } else {
-                            activeClusterIdList.add(cluster.getClusterId());
-                            List<String> instancesList = new ArrayList<String>();
-                            List<Integer> ipList = new ArrayList<Integer>();
-                            for (Member member : cluster.getMembers()) {
-
-                                //add instance to instance list
-                                if (member.getInstanceId() != null) {
-                                    instancesList.add(member.getInstanceId());
-                                }
-
-                                //add forwarding rules(Ports to be forwarded)
-                                for (Object port : member.getPorts()) {
-                                    int portValue = ((Port) port).getValue();
-                                    if (!ipList.contains(portValue)) { //if port is not in list
-                                        //put the forwarding rule to list
-                                        ipList.add(portValue);
-                                    }
-                                }
+                            //add them to configuration holder
+                            for (String memberId : membersToBeAddedToTargetPool) {
+                                gceClusterConfigurationHolder.addMember(memberId);
 
                             }
 
-                            GCEClusterConfigurationHolder GCEClusterConfigurationHolder = new GCEClusterConfigurationHolder(
-                                    cluster.getClusterId(), instancesList, ipList);
-
-                            //set target pool name
-                            String targetPoolName = targetPoolNameCreator(cluster.getClusterId());
-                            GCEClusterConfigurationHolder.setTargetPoolName(targetPoolName);
-
-                            //set forwarding rule name
-                            String forwardingRuleName = forwardingRuleNameCreator(cluster.getClusterId());
-                            GCEClusterConfigurationHolder.setForwardingRuleName(forwardingRuleName);
-
-                            //set health check name
-                            String healthCheckName = healthCheckNameCreator(cluster.getClusterId());
-                            GCEClusterConfigurationHolder.setHealthCheckName(healthCheckName);
-
-                            clusterToLoadBalancerConfigurationMap.put(cluster.getClusterId(), GCEClusterConfigurationHolder);
-                            createConfigurationForCluster(cluster.getClusterId());
-
+                            //add them to target pool too
+                            gceOperations.addInstancesToTargetPool(membersToBeAddedToTargetPool,
+                                    gceClusterConfigurationHolder.getTargetPoolName());
                         }
+
+                        //check for terminated members and remove them from cluster
+                        List<String> membersToBeRemovedFromTargetPool = new ArrayList<String>();
+                        for (String memberId : gceClusterConfigurationHolder.getMemberList()) { //for all members in Map
+                            boolean found = false;
+                            for (Member member : cluster.getMembers()) { //for all members in cluster
+                                if (member.getInstanceId().equals(memberId)) {
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            if (!found) {
+                                //add member id to membersToBeRemovedFromTargetPool in order remove member from map
+                                membersToBeRemovedFromTargetPool.add(memberId);
+                            }
+                        }
+
+                        if (membersToBeRemovedFromTargetPool.size() > 0) { //found terminated members
+                            log.info("Terminated members found in cluster " + cluster.getClusterId() + ". Removing them");
+
+                            //remove them from configuration holder
+                            for (String memberId : membersToBeRemovedFromTargetPool) {
+                                gceClusterConfigurationHolder.removeMember(memberId);
+
+                            }
+
+                            //remove them from GCE too
+                            gceOperations.removeInstancesFromTargetPool(membersToBeRemovedFromTargetPool,
+                                    gceClusterConfigurationHolder.getTargetPoolName());
+                        }
+
                     }
 
+                } else {
+                    //doesn't have a GCEClusterConfigurationHolder object. So crate a new one and add to hash map
+
+                    log.info("Found a new cluster: " + cluster.getClusterId());
+
+                    if (cluster.getMembers().size() == 0) {
+                        log.info("Cluster " + cluster.getClusterId() + " does not have any members. So not configuring");
+                    } else {
+                        activeClusterIdList.add(cluster.getClusterId());
+                        List<String> instancesList = new ArrayList<String>();
+                        List<Integer> ipList = new ArrayList<Integer>();
+                        for (Member member : cluster.getMembers()) {
+
+                            //add instance to instance list
+                            if (member.getInstanceId() != null) {
+                                instancesList.add(member.getInstanceId());
+                            }
+
+                            //add forwarding rules(Ports to be forwarded)
+                            for (Object port : member.getPorts()) {
+                                int portValue = ((Port) port).getValue();
+                                if (!ipList.contains(portValue)) { //if port is not in list
+                                    //put the forwarding rule to list
+                                    ipList.add(portValue);
+                                }
+                            }
+
+                        }
+
+                        GCEClusterConfigurationHolder GCEClusterConfigurationHolder = new GCEClusterConfigurationHolder(
+                                cluster.getClusterId(), instancesList, ipList);
+
+                        //set target pool name
+                        String targetPoolName = targetPoolNameCreator(cluster.getClusterId());
+                        GCEClusterConfigurationHolder.setTargetPoolName(targetPoolName);
+
+                        //set forwarding rule name
+                        String forwardingRuleName = forwardingRuleNameCreator(cluster.getClusterId());
+                        GCEClusterConfigurationHolder.setForwardingRuleName(forwardingRuleName);
+
+                        //set health check name
+                        String healthCheckName = healthCheckNameCreator(cluster.getClusterId());
+                        GCEClusterConfigurationHolder.setHealthCheckName(healthCheckName);
+
+                        clusterToLoadBalancerConfigurationMap.put(cluster.getClusterId(), GCEClusterConfigurationHolder);
+                        createConfigurationForCluster(cluster.getClusterId());
+
+                    }
                 }
-            }
 
-            //if any cluster is removed from the topology or if any cluster does not have at least one member,
-            //remove those clusters from map and remove the configuration from GCE too
-            for (String clusterId : clusterToLoadBalancerConfigurationMap.keySet()) {
-                if (!activeClusterIdList.contains(clusterId)) {
-                    log.info("Removing the configuration for cluster " + clusterId);
-                    deleteConfigurationForCluster(clusterId);
-                    clusterToLoadBalancerConfigurationMap.remove(clusterId);
-                }
             }
-
-            activeClusterIdList.clear();
-
-            log.info("Load balancer configured as given topology");
-            return true;
-        } catch (Exception e) {
-            if (log.isErrorEnabled()) {
-                log.error("Failed to configure load balancer");
-            }
-            throw new LoadBalancerExtensionException(e);
         }
+
+        //if any cluster is removed from the topology or if any cluster does not have at least one member,
+        //remove those clusters from map and remove the configuration from GCE too
+        for (String clusterId : clusterToLoadBalancerConfigurationMap.keySet()) {
+            if (!activeClusterIdList.contains(clusterId)) {
+                log.info("Removing the configuration for cluster " + clusterId);
+                deleteConfigurationForCluster(clusterId);
+                clusterToLoadBalancerConfigurationMap.remove(clusterId);
+            }
+        }
+        activeClusterIdList.clear();
+
+        log.info("Load balancer configured as given topology");
+        return true;
+
     }
 
     /**
-     * This method is used to delete all fowarding rules, target pools and health checks
+     * This method is used to delete all forwarding rules, target pools and health checks
      * in IaaS side according to new topology
      */
     private void deleteConfigurationForCluster(String clusterId) throws LoadBalancerExtensionException {
 
-        try {
-            log.info("Deleting forwarding rule for cluster " + clusterId);
-            GCEClusterConfigurationHolder gceClusterConfigurationHolder = clusterToLoadBalancerConfigurationMap.get(clusterId);
-            //delete forwarding rule
-            gceOperations.deleteForwardingRule(gceClusterConfigurationHolder.getForwardingRuleName());
-            //delete target pool from GCE
-            gceOperations.deleteTargetPool(gceClusterConfigurationHolder.getTargetPoolName());
-            //delete health check from GCE
-            gceOperations.deleteHealthCheck(gceClusterConfigurationHolder.getHealthCheckName());
-            log.info("Deleted forwarding rule for cluster " + clusterId);
-        } catch (Exception e) {
-            if (log.isErrorEnabled()) {
-                log.error("Could not delete configuration for cluster " + clusterId);
-            }
-            throw new LoadBalancerExtensionException(e);
-        }
+        log.info("Deleting forwarding rule for cluster " + clusterId);
+        GCEClusterConfigurationHolder gceClusterConfigurationHolder = clusterToLoadBalancerConfigurationMap.get(clusterId);
+        //delete forwarding rule
+        gceOperations.deleteForwardingRule(gceClusterConfigurationHolder.getForwardingRuleName());
+        //delete target pool from GCE
+        gceOperations.deleteTargetPool(gceClusterConfigurationHolder.getTargetPoolName());
+        //delete health check from GCE
+        gceOperations.deleteHealthCheck(gceClusterConfigurationHolder.getHealthCheckName());
+        log.info("Deleted forwarding rule for cluster " + clusterId);
 
     }
 
@@ -265,59 +249,48 @@ public class GCELoadBalancer implements LoadBalancer {
      */
     private void createConfigurationForCluster(String clusterId) throws LoadBalancerExtensionException {
 
-        try {
+        log.info("Creating configuration for cluster");
 
-            log.info("Creating configuration for cluster");
+        GCEClusterConfigurationHolder gceClusterConfigurationHolder = clusterToLoadBalancerConfigurationMap.get(clusterId);
 
-            GCEClusterConfigurationHolder gceClusterConfigurationHolder = clusterToLoadBalancerConfigurationMap.get(clusterId);
+        //create a health check
+        gceOperations.createHealthCheck(gceClusterConfigurationHolder.getHealthCheckName());
 
-            //create a health check
-            gceOperations.createHealthCheck(gceClusterConfigurationHolder.getHealthCheckName());
+        //crate a target pool in GCE
+        gceOperations.createTargetPool(gceClusterConfigurationHolder.getTargetPoolName(),
+                gceClusterConfigurationHolder.getHealthCheckName());
 
-            gceOperations.createFirewallRule();
+        //add instances to target pool
+        gceOperations.addInstancesToTargetPool(gceClusterConfigurationHolder.getMemberList(),
+                gceClusterConfigurationHolder.getTargetPoolName());
 
-            //crate a target pool in GCE
-            gceOperations.createTargetPool(gceClusterConfigurationHolder.getTargetPoolName(),
-                    gceClusterConfigurationHolder.getHealthCheckName());
+        //create forwarding rules in GCE
+        List<Integer> ipList = gceClusterConfigurationHolder.getIpList();
+        //need to create a port range String
+        String portRange;
+        //if the ip list is empty
+        if (ipList.isEmpty()) {
+            log.warn("Ip list is null");
+            //set all ports to be opened
+            portRange = "1-65535";
 
-            //add instances to target pool
-            gceOperations.addInstancesToTargetPool(gceClusterConfigurationHolder.getMemberList(),
-                    gceClusterConfigurationHolder.getTargetPoolName());
-
-            //create forwarding rules in GCE
-            List<Integer> ipList = gceClusterConfigurationHolder.getIpList();
-            //need to create a port range String
-            String portRange;
-            //if the ip list is empty
-            if (ipList.isEmpty()) {
-                log.warn("Ip list is null");
-                //set all ports to be opened
-                portRange = "1-65535";
-
-            }
-            //else if ip list has only one value
-            else if (ipList.size() == 1) {
-                portRange = Integer.toString(ipList.get(0)) + "-" + Integer.toString(ipList.get(0));
-            }
-            //else we have more than 1 value
-            else {
-                //first we need to take the port range. So arrange ipList in ascending order
-                Collections.sort(ipList);
-                //take the first one and last one
-                portRange = Integer.toString(ipList.get(0)) + "-" + Integer.toString(ipList.get(ipList.size() - 1));
-            }
-
-            //create the forwarding rule
-            gceOperations.createForwardingRule(gceClusterConfigurationHolder.getForwardingRuleName(),
-                    gceClusterConfigurationHolder.getTargetPoolName(), PROTOCOL, portRange);
-            log.info("Created configuration for cluster");
-        } catch (Exception e) {
-            if (log.isErrorEnabled()) {
-                log.error("Could not create configuration for cluster " + clusterId);
-            }
-            log.error(e.getMessage());
-            throw new LoadBalancerExtensionException(e);
         }
+        //else if ip list has only one value
+        else if (ipList.size() == 1) {
+            portRange = Integer.toString(ipList.get(0)) + "-" + Integer.toString(ipList.get(0));
+        }
+        //else we have more than 1 value
+        else {
+            //first we need to take the port range. So arrange ipList in ascending order
+            Collections.sort(ipList);
+            //take the first one and last one
+            portRange = Integer.toString(ipList.get(0)) + "-" + Integer.toString(ipList.get(ipList.size() - 1));
+        }
+
+        //create the forwarding rule
+        gceOperations.createForwardingRule(gceClusterConfigurationHolder.getForwardingRuleName(),
+                gceClusterConfigurationHolder.getTargetPoolName(), PROTOCOL, portRange);
+        log.info("Created configuration for cluster");
     }
 
     @Override
