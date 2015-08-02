@@ -39,7 +39,8 @@ var log = new Log("apacheStratos.appconfig"),
 var leftMenu = menuGenerator(context, menuJson.menu, userPermissions);
 var log = new Log();
 
-var     loadAverageData,
+//this will get default data using a rest call to the charts.
+var loadAverageData,
         flightRequestDetails,
         memoryAverageDetails=null;
 
@@ -77,7 +78,7 @@ if('Cluster' != type){
 
 }
 
-
+//rendering the data
 caramel.render({
     breadcrumbPathLevelOne: 'healthStatistics',
     id:id,
