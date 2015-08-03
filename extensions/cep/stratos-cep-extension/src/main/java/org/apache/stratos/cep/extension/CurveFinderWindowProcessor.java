@@ -203,7 +203,7 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
 
     /**
      * need to implement
-     * @param inEvents
+     * @param firstEvent
      * @return
      */
     public InEvent[] curvePredictor(InEvent firstEvent){
@@ -220,7 +220,7 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
 
 
         InEvent[] inEvents = new InEvent[3];
-        inEvents[0] = new InEvent(firstEvent.getStreamId(), firstEvent.getTimeStamp(), firstEvent.getD);
+        //inEvents[0] = new InEvent(firstEvent.getStreamId(), firstEvent.getTimeStamp(), firstEvent.getD);
         return inEvents;
     }
 
