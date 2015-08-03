@@ -34,24 +34,24 @@ RESTCalls = new function(){
 
     this.getClusterMemoryAverageDetails = function(Id,DurationVal){
 
-        return this.sendReceive("GET","/cluster/averageMemory/" +Id+"/"+Interval,{});
+        return this.sendReceive("GET","/cluster/averageMemory/" +Id+"/"+DurationVal,{});
 
     };
 
     this.getClusterLoadAverageDetails = function(Id,DurationVal){
 
-        return this.sendReceive("GET","/cluster/averageLoad/" +Id+"/"+Interval,{});
+        return this.sendReceive("GET","/cluster/averageLoad/" +Id+"/"+DurationVal,{});
 
     };
 
     this.getMemberLoadAverageDetails = function(Id,DurationVal){
 
-        return this.sendReceive("GET","/member/averageLoad/" +Id+"/"+Interval,{});
+        return this.sendReceive("GET","/member/averageLoad/" +Id+"/"+DurationVal,{});
     };
 
     this.getMemberMemoryAvrageDetails = function(Id,DurationVal){
 
-        return this.sendReceive("GET","/member/averageMemory/" +Id+"/"+Interval,{});
+        return this.sendReceive("GET","/member/averageMemory/" +Id+"/"+DurationVal,{});
     };
 
     this.deployPartitionDefinition = function(partitionDefinition){
