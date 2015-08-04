@@ -3921,34 +3921,4 @@ public class StratosApiV41Utils {
     }
 
 
-    public static void deleteTableData() throws RestAPIException {
-
-        String deleteTableDataquery = "DELETE FROM HealthStatisticsTable WHERE " +
-                "from_unixtime(timeStamp/1000,\"%Y-%m-%d %H:%i\") < NOW() - INTERVAL 2160 HOUR";
-
-        ConnectionHandler connectionHandler = new ConnectionHandler();
-
-        try {
-
-            ResultSet result = connectionHandler.getsqlConnection(deleteTableDataquery);
-            result.next();
-
-        } catch (SQLException ex) {
-            log.error("SQLException: ", ex);
-            throw new RestAPIException(ex.getMessage());
-        } catch (Exception ex) {
-            log.error("Exception: ", ex);
-            throw new RestAPIException(ex.getMessage());
-        } finally {
-            try {
-                connectionHandler.closeConnection();
-            } catch (SQLException ex) {
-                log.error("SQLException: ", ex);
-                throw new RestAPIException(ex.getMessage());
-            }
-        }
-
-
-    }
-
 }
