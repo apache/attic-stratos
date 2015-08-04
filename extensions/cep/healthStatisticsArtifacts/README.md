@@ -47,17 +47,20 @@ artifacts/outputeventadaptors/OutPutadaptorRDBMStoPublishHealthStat.xml into
 [Apache Stratos] OR [External CEP HOME ]/repository/deployment/server/outputeventadaptors/ directory.
 Please find OutPutadaptorRDBMStoPublishHealthStat here[2] and paste it to the above directory.
 
-Configuring Event fomratters.
+Configuring Event fomratter.
 =============================
 
 You can specify an event formatter configuration using an XML file and save it in
 [Apache Stratos] OR [External CEP HOME ]/repository/deployment/server/eventformatters directory.
-In here you can get the 3 formatters artifacts/eventformatters/
+In here you can get the formatter,
 
-Names,
-
-MemberAverageLoadAverageEventFormatterHealthStat
-MemberAverageMemoryAverageEventFormatterHealthStat
-FlightRequestEventFormatterHealthStat
+HealthStatPublishEventFormatter
 
 depoly them in the previously mentioned directory.
+
+Configuring OutPut Adapter.
+============================
+
+You can Copy this OutPutadaptorRDBMStoPublishHealthStat.xml OutPut adapter and paste it to the Outputvenetadaptors
+folder in this directory,
+[Apache Stratos] OR [External CEP HOME ]/repository/deployment/server/outputvenetadaptors directory.
