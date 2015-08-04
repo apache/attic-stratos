@@ -72,11 +72,16 @@
     <exportedStreams>
         <stream name="average_load_average_stats" passthroughFlow="disable"
                 valueOf="average_load_average_stats" version="1.0.0"/>
-        <stream name="member_average_load_average_stats" passthroughFlow="disable"
+        <stream name="member_average_load_average_stats"
+                passthroughFlow="disable"
                 valueOf="member_average_load_average_stats" version="1.0.0"/>
-        <stream name="member_average_memory_consumption_stats" passthroughFlow="disable"
+        <stream name="health_statistics_stats" passthroughFlow="disable"
+                valueOf="health_statistics_stats" version="1.0.0"/>
+        <stream name="member_average_memory_consumption_stats"
+                passthroughFlow="disable"
                 valueOf="member_average_memory_consumption_stats" version="1.0.0"/>
-        <stream name="average_memory_consumption_stats" passthroughFlow="disable"
+        <stream name="average_memory_consumption_stats"
+                passthroughFlow="disable"
                 valueOf="average_memory_consumption_stats" version="1.0.0"/>
         <stream name="fault_message" passthroughFlow="disable"
                 valueOf="fault_message" version="1.0.0"/>
