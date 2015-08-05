@@ -2142,7 +2142,8 @@ public class StratosApiV41 extends AbstractApi {
     @Produces("application/json")
     @AuthorizationAction("/permission/admin/stratos")
     public Response getAverageClusterMemoryByClusterId(
-            @PathParam("cluster-Id") String Id, @PathParam("startTime") String startTime, @PathParam("endTime") String endTime) throws RestAPIException {
+            @PathParam("cluster-Id") String Id, @PathParam("startTime") String startTime, @PathParam("endTime") String endTime)
+            throws RestAPIException {
 
         String averageClusterMemoryList;
         try {
@@ -2175,7 +2176,8 @@ public class StratosApiV41 extends AbstractApi {
     @Produces("application/json")
     @AuthorizationAction("/permission/admin/stratos")
     public Response getAverageMemberMemoryByMemberId(
-            @PathParam("member-Id") String Id, @PathParam("startTime") String startTime, @PathParam("endTime") String endTime) throws RestAPIException {
+            @PathParam("member-Id") String Id, @PathParam("startTime") String startTime, @PathParam("endTime") String endTime)
+            throws RestAPIException {
 
         String averageMemberMemoryList;
         try {
@@ -2208,7 +2210,8 @@ public class StratosApiV41 extends AbstractApi {
     @Produces("application/json")
     @AuthorizationAction("/permission/admin/stratos")
     public Response getAverageMemberLoadByMemberId(
-            @PathParam("member-Id") String Id, @PathParam("startTime") String startTime, @PathParam("endTime") String endTime) throws RestAPIException {
+            @PathParam("member-Id") String Id, @PathParam("startTime") String startTime, @PathParam("endTime") String endTime)
+            throws RestAPIException {
 
         String averageMemberLoadList;
         try {
@@ -2242,7 +2245,8 @@ public class StratosApiV41 extends AbstractApi {
     @Produces("application/json")
     @AuthorizationAction("/permission/admin/stratos")
     public Response getAverageClusterLoadByClusterId(
-            @PathParam("cluster-Id") String Id, @PathParam("startTime") String startTime, @PathParam("endTime") String endTime) throws RestAPIException {
+            @PathParam("cluster-Id") String Id, @PathParam("startTime") String startTime, @PathParam("endTime") String endTime)
+            throws RestAPIException {
 
         String averageClusterLoadList;
         try {
@@ -2276,7 +2280,8 @@ public class StratosApiV41 extends AbstractApi {
     @Produces("application/json")
     @AuthorizationAction("/permission/admin/stratos")
     public Response getAverageClusterFlightRequestCountByClusterId(
-            @PathParam("cluster-Id") String Id, @PathParam("startTime") String startTime, @PathParam("endTime") String endTime) throws RestAPIException {
+            @PathParam("cluster-Id") String Id, @PathParam("startTime") String startTime, @PathParam("endTime") String endTime)
+            throws RestAPIException {
 
         String averageClusterFlightRequestCount;
         try {
