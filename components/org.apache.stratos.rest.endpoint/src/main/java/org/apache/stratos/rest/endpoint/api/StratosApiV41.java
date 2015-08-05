@@ -2129,22 +2129,24 @@ public class StratosApiV41 extends AbstractApi {
     }
 
     /**
+     *
      * @param Id
-     * @param Interval
-     * @return 200 if average memory consumption can get and memory consumption values
+     * @param startTime
+     * @param endTime
+     * @return 200 if average memory consumption can get and memory consumption values cluster
      * @throws RestAPIException
      */
     @GET
-    @Path("/cluster/averageMemory/{cluster-Id}/{Interval}")
+    @Path("/cluster/averageMemory/{cluster-Id}/{startTime}/{endTime}")
     @Consumes("application/json")
     @Produces("application/json")
     @AuthorizationAction("/permission/admin/stratos")
     public Response getAverageClusterMemoryByClusterId(
-            @PathParam("cluster-Id") String Id, @PathParam("Interval") String Interval) throws RestAPIException {
+            @PathParam("cluster-Id") String Id, @PathParam("startTime") String startTime, @PathParam("endTime") String endTime) throws RestAPIException {
 
         String averageClusterMemoryList;
         try {
-            averageClusterMemoryList = StratosApiV41Utils.getAverageClusterMemoryByClusterId(Id, Interval);
+            averageClusterMemoryList = StratosApiV41Utils.getAverageClusterMemoryByClusterId(Id, startTime, endTime);
 
         } catch (RestAPIException ex) {
             return Response.status(Response.Status.NOT_FOUND).entity(new ResponseMessageBean(
@@ -2160,22 +2162,24 @@ public class StratosApiV41 extends AbstractApi {
     }
 
     /**
+     *
      * @param Id
-     * @param Interval
-     * @return 200 if average memory consumption can get and memory consumption values
+     * @param startTime
+     * @param endTime
+     * @return 200 if average memory consumption can get and memory consumption values member
      * @throws RestAPIException
      */
     @GET
-    @Path("/member/averageMemory/{member-Id}/{Interval}")
+    @Path("/member/averageMemory/{member-Id}/{startTime}/{endTime}")
     @Consumes("application/json")
     @Produces("application/json")
     @AuthorizationAction("/permission/admin/stratos")
     public Response getAverageMemberMemoryByMemberId(
-            @PathParam("member-Id") String Id, @PathParam("Interval") String Interval) throws RestAPIException {
+            @PathParam("member-Id") String Id, @PathParam("startTime") String startTime, @PathParam("endTime") String endTime) throws RestAPIException {
 
         String averageMemberMemoryList;
         try {
-            averageMemberMemoryList = StratosApiV41Utils.getAverageMemberMemoryByMemberId(Id, Interval);
+            averageMemberMemoryList = StratosApiV41Utils.getAverageMemberMemoryByMemberId(Id, startTime, endTime);
 
         } catch (RestAPIException ex) {
             return Response.status(Response.Status.NOT_FOUND).entity(new ResponseMessageBean(
@@ -2191,23 +2195,24 @@ public class StratosApiV41 extends AbstractApi {
     }
 
     /**
+     *
      * @param Id
-     * @param Interval
-     * @return 200 if average load consumption can get and load average consumption values
+     * @param startTime
+     * @param endTime
+     * @return 200 if average load consumption can get and load average consumption values member
      * @throws RestAPIException
      */
-
     @GET
-    @Path("/member/averageLoad/{member-Id}/{Interval}")
+    @Path("/member/averageLoad/{member-Id}/{startTime}/{endTime}")
     @Consumes("application/json")
     @Produces("application/json")
     @AuthorizationAction("/permission/admin/stratos")
     public Response getAverageMemberLoadByMemberId(
-            @PathParam("member-Id") String Id, @PathParam("Interval") String Interval) throws RestAPIException {
+            @PathParam("member-Id") String Id, @PathParam("startTime") String startTime, @PathParam("endTime") String endTime) throws RestAPIException {
 
         String averageMemberLoadList;
         try {
-            averageMemberLoadList = StratosApiV41Utils.getAverageMemberLoadByMemberId(Id, Interval);
+            averageMemberLoadList = StratosApiV41Utils.getAverageMemberLoadByMemberId(Id, startTime, endTime);
 
         } catch (RestAPIException ex) {
             return Response.status(Response.Status.NOT_FOUND).entity(new ResponseMessageBean(
@@ -2224,23 +2229,24 @@ public class StratosApiV41 extends AbstractApi {
     }
 
     /**
+     *
      * @param Id
-     * @param Interval
-     * @return 200 if average load consumption can get and load average consumption values
+     * @param startTime
+     * @param endTime
+     * @return 200 if average load consumption can get and load average consumption values for cluster
      * @throws RestAPIException
      */
-
     @GET
-    @Path("/cluster/averageLoad/{cluster-Id}/{Interval}")
+    @Path("/cluster/averageLoad/{cluster-Id}/{startTime}/{endTime}")
     @Consumes("application/json")
     @Produces("application/json")
     @AuthorizationAction("/permission/admin/stratos")
     public Response getAverageClusterLoadByClusterId(
-            @PathParam("cluster-Id") String Id, @PathParam("Interval") String Interval) throws RestAPIException {
+            @PathParam("cluster-Id") String Id, @PathParam("startTime") String startTime, @PathParam("endTime") String endTime) throws RestAPIException {
 
         String averageClusterLoadList;
         try {
-            averageClusterLoadList = StratosApiV41Utils.getAverageClusterLoadByClusterId(Id, Interval);
+            averageClusterLoadList = StratosApiV41Utils.getAverageClusterLoadByClusterId(Id, startTime, endTime);
 
         } catch (RestAPIException ex) {
             return Response.status(Response.Status.NOT_FOUND).entity(new ResponseMessageBean(
@@ -2256,23 +2262,25 @@ public class StratosApiV41 extends AbstractApi {
     }
 
     /**
+     *
      * @param Id
-     * @param Interval
-     * @return 200 if average request in flight can get and in flight request count
+     * @param startTime
+     * @param endTime
+     * @return 200 if average request in flight can get and in flight request count cluster
      * @throws RestAPIException
      */
 
     @GET
-    @Path("/cluster/flightRequestCount/{cluster-Id}/{Interval}")
+    @Path("/cluster/flightRequestCount/{cluster-Id}/{startTime}/{endTime}")
     @Consumes("application/json")
     @Produces("application/json")
     @AuthorizationAction("/permission/admin/stratos")
     public Response getAverageClusterFlightRequestCountByClusterId(
-            @PathParam("cluster-Id") String Id, @PathParam("Interval") String Interval) throws RestAPIException {
+            @PathParam("cluster-Id") String Id, @PathParam("startTime") String startTime, @PathParam("endTime") String endTime) throws RestAPIException {
 
         String averageClusterFlightRequestCount;
         try {
-            averageClusterFlightRequestCount = StratosApiV41Utils.getAverageClusterFlightRequestCountByClusterId(Id, Interval);
+            averageClusterFlightRequestCount = StratosApiV41Utils.getAverageClusterFlightRequestCountByClusterId(Id, startTime, endTime);
 
         } catch (RestAPIException ex) {
             return Response.status(Response.Status.NOT_FOUND).entity(new ResponseMessageBean(
