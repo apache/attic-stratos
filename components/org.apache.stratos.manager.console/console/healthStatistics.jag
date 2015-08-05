@@ -39,45 +39,6 @@ var log = new Log("apacheStratos.appconfig"),
 var leftMenu = menuGenerator(context, menuJson.menu, userPermissions);
 var log = new Log();
 
-//this will get default data using a rest call to the charts.
-var loadAverageData,
-        flightRequestDetails,
-        memoryAverageDetails=null;
-
-if('Cluster' != type){
-
-    try {
-
-        memoryAverageDetails = util.RESTCalls.getMemberMemoryAvrageDetails(Id, 1);
-
-    } catch (e) {
-
-        throw new Error("Error while getting Category Activity data for " + e);
-    }
-
-    try {
-
-        loadAverageData = util.RESTCalls.getMemberLoadAverageDetails(id,1);
-
-    } catch (e) {
-
-        throw new Error("Error while getting Category Activity data for "+ e);
-    }
-
-    flightRequestDetails = null;
-
-}else{
-
-    try {
-
-        memoryAverageDetails = util.RESTCalls.getClusterMemoryAverageDetails(id,1);
-
-    } catch (e) {
-        throw new Error("Error while getting Category Activity data for "+ e);
-    }
-
-}
-
 //rendering the data
 caramel.render({
     breadcrumbPathLevelOne: 'healthStatistics',
@@ -85,9 +46,6 @@ caramel.render({
     type: type,
     alias: alias,
     left_menu: leftMenu,
-    loadAverageData:JSON.stringify(loadAverageData),
-    memoryAverageDetails:JSON.stringify(memoryAverageDetails),
-    flightRequestDetails:JSON.stringify(flightRequestDetails),
     error: error
 });
 
