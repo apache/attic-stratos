@@ -27,31 +27,31 @@ RESTCalls = new function(){
         return this.sendReceive("GET","/tenants",{});
     };
 
-    this.getFlightRequestDetails = function(Id,DurationVal){
+    this.getFlightRequestDetails = function(Id,startDate,endDate){
 
-        return this.sendReceive("GET","/cluster/flightRequestCount/" +Id+"/"+DurationVal,{});
+        return this.sendReceive("GET","/cluster/flightRequestCount/" +Id+"/"+startDate+"/"+endDate,{});
     };
 
-    this.getClusterMemoryAverageDetails = function(Id,DurationVal){
+    this.getClusterMemoryAverageDetails = function(Id,startDate,endDate){
 
-        return this.sendReceive("GET","/cluster/averageMemory/" +Id+"/"+DurationVal,{});
-
-    };
-
-    this.getClusterLoadAverageDetails = function(Id,DurationVal){
-
-        return this.sendReceive("GET","/cluster/averageLoad/" +Id+"/"+DurationVal,{});
+        return this.sendReceive("GET","/cluster/averageMemory/" +Id+"/"+startDate+"/"+endDate,{});
 
     };
 
-    this.getMemberLoadAverageDetails = function(Id,DurationVal){
+    this.getClusterLoadAverageDetails = function(Id,startDate,endDate){
 
-        return this.sendReceive("GET","/member/averageLoad/" +Id+"/"+DurationVal,{});
+        return this.sendReceive("GET","/cluster/averageLoad/" +Id+"/"+startDate+"/"+endDate,{});
+
     };
 
-    this.getMemberMemoryAvrageDetails = function(Id,DurationVal){
+    this.getMemberLoadAverageDetails = function(Id,startDate,endDate){
 
-        return this.sendReceive("GET","/member/averageMemory/" +Id+"/"+DurationVal,{});
+        return this.sendReceive("GET","/member/averageLoad/" +Id+"/"+startDate+"/"+endDate,{});
+    };
+
+    this.getMemberMemoryAvrageDetails = function(Id,startDate,endDate){
+
+        return this.sendReceive("GET","/member/averageMemory/" +Id+"/"+startDate+"/"+endDate,{});
     };
 
     this.deployPartitionDefinition = function(partitionDefinition){
