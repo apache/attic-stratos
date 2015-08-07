@@ -49,7 +49,7 @@ public class Main {
 
             //read configuration from gce-configuration.xml and store configuration in GCEConfigurationHolder class
             File configFile = new File(getFilePathOfConfigFile(Constants.CONFIG_FILE_NAME));
-            OMElement documentElement  = AxiomXpathParserUtil.parse(configFile);
+            OMElement documentElement = AxiomXpathParserUtil.parse(configFile);
             GCEConfigParser.parse(documentElement);
 
             // Configure log4j properties

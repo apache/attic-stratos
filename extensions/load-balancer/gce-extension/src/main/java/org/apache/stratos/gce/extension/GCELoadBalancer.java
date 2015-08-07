@@ -19,11 +19,6 @@
 
 package org.apache.stratos.gce.extension;
 
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.converters.reflection.FieldDictionary;
-import com.thoughtworks.xstream.converters.reflection.ImmutableFieldKeySorter;
-import com.thoughtworks.xstream.converters.reflection.Sun14ReflectionProvider;
-import com.thoughtworks.xstream.io.xml.DomDriver;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.stratos.gce.extension.config.GCEClusterConfigurationHolder;
@@ -34,6 +29,7 @@ import org.apache.stratos.load.balancer.extension.api.LoadBalancer;
 import org.apache.stratos.load.balancer.extension.api.exception.LoadBalancerExtensionException;
 
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.*;
 
 public class GCELoadBalancer implements LoadBalancer {
@@ -44,12 +40,12 @@ public class GCELoadBalancer implements LoadBalancer {
     private GCEOperations gceOperations;
     /**
      * One configuration object per cluster will be created
-     * One cluster  has one target pool , one forwarding rule and a health check
+     * One cluster  has one target pool,one forwarding rule and a health check
      * This hash map is used to hold cluster IDs and corresponding configuration
      */
     private HashMap<String, GCEClusterConfigurationHolder> clusterToLoadBalancerConfigurationMap;
 
-    public GCELoadBalancer() throws IOException {
+    public GCELoadBalancer() throws IOException, GeneralSecurityException {
         gceOperations = new GCEOperations();
         clusterToLoadBalancerConfigurationMap = new HashMap<String, GCEClusterConfigurationHolder>();
 
@@ -64,13 +60,7 @@ public class GCELoadBalancer implements LoadBalancer {
      */
     @Override
     public boolean configure(Topology topology) throws LoadBalancerExtensionException {
-        log.info("Topology received. Configuring Load balancer ");
-
-        //printing the topology for testing purposes
-        XStream xstream = new XStream(new Sun14ReflectionProvider(
-                new FieldDictionary(new ImmutableFieldKeySorter())),
-                new DomDriver("utf-8"));
-        log.info(xstream.toXML(topology));
+        log.info("Complete topology received. Configuring Load balancer ");
 
         //this list is used to hold the current clusters available in topology and which has at least one member.
         List<String> activeClusterIdList = new ArrayList<String>();
@@ -81,7 +71,9 @@ public class GCELoadBalancer implements LoadBalancer {
                 //check whether this cluster has a load balancer configuration or not
                 if (clusterToLoadBalancerConfigurationMap.containsKey(cluster.getClusterId())) {
 
-                    log.info("Reconfiguring the existing cluster: " + cluster.getClusterId());
+                    if (log.isDebugEnabled()) {
+                        log.debug("Reconfiguring the existing cluster: " + cluster.getClusterId());
+                    }
 
                     //It already has a entry in clusterToLoadBalancerConfigurationMap.
                     //Take it and update it as the given topology.
@@ -92,6 +84,9 @@ public class GCELoadBalancer implements LoadBalancer {
                     if (cluster.getMembers().size() > 0) {
                         //that cluster contains at least one member
 
+                        if (log.isDebugEnabled()) {
+                            log.debug("Cluster " + cluster.getClusterId() + " has one or more members");
+                        }
                         activeClusterIdList.add(cluster.getClusterId());
 
                         //***************detect member changes and update**************//
@@ -102,14 +97,15 @@ public class GCELoadBalancer implements LoadBalancer {
 
                             if (member.getInstanceId() != null) {
                                 if (!gceClusterConfigurationHolder.getMemberList().contains(member.getInstanceId())) {
+                                    if (log.isDebugEnabled()) {
+                                        log.debug("New member found: " + member.getInstanceId());
+                                    }
                                     membersToBeAddedToTargetPool.add(member.getInstanceId());
                                 }
                             }
-
                         }
 
                         if (membersToBeAddedToTargetPool.size() > 0) { //we have new members
-
                             log.info("New members in cluster" + cluster.getClusterId() + " found. Adding new members " +
                                     "to cluster");
 
@@ -136,6 +132,9 @@ public class GCELoadBalancer implements LoadBalancer {
                             }
                             if (!found) {
                                 //add member id to membersToBeRemovedFromTargetPool in order remove member from map
+                                if (log.isDebugEnabled()) {
+                                    log.debug("Terminated member found: " + memberId);
+                                }
                                 membersToBeRemovedFromTargetPool.add(memberId);
                             }
                         }
@@ -171,7 +170,16 @@ public class GCELoadBalancer implements LoadBalancer {
 
                             //add instance to instance list
                             if (member.getInstanceId() != null) {
+                                if (log.isDebugEnabled()) {
+                                    log.debug("Adding member " + member.getMemberId() + " to instance list since the" +
+                                            "member id is not null");
+                                }
                                 instancesList.add(member.getInstanceId());
+                            } else {
+                                if (log.isDebugEnabled()) {
+                                    log.debug("Instance ID is null for " + member.getMemberId() + " so not adding to" +
+                                            "the instance list");
+                                }
                             }
 
                             //add forwarding rules(Ports to be forwarded)
@@ -179,10 +187,12 @@ public class GCELoadBalancer implements LoadBalancer {
                                 int portValue = ((Port) port).getValue();
                                 if (!ipList.contains(portValue)) { //if port is not in list
                                     //put the forwarding rule to list
+                                    if (log.isDebugEnabled()) {
+                                        log.debug("Port found: " + portValue);
+                                    }
                                     ipList.add(portValue);
                                 }
                             }
-
                         }
 
                         GCEClusterConfigurationHolder GCEClusterConfigurationHolder = new GCEClusterConfigurationHolder(
@@ -220,9 +230,8 @@ public class GCELoadBalancer implements LoadBalancer {
         }
         activeClusterIdList.clear();
 
-        log.info("Load balancer configured as given topology");
+        log.info("Load balancer was configured as given topology");
         return true;
-
     }
 
     /**
@@ -231,7 +240,7 @@ public class GCELoadBalancer implements LoadBalancer {
      */
     private void deleteConfigurationForCluster(String clusterId) throws LoadBalancerExtensionException {
 
-        log.info("Deleting forwarding rule for cluster " + clusterId);
+        log.info("Deleting configuration for cluster " + clusterId);
         GCEClusterConfigurationHolder gceClusterConfigurationHolder = clusterToLoadBalancerConfigurationMap.get(clusterId);
         //delete forwarding rule
         gceOperations.deleteForwardingRule(gceClusterConfigurationHolder.getForwardingRuleName());
@@ -239,7 +248,7 @@ public class GCELoadBalancer implements LoadBalancer {
         gceOperations.deleteTargetPool(gceClusterConfigurationHolder.getTargetPoolName());
         //delete health check from GCE
         gceOperations.deleteHealthCheck(gceClusterConfigurationHolder.getHealthCheckName());
-        log.info("Deleted forwarding rule for cluster " + clusterId);
+        log.info("Deleted configuration for cluster " + clusterId);
 
     }
 
@@ -285,6 +294,10 @@ public class GCELoadBalancer implements LoadBalancer {
             Collections.sort(ipList);
             //take the first one and last one
             portRange = Integer.toString(ipList.get(0)) + "-" + Integer.toString(ipList.get(ipList.size() - 1));
+        }
+
+        if (log.isDebugEnabled()) {
+            log.debug("Port range set as: " + portRange);
         }
 
         //create the forwarding rule
@@ -375,7 +388,6 @@ public class GCELoadBalancer implements LoadBalancer {
         if (healthCheckName.length() >= 62) {
             healthCheckName = healthCheckName.substring(0, 62);
         }
-
         return healthCheckName;
     }
 }

@@ -69,16 +69,20 @@ public class GCEOperations {
     /**
      * Constructor for GCE Operations Class
      */
-    public GCEOperations() throws IOException {
+    public GCEOperations() throws IOException, GeneralSecurityException {
         buildComputeEngineObject();
     }
 
     /**
      * Authorize and build compute engine object
      */
-    private void buildComputeEngineObject() throws IOException {
+    private void buildComputeEngineObject() throws IOException, GeneralSecurityException {
 
         try {
+
+            if (log.isDebugEnabled()) {
+                log.debug("Authorizing and building the compute engine object");
+            }
 
             HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
             JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
@@ -94,12 +98,15 @@ public class GCEOperations {
             compute = new Compute.Builder(
                     httpTransport, jsonFactory, null).setApplicationName(PROJECT_NAME)
                     .setHttpRequestInitializer(credential).build();
-        } catch (GeneralSecurityException e) {
-            if (log.isErrorEnabled()) {
-                log.error("Could not authenticate and build compute object");
-                throw new RuntimeException(e);
+            if (log.isDebugEnabled()) {
+                log.debug("Successfully built the compute engine object");
             }
+        } catch (GeneralSecurityException e) {
+            //Security exception occurred. Cant proceed further
+            log.fatal("Could not authenticate and build compute object");
+            throw new GeneralSecurityException(e);
         } catch (IOException e) {
+            //IO exception occurred. Cant proceed further
             log.fatal("Could not authenticate and build compute object");
             throw new IOException(e);
         }
@@ -119,16 +126,15 @@ public class GCEOperations {
                     list(PROJECT_ID, zoneName).setFilter(filter);
             InstanceList instanceList = instances.execute();
             if (instanceList.getItems() == null) {
-                log.info("No instances found for filter " + filter + " and zone " + zoneName);
+                log.warn("No instances found for filter " + filter + " and zone " + zoneName);
                 return null;
             } else {
                 return instanceList;
             }
         } catch (IOException e) {
-            log.warn("Could not get instance list from GCE", e);
-
+            log.warn("Could not get instance list from GCE ", e);
+            return null;
         }
-        return null;
     }
 
 
@@ -176,7 +182,7 @@ public class GCEOperations {
         HttpHealthCheckList healthCheckList;
         healthCheckList = getHealthCheckList();
         if (healthCheckList == null) {
-            log.warn("Could not found health check " + healthCheckName + "since health check list is null");
+            log.warn("Could not found health check " + healthCheckName + " because the health check list is null");
             return null;
         }
         for (HttpHealthCheck httpHealthCheck : healthCheckList.getItems()) {
@@ -187,6 +193,7 @@ public class GCEOperations {
                 return healthCheckURL;
             }
         }
+        log.warn("Could not found the health check " + healthCheckName);
         return null;
     }
 
@@ -231,7 +238,6 @@ public class GCEOperations {
     public void createTargetPool(String targetPoolName, String healthCheckName) {
 
         log.info("Creating target pool: " + targetPoolName);
-
         TargetPool targetPool = new TargetPool();
         targetPool.setName(targetPoolName);
         List<String> httpHealthChecks = new ArrayList<String>();
@@ -246,7 +252,7 @@ public class GCEOperations {
         } catch (Exception e) {
             log.warn("Could not create target pool: " + targetPoolName + " " + e);
         }
-
+        log.info("Target pool " + targetPoolName + " was created");
     }
 
     /**
@@ -263,7 +269,7 @@ public class GCEOperations {
         } catch (Exception e) {
             log.warn("Could not delete target pool " + targetPoolName + " " + e);
         }
-        log.info("Target pool: " + targetPoolName + " has been deleted");
+        log.info("Target pool: " + targetPoolName + " was deleted");
     }
 
     /**
@@ -292,7 +298,7 @@ public class GCEOperations {
         } catch (Exception e) {
             log.warn("Could not create a forwarding rule " + forwardingRuleName + " " + e);
         }
-        log.info("Created forwarding rule: " + forwardingRuleName);
+        log.info("Forwarding rule: " + forwardingRuleName + " was created");
     }
 
     /**
@@ -309,7 +315,7 @@ public class GCEOperations {
         } catch (Exception e) {
             log.warn("Could not delete forwarding rule " + forwardingRuleName + " " + e);
         }
-        log.info("Deleted forwarding rule: " + forwardingRuleName);
+        log.info("Forwarding rule " + forwardingRuleName + " was deleted");
     }
 
     /**
@@ -326,13 +332,17 @@ public class GCEOperations {
             TargetPoolList targetPoolList = targetPools.execute();
             for (TargetPool targetPool : targetPoolList.getItems()) {
                 if (targetPool.getName().equals(targetPoolName)) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Target pool " + targetPoolName + " exists");
+                    }
                     return true;
                 }
-
             }
-
         } catch (IOException e) {
-            log.warn("Could not check whether the target pool " + targetPoolName + " is exists or not " + e);
+            log.warn("Could not check whether the target pool " + targetPoolName + " exists or not " + e);
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("Target pool " + targetPoolName + " does not exist");
         }
         return false;
     }
@@ -353,14 +363,11 @@ public class GCEOperations {
                     log.debug("Requested Target Pool " + targetPoolName + " Is not Available");
                 }
             }
-
             return null;
-
         } catch (IOException e) {
             log.warn("Could not get target pool " + targetPoolName + " " + e);
         }
         return null;
-
     }
 
     /**
@@ -370,10 +377,10 @@ public class GCEOperations {
      * @param instancesIdsList - List of instances to be removed from target pool
      */
     public void removeInstancesFromTargetPool(List<String> instancesIdsList, String targetPoolName) {
-        log.info("Removing instances from target pool: " + targetPoolName);
 
+        log.info("Removing instances from target pool: " + targetPoolName);
         if (instancesIdsList.isEmpty()) {
-            log.warn("Cannot remove instances to target pool. InstancesNamesList is empty.");
+            log.warn("Cannot remove instances to target pool. Because instancesNamesList is empty.");
             return;
         }
 
@@ -381,7 +388,6 @@ public class GCEOperations {
 
         //add instance to instance reference list, we should use the instance URL
         for (String instanceId : instancesIdsList) { //for all instances
-
             String instanceUrl = createInstanceSelfLink(instanceId);
             instanceReferenceList.add(new InstanceReference().
                     setInstance(instanceUrl));
@@ -400,14 +406,12 @@ public class GCEOperations {
             //execute
             Operation operation = compute.targetPools().removeInstance(PROJECT_ID, REGION_NAME,
                     targetPoolName, targetPoolsRemoveInstanceRequest).execute();
-
             waitForRegionOperationCompletion(operation.getName());
 
         } catch (Exception e) {
             log.warn("Could not remove instances from target pool " + targetPoolName + " " + e);
         }
-
-        log.info("Removed instances from target pool: " + targetPoolName);
+        log.info("Instances are removed from target pool: " + targetPoolName);
     }
 
     /**
@@ -484,7 +488,7 @@ public class GCEOperations {
         } catch (Exception e) {
             log.error("Could not create health check " + healthCheckName + " " + e);
         }
-        log.info("Created health check: " + healthCheckName);
+        log.info("Health check " + healthCheckName + " was created");
     }
 
     public void deleteHealthCheck(String healthCheckName) {
@@ -496,7 +500,7 @@ public class GCEOperations {
         } catch (Exception e) {
             log.warn("Could not get delete health check " + healthCheckName + " " + e);
         }
-        log.info("Deleted Health Check: " + healthCheckName);
+        log.info("Health check: " + healthCheckName + " was deleted");
     }
 
     /**
@@ -507,11 +511,18 @@ public class GCEOperations {
      */
     private void waitForGlobalOperationCompletion(String operationName) throws Exception {
         try {
+            if (log.isDebugEnabled()) {
+                log.debug("Waiting for operation " + operationName + " completion");
+            }
+            //initially sleep for two seconds
             Thread.sleep(2000);
             int timeout = 0;
             while (true) {
                 Operation operation = compute.globalOperations().get(PROJECT_ID, operationName).execute();
                 if (operation.getStatus().equals("DONE")) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Operation " + operationName + " completed successfully");
+                    }
                     return;
                 }
 
@@ -519,6 +530,7 @@ public class GCEOperations {
                     log.warn("Timeout reached for operation " + operationName + ". Existing..");
                     return;
                 }
+                //sleep one second
                 Thread.sleep(1000);
                 timeout += 1000;
             }
@@ -537,18 +549,23 @@ public class GCEOperations {
 
     private void waitForRegionOperationCompletion(String operationName) throws Exception {
         try {
+            //initially wait for two seconds
             Thread.sleep(2000);
             int timeout = 0;
             while (true) {
                 Operation operation = compute.regionOperations().get(PROJECT_ID, REGION_NAME, operationName).execute();
 
                 if (operation.getStatus().equals("DONE")) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Operation " + operationName + " completed successfully");
+                    }
                     return;
                 }
                 if (timeout >= OPERATION_TIMEOUT) {
                     log.warn("Timeout reached for operation " + operationName + ". Existing..");
                     return;
                 }
+                //wait for one second
                 Thread.sleep(1000);
                 timeout += 1000;
             }
@@ -567,6 +584,5 @@ public class GCEOperations {
         int lastIndexOfSlash = instanceId.lastIndexOf("/");
         return instanceId.substring(lastIndexOfSlash + 1);
     }
-
 }
 

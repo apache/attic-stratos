@@ -87,23 +87,18 @@
             <artifactId>org.apache.stratos.cloud.controller</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <!--this dependency to be removed -->
-        <dependency>
-            <groupId>com.thoughtworks.xstream</groupId>
-            <artifactId>xstream</artifactId>
-            <version>1.4.8</version>
-        </dependency>
         <dependency>
             <groupId>org.apache.ws.commons.axiom.wso2</groupId>
             <artifactId>axiom</artifactId>
             <version>1.2.11.wso2v4</version>
         </dependency>
-
     </dependencies>
+
     <properties>
         <project.http.version>1.19.0</project.http.version>
         <project.oauth.version>1.19.0</project.oauth.version>
     </properties>
+
     <build>
         <plugins>
             <plugin>

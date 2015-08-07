@@ -20,13 +20,17 @@ package org.apache.stratos.gce.extension.config.parser;
  */
 
 import org.apache.axiom.om.OMElement;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.stratos.common.exception.MalformedConfigurationFileException;
 import org.apache.stratos.common.util.AxiomXpathParserUtil;
 import org.apache.stratos.gce.extension.config.Constants;
 import org.apache.stratos.gce.extension.config.GCEContext;
+
 import javax.xml.namespace.QName;
 
 public class GCEConfigParser {
+    private static final Log log = LogFactory.getLog(GCEConfigParser.class);
     private static GCEContext gceContext;
 
     /**
@@ -36,6 +40,11 @@ public class GCEConfigParser {
      * @throws MalformedConfigurationFileException
      */
     public static void parse(OMElement documentElement) throws MalformedConfigurationFileException {
+
+        if (log.isDebugEnabled()) {
+            log.debug("Parsing the configuration xml file ");
+        }
+
         //get cep info
         OMElement cepInfoElement = AxiomXpathParserUtil.getFirstChildElement(documentElement,
                 Constants.CEP_STATS_PUBLISHER_ELEMENT);
@@ -55,6 +64,9 @@ public class GCEConfigParser {
         extractOtherProperties(documentElement);
 
         //validate all extracted properties - just a null check
+        if (log.isDebugEnabled()) {
+            log.debug("Validating the properties read from configuration xml file");
+        }
         gceContext.validate();
     }
 
@@ -83,11 +95,17 @@ public class GCEConfigParser {
             if (thriftReceiverIpElement != null) {
                 //set extracted ip to gceContext object
                 gceContext.setThriftReceiverIp(thriftReceiverIpElement.getText());
+                if (log.isDebugEnabled()) {
+                    log.debug("Thrift receiver IP: " + thriftReceiverIpElement.getText());
+                }
             }
 
             if (thriftReceiverPortElement != null) {
                 //set extracted port to gceContext object
                 gceContext.setThriftReceiverPort(thriftReceiverPortElement.getText());
+                if (log.isDebugEnabled()) {
+                    log.debug("Thrift receiver port: " + thriftReceiverPortElement.getText());
+                }
             }
         }
     }
@@ -106,27 +124,45 @@ public class GCEConfigParser {
         OMElement networkNameElement = AxiomXpathParserUtil.getFirstChildElement(gceIaasInfoElement, Constants.NETWORK_NAME);
 
         //set extracted properties to gceContext object
-        if(projectNameElement != null){
+        if (projectNameElement != null) {
             gceContext.setProjectName(projectNameElement.getText());
+            if (log.isDebugEnabled()) {
+                log.debug("Project Name: " + projectNameElement.getText());
+            }
         }
 
-        if(projectIdElement != null){
+        if (projectIdElement != null) {
             gceContext.setProjectID(projectIdElement.getText());
+            if (log.isDebugEnabled()) {
+                log.debug("Project ID: " + projectIdElement.getText());
+            }
         }
 
-        if(regionNameElement != null){
+        if (regionNameElement != null) {
             gceContext.setRegionName(regionNameElement.getText());
+            if (log.isDebugEnabled()) {
+                log.debug("Region Name: " + regionNameElement.getText());
+            }
         }
 
-        if(keyFilePathElement != null){
+        if (keyFilePathElement != null) {
             gceContext.setKeyFilePath(keyFilePathElement.getText());
+            if (log.isDebugEnabled()) {
+                log.debug("Key file path: " + keyFilePathElement.getText());
+            }
         }
 
-        if(gceAccountIdElement != null){
+        if (gceAccountIdElement != null) {
             gceContext.setGceAccountID(gceAccountIdElement.getText());
+            if (log.isDebugEnabled()) {
+                log.debug("GCE Account ID: " + gceAccountIdElement.getText());
+            }
         }
-        if(networkNameElement != null){
+        if (networkNameElement != null) {
             gceContext.setNetworkName(networkNameElement.getText());
+            if (log.isDebugEnabled()) {
+                log.debug("Network Name: " + networkNameElement.getText());
+            }
         }
     }
 
@@ -150,28 +186,46 @@ public class GCEConfigParser {
                 Constants.HEALTH_CHECK_HEALTHY_THRESHOLD);
 
         //set extracted properties to gceContext object
-        if(healthCheckRequestPathElement != null){
+        if (healthCheckRequestPathElement != null) {
             gceContext.setHealthCheckRequestPath(healthCheckRequestPathElement.getText());
+            if (log.isDebugEnabled()) {
+                log.debug("Health check request path: " + healthCheckRequestPathElement.getText());
+            }
         }
 
-        if(healthCheckPortElement != null){
+        if (healthCheckPortElement != null) {
             gceContext.setHealthCheckPort(healthCheckPortElement.getText());
+            if (log.isDebugEnabled()) {
+                log.debug("Health check port: " + healthCheckPortElement.getText());
+            }
         }
 
-        if(healthCheckTimeoutSecElement != null){
+        if (healthCheckTimeoutSecElement != null) {
             gceContext.setHealthCheckTimeOutSec(healthCheckTimeoutSecElement.getText());
+            if (log.isDebugEnabled()) {
+                log.debug("Health check timeout sec: " + healthCheckTimeoutSecElement.getText());
+            }
         }
 
-        if(healthCheckUnhealthyThresholdElement != null){
+        if (healthCheckUnhealthyThresholdElement != null) {
             gceContext.setHealthCheckUnhealthyThreshold(healthCheckUnhealthyThresholdElement.getText());
+            if (log.isDebugEnabled()) {
+                log.debug("Health check unhealthy threshold: " + healthCheckUnhealthyThresholdElement.getText());
+            }
         }
 
-        if(heathCheckIntervalSecElement != null){
+        if (heathCheckIntervalSecElement != null) {
             gceContext.setHealthCheckIntervalSec(heathCheckIntervalSecElement.getText());
+            if (log.isDebugEnabled()) {
+                log.debug("Health check interval sec: " + heathCheckIntervalSecElement.getText());
+            }
         }
 
-        if(healthCheckHealthyThresholdElement != null){
+        if (healthCheckHealthyThresholdElement != null) {
             gceContext.setHealthCheckHealthyThreshold(healthCheckHealthyThresholdElement.getText());
+            if (log.isDebugEnabled()) {
+                log.debug("Health check healthy threshold: " + healthCheckHealthyThresholdElement.getText());
+            }
         }
     }
 
@@ -188,16 +242,25 @@ public class GCEConfigParser {
                 LOG4J_PROPERTIES_FILE_NAME);
 
         //set extracted properties to gceContext object
-        if(operationTimeoutElement != null){
+        if (operationTimeoutElement != null) {
             gceContext.setOperationTimeout(operationTimeoutElement.getText());
+            if (log.isDebugEnabled()) {
+                log.debug("Operation timeout: " + operationTimeoutElement.getText());
+            }
         }
 
-        if(namePrefixElement != null){
+        if (namePrefixElement != null) {
             gceContext.setNamePrefix(namePrefixElement.getText());
+            if (log.isDebugEnabled()) {
+                log.debug("Name prefix: " + namePrefixElement.getText());
+            }
         }
 
-        if(log4jPropertiesFileNameElement != null){
+        if (log4jPropertiesFileNameElement != null) {
             gceContext.setLog4jPropertiesFileName(log4jPropertiesFileNameElement.getText());
+            if (log.isDebugEnabled()) {
+                log.debug("log4j properties file name: " + log4jPropertiesFileNameElement.getText());
+            }
         }
     }
 }

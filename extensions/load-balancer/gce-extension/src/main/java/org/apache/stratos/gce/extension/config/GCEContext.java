@@ -43,7 +43,7 @@ public class GCEContext {
     private String gceAccountID;
     private String networkName;
 
-    //healthcheck properties
+    //health check properties
     private String healthCheckRequestPath;
     private String healthCheckPort;
     private String healthCheckTimeOutSec;
