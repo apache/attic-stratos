@@ -1,5 +1,8 @@
 {
     "backendServerConfiguration": {
         "url": "%https.host%/api/v4.1"
+    },
+    "healthStatistics": {
+        "UI_enable": "false"
     }
 }
