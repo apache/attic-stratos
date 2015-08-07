@@ -93,6 +93,7 @@ import org.wso2.carbon.user.api.UserStoreManager;
 import org.wso2.carbon.user.core.tenant.Tenant;
 import org.wso2.carbon.user.core.tenant.TenantManager;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
+import org.apache.stratos.kubernetes.client.KubernetesConstants;
 
 import java.rmi.RemoteException;
 import java.util.*;
@@ -104,6 +105,7 @@ public class StratosApiV41Utils {
     public static final String APPLICATION_STATUS_DEPLOYED = "Deployed";
     public static final String APPLICATION_STATUS_CREATED = "Created";
     public static final String APPLICATION_STATUS_UNDEPLOYING = "Undeploying";
+    public static final String KUBERNETES_IAAS_PROVIDER = "kubernetes";
 
     private static final Log log = LogFactory.getLog(StratosApiV41Utils.class);
 
@@ -127,6 +129,15 @@ public class StratosApiV41Utils {
                         cartridgeBean.getType()));
             }
 
+            boolean isKubernetesIaasProviderAvailable = false;
+
+            for (IaasProviderBean providers : iaasProviders) {
+                if (providers.getType().equals(KUBERNETES_IAAS_PROVIDER)) {
+                    isKubernetesIaasProviderAvailable = true;
+                    break;
+                }
+            }
+
             for (PortMappingBean portMapping : cartridgeBean.getPortMapping()) {
                 if (StringUtils.isBlank(portMapping.getName())) {
                     portMapping.setName(portMapping.getProtocol() + "-" + portMapping.getPort());
@@ -136,6 +147,20 @@ public class StratosApiV41Utils {
                                 cartridgeBean.getType(), portMapping.getName()));
                     }
                 }
+
+                String type = portMapping.getKubernetesPortType();
+
+                if (isKubernetesIaasProviderAvailable) {
+                    if (type == null || type.equals("")) {
+                        portMapping.setKubernetesPortType(KubernetesConstants.NODE_PORT);
+                    } else if (!type.equals(KubernetesConstants.NODE_PORT) && !type.equals
+                            (KubernetesConstants.CLUSTER_IP)) {
+                        throw new RestAPIException((String.format("Kubernetes" +
+                                        "PortType is invalid : %s - Possible values - %s and %s", portMapping.getName(),
+                                KubernetesConstants.NODE_PORT, KubernetesConstants.CLUSTER_IP)));
+                    }
+                }
+
             }
 
             Cartridge cartridgeConfig = createCartridgeConfig(cartridgeBean);
@@ -148,19 +173,19 @@ public class StratosApiV41Utils {
                         cartridgeBean.getType()));
             }
         } catch (CloudControllerServiceCartridgeAlreadyExistsExceptionException e) {
-            String msg = "Could not add cartridge";
+            String msg = "Could not add cartridge. Cartridge already exists.";
             log.error(msg, e);
             throw new RestAPIException(msg);
         } catch (CloudControllerServiceInvalidCartridgeDefinitionExceptionException e) {
-            String msg = "Could not add cartridge";
+            String msg = "Could not add cartridge. Invalid cartridge definition.";
             log.error(msg, e);
             throw new RestAPIException(msg);
         } catch (RemoteException e) {
-            String msg = "Could not add cartridge";
+            String msg = "Could not add cartridge. " + e.getMessage();
             log.error(msg, e);
             throw new RestAPIException(msg);
         } catch (CloudControllerServiceInvalidIaasProviderExceptionException e) {
-            String msg = "Could not add cartridge";
+            String msg = "Could not add cartridge. Invalid IaaS provider.";
             log.error(msg, e);
             throw new RestAPIException(msg);
         }
@@ -194,19 +219,19 @@ public class StratosApiV41Utils {
                         cartridgeBean.getType()));
             }
         } catch (CloudControllerServiceCartridgeDefinitionNotExistsExceptionException e) {
-            String msg = "Could not add cartridge";
+            String msg = "Could not update cartridge. Cartridge definition doesn't exists.";
             log.error(msg, e);
             throw new RestAPIException(msg);
         } catch (CloudControllerServiceInvalidCartridgeDefinitionExceptionException e) {
-            String msg = "Could not add cartridge";
+            String msg = "Could not update cartridge. Invalid cartridge definition.";
             log.error(msg, e);
             throw new RestAPIException(msg);
         } catch (RemoteException e) {
-            String msg = "Could not add cartridge";
+            String msg = "Could not update cartridge. " + e.getMessage();
             log.error(msg, e);
             throw new RestAPIException(msg);
         } catch (CloudControllerServiceInvalidIaasProviderExceptionException e) {
-            String msg = "Could not add cartridge";
+            String msg = "Could not update cartridge. Invalid IaaS provider.";
             log.error(msg, e);
             throw new RestAPIException(msg);
         }
@@ -1912,7 +1937,7 @@ public class StratosApiV41Utils {
             ApplicationManager.acquireReadLockForApplication(applicationId);
             Application application = ApplicationManager.getApplications().
                     getApplication(applicationId);
-            if(application != null) {
+            if (application != null) {
                 if (application.getInstanceContextCount() > 0
                         || (applicationContext != null &&
                         applicationContext.getStatus().equals("Deployed"))) {
@@ -2993,6 +3018,7 @@ public class StratosApiV41Utils {
         try {
             CommonUtil.validateEmail(tenantInfoBean.getEmail());
         } catch (Exception e) {
+            // validate Email methods throws exception therefore we catch and throw InvalidEmailException
             throw new InvalidEmailException(e.getMessage());
         }
 
@@ -3051,15 +3077,6 @@ public class StratosApiV41Utils {
             String msg = "Error in notifying tenant addition.";
             log.error(msg, e);
             throw new RestAPIException(msg);
-        }
-
-        try {
-            TenantUserRoleManager tenantUserRoleManager = new TenantUserRoleManager();
-            tenantUserRoleManager.onTenantCreate(tenantInfoBean);
-        } catch (ApacheStratosException e) {
-            String message = "Could create Internal/user role for tenant";
-            log.error(message, e);
-            throw new RestAPIException(message);
         }
 
         // For the super tenant tenant creation, tenants are always activated as they are created.
@@ -3127,22 +3144,14 @@ public class StratosApiV41Utils {
 
         // filling the first and last name values
         if (StringUtils.isBlank(tenantInfoBean.getFirstName())) {
-            try {
-                CommonUtil.validateName(tenantInfoBean.getFirstName(), "First Name");
-            } catch (Exception e) {
-                String msg = "Invalid first name is provided.";
-                log.error(msg, e);
-                throw new RestAPIException(msg, e);
-            }
+            String msg = "Invalid first name is provided.";
+            log.error(msg);
+            throw new RestAPIException(msg);
         }
         if (StringUtils.isBlank(tenantInfoBean.getLastName())) {
-            try {
-                CommonUtil.validateName(tenantInfoBean.getLastName(), "Last Name");
-            } catch (Exception e) {
-                String msg = "Invalid last name is provided.";
-                log.error(msg, e);
-                throw new RestAPIException(msg, e);
-            }
+            String msg = "Invalid last name is provided.";
+            log.error(msg);
+            throw new RestAPIException(msg);
         }
 
         tenant.setAdminFirstName(tenantInfoBean.getFirstName());
@@ -3156,7 +3165,7 @@ public class StratosApiV41Utils {
         }
 
         // filling the email value
-        if (StringUtils.isBlank(tenantInfoBean.getEmail())) {
+        if (StringUtils.isNotBlank(tenantInfoBean.getEmail())) {
             // validate the email
             try {
                 CommonUtil.validateEmail(tenantInfoBean.getEmail());
@@ -3179,7 +3188,7 @@ public class StratosApiV41Utils {
         }
 
         boolean updatePassword = false;
-        if (tenantInfoBean.getAdminPassword() != null && !tenantInfoBean.getAdminPassword().equals("")) {
+        if (StringUtils.isBlank(tenantInfoBean.getAdminPassword())) {
             updatePassword = true;
         }
         try {
@@ -3197,7 +3206,7 @@ public class StratosApiV41Utils {
                 }
             } else {
                 //Password should be empty since no password update done
-                tenantInfoBean.setAdminPassword("");
+                tenantInfoBean.setAdminPassword(null);
             }
         } catch (UserStoreException e) {
             String msg = "Error in getting the user store manager is read only " + e.getLocalizedMessage();

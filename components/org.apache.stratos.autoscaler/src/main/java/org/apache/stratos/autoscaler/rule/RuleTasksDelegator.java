@@ -32,11 +32,10 @@ import org.apache.stratos.autoscaler.context.cluster.ClusterContext;
 import org.apache.stratos.autoscaler.context.cluster.ClusterInstanceContext;
 import org.apache.stratos.autoscaler.context.member.MemberStatsContext;
 import org.apache.stratos.autoscaler.context.partition.ClusterLevelPartitionContext;
-import org.apache.stratos.autoscaler.context.partition.network.ClusterLevelNetworkPartitionContext;
+import org.apache.stratos.autoscaler.context.partition.network.NetworkPartitionContext;
 import org.apache.stratos.autoscaler.event.publisher.InstanceNotificationPublisher;
 import org.apache.stratos.autoscaler.monitor.cluster.ClusterMonitor;
 import org.apache.stratos.cloud.controller.stub.domain.MemberContext;
-import org.apache.stratos.common.client.CloudControllerServiceClient;
 import org.apache.stratos.common.constants.StratosConstants;
 
 /**
@@ -63,8 +62,7 @@ public class RuleTasksDelegator {
 
     public int getNumberOfInstancesRequiredBasedOnRif(float rifPredictedValue, float rifThreshold) {
 
-        if (rifThreshold != 0) {
-
+        if (rifThreshold > 0) {
             float requiredNumberOfInstances = rifPredictedValue / rifThreshold;
             return (int) Math.ceil(requiredNumberOfInstances);
         } else {
@@ -174,10 +172,9 @@ public class RuleTasksDelegator {
      * @param clusterMonitorPartitionContext Cluster monitor partition context
      * @param clusterId                      Cluster id
      * @param clusterInstanceId              Instance id
-     * @param isPrimary                      Is a primary member
      */
     public void delegateSpawn(ClusterLevelPartitionContext clusterMonitorPartitionContext, String clusterId,
-                              String clusterInstanceId, boolean isPrimary) {
+                              String clusterInstanceId) {
 
         try {
             String nwPartitionId = clusterMonitorPartitionContext.getNetworkPartitionId();
@@ -186,7 +183,7 @@ public class RuleTasksDelegator {
             int minimumCountOfNetworkPartition;
             ClusterMonitor clusterMonitor = AutoscalerContext.getInstance().getClusterMonitor(clusterId);
             ClusterContext clusterContext = clusterMonitor.getClusterContext();
-            ClusterLevelNetworkPartitionContext clusterLevelNetworkPartitionContext =
+            NetworkPartitionContext clusterLevelNetworkPartitionContext =
                     clusterContext.getNetworkPartitionCtxt(nwPartitionId);
             ClusterInstanceContext clusterInstanceContext =
                     (ClusterInstanceContext) clusterLevelNetworkPartitionContext.
@@ -198,7 +195,6 @@ public class RuleTasksDelegator {
                             .startInstance(clusterMonitorPartitionContext.getPartition(),
                                     clusterId,
                                     clusterInstanceId, clusterMonitorPartitionContext.getNetworkPartitionId(),
-                                    isPrimary,
                                     minimumCountOfNetworkPartition);
             if (memberContext != null) {
                 ClusterLevelPartitionContext partitionContext = clusterInstanceContext.
