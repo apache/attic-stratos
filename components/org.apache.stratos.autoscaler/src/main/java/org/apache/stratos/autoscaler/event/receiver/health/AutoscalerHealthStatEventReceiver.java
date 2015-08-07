@@ -62,7 +62,7 @@ public class AutoscalerHealthStatEventReceiver {
             log.info("Autoscaler health stat event receiver thread started");
         }
     }
-
+    
     private void addEventListeners() {
         // Listen to health stat events that affect clusters
         healthStatEventReceiver.addEventListener(new AverageLoadAverageEventListener() {
