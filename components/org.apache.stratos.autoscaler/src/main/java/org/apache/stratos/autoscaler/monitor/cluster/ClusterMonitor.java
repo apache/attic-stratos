@@ -598,6 +598,10 @@ public class ClusterMonitor extends Monitor {
         }
     }
 
+    public void handleCurveFinderLoadAverageEvent(CurveFinderOfLoadAverageEvent curveFinderOfLoadAverageEvent){
+
+    }
+
     public void handleSecondDerivativeOfLoadAverageEvent(
             SecondDerivativeOfLoadAverageEvent secondDerivativeOfLoadAverageEvent) {
 
@@ -677,6 +681,28 @@ public class ClusterMonitor extends Monitor {
         float value = secondDerivativeOfMemoryConsumptionEvent.getValue();
         if (log.isDebugEnabled()) {
             log.debug(String.format("Second Derivation of Memory Consumption event: [cluster] %s "
+                    + "[network-partition] %s [value] %s", clusterId, networkPartitionId, value));
+        }
+        ClusterInstanceContext clusterLevelNetworkPartitionContext = getClusterInstanceContext(
+                networkPartitionId, clusterInstanceId);
+        if (null != clusterLevelNetworkPartitionContext) {
+            clusterLevelNetworkPartitionContext.setMemoryConsumptionSecondDerivative(value);
+        } else {
+            if (log.isDebugEnabled()) {
+                log.debug(String.format("Network partition context is not available for :" +
+                        " [network partition] %s", networkPartitionId));
+            }
+        }
+    }
+
+
+    public void handleCurveFinderOfMemoryConsumptionEvent(CurveFinderOfMemoryConsumptionEvent curveFinderOfMemoryConsumptionEvent){
+        String networkPartitionId = curveFinderOfMemoryConsumptionEvent.getNetworkPartitionId();
+        String clusterId = curveFinderOfMemoryConsumptionEvent.getClusterId();
+        String clusterInstanceId = curveFinderOfMemoryConsumptionEvent.getClusterInstanceId();
+        float value = curveFinderOfMemoryConsumptionEvent.getValue();
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("CurveFinder of Memory Consumption event: [cluster] %s "
                     + "[network-partition] %s [value] %s", clusterId, networkPartitionId, value));
         }
         ClusterInstanceContext clusterLevelNetworkPartitionContext = getClusterInstanceContext(

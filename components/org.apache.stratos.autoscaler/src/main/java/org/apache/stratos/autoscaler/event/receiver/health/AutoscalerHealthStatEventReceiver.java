@@ -26,6 +26,7 @@ import org.apache.stratos.autoscaler.monitor.cluster.ClusterMonitor;
 import org.apache.stratos.messaging.domain.topology.Cluster;
 import org.apache.stratos.messaging.domain.topology.Member;
 import org.apache.stratos.messaging.domain.topology.Service;
+import org.apache.stratos.messaging.event.Event;
 import org.apache.stratos.messaging.event.health.stat.*;
 import org.apache.stratos.messaging.listener.health.stat.*;
 import org.apache.stratos.messaging.message.receiver.health.stat.HealthStatEventReceiver;
@@ -62,7 +63,7 @@ public class AutoscalerHealthStatEventReceiver {
             log.info("Autoscaler health stat event receiver thread started");
         }
     }
-    
+
     private void addEventListeners() {
         // Listen to health stat events that affect clusters
         healthStatEventReceiver.addEventListener(new AverageLoadAverageEventListener() {
@@ -406,6 +407,27 @@ public class AutoscalerHealthStatEventReceiver {
             }
         });
 
+        healthStatEventReceiver.addEventListener(new CurveFinderLoadAverageEventListener(){
+            @Override
+            protected void onEvent(org.apache.stratos.messaging.event.Event event) {
+                CurveFinderOfLoadAverageEvent curveFinderOfLoadAverageEvent = (CurveFinderOfLoadAverageEvent)event;
+                String clusterId = curveFinderOfLoadAverageEvent.getClusterId();
+                AutoscalerContext asCtx = AutoscalerContext.getInstance();
+                ClusterMonitor monitor;
+                monitor = asCtx.getClusterMonitor(clusterId);
+
+                if(null == monitor){
+                    if (log.isDebugEnabled()) {
+                        log.debug(String.format("A cluster monitor is not found in autoscaler context "
+                                + "[cluster] %s", clusterId));
+                    }
+                    return;
+                }
+
+                monitor.handleCurveFinderLoadAverageEvent(curveFinderOfLoadAverageEvent);
+            }
+        });
+
         healthStatEventReceiver.addEventListener(new SecondDerivativeOfLoadAverageEventListener() {
             @Override
             protected void onEvent(org.apache.stratos.messaging.event.Event event) {
@@ -422,6 +444,27 @@ public class AutoscalerHealthStatEventReceiver {
                     return;
                 }
                 monitor.handleSecondDerivativeOfLoadAverageEvent(secondDerivativeOfLoadAverageEvent);
+            }
+        });
+
+        healthStatEventReceiver.addEventListener(new CurveFinderMemoryConsumptionEventListener(){
+            @Override
+            protected void onEvent(org.apache.stratos.messaging.event.Event event) {
+                CurveFinderOfMemoryConsumptionEvent curveFinderOfMemoryConsumptionEvent = (CurveFinderOfMemoryConsumptionEvent)event;
+                String clusterId = curveFinderOfMemoryConsumptionEvent.getClusterId();
+                AutoscalerContext asCtx = AutoscalerContext.getInstance();
+                ClusterMonitor monitor;
+                monitor = asCtx.getClusterMonitor(clusterId);
+
+                if(null == monitor){
+                    if(log.isDebugEnabled()){
+                        log.debug(String.format("A cluster monitor is not found in autoscaler context "
+                                + "[cluster] %s", clusterId));
+                    }
+                    return;
+                }
+
+                monitor.handleCurveFinderOfMemoryConsumptionEvent(curveFinderOfMemoryConsumptionEvent);
             }
         });
 
