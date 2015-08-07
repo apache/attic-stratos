@@ -22,12 +22,12 @@
   <parent>
     <groupId>org.apache.stratos</groupId>
     <artifactId>stratos-dependencies-fabric8</artifactId>
-    <version>4.1.1-SNAPSHOT</version>
+    <version>4.1.1</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>kubernetes-api</artifactId>
-  <version>${kubernetes.api.stratos.version}</version>
+  <version>2.2.16-stratosv1-SNAPSHOT</version>
   <packaging>bundle</packaging>
 
   <name>Fabric8 :: Kubernetes API</name>

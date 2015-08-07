@@ -21,7 +21,7 @@
     <parent>
         <groupId>org.apache.stratos</groupId>
         <artifactId>stratos-components-parent</artifactId>
-        <version>4.1.1-SNAPSHOT</version>
+        <version>4.1.1</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -126,6 +126,12 @@
         <dependency>
             <groupId>org.apache.stratos</groupId>
             <artifactId>org.apache.stratos.manager</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.stratos</groupId>
+            <artifactId>org.apache.stratos.kubernetes.client</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
