@@ -55,16 +55,15 @@ function genTree(data) {
                     serviceName = items[prop].serviceName,
                     status = items[prop].status;
 
-                if (items[prop].accessUrls) {
+                if(items[prop].accessUrls){
                     accessUrls = items[prop].accessUrls;
-                } else {
+                }else{
                     accessUrls = '';
                 }
                 var type = 'clusters';
-                rawout.push({
-                    "name": cur_name, "parent": parent, "type": type, "status": status,
-                    "alias": alias, "hostNames": hostNames, "serviceName": serviceName,
-                    "accessUrls": accessUrls
+                rawout.push({"name": cur_name, "parent": parent, "type": type, "status": status,
+                    "alias":alias, "hostNames": hostNames, "serviceName": serviceName,
+                    "accessUrls":accessUrls
                 });
                 clustermembers(items[prop].member, collector, cur_name)
             }
@@ -210,13 +209,21 @@ function update(source) {
                     var accessURLHTML = '';
                 }
 
-                div_html = "<strong>Cluster Id: </strong>" + d.name + "<br/>" +
+                var stringHTML = "<strong>Cluster Id: </strong>" + d.name + "<br/>" +
                     "<strong>Cluster Alias: </strong>" + d.alias + "<br/>" +
                     accessURLHTML +
                     "<strong>HostNames: </strong>" + d.hostNames + "<br/>" +
                     "<strong>Service Name: </strong>" + d.serviceName + "<br/>" +
-                    "<strong>Status: </strong>" + d.status + "<br/><br/>" +
-                    "<button class='btn btn-labeled btn-info' id="+d.name+" name='Cluster' onClick='return showHealthStat(this)' >"+"<span class='glyphicon glyphicon-stats'></span>Cluster Health Statistics</button>";
+                    "<strong>Status: </strong>" + d.status + "<br/><br/>";
+
+                //enabling the health statistics button
+                if(healthStatisticEnable){
+                    div_html = stringHTML.concat(" <button class='btn btn-labeled btn-info' id="+d.name+" name='Cluster' onClick='return showHealthStat(this)' >"+"<span class='glyphicon glyphicon-stats'></span>Cluster Health Statistics</button>");
+                }
+                //disbaling the health statistics button
+                else{
+                    div_html = stringHTML;
+                }
 
             } else if (d.type == 'members') {
                 if ((typeof d.ports != 'undefined') && (d.ports.length > 0)) {
@@ -229,18 +236,27 @@ function update(source) {
                     }
                     portsHTML += "</br>"
 
-                } else {
-                    var portsHTML = '';
+                } else{
+                    var portsHTML ='';
                 }
 
-                div_html = "<strong>Member Id: </strong>" + d.name + "<br/>" +
+                var stringHTML = "<strong>Member Id: </strong>" + d.name + "<br/>" +
                     "<strong>Default Private IP: </strong>" + d.defaultPrivateIP + "<br/>" +
                     "<strong>Default Public IP: </strong>" + d.defaultPublicIP + "<br/>" +
                     portsHTML +
                     "<strong>Network Partition Id: </strong>" + d.networkPartitionId + "<br/>" +
                     "<strong>Partition Id: </strong>" + d.partitionId + "<br/>" +
-                    "<strong>Status: </strong>" + d.status + "<br/><br/>" +
-                    "<button class='btn btn-labeled btn-info' id="+d.name+" name='Member' onClick='return showHealthStat(this)' >"+"<span class='glyphicon glyphicon-stats'></span>Member Health Statistics</button>";
+                    "<strong>Status: </strong>" + d.status + "<br/><br/>";
+
+                //enabling the health statistics button
+                if(healthStatisticEnable){
+                    div_html = stringHTML.concat(" <button class='btn btn-labeled btn-info' id="+d.name+" name='Member' onClick='return showHealthStat(this)' >"+"<span class='glyphicon glyphicon-stats'></span>Member Health Statistics</button>");
+                }
+                //disabling the health statistics button
+                else{
+                    div_html = stringHTML;
+                }
+
             } else if (d.type == 'groups') {
 
                 div_html = "<strong>Group Instance Id: </strong>" + d.instanceId + "<br/>" +
@@ -350,7 +366,6 @@ function update(source) {
     function hidePopover(elem) {
         $(elem).popover('hide');
     }
-
     $('svg .node').hover(
         function () {
             var self = this;
@@ -605,7 +620,8 @@ $("a[href='#application']").on('shown.bs.tab', function (e) {
     }
 });
 
-function showHealthStat(element) {
+//function to send topology data to the health statistics ui
+function showHealthStat(element){
     var currentURL = window.location.href;
     var splitTense = currentURL.split('console');
     var newURL = splitTense[0] + "console/healthStatistics/";
