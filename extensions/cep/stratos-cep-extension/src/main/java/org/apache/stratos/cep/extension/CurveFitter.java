@@ -38,7 +38,7 @@ public class CurveFitter {
      *fit the XValues and dataValues into a second order polynomial
      * @return the coefficient array of the polynomial
      */
-    public double[] fit(){
+    public Double[] fit(){
         WeightedObservedPoints weightedObservedPoints = new WeightedObservedPoints();
 
         for(int i = 0 ; i < timeStampValues.length && i < dataValues.length ; i++){
@@ -53,7 +53,20 @@ public class CurveFitter {
 
         log.info("Coefficients a : " + coefficients[0] + " b : " + coefficients[1] + " c : " + coefficients[2]);
 
-        return coefficients;
+        return convertDouble(coefficients);
     }
 
+    /**
+     * To convert a double array to Double array
+     * @param array double array that need to be converted
+     * @return Converted Double array
+     */
+    public Double[] convertDouble(double[] array){
+        Double[]  converted =  new Double[array.length];
+
+        for(int index =  0; index < converted.length; index++){
+            converted[index] = new Double(array[index]);
+        }
+        return converted;
+    }
 }

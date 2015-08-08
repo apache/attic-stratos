@@ -599,7 +599,26 @@ public class ClusterMonitor extends Monitor {
     }
 
     public void handleCurveFinderLoadAverageEvent(CurveFinderOfLoadAverageEvent curveFinderOfLoadAverageEvent){
+        String networkPartitionId = curveFinderOfLoadAverageEvent.getNetworkPartitionId();
+        String clusterId = curveFinderOfLoadAverageEvent.getClusterId();
+        String instanceId = curveFinderOfLoadAverageEvent.getClusterInstanceId();
 
+
+        float value = curveFinderOfLoadAverageEvent.getValue();
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("Grad of load avg event: [cluster] %s [network-partition] %s [value] %s",
+                    clusterId, networkPartitionId, value));
+        }
+        ClusterInstanceContext clusterLevelNetworkPartitionContext = getClusterInstanceContext(
+                networkPartitionId, instanceId);
+        if (null != clusterLevelNetworkPartitionContext) {
+            clusterLevelNetworkPartitionContext.setLoadAverageGradient(value);
+        } else {
+            if (log.isDebugEnabled()) {
+                log.debug(String.format("Network partition context is not available for :" +
+                        " [network partition] %s", networkPartitionId));
+            }
+        }
     }
 
     public void handleSecondDerivativeOfLoadAverageEvent(
