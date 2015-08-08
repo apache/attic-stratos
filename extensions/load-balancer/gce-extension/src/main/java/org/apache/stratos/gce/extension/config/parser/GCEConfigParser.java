@@ -40,7 +40,7 @@ public class GCEConfigParser {
      * @param documentElement axiom document element.
      * @throws MalformedConfigurationFileException
      */
-    public static void parse(OMElement documentElement) throws MalformedConfigurationFileException, LoadBalancerExtensionException {
+    public static void parse(OMElement documentElement) throws LoadBalancerExtensionException {
 
         if (log.isDebugEnabled()) {
             log.debug("Parsing the configuration xml file ");
