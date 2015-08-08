@@ -30,6 +30,7 @@ import com.google.api.services.compute.model.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.stratos.gce.extension.config.GCEContext;
+import org.apache.stratos.load.balancer.extension.api.exception.LoadBalancerExtensionException;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,7 +42,6 @@ import java.util.List;
 /**
  * All the GCE API calls will be done using this class
  */
-
 public class GCEOperations {
     private static final Log log = LogFactory.getLog(GCEOperations.class);
 
@@ -277,7 +277,7 @@ public class GCEOperations {
      *
      * @param forwardingRuleName - name of the forwarding rule in IaaS to be created
      * @param targetPoolName     - name of the target pool in IaaS which is already created
-     * @param protocol           - The protocol which is used to forward trafic. Should be either TCP or UDP
+     * @param protocol           - The protocol which is used to forward traffic. Should be either TCP or UDP
      */
 
     public void createForwardingRule(String forwardingRuleName, String targetPoolName, String protocol,
@@ -396,7 +396,7 @@ public class GCEOperations {
         //create target pools add instance request and set instance to it
         TargetPoolsRemoveInstanceRequest targetPoolsRemoveInstanceRequest = new
                 TargetPoolsRemoveInstanceRequest();
-        if (instanceReferenceList.size() == 0) {
+        if (instanceReferenceList.isEmpty()) {
             log.warn("Could not remove instances from target pool " + targetPoolName + " because instance reference list is null");
             return;
         }
@@ -445,7 +445,7 @@ public class GCEOperations {
         //create target pools add instance request and set instance to it
         TargetPoolsAddInstanceRequest targetPoolsAddInstanceRequest = new
                 TargetPoolsAddInstanceRequest();
-        if (instanceReferenceList.size() == 0) {
+        if (instanceReferenceList.isEmpty()) {
             log.warn("Could not add instances to target pool " + targetPoolName + " because instance reference list is null");
             return;
         }
@@ -509,7 +509,7 @@ public class GCEOperations {
      *
      * @param operationName - name of the operation in IaaS
      */
-    private void waitForGlobalOperationCompletion(String operationName) throws Exception {
+    private void waitForGlobalOperationCompletion(String operationName) throws LoadBalancerExtensionException {
         try {
             if (log.isDebugEnabled()) {
                 log.debug("Waiting for operation " + operationName + " completion");
@@ -519,7 +519,7 @@ public class GCEOperations {
             int timeout = 0;
             while (true) {
                 Operation operation = compute.globalOperations().get(PROJECT_ID, operationName).execute();
-                if (operation.getStatus().equals("DONE")) {
+                if (("DONE").equals(operation.getStatus())) {
                     if (log.isDebugEnabled()) {
                         log.debug("Operation " + operationName + " completed successfully");
                     }
@@ -536,7 +536,7 @@ public class GCEOperations {
             }
         } catch (Exception e) {
             log.error("Could not wait for global operation completion " + operationName);
-            throw new Exception(e);
+            throw new LoadBalancerExtensionException(e);
         }
     }
 
@@ -547,7 +547,7 @@ public class GCEOperations {
      * @param operationName - name of the region operation
      */
 
-    private void waitForRegionOperationCompletion(String operationName) throws Exception {
+    private void waitForRegionOperationCompletion(String operationName) throws LoadBalancerExtensionException {
         try {
             //initially wait for two seconds
             Thread.sleep(2000);
@@ -555,7 +555,7 @@ public class GCEOperations {
             while (true) {
                 Operation operation = compute.regionOperations().get(PROJECT_ID, REGION_NAME, operationName).execute();
 
-                if (operation.getStatus().equals("DONE")) {
+                if (("DONE").equals(operation.getStatus())) {
                     if (log.isDebugEnabled()) {
                         log.debug("Operation " + operationName + " completed successfully");
                     }
@@ -571,7 +571,7 @@ public class GCEOperations {
             }
         } catch (Exception e) {
             log.error("Could not wait for region operation completion " + operationName);
-            throw new Exception(e);
+            throw new LoadBalancerExtensionException(e);
         }
     }
 

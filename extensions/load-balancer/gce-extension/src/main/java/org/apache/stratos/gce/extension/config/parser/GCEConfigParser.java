@@ -26,6 +26,7 @@ import org.apache.stratos.common.exception.MalformedConfigurationFileException;
 import org.apache.stratos.common.util.AxiomXpathParserUtil;
 import org.apache.stratos.gce.extension.config.Constants;
 import org.apache.stratos.gce.extension.config.GCEContext;
+import org.apache.stratos.load.balancer.extension.api.exception.LoadBalancerExtensionException;
 
 import javax.xml.namespace.QName;
 
@@ -39,7 +40,7 @@ public class GCEConfigParser {
      * @param documentElement axiom document element.
      * @throws MalformedConfigurationFileException
      */
-    public static void parse(OMElement documentElement) throws MalformedConfigurationFileException {
+    public static void parse(OMElement documentElement) throws MalformedConfigurationFileException, LoadBalancerExtensionException {
 
         if (log.isDebugEnabled()) {
             log.debug("Parsing the configuration xml file ");

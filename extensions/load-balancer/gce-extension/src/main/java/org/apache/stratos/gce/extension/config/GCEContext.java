@@ -20,14 +20,12 @@
 package org.apache.stratos.gce.extension.config;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.stratos.load.balancer.extension.api.exception.LoadBalancerExtensionException;
 
 /**
  * This class is used to store configuration properties for gce-extension
  */
 public class GCEContext {
-    private static final Log log = LogFactory.getLog(GCEContext.class);
     private static volatile GCEContext context;
 
     //cep stat publisher properties
@@ -79,7 +77,7 @@ public class GCEContext {
         this.log4jPropertiesFileName = log4jPropertiesFileName;
     }
 
-    public void validate() {
+    public void validate() throws LoadBalancerExtensionException {
         validateProperty(Boolean.toString(cepStatsPublisherEnabled));
         validateProperty(namePrefix);
         validateProperty(projectName);
@@ -102,9 +100,9 @@ public class GCEContext {
         }
     }
 
-    private void validateProperty(String propertyName) {
+    private void validateProperty(String propertyName) throws LoadBalancerExtensionException {
         if (StringUtils.isEmpty(propertyName)) {
-            throw new RuntimeException("Property was not found: " + propertyName);
+            throw new LoadBalancerExtensionException("Property was not found: " + propertyName);
         }
     }
 

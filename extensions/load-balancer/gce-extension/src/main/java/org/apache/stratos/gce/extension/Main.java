@@ -63,6 +63,7 @@ public class Main {
             final Thread mainThread = Thread.currentThread();
             final LoadBalancerExtension finalExtension = extension;
             Runtime.getRuntime().addShutdownHook(new Thread() {
+                @Override
                 public void run() {
                     try {
                         if (finalExtension != null) {
