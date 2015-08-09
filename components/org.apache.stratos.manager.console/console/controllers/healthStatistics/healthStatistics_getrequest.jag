@@ -37,7 +37,7 @@ var endTime = new Date();
 //add login validator for pages
 include('/controllers/login/validator.jag');
 
-if(Duration!="30Min"){
+if( "30Min" != Duration){
 
     switch (Duration) {
 
@@ -73,6 +73,7 @@ try {
     switch (formtype) {
 
         case "MemoryConsumption":
+
             if("Cluster" == ChartType){
 
                 formSubmit = util.RESTCalls.getClusterMemoryAverageDetails(IdValue, startTime.getTime(),endTime.getTime());
@@ -84,6 +85,7 @@ try {
             }
 
         case "LoadAverage":
+
             if("Cluster" == ChartType){
                 formSubmit = util.RESTCalls.getClusterLoadAverageDetails(IdValue, startTime.getTime(),endTime.getTime());
                 break;
