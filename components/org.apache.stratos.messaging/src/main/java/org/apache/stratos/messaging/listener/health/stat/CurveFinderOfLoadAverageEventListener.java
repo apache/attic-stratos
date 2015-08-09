@@ -24,7 +24,7 @@ import org.apache.stratos.messaging.listener.EventListener;
 /**
  * Created by pranavan on 8/7/15.
  */
-public class CurveFinderLoadAverageEventListener extends EventListener{
+public class CurveFinderOfLoadAverageEventListener extends EventListener{
 
     @Override
     protected void onEvent(Event event) {

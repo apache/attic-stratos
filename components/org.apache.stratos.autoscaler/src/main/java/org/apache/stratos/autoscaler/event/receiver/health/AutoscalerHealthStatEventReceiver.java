@@ -406,7 +406,7 @@ public class AutoscalerHealthStatEventReceiver {
             }
         });
 
-        healthStatEventReceiver.addEventListener(new CurveFinderLoadAverageEventListener(){
+        healthStatEventReceiver.addEventListener(new CurveFinderOfLoadAverageEventListener(){
             @Override
             protected void onEvent(org.apache.stratos.messaging.event.Event event) {
                 CurveFinderOfLoadAverageEvent curveFinderOfLoadAverageEvent = (CurveFinderOfLoadAverageEvent)event;
@@ -446,7 +446,7 @@ public class AutoscalerHealthStatEventReceiver {
             }
         });
 
-        healthStatEventReceiver.addEventListener(new CurveFinderMemoryConsumptionEventListener(){
+        healthStatEventReceiver.addEventListener(new CurveFinderOfMemoryConsumptionEventListener(){
             @Override
             protected void onEvent(org.apache.stratos.messaging.event.Event event) {
                 CurveFinderOfMemoryConsumptionEvent curveFinderOfMemoryConsumptionEvent = (CurveFinderOfMemoryConsumptionEvent)event;
