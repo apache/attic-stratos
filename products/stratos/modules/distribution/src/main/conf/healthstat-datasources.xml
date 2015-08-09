@@ -23,26 +23,26 @@
         <provider>org.wso2.carbon.ndatasource.rdbms.RDBMSDataSourceReader</provider>
     </providers>
 
-    <datasources>
-        <datasource>
-            <name>DataSourcetoPublishHealthStatRDBMS</name>
-            <description>The datasource used for registry and user manager</description>
-            <jndiConfig>
-                <name>jdbc/DataSourcetoPublishHealthStatRDBMS</name>
-            </jndiConfig>
-            <definition type="RDBMS">
-                <configuration>
-                    <url>jdbc:mysql://localhost:3306/DataSourcetoPublishHealthStatRDBMS</url>
-                    <username>wso2carbon</username>
-                    <password>wso2carbon</password>
-                    <driverClassName>com.mysql.jdbc.Driver</driverClassName>
-                    <maxActive>50</maxActive>
-                    <maxWait>60000</maxWait>
-                    <testOnBorrow>true</testOnBorrow>
-                    <validationQuery>SELECT 1</validationQuery>
-                    <validationInterval>30000</validationInterval>
-                </configuration>
-            </definition>
-        </datasource>
-    </datasources>
+    <!--<datasources>
+         <datasource>
+             <name>DataSourcetoPublishHealthStatRDBMS</name>
+             <description>The datasource used for registry and user manager</description>
+             <jndiConfig>
+                 <name>jdbc/DataSourcetoPublishHealthStatRDBMS</name>
+             </jndiConfig>
+             <definition type="RDBMS">
+                 <configuration>
+                     <url>jdbc:mysql://localhost:3306/DataSourcetoPublishHealthStatRDBMS</url>
+                     <username>wso2carbon</username>
+                     <password>wso2carbon</password>
+                     <driverClassName>com.mysql.jdbc.Driver</driverClassName>
+                     <maxActive>50</maxActive>
+                     <maxWait>60000</maxWait>
+                     <testOnBorrow>true</testOnBorrow>
+                     <validationQuery>SELECT 1</validationQuery>
+                     <validationInterval>30000</validationInterval>
+                 </configuration>
+             </definition>
+         </datasource>
+     </datasources>-->
 </datasources-configuration>
