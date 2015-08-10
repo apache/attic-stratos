@@ -32,15 +32,12 @@ public class ConnectionHandler {
 
     Connection connection;
     DataSource dataSource = null;
-    String stringSql = null;
-    ResultSet resultSet = null;
     boolean isJndiLookup = true;
 
-    public ResultSet getsqlConnection(String sql) {
+    public Connection getsqlConnection() {
 
         dataSource = null;
-        stringSql = sql;
-        resultSet = null;
+
         try{
 
             if(isJndiLookup) {
@@ -59,8 +56,6 @@ public class ConnectionHandler {
 
             if (dataSource != null) {
                 connection = dataSource.getConnection();
-                Statement statement = connection.createStatement();
-                resultSet = statement.executeQuery(stringSql);
 
             }
 
@@ -69,7 +64,7 @@ public class ConnectionHandler {
             e.printStackTrace();
             System.out.println("Error " + e.getMessage());
         }
-        return resultSet;
+        return connection;
     }
 
     public void closeConnection() throws SQLException {
