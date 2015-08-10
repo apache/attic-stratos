@@ -68,7 +68,7 @@ public class MockHealthStatisticsNotifier implements Runnable {
                 log.debug(String.format("Publishing memory consumption: [member-id] %s [value] %f",
                         mockMemberContext.getMemberId(), memoryConsumption));
             }
-            healthStatisticsPublisher.publish(
+            healthStatisticsPublisher.publish(System.currentTimeMillis(),
                     mockMemberContext.getClusterId(),
                     mockMemberContext.getClusterInstanceId(),
                     mockMemberContext.getNetworkPartitionId(),
@@ -92,7 +92,7 @@ public class MockHealthStatisticsNotifier implements Runnable {
                 log.debug(String.format("Publishing load average: [member-id] %s [value] %f",
                         mockMemberContext.getMemberId(), loadAvereage));
             }
-            healthStatisticsPublisher.publish(
+            healthStatisticsPublisher.publish(System.currentTimeMillis(),
                     mockMemberContext.getClusterId(),
                     mockMemberContext.getClusterInstanceId(),
                     mockMemberContext.getNetworkPartitionId(),
@@ -115,7 +115,7 @@ public class MockHealthStatisticsNotifier implements Runnable {
                 log.debug(String.format("Publishing requests in flight: [member-id] %s [value] %f",
                         mockMemberContext.getMemberId(), requestsInFlight));
             }
-            inFlightRequestPublisher.publish(
+            inFlightRequestPublisher.publish(System.currentTimeMillis(),
                     mockMemberContext.getClusterId(),
                     mockMemberContext.getClusterInstanceId(),
                     mockMemberContext.getNetworkPartitionId(),
