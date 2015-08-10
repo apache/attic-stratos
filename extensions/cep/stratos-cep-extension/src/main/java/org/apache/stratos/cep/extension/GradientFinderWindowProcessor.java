@@ -103,6 +103,7 @@ public class GradientFinderWindowProcessor extends WindowProcessor implements Ru
 
     @Override
 	public void run() {
+        log.info("Here, I am");
 		acquireLock();
 		try {
 			long scheduledTime = System.currentTimeMillis();
@@ -119,6 +120,7 @@ public class GradientFinderWindowProcessor extends WindowProcessor implements Ru
 						}
 
 						if (newEventList.size() > 0) {
+                            log.info("Inside here gradient");
 							InEvent[] inEvents =
 							                     newEventList.toArray(new InEvent[newEventList.size()]);
 							for (InEvent inEvent : inEvents) {
