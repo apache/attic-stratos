@@ -103,6 +103,7 @@ import java.rmi.RemoteException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
@@ -3667,9 +3668,10 @@ public class StratosApiV41Utils {
         List<AverageMemoryConsumptionBean> averageClusterMemoryList = new ArrayList<AverageMemoryConsumptionBean>();
 
         ConnectionHandler connectionHandler = new ConnectionHandler();
-        ResultSet result = connectionHandler.getsqlConnection(averageClusterMemoryQuery);
-
         try {
+
+            Statement statement = connectionHandler.getsqlConnection().createStatement();
+            ResultSet result = statement.executeQuery(averageClusterMemoryQuery);
             while (result.next()) {
                 averageClusterMemoryList.add(new AverageMemoryConsumptionBean(result.getString("ID"), result.getDouble("MEMBER_AVERAGE_MEMORY_CONSUMPTION"), result.getLong("TIMESTAMP"), ""));
             }
@@ -3715,9 +3717,10 @@ public class StratosApiV41Utils {
         List<AverageLoadAverageBean> averageMemberLoadList = new ArrayList<AverageLoadAverageBean>();
 
         ConnectionHandler connectionHandler = new ConnectionHandler();
-        ResultSet result = connectionHandler.getsqlConnection(averageClusterLoadQuery);
-
         try {
+
+            Statement statement = connectionHandler.getsqlConnection().createStatement();
+            ResultSet result = statement.executeQuery(averageClusterLoadQuery);
             while (result.next()) {
                 averageMemberLoadList.add(new AverageLoadAverageBean(result.getString("ID"), result.getLong("TIMESTAMP"), result.getDouble("MEMBER_AVERAGE_LOAD_AVERAGE"), ""));
             }
@@ -3766,9 +3769,10 @@ public class StratosApiV41Utils {
         List<AverageMemoryConsumptionBean> averageMemberMemoryList = new ArrayList<AverageMemoryConsumptionBean>();
         ConnectionHandler connectionHandler = new ConnectionHandler();
 
-        ResultSet result = connectionHandler.getsqlConnection(memberIfQueryforMemory);
-
         try {
+
+            Statement statement = connectionHandler.getsqlConnection().createStatement();
+            ResultSet result = statement.executeQuery(memberIfQueryforMemory);
             while (result.next()) {
                 averageMemberMemoryList.add(new AverageMemoryConsumptionBean("", result.getDouble("MEMBER_AVERAGE_MEMORY_CONSUMPTION"), result.getLong("TIMESTAMP"), result.getString("ID")));
             }
@@ -3815,9 +3819,12 @@ public class StratosApiV41Utils {
         List<AverageLoadAverageBean> averageMemberLoadList = new ArrayList<AverageLoadAverageBean>();
         ConnectionHandler connectionHandler = new ConnectionHandler();
 
-        ResultSet result = connectionHandler.getsqlConnection(memberLoadAverageQuery);
 
         try {
+
+            Statement statement = connectionHandler.getsqlConnection().createStatement();
+            ResultSet result = statement.executeQuery(memberLoadAverageQuery);
+
             while (result.next()) {
 
                 averageMemberLoadList.add(new AverageLoadAverageBean("", result.getLong("TIMESTAMP"), result.getDouble("MEMBER_AVERAGE_LOAD_AVERAGE"), result.getString("ID")));
@@ -3864,9 +3871,12 @@ public class StratosApiV41Utils {
         List<InFlightRequestBean> inFlightRequestBeanList = new ArrayList<InFlightRequestBean>();
         ConnectionHandler connectionHandler = new ConnectionHandler();
 
-        ResultSet result = connectionHandler.getsqlConnection(clusterIDQueryforFlightCount);
 
         try {
+
+            Statement statement = connectionHandler.getsqlConnection().createStatement();
+            ResultSet result = statement.executeQuery(clusterIDQueryforFlightCount);
+
             while (result.next()) {
                 inFlightRequestBeanList.add(new InFlightRequestBean(result.getString("ID"), result.getLong("TIMESTAMP"), result.getDouble("FLIGHT_REQUEST_COUNT")));
             }
