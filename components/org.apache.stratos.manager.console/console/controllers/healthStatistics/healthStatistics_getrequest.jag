@@ -25,7 +25,7 @@ var log = new Log("apachestratos.configure_request"),
         ChartType = request.getParameter('chartType'),
         Duration = request.getParameter('duration'),
         IdValue = request.getParameter('idValue');
-
+       
 var formSubmit;
 var DurationVal;
 
@@ -39,31 +39,31 @@ include('/controllers/login/validator.jag');
 
 if( "30Min" != Duration){
 
-    switch (Duration) {
-
-        case "1Hour":
-            DurationVal = 1;
-            break;
-        case "1Day":
-            DurationVal = 24;
-            break;
-        case "1Week":
-            DurationVal = 168;
-            break;
-        case "1Month":
-            DurationVal = 672;
-            break;
-    }
+switch (Duration) {
+ 
+    case "1Hour":
+        DurationVal = 1;
+        break;
+    case "1Day":
+        DurationVal = 24;
+        break;
+    case "1Week":
+        DurationVal = 168;
+        break;
+    case "1Month":
+        DurationVal = 672;
+        break;
+}
 
 
 //substratcting hour from current time
-    startTime.setHours(endTime.getHours() - DurationVal);
+startTime.setHours(endTime.getHours() - DurationVal);
 
 }else{
 
 
 //substratcting hour from current time
-    startTime.setMinutes(endTime.getMinutes() - 30);
+startTime.setMinutes(endTime.getMinutes() - 30);
 
 }
 
@@ -71,7 +71,7 @@ if( "30Min" != Duration){
 //switch to trigger the rest call when needs
 try {
     switch (formtype) {
-
+       
         case "MemoryConsumption":
 
             if("Cluster" == ChartType){
@@ -80,33 +80,33 @@ try {
                 break;
             }
             else{
-                formSubmit = util.RESTCalls.getMemberMemoryAvrageDetails(IdValue, startTime.getTime(),endTime.getTime());
+                formSubmit = util.RESTCalls.getMemberMemoryAvrageDetails(IdValue, startTime.getTime(),endTime.getTime());      
                 break;
             }
-
+            
         case "LoadAverage":
 
             if("Cluster" == ChartType){
-                formSubmit = util.RESTCalls.getClusterLoadAverageDetails(IdValue, startTime.getTime(),endTime.getTime());
+                formSubmit = util.RESTCalls.getClusterLoadAverageDetails(IdValue, startTime.getTime(),endTime.getTime());      
                 break;
             }
             else{
-                formSubmit = util.RESTCalls.getMemberLoadAverageDetails(IdValue, startTime.getTime(),endTime.getTime());
+                formSubmit = util.RESTCalls.getMemberLoadAverageDetails(IdValue, startTime.getTime(),endTime.getTime());      
                 break;
             }
-
+            
         case "InFlight":
-            formSubmit = util.RESTCalls.getFlightRequestDetails(IdValue, startTime.getTime(),endTime.getTime());
-            break;
-
+            formSubmit = util.RESTCalls.getFlightRequestDetails(IdValue, startTime.getTime(),endTime.getTime());      
+            break;  
+                       
         default:
             session.put("deploy-status", { "message": "Sorry Endpoint Error", "status": "error" });
     }
 
 //vaidating the response and return
     if (formSubmit == undefined)
-    {
-        print({"status": 'error', "message": "No Data found!"});
+    {     
+    print({"status": 'error', "message": "No Data found!"});
 
     }else{
         print(formSubmit);
