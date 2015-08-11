@@ -56,6 +56,7 @@ public class WSO2CEPHealthStatisticsPublisher extends WSO2CEPStatisticsPublisher
             payloadData.add(new Attribute("cluster_instance_id", AttributeType.STRING));
             payloadData.add(new Attribute("network_partition_id", AttributeType.STRING));
             payloadData.add(new Attribute("member_id", AttributeType.STRING));
+            payloadData.add(new Attribute("timeStamp", AttributeType.LONG));
             payloadData.add(new Attribute("partition_id", AttributeType.STRING));
             payloadData.add(new Attribute("health_description", AttributeType.STRING));
             payloadData.add(new Attribute("value", AttributeType.DOUBLE));
@@ -90,6 +91,7 @@ public class WSO2CEPHealthStatisticsPublisher extends WSO2CEPStatisticsPublisher
         payload.add(clusterInstanceId);
         payload.add(networkPartitionId);
         payload.add(memberId);
+        payload.add(System.currentTimeMillis());
         payload.add(partitionId);
         payload.add(health);
         payload.add(value);

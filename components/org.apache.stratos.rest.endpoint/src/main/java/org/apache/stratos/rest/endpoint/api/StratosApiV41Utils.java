@@ -18,6 +18,7 @@
  */
 package org.apache.stratos.rest.endpoint.api;
 
+import com.google.gson.Gson;
 import org.apache.axis2.AxisFault;
 import org.apache.axis2.context.ConfigurationContext;
 import org.apache.commons.lang.StringUtils;
@@ -42,6 +43,9 @@ import org.apache.stratos.common.beans.application.domain.mapping.DomainMappingB
 import org.apache.stratos.common.beans.application.signup.ApplicationSignUpBean;
 import org.apache.stratos.common.beans.artifact.repository.GitNotificationPayloadBean;
 import org.apache.stratos.common.beans.cartridge.*;
+import org.apache.stratos.common.beans.healthStatistics.AverageLoadAverageBean;
+import org.apache.stratos.common.beans.healthStatistics.AverageMemoryConsumptionBean;
+import org.apache.stratos.common.beans.healthStatistics.InFlightRequestBean;
 import org.apache.stratos.common.beans.kubernetes.KubernetesClusterBean;
 import org.apache.stratos.common.beans.kubernetes.KubernetesHostBean;
 import org.apache.stratos.common.beans.kubernetes.KubernetesMasterBean;
@@ -77,6 +81,7 @@ import org.apache.stratos.messaging.message.receiver.topology.TopologyManager;
 import org.apache.stratos.rest.endpoint.Constants;
 import org.apache.stratos.rest.endpoint.ServiceHolder;
 import org.apache.stratos.rest.endpoint.exception.*;
+import org.apache.stratos.rest.endpoint.handlers.ConnectionHandler;
 import org.apache.stratos.rest.endpoint.util.converter.ObjectConverter;
 import org.wso2.carbon.context.CarbonContext;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
@@ -94,6 +99,10 @@ import org.wso2.carbon.user.core.tenant.TenantManager;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 
 import java.rmi.RemoteException;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
@@ -1581,11 +1590,7 @@ public class StratosApiV41Utils {
 
                 // Validate top level group deployment policy with cartridges
                 if (group.getCartridges() != null) {
-                    if (group.getDeploymentPolicy() != null) {
-                        groupParentHasDeploymentPolicy = true;
-                    } else {
-                        groupParentHasDeploymentPolicy = false;
-                    }
+                    groupParentHasDeploymentPolicy = group.getDeploymentPolicy() != null;
                     validateCartridgesForDeploymentPolicy(group.getCartridges(), groupParentHasDeploymentPolicy);
                 }
 
@@ -3639,4 +3644,262 @@ public class StratosApiV41Utils {
             throw new RestAPIException(message, e);
         }
     }
+
+    /**
+     * @param Id
+     * @param startTime
+     * @param endTime
+     * @return 200 if average memory consumption can get and memory consumption values cluster
+     * @throws RestAPIException
+     */
+    public static String getAverageClusterMemoryByClusterId(String Id, String startTime, String endTime) throws RestAPIException {
+
+
+        String averageClusterMemoryQuery = "SELECT value AS MEMBER_AVERAGE_MEMORY_CONSUMPTION,ID,timeStamp FROM HealthStatisticsTable " +
+                "WHERE ID = \"" + Id + "\" AND timeStamp BETWEEN " + startTime + " AND " + endTime + " AND " +
+                "type = \"cluster_average_memory_consumption\" GROUP BY from_unixtime(timeStamp/1000,\"%Y-%m-%d %H:%i\");";
+
+
+
+        List<AverageMemoryConsumptionBean> averageClusterMemoryList = new ArrayList<AverageMemoryConsumptionBean>();
+
+        ConnectionHandler connectionHandler = new ConnectionHandler();
+        try {
+
+            Statement statement = connectionHandler.getsqlConnection().createStatement();
+            ResultSet result = statement.executeQuery(averageClusterMemoryQuery);
+            while (result.next()) {
+                averageClusterMemoryList.add(new AverageMemoryConsumptionBean(result.getString("ID"), result.getDouble("MEMBER_AVERAGE_MEMORY_CONSUMPTION"), result.getLong("TIMESTAMP"), ""));
+            }
+        } catch (SQLException ex) {
+            log.error("SQLException: ", ex);
+            throw new RestAPIException(ex.getMessage());
+        } catch (Exception ex) {
+            log.error("Exception: ", ex);
+            throw new RestAPIException(ex.getMessage());
+        } finally {
+            try {
+                connectionHandler.closeConnection();
+            } catch (SQLException ex) {
+                log.error("SQLException: ", ex);
+                throw new RestAPIException(ex.getMessage());
+            }
+        }
+
+
+        if (!averageClusterMemoryList.isEmpty()) {
+
+            return new Gson().toJson(averageClusterMemoryList);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * @param Id
+     * @param startTime
+     * @param endTime
+     * @return 200 if average load consumption can get and load average consumption values for cluster
+     * @throws RestAPIException
+     */
+
+    public static String getAverageClusterLoadByClusterId(String Id, String startTime, String endTime) throws RestAPIException {
+
+        String averageClusterLoadQuery = "SELECT value AS MEMBER_AVERAGE_LOAD_AVERAGE,ID,timeStamp FROM HealthStatisticsTable " +
+                "WHERE ID = \"" + Id + "\" AND timeStamp BETWEEN " + startTime + " AND " + endTime + " AND " +
+                "type = \"cluster_average_load_average\" GROUP BY from_unixtime(timeStamp/1000,\"%Y-%m-%d %H:%i\");";
+
+
+        List<AverageLoadAverageBean> averageMemberLoadList = new ArrayList<AverageLoadAverageBean>();
+
+        ConnectionHandler connectionHandler = new ConnectionHandler();
+        try {
+
+            Statement statement = connectionHandler.getsqlConnection().createStatement();
+            ResultSet result = statement.executeQuery(averageClusterLoadQuery);
+            while (result.next()) {
+                averageMemberLoadList.add(new AverageLoadAverageBean(result.getString("ID"), result.getLong("TIMESTAMP"), result.getDouble("MEMBER_AVERAGE_LOAD_AVERAGE"), ""));
+            }
+        } catch (SQLException ex) {
+            log.error("SQLException: ", ex);
+            throw new RestAPIException(ex.getMessage());
+        } catch (Exception ex) {
+            log.error("Exception: ", ex);
+            throw new RestAPIException(ex.getMessage());
+        } finally {
+            try {
+                connectionHandler.closeConnection();
+            } catch (SQLException ex) {
+                log.error("SQLException: ", ex);
+                throw new RestAPIException(ex.getMessage());
+            }
+        }
+
+
+        if (!averageMemberLoadList.isEmpty()) {
+
+            return new Gson().toJson(averageMemberLoadList);
+
+        } else {
+
+            return null;
+        }
+    }
+
+    /**
+     * @param Id
+     * @param startTime
+     * @param endTime
+     * @return 200 if average memory consumption can get and memory consumption values member
+     * @throws RestAPIException
+     */
+    public static String getAverageMemberMemoryByMemberId(String Id, String startTime, String endTime) throws RestAPIException {
+
+
+        String memberIfQueryforMemory = "SELECT value AS MEMBER_AVERAGE_MEMORY_CONSUMPTION,ID,timeStamp FROM HealthStatisticsTable " +
+                "WHERE ID = \"" + Id + "\" AND timeStamp BETWEEN " + startTime + " AND " + endTime + " AND " +
+                "type = \"member_average_memory_consumption\" GROUP BY from_unixtime(timeStamp/1000,\"%Y-%m-%d %H:%i\");";
+
+
+
+        List<AverageMemoryConsumptionBean> averageMemberMemoryList = new ArrayList<AverageMemoryConsumptionBean>();
+        ConnectionHandler connectionHandler = new ConnectionHandler();
+
+        try {
+
+            Statement statement = connectionHandler.getsqlConnection().createStatement();
+            ResultSet result = statement.executeQuery(memberIfQueryforMemory);
+            while (result.next()) {
+                averageMemberMemoryList.add(new AverageMemoryConsumptionBean("", result.getDouble("MEMBER_AVERAGE_MEMORY_CONSUMPTION"), result.getLong("TIMESTAMP"), result.getString("ID")));
+            }
+        } catch (SQLException ex) {
+            log.error("SQLException: ", ex);
+            throw new RestAPIException(ex.getMessage());
+        } catch (Exception ex) {
+            log.error("Exception: ", ex);
+            throw new RestAPIException(ex.getMessage());
+        } finally {
+            try {
+                connectionHandler.closeConnection();
+            } catch (SQLException ex) {
+                log.error("SQLException: ", ex);
+                throw new RestAPIException(ex.getMessage());
+            }
+        }
+
+        if (!averageMemberMemoryList.isEmpty()) {
+            return new Gson().toJson(averageMemberMemoryList);
+
+        } else {
+
+            return null;
+
+        }
+    }
+
+    /**
+     * @param Id
+     * @param startTime
+     * @param endTime
+     * @return 200 if average load consumption can get and load average consumption values member
+     * @throws RestAPIException
+     */
+    public static String getAverageMemberLoadByMemberId(String Id, String startTime, String endTime) throws RestAPIException {
+
+
+        String memberLoadAverageQuery = "SELECT value AS MEMBER_AVERAGE_LOAD_AVERAGE,ID,timeStamp FROM HealthStatisticsTable " +
+                "WHERE ID = \"" + Id + "\" AND timeStamp BETWEEN " + startTime + " AND " + endTime + " AND " +
+                "type = \"member_average_load_average\" GROUP BY from_unixtime(timeStamp/1000,\"%Y-%m-%d %H:%i\");";
+
+
+        List<AverageLoadAverageBean> averageMemberLoadList = new ArrayList<AverageLoadAverageBean>();
+        ConnectionHandler connectionHandler = new ConnectionHandler();
+
+
+        try {
+
+            Statement statement = connectionHandler.getsqlConnection().createStatement();
+            ResultSet result = statement.executeQuery(memberLoadAverageQuery);
+
+            while (result.next()) {
+
+                averageMemberLoadList.add(new AverageLoadAverageBean("", result.getLong("TIMESTAMP"), result.getDouble("MEMBER_AVERAGE_LOAD_AVERAGE"), result.getString("ID")));
+            }
+        } catch (SQLException ex) {
+            log.error("SQLException: ", ex);
+            throw new RestAPIException(ex.getMessage());
+        } catch (Exception ex) {
+            log.error("Exception: ", ex);
+            throw new RestAPIException(ex.getMessage());
+        } finally {
+            try {
+                connectionHandler.closeConnection();
+            } catch (SQLException ex) {
+                log.error("SQLException: ", ex);
+                throw new RestAPIException(ex.getMessage());
+            }
+        }
+
+        if (!averageMemberLoadList.isEmpty()) {
+            return new Gson().toJson(averageMemberLoadList);
+        } else {
+
+            return null;
+
+        }
+    }
+
+    /**
+     * @param Id
+     * @param startTime
+     * @param endTime
+     * @return 200 if average request in flight can get and in flight request count cluster
+     * @throws RestAPIException
+     */
+    public static String getAverageClusterFlightRequestCountByClusterId(String Id, String startTime, String endTime) throws RestAPIException {
+
+
+        String clusterIDQueryforFlightCount = "SELECT value AS FLIGHT_REQUEST_COUNT,ID,timeStamp FROM HealthStatisticsTable " +
+                "WHERE ID = \"" + Id + "\" AND timeStamp BETWEEN " + startTime + " AND " + endTime + " AND " +
+                "type = \"in_flight_request_count\" GROUP BY from_unixtime(timeStamp/1000,\"%Y-%m-%d %H:%i\");";
+
+
+        List<InFlightRequestBean> inFlightRequestBeanList = new ArrayList<InFlightRequestBean>();
+        ConnectionHandler connectionHandler = new ConnectionHandler();
+
+
+        try {
+
+            Statement statement = connectionHandler.getsqlConnection().createStatement();
+            ResultSet result = statement.executeQuery(clusterIDQueryforFlightCount);
+
+            while (result.next()) {
+                inFlightRequestBeanList.add(new InFlightRequestBean(result.getString("ID"), result.getLong("TIMESTAMP"), result.getDouble("FLIGHT_REQUEST_COUNT")));
+            }
+        } catch (SQLException ex) {
+            log.error("SQLException: ", ex);
+            throw new RestAPIException(ex.getMessage());
+        } catch (Exception ex) {
+            log.error("Exception: ", ex);
+            throw new RestAPIException(ex.getMessage());
+        } finally {
+            try {
+                connectionHandler.closeConnection();
+            } catch (SQLException ex) {
+                log.error("SQLException: ", ex);
+                throw new RestAPIException(ex.getMessage());
+            }
+        }
+
+        if (!inFlightRequestBeanList.isEmpty()) {
+
+            return new Gson().toJson(inFlightRequestBeanList);
+        } else {
+
+            return null;
+
+        }
+    }
+
+
 }

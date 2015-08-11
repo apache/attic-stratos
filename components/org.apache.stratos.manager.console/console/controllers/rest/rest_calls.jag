@@ -27,6 +27,33 @@ RESTCalls = new function(){
         return this.sendReceive("GET","/tenants",{});
     };
 
+    this.getFlightRequestDetails = function(Id,startDate,endDate){
+
+        return this.sendReceive("GET","/cluster/flightRequestCount/" +Id+"/"+startDate+"/"+endDate,{});
+    };
+
+    this.getClusterMemoryAverageDetails = function(Id,startDate,endDate){
+
+        return this.sendReceive("GET","/cluster/averageMemory/" +Id+"/"+startDate+"/"+endDate,{});
+
+    };
+
+    this.getClusterLoadAverageDetails = function(Id,startDate,endDate){
+
+        return this.sendReceive("GET","/cluster/averageLoad/" +Id+"/"+startDate+"/"+endDate,{});
+
+    };
+
+    this.getMemberLoadAverageDetails = function(Id,startDate,endDate){
+
+        return this.sendReceive("GET","/member/averageLoad/" +Id+"/"+startDate+"/"+endDate,{});
+    };
+
+    this.getMemberMemoryAvrageDetails = function(Id,startDate,endDate){
+
+        return this.sendReceive("GET","/member/averageMemory/" +Id+"/"+startDate+"/"+endDate,{});
+    };
+
     this.deployPartitionDefinition = function(partitionDefinition){
         return this.send("POST","/networkPartitions", partitionDefinition);
     };
@@ -346,7 +373,7 @@ RESTCalls = new function(){
         var backendServerURL = config.backendServerConfiguration.url;
         //handle url null issue
         if(backendServerURL.indexOf('null') >= 0 ){
-           return request.getContextPath()+'/login/';
+            return request.getContextPath()+'/login/';
         }else {
             // getting the access token from the session.
             var endpoint = backendServerURL + urlPostFix;
@@ -370,18 +397,22 @@ RESTCalls = new function(){
             }
             if (responseREST.xhr.status >= 200 && responseREST.xhr.status < 300) { //if success
                 if (responseREST.data != null && responseREST.data != undefined) {
+
                     session.put("get-status", { "message": parse(responseREST.data).message, "status": "success" });
                 }
             } else if (responseREST.xhr.status >= 300 && responseREST.xhr.status < 400) { //if redirects
                 if (responseREST.data != null && responseREST.data != undefined) {
+
                     session.put("get-status", { "message": parse(responseREST.data).message, "status": "warning" });
                 }
             } else if (responseREST.xhr.status >= 400 && responseREST.xhr.status < 500) { //if client error
                 if (responseREST.data != null && responseREST.data != undefined) {
+
                     session.put("get-status", { "message": parse(responseREST.data).message, "status": "error" });
                 }
             } else if (responseREST.xhr.status >= 500 && responseREST.xhr.status < 600) { //if server error
                 if (responseREST.data != null && responseREST.data != undefined) {
+
                     session.put("get-status", { "message": parse(responseREST.data).message, "status": "error" });
                 }
             } else {

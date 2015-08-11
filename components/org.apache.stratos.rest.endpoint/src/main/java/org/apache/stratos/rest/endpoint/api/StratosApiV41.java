@@ -34,6 +34,7 @@ import org.apache.stratos.common.beans.application.signup.ApplicationSignUpBean;
 import org.apache.stratos.common.beans.artifact.repository.GitNotificationPayloadBean;
 import org.apache.stratos.common.beans.cartridge.CartridgeBean;
 import org.apache.stratos.common.beans.cartridge.CartridgeGroupBean;
+import org.apache.stratos.common.beans.healthStatistics.AverageMemoryConsumptionBean;
 import org.apache.stratos.common.beans.kubernetes.KubernetesClusterBean;
 import org.apache.stratos.common.beans.kubernetes.KubernetesHostBean;
 import org.apache.stratos.common.beans.kubernetes.KubernetesMasterBean;
@@ -53,6 +54,7 @@ import org.apache.stratos.rest.endpoint.exception.*;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -183,6 +185,8 @@ public class StratosApiV41 extends AbstractApi {
     public Response getDeploymentPolicies()
             throws RestAPIException {
         DeploymentPolicyBean[] deploymentPolicies = StratosApiV41Utils.getDeployementPolicies();
+        List<AverageMemoryConsumptionBean> averageMemberMemoryList = new ArrayList<AverageMemoryConsumptionBean>();
+
         if (deploymentPolicies == null || deploymentPolicies.length == 0) {
             return Response.status(Response.Status.NOT_FOUND).entity(new ResponseMessageBean(
                     ResponseMessageBean.ERROR, "No deployment policies found")).build();
@@ -768,7 +772,7 @@ public class StratosApiV41 extends AbstractApi {
     }
 
     /**
-     * Add application
+     * Add applicatio
      *
      * @param applicationDefinition Application Definition
      * @return 201 if application is successfully added
@@ -1284,6 +1288,7 @@ public class StratosApiV41 extends AbstractApi {
             return Response.ok().entity(applicationRuntime).build();
         }
     }
+
 
     /**
      * Delete an application.
@@ -1987,6 +1992,8 @@ public class StratosApiV41 extends AbstractApi {
             return Response.status(Response.Status.NOT_FOUND).entity(new ResponseMessageBean(
                     ResponseMessageBean.ERROR, "No kubernetes clusters found")).build();
         }
+
+
         return Response.ok().entity(availableKubernetesClusters).build();
     }
 
@@ -2129,4 +2136,179 @@ public class StratosApiV41 extends AbstractApi {
         }
         return Response.ok(iaasProviderInfoBean).build();
     }
+
+    /**
+     *
+     * @param Id
+     * @param startTime
+     * @param endTime
+     * @return 200 if average memory consumption can get and memory consumption values cluster
+     * @throws RestAPIException
+     */
+    @GET
+    @Path("/cluster/averageMemory/{cluster-Id}/{startTime}/{endTime}")
+    @Consumes("application/json")
+    @Produces("application/json")
+    @AuthorizationAction("/permission/admin/stratos")
+    public Response getAverageClusterMemoryByClusterId(
+            @PathParam("cluster-Id") String Id, @PathParam("startTime") String startTime, @PathParam("endTime") String endTime)
+            throws RestAPIException {
+
+        String averageClusterMemoryList;
+        try {
+            averageClusterMemoryList = StratosApiV41Utils.getAverageClusterMemoryByClusterId(Id, startTime, endTime);
+
+        } catch (RestAPIException ex) {
+            return Response.status(Response.Status.NOT_FOUND).entity(new ResponseMessageBean(
+                    ResponseMessageBean.ERROR, "Could Not get Cluster Memory Average Data")).build();
+        }
+        if (averageClusterMemoryList == null) {
+            return Response.status(Response.Status.NOT_FOUND).entity(new ResponseMessageBean(
+                    ResponseMessageBean.ERROR, "Cluster Memory Average is Null!")).build();
+        }
+
+        return Response.ok().entity(averageClusterMemoryList).build();
+
+    }
+
+    /**
+     *
+     * @param Id
+     * @param startTime
+     * @param endTime
+     * @return 200 if average memory consumption can get and memory consumption values member
+     * @throws RestAPIException
+     */
+    @GET
+    @Path("/member/averageMemory/{member-Id}/{startTime}/{endTime}")
+    @Consumes("application/json")
+    @Produces("application/json")
+    @AuthorizationAction("/permission/admin/stratos")
+    public Response getAverageMemberMemoryByMemberId(
+            @PathParam("member-Id") String Id, @PathParam("startTime") String startTime, @PathParam("endTime") String endTime)
+            throws RestAPIException {
+
+        String averageMemberMemoryList;
+        try {
+            averageMemberMemoryList = StratosApiV41Utils.getAverageMemberMemoryByMemberId(Id, startTime, endTime);
+
+        } catch (RestAPIException ex) {
+            return Response.status(Response.Status.NOT_FOUND).entity(new ResponseMessageBean(
+                    ResponseMessageBean.ERROR, "Could Not get Member Memory Average Data")).build();
+        }
+        if (averageMemberMemoryList == null) {
+            return Response.status(Response.Status.NOT_FOUND).entity(new ResponseMessageBean(
+                    ResponseMessageBean.ERROR, "Member Memory Average Data is Null!")).build();
+        }
+
+        return Response.ok().entity(averageMemberMemoryList).build();
+
+    }
+
+    /**
+     *
+     * @param Id
+     * @param startTime
+     * @param endTime
+     * @return 200 if average load consumption can get and load average consumption values member
+     * @throws RestAPIException
+     */
+    @GET
+    @Path("/member/averageLoad/{member-Id}/{startTime}/{endTime}")
+    @Consumes("application/json")
+    @Produces("application/json")
+    @AuthorizationAction("/permission/admin/stratos")
+    public Response getAverageMemberLoadByMemberId(
+            @PathParam("member-Id") String Id, @PathParam("startTime") String startTime, @PathParam("endTime") String endTime)
+            throws RestAPIException {
+
+        String averageMemberLoadList;
+        try {
+            averageMemberLoadList = StratosApiV41Utils.getAverageMemberLoadByMemberId(Id, startTime, endTime);
+
+        } catch (RestAPIException ex) {
+            return Response.status(Response.Status.NOT_FOUND).entity(new ResponseMessageBean(
+                    ResponseMessageBean.ERROR, "Could Not get Member Load Average Data")).build();
+        }
+
+        if (averageMemberLoadList == null) {
+            return Response.status(Response.Status.NOT_FOUND).entity(new ResponseMessageBean(
+                    ResponseMessageBean.ERROR, "Member Load Average Data is Null!")).build();
+        }
+
+        return Response.ok().entity(averageMemberLoadList).build();
+
+    }
+
+    /**
+     *
+     * @param Id
+     * @param startTime
+     * @param endTime
+     * @return 200 if average load consumption can get and load average consumption values for cluster
+     * @throws RestAPIException
+     */
+    @GET
+    @Path("/cluster/averageLoad/{cluster-Id}/{startTime}/{endTime}")
+    @Consumes("application/json")
+    @Produces("application/json")
+    @AuthorizationAction("/permission/admin/stratos")
+    public Response getAverageClusterLoadByClusterId(
+            @PathParam("cluster-Id") String Id, @PathParam("startTime") String startTime, @PathParam("endTime") String endTime)
+            throws RestAPIException {
+
+        String averageClusterLoadList;
+        try {
+            averageClusterLoadList = StratosApiV41Utils.getAverageClusterLoadByClusterId(Id, startTime, endTime);
+
+        } catch (RestAPIException ex) {
+            return Response.status(Response.Status.NOT_FOUND).entity(new ResponseMessageBean(
+                    ResponseMessageBean.ERROR, "Could Not get Cluster Load Average Data")).build();
+        }
+        if (averageClusterLoadList == null) {
+            return Response.status(Response.Status.NOT_FOUND).entity(new ResponseMessageBean(
+                    ResponseMessageBean.ERROR, "Cluster Load Average Data is Null!")).build();
+        }
+
+        return Response.ok().entity(averageClusterLoadList).build();
+
+    }
+
+    /**
+     *
+     * @param Id
+     * @param startTime
+     * @param endTime
+     * @return 200 if average request in flight can get and in flight request count cluster
+     * @throws RestAPIException
+     */
+
+    @GET
+    @Path("/cluster/flightRequestCount/{cluster-Id}/{startTime}/{endTime}")
+    @Consumes("application/json")
+    @Produces("application/json")
+    @AuthorizationAction("/permission/admin/stratos")
+    public Response getAverageClusterFlightRequestCountByClusterId(
+            @PathParam("cluster-Id") String Id, @PathParam("startTime") String startTime, @PathParam("endTime") String endTime)
+            throws RestAPIException {
+
+        String averageClusterFlightRequestCount;
+        try {
+            averageClusterFlightRequestCount = StratosApiV41Utils.getAverageClusterFlightRequestCountByClusterId(Id, startTime, endTime);
+
+        } catch (RestAPIException ex) {
+            return Response.status(Response.Status.NOT_FOUND).entity(new ResponseMessageBean(
+                    ResponseMessageBean.ERROR, "Could Not get In Flight Request Data")).build();
+        }
+
+        if (averageClusterFlightRequestCount == null) {
+            return Response.status(Response.Status.NOT_FOUND).entity(new ResponseMessageBean(
+                    ResponseMessageBean.ERROR, "Cluster In Flight Request Data is Null!")).build();
+        }
+
+        return Response.ok().entity(averageClusterFlightRequestCount).build();
+
+    }
+
+
 }
