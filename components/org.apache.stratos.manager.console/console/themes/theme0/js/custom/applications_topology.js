@@ -220,7 +220,7 @@ function update(source) {
                 if(healthStatisticEnable){
                     div_html = stringHTML.concat(" <button class='btn btn-labeled btn-info' id="+d.name+" name='Cluster' onClick='return showHealthStat(this)' >"+"<span class='glyphicon glyphicon-stats'></span>Cluster Health Statistics</button>");
                 }
-                //disbaling the health statistics button
+                //enabling the health statistics button
                 else{
                     div_html = stringHTML;
                 }
@@ -254,6 +254,7 @@ function update(source) {
                 }
                 //disabling the health statistics button
                 else{
+                    
                     div_html = stringHTML;
                 }
 
@@ -292,7 +293,7 @@ function update(source) {
                 return "#c0392b";
             } else if (d.status == 'Terminating') {
                 return "#c0392b";
-            } else {
+            }else{
                 return "#CCC";
             }
         });
