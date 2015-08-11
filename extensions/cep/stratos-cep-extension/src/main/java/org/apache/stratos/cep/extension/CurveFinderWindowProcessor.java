@@ -126,7 +126,7 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
 
     @Override
     public void run() {
-        log.info("Hi How are you ?");
+        log.info("Inside Run Method");
         acquireLock();
         try {
             long scheduledTime = System.currentTimeMillis();
@@ -135,9 +135,8 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
                 while (true) {
                     threadBarrier.pass();
                     RemoveEvent removeEvent = (RemoveEvent) window.poll();
-
                     if (removeEvent == null) {
-                        log.info("Inside here");
+                        log.info("Inside remove Event == Null");
                         if (oldEventList.size() > 0) {
                             nextProcessor.process(new RemoveListEvent(
                                     oldEventList.toArray(new RemoveEvent[oldEventList.size()])));
@@ -145,7 +144,7 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
                         }
 
                         if (newEventList.size() > 0) {
-                            log.info("Inside here curve");
+                            log.info("Curve Prediction");
                             InEvent[] inEvents =
                                     newEventList.toArray(new InEvent[newEventList.size()]);
                             for (InEvent inEvent : inEvents) {

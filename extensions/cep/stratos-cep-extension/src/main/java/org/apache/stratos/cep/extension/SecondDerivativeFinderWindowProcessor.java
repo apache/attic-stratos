@@ -103,7 +103,6 @@ public class SecondDerivativeFinderWindowProcessor extends WindowProcessor imple
 
     @Override
 	public void run() {
-		log.info("Here, I am");
 		acquireLock();
 		try {
 			long scheduledTime = System.currentTimeMillis();
@@ -128,7 +127,6 @@ public class SecondDerivativeFinderWindowProcessor extends WindowProcessor imple
 							
 							// in order to find second derivative, we need at least 3 events.
 							if (newEventList.size() > 2) {
-								log.info("Inside here 2 gradient");
 
 								InEvent firstDerivative1 =
 								                           gradient(inEvents[0],

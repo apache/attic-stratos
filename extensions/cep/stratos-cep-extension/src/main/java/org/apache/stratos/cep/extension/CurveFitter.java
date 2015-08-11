@@ -43,6 +43,7 @@ public class CurveFitter {
 
         for(int i = 0 ; i < timeStampValues.length && i < dataValues.length ; i++){
             weightedObservedPoints.add(timeStampValues[i], dataValues[i]);
+            log.info("Time stamp : " + timeStampValues[i] + "\tData : " + dataValues[i]);
         }
 
         /**
