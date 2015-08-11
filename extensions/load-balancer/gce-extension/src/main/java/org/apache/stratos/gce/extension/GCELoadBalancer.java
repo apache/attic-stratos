@@ -228,7 +228,6 @@ public class GCELoadBalancer implements LoadBalancer {
             }
         }
         activeClusterIdList.clear();
-
         log.info("Load balancer was configured as given topology");
         return true;
     }

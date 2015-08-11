@@ -103,11 +103,11 @@ public class GCEOperations {
             }
         } catch (GeneralSecurityException e) {
             //Security exception occurred. Cant proceed further
-            log.fatal("Could not authenticate and build compute object");
+            log.error("Could not authenticate and build compute object");
             throw new GeneralSecurityException(e);
         } catch (IOException e) {
             //IO exception occurred. Cant proceed further
-            log.fatal("Could not authenticate and build compute object");
+            log.error("Could not authenticate and build compute object");
             throw new IOException(e);
         }
     }
@@ -132,7 +132,7 @@ public class GCEOperations {
                 return instanceList;
             }
         } catch (IOException e) {
-            log.warn("Could not get instance list from GCE ", e);
+            log.error("Could not get instance list from GCE ", e);
             return null;
         }
     }
@@ -215,7 +215,7 @@ public class GCEOperations {
                 return healthCheckList;
             }
         } catch (IOException e) {
-            log.warn("Could not get health check list from GCE", e);
+            log.error("Could not get health check list from GCE", e);
             return null;
         }
     }
@@ -248,11 +248,10 @@ public class GCEOperations {
             Operation operation =
                     compute.targetPools().insert(PROJECT_ID, REGION_NAME, targetPool).execute();
             waitForRegionOperationCompletion(operation.getName());
-
+            log.info("Target pool " + targetPoolName + " was created");
         } catch (Exception e) {
-            log.warn("Could not create target pool: " + targetPoolName + " " + e);
+            log.error("Could not create target pool: " + targetPoolName, e);
         }
-        log.info("Target pool " + targetPoolName + " was created");
     }
 
     /**
@@ -265,11 +264,10 @@ public class GCEOperations {
         try {
             Operation operation = compute.targetPools().delete(PROJECT_ID, REGION_NAME, targetPoolName).execute();
             waitForRegionOperationCompletion(operation.getName());
-
+            log.info("Target pool: " + targetPoolName + " was deleted");
         } catch (Exception e) {
-            log.warn("Could not delete target pool " + targetPoolName + " " + e);
+            log.error("Could not delete target pool " + targetPoolName, e);
         }
-        log.info("Target pool: " + targetPoolName + " was deleted");
     }
 
     /**
@@ -295,10 +293,10 @@ public class GCEOperations {
         try {
             Operation operation = compute.forwardingRules().insert(PROJECT_ID, REGION_NAME, forwardingRule).execute();
             waitForRegionOperationCompletion(operation.getName());
+            log.info("Forwarding rule: " + forwardingRuleName + " was created");
         } catch (Exception e) {
-            log.warn("Could not create a forwarding rule " + forwardingRuleName + " " + e);
+            log.error("Could not create a forwarding rule " + forwardingRuleName, e);
         }
-        log.info("Forwarding rule: " + forwardingRuleName + " was created");
     }
 
     /**
@@ -312,10 +310,10 @@ public class GCEOperations {
             Operation operation = compute.forwardingRules().
                     delete(PROJECT_ID, REGION_NAME, forwardingRuleName).execute();
             waitForRegionOperationCompletion(operation.getName());
+            log.info("Forwarding rule " + forwardingRuleName + " was deleted");
         } catch (Exception e) {
-            log.warn("Could not delete forwarding rule " + forwardingRuleName + " " + e);
+            log.error("Could not delete forwarding rule " + forwardingRuleName, e);
         }
-        log.info("Forwarding rule " + forwardingRuleName + " was deleted");
     }
 
     /**
@@ -339,7 +337,7 @@ public class GCEOperations {
                 }
             }
         } catch (IOException e) {
-            log.warn("Could not check whether the target pool " + targetPoolName + " exists or not " + e);
+            log.error("Could not check whether the target pool " + targetPoolName + " exists or not ", e);
         }
         if (log.isDebugEnabled()) {
             log.debug("Target pool " + targetPoolName + " does not exist");
@@ -365,7 +363,7 @@ public class GCEOperations {
             }
             return null;
         } catch (IOException e) {
-            log.warn("Could not get target pool " + targetPoolName + " " + e);
+            log.error("Could not get target pool " + targetPoolName, e);
         }
         return null;
     }
@@ -407,11 +405,10 @@ public class GCEOperations {
             Operation operation = compute.targetPools().removeInstance(PROJECT_ID, REGION_NAME,
                     targetPoolName, targetPoolsRemoveInstanceRequest).execute();
             waitForRegionOperationCompletion(operation.getName());
-
+            log.info("Instances are removed from target pool: " + targetPoolName);
         } catch (Exception e) {
-            log.warn("Could not remove instances from target pool " + targetPoolName + " " + e);
+            log.error("Could not remove instances from target pool " + targetPoolName, e);
         }
-        log.info("Instances are removed from target pool: " + targetPoolName);
     }
 
     /**
@@ -457,11 +454,10 @@ public class GCEOperations {
             Operation operation = compute.targetPools().addInstance(PROJECT_ID, REGION_NAME,
                     targetPoolName, targetPoolsAddInstanceRequest).execute();
             waitForRegionOperationCompletion(operation.getName());
-
+            log.info("Added instances to target pool: " + targetPoolName);
         } catch (Exception e) {
-            log.warn("Could not add instance to target pool" + targetPoolName + " " + e);
+            log.error("Could not add instance to target pool" + targetPoolName, e);
         }
-        log.info("Added instances to target pool: " + targetPoolName);
     }
 
     /**
@@ -484,11 +480,10 @@ public class GCEOperations {
         try {
             Operation operation = compute.httpHealthChecks().insert(PROJECT_ID, httpHealthCheck).execute();
             waitForGlobalOperationCompletion(operation.getName());
-
+            log.info("Health check " + healthCheckName + " was created");
         } catch (Exception e) {
-            log.error("Could not create health check " + healthCheckName + " " + e);
+            log.error("Could not create health check " + healthCheckName, e);
         }
-        log.info("Health check " + healthCheckName + " was created");
     }
 
     public void deleteHealthCheck(String healthCheckName) {
@@ -496,11 +491,10 @@ public class GCEOperations {
         try {
             Operation operation = compute.httpHealthChecks().delete(PROJECT_ID, healthCheckName).execute();
             waitForGlobalOperationCompletion(operation.getName());
-
+            log.info("Health check: " + healthCheckName + " was deleted");
         } catch (Exception e) {
-            log.warn("Could not get delete health check " + healthCheckName + " " + e);
+            log.error("Could not get delete health check " + healthCheckName, e);
         }
-        log.info("Health check: " + healthCheckName + " was deleted");
     }
 
     /**
@@ -535,7 +529,7 @@ public class GCEOperations {
                 timeout += 1000;
             }
         } catch (Exception e) {
-            log.error("Could not wait for global operation completion " + operationName);
+            log.error("Could not wait for global operation completion " + operationName , e);
             throw new LoadBalancerExtensionException(e);
         }
     }
@@ -570,7 +564,7 @@ public class GCEOperations {
                 timeout += 1000;
             }
         } catch (Exception e) {
-            log.error("Could not wait for region operation completion " + operationName);
+            log.error("Could not wait for region operation completion " + operationName , e);
             throw new LoadBalancerExtensionException(e);
         }
     }
