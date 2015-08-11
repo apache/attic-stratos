@@ -97,31 +97,36 @@ public final class CloudControllerConstants {
             .replaceAll("[/.]", "_");
 
     /**
-     * column names
+     * Member Details.
      */
     public static final String PAYLOAD_PREFIX = "payload_";
-    public static final String MEMBER_ID_COL = "memberId";
-    public static final String CARTRIDGE_TYPE_COL = "cartridgeType";
-    public static final String CLUSTER_ID_COL = "clusterId";
-    public static final String PARTITION_ID_COL = "partitionId";
-    public static final String NETWORK_ID_COL = "networkId";
+    public static final String MEMBER_ID_COL = "member_id";
+    public static final String SERVICE_NAME_COL = "service_name";
+    public static final String CLUSTER_INSTANCE_TYPE_COL = "cluster_instnace_type";
+    public static final String CLUSTER_ID_COL = "cluster_id";
+    public static final String CLUSTER_INSTANCE_ID_COL = "cluster_instance_id";
+    public static final String PARTITION_ID_COL = "partition_id";
+    public static final String NETWORK_PARTITION_ID_COL = "network_partition_id";
     public static final String ALIAS_COL = "alias";
-    public static final String TENANT_RANGE_COL = "tenantRange";
-    public static final String IS_MULTI_TENANT_COL = "isMultiTenant";
+    public static final String TENANT_RANGE_COL = "tenant_range";
+    public static final String IS_MULTI_TENANT_COL = "is_multi_tenant";
     public static final String IAAS_COL = "iaas";
-    public static final String STATUS_COL = "status";
-    public static final String HOST_NAME_COL = "hostName";
+    public static final String MEMBER_STATUS_COL = "member_status";
+    public static final String HOST_NAME_COL = "host_name";
     public static final String HYPERVISOR_COL = "hypervisor";
+    public static final String CPU_COL = "cpu";
     public static final String RAM_COL = "ram";
-    public static final String IMAGE_ID_COL = "imageId";
-    public static final String LOGIN_PORT_COL = "loginPort";
-    public static final String OS_NAME_COL = "osName";
-    public static final String OS_VERSION_COL = "osVersion";
-    public static final String OS_ARCH_COL = "osArch";
-    public static final String OS_BIT_COL = "is64bitOS";
-    public static final String PRIV_IP_COL = "privateIPAddresses";
-    public static final String PUB_IP_COL = "publicIPAddresses";
-    public static final String ALLOCATE_IP_COL = "allocateIPAddresses";
+    public static final String IMAGE_ID_COL = "image_id";
+    public static final String LOGIN_PORT_COL = "login_port";
+    public static final String OS_NAME_COL = "OS_name";
+    public static final String OS_VERSION_COL = "OS_version";
+    public static final String OS_ARCH_COL = "OS_architecture";
+    public static final String OS_BIT_COL = "is_64bit_OS";
+    public static final String PRIV_IP_COL = "private_IP_addresses";
+    public static final String PUB_IP_COL = "public_IP_addresses";
+    public static final String ALLOCATED_IP_COL = "allocated_IP_addresses";
+    public static final String TIMESTAMP_COL = "timestamp";
+    public static final String SCALING_DECISION_ID_COL = "scaling_decision_id";
 
     /**
      * Properties

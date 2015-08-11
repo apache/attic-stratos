@@ -95,7 +95,7 @@ public class HealthStatisticsNotifier implements Runnable {
                         if (log.isDebugEnabled()) {
                             log.debug(String.format("Publishing memory consumption: %f", stats.getMemoryUsage()));
                         }
-                        statsPublisher.publish(
+                        statsPublisher.publish(System.currentTimeMillis(),
                                 CartridgeAgentConfiguration.getInstance().getClusterId(),
                                 CartridgeAgentConfiguration.getInstance().getClusterInstanceId(),
                                 CartridgeAgentConfiguration.getInstance().getNetworkPartitionId(),
@@ -108,7 +108,7 @@ public class HealthStatisticsNotifier implements Runnable {
                         if (log.isDebugEnabled()) {
                             log.debug(String.format("Publishing load average: %f", stats.getProcessorUsage()));
                         }
-                        statsPublisher.publish(
+                        statsPublisher.publish(System.currentTimeMillis(),
                                 CartridgeAgentConfiguration.getInstance().getClusterId(),
                                 CartridgeAgentConfiguration.getInstance().getClusterInstanceId(),
                                 CartridgeAgentConfiguration.getInstance().getNetworkPartitionId(),
