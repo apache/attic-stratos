@@ -21,26 +21,32 @@ package org.apache.stratos.messaging.event.health.stat;
 
 import org.apache.stratos.messaging.event.Event;
 
-public class CurveFinderOfMemoryConsumptionEvent extends Event{
+public class CurveFinderOfMemoryConsumptionEvent extends Event {
     private final String networkPartitionId;
     private final String clusterId;
     private final String clusterInstanceId;
-    private final float value;
+    private final double timeStamp;
+    /**
+     * Curve finder co-efficients
+     */
+    private final float a;
+    private final float b;
+    private final float c;
 
-    public CurveFinderOfMemoryConsumptionEvent(String networkPartitionId, String clusterId, String clusterInstanceId, float value) {
+    public CurveFinderOfMemoryConsumptionEvent(String networkPartitionId, String clusterId, String clusterInstanceId, double timeStamp, float a, float b, float c) {
         this.networkPartitionId = networkPartitionId;
         this.clusterId = clusterId;
         this.clusterInstanceId = clusterInstanceId;
-        this.value = value;
+        this.timeStamp = timeStamp;
+        this.a = a;
+        this.b = b;
+        this.c = c;
+
     }
 
 
     public String getClusterId() {
         return clusterId;
-    }
-
-    public float getValue() {
-        return value;
     }
 
     public String getNetworkPartitionId() {
@@ -49,5 +55,17 @@ public class CurveFinderOfMemoryConsumptionEvent extends Event{
 
     public String getClusterInstanceId() {
         return clusterInstanceId;
+    }
+
+    public float getA() {
+        return a;
+    }
+
+    public float getB() {
+        return b;
+    }
+
+    public float getC() {
+        return c;
     }
 }
