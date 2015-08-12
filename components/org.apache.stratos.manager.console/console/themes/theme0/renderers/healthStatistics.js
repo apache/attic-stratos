@@ -60,9 +60,6 @@ var render = function (theme, data, meta, require) {
                     context:{
                         id:data.id,
                         alias:data.alias,
-                        loadAverageData:data.loadAverageData,
-                        memoryAverageDetails:data.memoryAverageDetails,
-                        flightRequestDetails:data.flightRequestDetails,
                         type: data.type,
                         result:data.result,
                         content_title:'Health Stats',
