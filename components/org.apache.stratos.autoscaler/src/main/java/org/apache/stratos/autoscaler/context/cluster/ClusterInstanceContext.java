@@ -581,4 +581,16 @@ public class ClusterInstanceContext extends InstanceContext {
     public void setDependentScaleCheckFactHandle(FactHandle dependentScaleCheckFactHandle) {
         this.dependentScaleCheckFactHandle = dependentScaleCheckFactHandle;
     }
+
+    public void setCurveFinderCoefficientsOfMemoryConsumption(float a, float b, float c){
+        memoryConsumption.setA(a);
+        memoryConsumption.setB(b);
+        memoryConsumption.setC(c);
+    }
+
+    public void setCurveFinderCoefficientsOfLoadAverage(float a, float b, float c){
+        loadAverage.setA(a);
+        loadAverage.setB(b);
+        loadAverage.setC(c);
+    }
 }

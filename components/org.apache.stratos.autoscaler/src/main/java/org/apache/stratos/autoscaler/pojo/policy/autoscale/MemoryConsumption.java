@@ -30,6 +30,12 @@ public class MemoryConsumption implements Serializable {
     private float average = 0.0f;
     private float secondDerivative = 0.0f;
     private float gradient = 0.0f;
+    /**
+     * curve finder co-efficients
+     */
+    private float a;
+    private float b;
+    private float c;
 
     /**
      * Gets the value of the average property.
@@ -71,6 +77,30 @@ public class MemoryConsumption implements Serializable {
      */
     public void setGradient(float value) {
         this.gradient = value;
+    }
+
+    public float getA() {
+        return a;
+    }
+
+    public float getB() {
+        return b;
+    }
+
+    public float getC() {
+        return c;
+    }
+
+    public void setA(float a) {
+        this.a = a;
+    }
+
+    public void setB(float b) {
+        this.b = b;
+    }
+
+    public void setC(float c) {
+        this.c = c;
     }
 
     @Override
