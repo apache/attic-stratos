@@ -318,6 +318,9 @@
             <property name="cluster_instance_id" type="String"/>
             <property name="network_partition_id" type="String"/>
             <property name="count" type="double"/>
+            <property name="curve_finder_a" type="double"/>
+            <property name="curve_finder_b" type="double"/>
+            <property name="curve_finder_c" type="double"/>
         </payloadData>
     </streamDefinition>
 
@@ -333,6 +336,9 @@
             <property name="cluster_instance_id" type="String"/>
             <property name="network_partition_id" type="String"/>
             <property name="curve_finder_memory_consumption" type="double"/>
+            <property name="curve_finder_a" type="double"/>
+            <property name="curve_finder_b" type="double"/>
+            <property name="curve_finder_c" type="double"/>
         </payloadData>
     </streamDefinition>
 
@@ -348,6 +354,9 @@
             <property name="cluster_instance_id" type="String"/>
             <property name="network_partition_id" type="String"/>
             <property name="curve_finder_load_average" type="double"/>
+            <property name="curve_finder_a" type="double"/>
+            <property name="curve_finder_b" type="double"/>
+            <property name="curve_finder_c" type="double"/>
         </payloadData>
     </streamDefinition>
 
@@ -364,6 +373,9 @@
             <property name="cluster_instance_id" type="String"/>
             <property name="network_partition_id" type="String"/>
             <property name="member_curve_finder_memory_consumption" type="double"/>
+            <property name="curve_finder_a" type="double"/>
+            <property name="curve_finder_b" type="double"/>
+            <property name="curve_finder_c" type="double"/>
         </payloadData>
     </streamDefinition>
 
@@ -380,6 +392,9 @@
             <property name="cluster_instance_id" type="String"/>
             <property name="network_partition_id" type="String"/>
             <property name="member_curve_finder_load_average" type="double"/>
+            <property name="curve_finder_a" type="double"/>
+            <property name="curve_finder_b" type="double"/>
+            <property name="curve_finder_c" type="double"/>
         </payloadData>
     </streamDefinition>
 
