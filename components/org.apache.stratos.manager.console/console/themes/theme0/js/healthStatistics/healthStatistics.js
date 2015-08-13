@@ -21,7 +21,7 @@
 var jsonDataLoadAvg;
 var jsonDataFlightRequest;
 var jsonDataMemoryAvg;
-var DURATION = 50;
+var DURATION = 100;
 var DELAY    = 500;
 
 function DurationOnClick(ref) {
@@ -170,9 +170,6 @@ function loadAverageChart () {
 
     function drawLineChart( elementId, data ) {
 
-
-        // parse helper functions on top
-        // data manipulation first
 
         // TODO code duplication check how you can avoid that
         var containerEl = document.getElementById( elementId ),
@@ -391,13 +388,10 @@ function loadAverageChart () {
 
 function inFlightRequestCountChart () {
 
+
     function drawLineChart( elementId, data ) {
-        // parse helper functions on top
-        //var parse = d3.time.format( '%Y-%m-%d' ).parse;
+
         // data manipulation first
-
-        //sample2.forEach(function(d) { d.time = new Date(d.time * 1000); });
-
 
         data.forEach(function(data) { data.timeStamp = new Date(data.timeStamp); });
         // data manipulation first
@@ -622,12 +616,8 @@ function memoryAverageDataChart () {
 
 
     function drawLineChart( elementId, data ) {
-        // parse helper functions on top
-        //var parse = d3.time.format( '%Y-%m-%d' ).parse;
+
         // data manipulation first
-
-        //sample2.forEach(function(d) { d.time = new Date(d.time * 1000); });
-
 
         data.forEach(function(data) { data.timeStamp = new Date(data.timeStamp); });
         // data manipulation first
@@ -844,12 +834,12 @@ function memoryAverageDataChart () {
     }
 
     var data = jsonDataMemoryAvg;
-    drawLineChart('chart1', data);
+    drawLineChart('chart1',data);
 
 
 }
 
-
+//time converter funtion returns the time in human readble manner
 function timeConverter(timestamp){
 
     var a = new Date(timestamp * 1000);
