@@ -24,7 +24,7 @@
                 statistics="disable" trace="enable" xmlns="http://wso2.org/carbon/eventformatter">
     <from streamName="member_curve_finder_memory_consumption_stats" version="1.0.0"/>
     <mapping customMapping="enable" type="json">
-        <inline>{"org.apache.stratos.messaging.event.health.stat.MemberCurveFinderOfMemoryConsumptionEvent":{"message":{"memberId":"{{member_id}}","clusterId":"{{cluster_id}}","clusterInstanceId":"{{cluster_instance_id}}","networkPartitionId":"{{network_partition_id}}","timeStamp":"{{time_stamp}}","a":"{{a}}","b":"{{b}}","c":"{{c}}"}}}</inline>
+        <inline>{"org.apache.stratos.messaging.event.health.stat.MemberCurveFinderOfMemoryConsumptionEvent":{"message":{"memberId":"{{member_id}}","clusterId":"{{cluster_id}}","clusterInstanceId":"{{cluster_instance_id}}","networkPartitionId":"{{network_partition_id}}","value":"{{member_gradient_memory_consumption}}}}}</inline>
     </mapping>
     <to eventAdaptorName="JMSOutputAdaptor" eventAdaptorType="jms">
         <property name="transport.jms.Destination">summarized-health-stats</property>

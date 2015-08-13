@@ -317,10 +317,7 @@
             <property name="cluster_id" type="String"/>
             <property name="cluster_instance_id" type="String"/>
             <property name="network_partition_id" type="String"/>
-            <property name="time_stamp" type="double"/>
-            <property name="a" type="double"/>
-            <property name="b" type="double"/>
-            <property name="c" type="double"/>
+            <property name="count" type="double"/>
         </payloadData>
     </streamDefinition>
 
@@ -335,10 +332,7 @@
             <property name="cluster_id" type="String" />
             <property name="cluster_instance_id" type="String"/>
             <property name="network_partition_id" type="String"/>
-            <property name="time_stamp" type="double"/>
-            <property name="a" type="double"/>
-            <property name="b" type="double"/>
-            <property name="c" type="double"/>
+            <property name="curve_finder_memory_consumption" type="double"/>
         </payloadData>
     </streamDefinition>
 
@@ -353,10 +347,7 @@
             <property name="cluster_id" type="String" />
             <property name="cluster_instance_id" type="String"/>
             <property name="network_partition_id" type="String"/>
-            <property name="time_stamp" type="double"/>
-            <property name="a" type="double"/>
-            <property name="b" type="double"/>
-            <property name="c" type="double"/>
+            <property name="curve_finder_load_average" type="double"/>
         </payloadData>
     </streamDefinition>
 
@@ -372,10 +363,7 @@
             <property name="cluster_id" type="String" />
             <property name="cluster_instance_id" type="String"/>
             <property name="network_partition_id" type="String"/>
-            <property name="time_stamp" type="double"/>
-            <property name="a" type="double"/>
-            <property name="b" type="double"/>
-            <property name="c" type="double"/>
+            <property name="member_curve_finder_memory_consumption" type="double"/>
         </payloadData>
     </streamDefinition>
 
@@ -391,10 +379,7 @@
             <property name="cluster_id" type="String" />
             <property name="cluster_instance_id" type="String"/>
             <property name="network_partition_id" type="String"/>
-            <property name="time_stamp" type="double"/>
-            <property name="a" type="double"/>
-            <property name="b" type="double"/>
-            <property name="c" type="double"/>
+            <property name="member_curve_finder_load_average" type="double"/>
         </payloadData>
     </streamDefinition>
 
