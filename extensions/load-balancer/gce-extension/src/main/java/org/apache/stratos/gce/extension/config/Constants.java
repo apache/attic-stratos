@@ -53,5 +53,11 @@ public class Constants {
     //other properties
     public static final String OPERATION_TIMEOUT = "operationTimeout";
     public static final String NAME_PREFIX = "namePrefix";
-    public static final String LOG4J_PROPERTIES_FILE_NAME = "log4jPropertiesFileName";
+
+    //PROTOCOL should be TCP or UDP
+    public static final String PROTOCOL = "TCP";
+    //set all ports to be opened if the application does not have any port defined
+    public static final String DEFAULT_PORT_RANGE="1-65535";
+    //maximum length the name which allowed by GCE API
+    public static final int MAX_NAME_LENGTH = 62;
 }

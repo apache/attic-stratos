@@ -113,10 +113,10 @@ public class GCEOperations {
     }
 
     /**
-     * Get list of running instances in given project and zone.(This method can be used
-     * to check whether a given instance is available or not in a given project
-     * and zone)
+     * Get list of instances in given project and zone which matches the given filter
      *
+     * @param zoneName - name of the zone
+     * @param filter - a condition to filter the instances
      * @return instanceList - list of instances(members in Stratos side)
      */
     public static InstanceList getInstanceList(String zoneName, String filter) {
@@ -231,9 +231,10 @@ public class GCEOperations {
     }
 
     /**
-     * Creating a new target pool; name should be unique
+     * Creating a new target pool in IaaS
      *
      * @param targetPoolName - name of the target pool in IaaS
+     * @param healthCheckName - name of the health check in IaaS
      */
     public void createTargetPool(String targetPoolName, String healthCheckName) {
 
@@ -384,18 +385,22 @@ public class GCEOperations {
 
         List<InstanceReference> instanceReferenceList = new ArrayList<InstanceReference>();
 
-        //add instance to instance reference list, we should use the instance URL
+        //add instance to instance reference list, it is required to use the instance URL
         for (String instanceId : instancesIdsList) { //for all instances
             String instanceUrl = createInstanceSelfLink(instanceId);
             instanceReferenceList.add(new InstanceReference().
                     setInstance(instanceUrl));
+            if (log.isDebugEnabled()){
+                log.debug("Instance " + instanceId + " was added to instance reference list");
+            }
         }
 
         //create target pools add instance request and set instance to it
         TargetPoolsRemoveInstanceRequest targetPoolsRemoveInstanceRequest = new
                 TargetPoolsRemoveInstanceRequest();
         if (instanceReferenceList.isEmpty()) {
-            log.warn("Could not remove instances from target pool " + targetPoolName + " because instance reference list is null");
+            log.warn("Could not remove instances from target pool " + targetPoolName + " because instance reference " +
+                    "list is null");
             return;
         }
         targetPoolsRemoveInstanceRequest.setInstances(instanceReferenceList);
@@ -430,11 +435,13 @@ public class GCEOperations {
 
         //add instance to instance reference list, we should use the instance URL
         for (String instanceId : instancesIdsList) { //for all instances
-
             String instanceUrl = getInstanceURLFromId(instanceId);
             if (instanceUrl != null) {
                 instanceReferenceList.add(new InstanceReference().
                         setInstance(instanceUrl));
+                if (log.isDebugEnabled()){
+                    log.debug("Instance " + instanceId + " was added to instance reference list");
+                }
             }
 
         }

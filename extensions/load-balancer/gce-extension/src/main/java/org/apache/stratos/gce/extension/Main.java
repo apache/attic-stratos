@@ -53,8 +53,7 @@ public class Main {
             GCEConfigParser.parse(documentElement);
 
             // Configure log4j properties
-            PropertyConfigurator.configure(getFilePathOfConfigFile(GCEContext.getInstance().getLog4jPropertiesFileName()));
-
+            PropertyConfigurator.configure(System.getProperty("log4j.properties.file.path"));
             if (log.isInfoEnabled()) {
                 log.info("GCE extension started");
             }

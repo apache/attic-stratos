@@ -31,9 +31,10 @@ properties="-Djndi.properties.dir=${script_path}/../conf
             -Dstats.socket.file.path=/tmp/haproxy-stats.socket
             -Djavax.net.ssl.trustStore=${script_path}/../security/client-truststore.jks
             -Djavax.net.ssl.trustStorePassword=wso2carbon
-            -Dthrift.client.config.file.path=${script_path}/../conf/thrift-client-config.xml"
+            -Dthrift.client.config.file.path=${script_path}/../conf/thrift-client-config.xml
+            -Dlog4j.properties.file.path=${script_path}/../conf/log4j.properties"
 
 # Uncomment below line to enable remote debugging
-debug="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5006"
+#debug="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5006"
 
 java -cp "${class_path}" ${properties} ${debug} org.apache.stratos.gce.extension.Main $*

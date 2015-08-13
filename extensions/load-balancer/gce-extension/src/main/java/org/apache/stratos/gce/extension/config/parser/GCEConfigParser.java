@@ -30,6 +30,9 @@ import org.apache.stratos.load.balancer.extension.api.exception.LoadBalancerExte
 
 import javax.xml.namespace.QName;
 
+/**
+ * parse the gce-configuration.xml
+ */
 public class GCEConfigParser {
     private static final Log log = LogFactory.getLog(GCEConfigParser.class);
     private static GCEContext gceContext;
@@ -239,8 +242,6 @@ public class GCEConfigParser {
         OMElement operationTimeoutElement = AxiomXpathParserUtil.getFirstChildElement(documentElement, Constants.
                 OPERATION_TIMEOUT);
         OMElement namePrefixElement = AxiomXpathParserUtil.getFirstChildElement(documentElement, Constants.NAME_PREFIX);
-        OMElement log4jPropertiesFileNameElement = AxiomXpathParserUtil.getFirstChildElement(documentElement, Constants.
-                LOG4J_PROPERTIES_FILE_NAME);
 
         //set extracted properties to gceContext object
         if (operationTimeoutElement != null) {
@@ -254,13 +255,6 @@ public class GCEConfigParser {
             gceContext.setNamePrefix(namePrefixElement.getText());
             if (log.isDebugEnabled()) {
                 log.debug("Name prefix: " + namePrefixElement.getText());
-            }
-        }
-
-        if (log4jPropertiesFileNameElement != null) {
-            gceContext.setLog4jPropertiesFileName(log4jPropertiesFileNameElement.getText());
-            if (log.isDebugEnabled()) {
-                log.debug("log4j properties file name: " + log4jPropertiesFileNameElement.getText());
             }
         }
     }

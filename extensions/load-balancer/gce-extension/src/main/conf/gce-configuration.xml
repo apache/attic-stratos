@@ -8,10 +8,10 @@
 
     <iaasProperties>
         <projectName>MyFirstProject</projectName>
-        <projectId>gold-access-96509</projectId>
+        <projectId>gold-access-xxxx</projectId>
         <regionName>europe-west1</regionName>
-        <keyFilePath>/home/sanjaya/keys/p12key-donwloaded.p12</keyFilePath>
-        <gceAccountId>164588286821-a517i85433f83e0nthc4qjmoupri394q@developer.gserviceaccount.com</gceAccountId>
+        <keyFilePath>path-to-key-file/keyfile.p12</keyFilePath>
+        <gceAccountId>xxxxxxxxxxxxx.gserviceaccount.com</gceAccountId>
         <networkName>default</networkName>
     </iaasProperties>
 

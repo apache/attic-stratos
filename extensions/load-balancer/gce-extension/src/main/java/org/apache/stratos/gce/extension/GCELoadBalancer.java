@@ -21,6 +21,7 @@ package org.apache.stratos.gce.extension;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.stratos.gce.extension.config.Constants;
 import org.apache.stratos.gce.extension.config.GCEClusterConfigurationHolder;
 import org.apache.stratos.gce.extension.config.GCEContext;
 import org.apache.stratos.gce.extension.util.GCEOperations;
@@ -32,11 +33,12 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.*;
 
+/**
+ * All the methods in Stratos load balancer API have been implemented in this class
+ */
 public class GCELoadBalancer implements LoadBalancer {
 
     private static final Log log = LogFactory.getLog(GCELoadBalancer.class);
-    //PROTOCOL should be TCP or UDP
-    private static final String PROTOCOL = "TCP";
     private GCEOperations gceOperations;
     /**
      * One configuration object per cluster will be created
@@ -48,7 +50,6 @@ public class GCELoadBalancer implements LoadBalancer {
     public GCELoadBalancer() throws IOException, GeneralSecurityException {
         gceOperations = new GCEOperations();
         clusterToLoadBalancerConfigurationMap = new HashMap<String, GCEClusterConfigurationHolder>();
-
     }
 
     /**
@@ -60,7 +61,7 @@ public class GCELoadBalancer implements LoadBalancer {
      */
     @Override
     public boolean configure(Topology topology) throws LoadBalancerExtensionException {
-        log.info("Complete topology received. Configuring Load balancer ");
+        log.info("Complete topology received. Configuring Load balancer...");
 
         //this list is used to hold the current clusters available in topology and which has at least one member.
         List<String> activeClusterIdList = new ArrayList<String>();
@@ -72,7 +73,7 @@ public class GCELoadBalancer implements LoadBalancer {
                 if (clusterToLoadBalancerConfigurationMap.containsKey(cluster.getClusterId())) {
 
                     if (log.isDebugEnabled()) {
-                        log.debug("Reconfiguring the existing cluster: " + cluster.getClusterId());
+                        log.debug("Reconfiguring the existing cluster: " + cluster.getClusterId() + "...");
                     }
 
                     //It already has a entry in clusterToLoadBalancerConfigurationMap.
@@ -82,15 +83,15 @@ public class GCELoadBalancer implements LoadBalancer {
 
                     //if the cluster contains at least one member
                     if (!cluster.getMembers().isEmpty()) {
-                        //that cluster contains at least one member
-
                         if (log.isDebugEnabled()) {
                             log.debug("Cluster " + cluster.getClusterId() + " has one or more members");
                         }
                         activeClusterIdList.add(cluster.getClusterId());
+                        if (log.isDebugEnabled()){
+                            log.debug("Cluster " + cluster.getClusterId() + " was added to active cluster id list");
+                        }
 
-                        //***************detect member changes and update**************//
-
+                        //detect member changes and update
                         //check for newly created members
                         List<String> membersToBeAddedToTargetPool = new ArrayList<String>();
                         for (Member member : cluster.getMembers()) {
@@ -106,7 +107,7 @@ public class GCELoadBalancer implements LoadBalancer {
 
                         if (!membersToBeAddedToTargetPool.isEmpty()) { //we have new members
                             log.info("New members in cluster" + cluster.getClusterId() + " found. Adding new members " +
-                                    "to cluster");
+                                    "to cluster...");
 
                             //add them to configuration holder
                             for (String memberId : membersToBeAddedToTargetPool) {
@@ -139,7 +140,7 @@ public class GCELoadBalancer implements LoadBalancer {
                         }
 
                         if (!membersToBeRemovedFromTargetPool.isEmpty()) { //found terminated members
-                            log.info("Terminated members found in cluster " + cluster.getClusterId() + ". Removing them");
+                            log.info("Terminated members found in cluster " + cluster.getClusterId() + ". Removing them...");
 
                             //remove them from configuration holder
                             for (String memberId : membersToBeRemovedFromTargetPool) {
@@ -151,12 +152,9 @@ public class GCELoadBalancer implements LoadBalancer {
                             gceOperations.removeInstancesFromTargetPool(membersToBeRemovedFromTargetPool,
                                     gceClusterConfigurationHolder.getTargetPoolName());
                         }
-
                     }
-
                 } else {
                     //doesn't have a GCEClusterConfigurationHolder object. So crate a new one and add to hash map
-
                     log.info("Found a new cluster: " + cluster.getClusterId());
 
                     if (cluster.getMembers().isEmpty()) {
@@ -211,10 +209,8 @@ public class GCELoadBalancer implements LoadBalancer {
 
                         clusterToLoadBalancerConfigurationMap.put(cluster.getClusterId(), gceClusterConfigurationHolder);
                         createConfigurationForCluster(cluster.getClusterId());
-
                     }
                 }
-
             }
         }
 
@@ -222,7 +218,7 @@ public class GCELoadBalancer implements LoadBalancer {
         //remove those clusters from map and remove the configuration from GCE too
         for (String clusterId : clusterToLoadBalancerConfigurationMap.keySet()) {
             if (!activeClusterIdList.contains(clusterId)) {
-                log.info("Removing the configuration for cluster " + clusterId);
+                log.info("Removing the configuration for cluster " + clusterId + "...");
                 deleteConfigurationForCluster(clusterId);
                 clusterToLoadBalancerConfigurationMap.remove(clusterId);
             }
@@ -238,7 +234,7 @@ public class GCELoadBalancer implements LoadBalancer {
      */
     private void deleteConfigurationForCluster(String clusterId) throws LoadBalancerExtensionException {
 
-        log.info("Deleting configuration for cluster " + clusterId);
+        log.info("Deleting configuration for cluster " + clusterId + "...");
         GCEClusterConfigurationHolder gceClusterConfigurationHolder = clusterToLoadBalancerConfigurationMap.get(clusterId);
         //delete forwarding rule
         gceOperations.deleteForwardingRule(gceClusterConfigurationHolder.getForwardingRuleName());
@@ -256,7 +252,7 @@ public class GCELoadBalancer implements LoadBalancer {
      */
     private void createConfigurationForCluster(String clusterId) throws LoadBalancerExtensionException {
 
-        log.info("Creating configuration for cluster");
+        log.info("Creating configuration for cluster " + clusterId + "...");
 
         GCEClusterConfigurationHolder gceClusterConfigurationHolder = clusterToLoadBalancerConfigurationMap.get(clusterId);
 
@@ -278,9 +274,8 @@ public class GCELoadBalancer implements LoadBalancer {
         //if the ip list is empty
         if (ipList.isEmpty()) {
             log.warn("Ip list is null");
-            //set all ports to be opened
-            portRange = "1-65535";
-
+            //set all default port range
+            portRange = Constants.DEFAULT_PORT_RANGE;
         }
         //else if ip list has only one value
         else if (ipList.size() == 1) {
@@ -300,8 +295,8 @@ public class GCELoadBalancer implements LoadBalancer {
 
         //create the forwarding rule
         gceOperations.createForwardingRule(gceClusterConfigurationHolder.getForwardingRuleName(),
-                gceClusterConfigurationHolder.getTargetPoolName(), PROTOCOL, portRange);
-        log.info("Created configuration for cluster");
+                gceClusterConfigurationHolder.getTargetPoolName(), Constants.PROTOCOL, portRange);
+        log.info("Created configuration for cluster" + clusterId);
     }
 
     @Override
@@ -314,7 +309,7 @@ public class GCELoadBalancer implements LoadBalancer {
     @Override
     public void stop() throws LoadBalancerExtensionException {
 
-        log.info("GCE Load Balancer is stopping");
+        log.info("GCE Load Balancer is stopping...");
 
         //iterate through hash map and remove all
         Iterator iterator = clusterToLoadBalancerConfigurationMap.entrySet().iterator();
@@ -331,10 +326,7 @@ public class GCELoadBalancer implements LoadBalancer {
      */
     @Override
     public void reload() throws LoadBalancerExtensionException {
-
         //nothing to do here
-        log.info("Configuration reloaded");
-
     }
 
     /**
@@ -350,8 +342,8 @@ public class GCELoadBalancer implements LoadBalancer {
         String targetPoolName = GCEContext.getInstance().getNamePrefix().toLowerCase() + "-" +
                 clusterId.trim().toLowerCase().replace(".", "-");
         //length should be les than 62 characters
-        if (targetPoolName.length() >= 62) {
-            targetPoolName = targetPoolName.substring(0, 62);
+        if (targetPoolName.length() >= Constants.MAX_NAME_LENGTH) {
+            targetPoolName = targetPoolName.substring(0, Constants.MAX_NAME_LENGTH);
         }
         return targetPoolName;
     }
@@ -359,15 +351,16 @@ public class GCELoadBalancer implements LoadBalancer {
     /**
      * Create a valid forwarding rule name
      *
-     * @param clusterID - Id of the cluster
+     * @param clusterId - Id of the cluster
      * @return - a proper name for forwarding rule
      */
-    private String forwardingRuleNameCreator(String clusterID) {
-        String forwardingRuleName = GCEContext.getInstance().getNamePrefix()
-                + "-fr-" + clusterID.trim().toLowerCase().replace(".", "-");
+    private String forwardingRuleNameCreator(String clusterId) {
+        String forwardingRuleName = GCEContext.getInstance().getNamePrefix().toLowerCase() + "-" +
+                clusterId.trim().toLowerCase().replace(".", "-");
+
         //length should be les than 62 characters
-        if (forwardingRuleName.length() >= 62) {
-            forwardingRuleName = forwardingRuleName.substring(0, 62);
+        if (forwardingRuleName.length() >= Constants.MAX_NAME_LENGTH) {
+            forwardingRuleName = forwardingRuleName.substring(0, Constants.MAX_NAME_LENGTH);
         }
         return forwardingRuleName;
     }
@@ -375,16 +368,16 @@ public class GCELoadBalancer implements LoadBalancer {
     /**
      * create a valid health check name
      *
-     * @param clusterID - id of the cluster
+     * @param clusterId - id of the cluster
      * @return - a proper name for health check
      */
-    private String healthCheckNameCreator(String clusterID) {
-        String healthCheckName = GCEContext.getInstance().getNamePrefix().toLowerCase() + "-hc-" +
-                clusterID.trim().toLowerCase().replace(".", "-");
+    private String healthCheckNameCreator(String clusterId) {
+        String healthCheckName = GCEContext.getInstance().getNamePrefix().toLowerCase() + "-" +
+                clusterId.trim().toLowerCase().replace(".", "-");
 
-        //length should be les than 62 characters
-        if (healthCheckName.length() >= 62) {
-            healthCheckName = healthCheckName.substring(0, 62);
+        //length should be less than 62 characters
+        if (healthCheckName.length() >= Constants.MAX_NAME_LENGTH) {
+            healthCheckName = healthCheckName.substring(0, Constants.MAX_NAME_LENGTH);
         }
         return healthCheckName;
     }

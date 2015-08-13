@@ -52,7 +52,6 @@ public class GCEContext {
     //other properties
     private String namePrefix;
     private String operationTimeout;
-    private String log4jPropertiesFileName;
 
     //private constructor
     private GCEContext() {
@@ -67,14 +66,6 @@ public class GCEContext {
             }
         }
         return context;
-    }
-
-    public String getLog4jPropertiesFileName() {
-        return log4jPropertiesFileName;
-    }
-
-    public void setLog4jPropertiesFileName(String log4jPropertiesFileName) {
-        this.log4jPropertiesFileName = log4jPropertiesFileName;
     }
 
     public void validate() throws LoadBalancerExtensionException {
@@ -233,5 +224,4 @@ public class GCEContext {
     public void setThriftReceiverPort(String thriftReceiverPort) {
         this.thriftReceiverPort = thriftReceiverPort;
     }
-
 }

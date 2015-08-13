@@ -36,7 +36,6 @@ public class GCEStatisticsReader implements LoadBalancerStatisticsReader {
         this.topologyProvider = topologyProvider;
         this.clusterInstanceId = System.getProperty(StratosConstants.
                 CLUSTER_INSTANCE_ID, StratosConstants.NOT_DEFINED);
-
     }
 
     @Override
@@ -46,7 +45,7 @@ public class GCEStatisticsReader implements LoadBalancerStatisticsReader {
 
     @Override
     public int getInFlightRequestCount(String clusterId) {
-        //There is no way in GCE API to get in flight request count!
+        // That is not possible to read the request count via the GCE API at the moment
         return 0;
     }
 }
