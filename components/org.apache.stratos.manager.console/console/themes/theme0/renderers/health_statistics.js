@@ -56,7 +56,7 @@ var render = function (theme, data, meta, require) {
             ],
             content: [
                 {
-                    partial: 'healthStatistics',
+                    partial: 'health_statistics',
                     context:{
                         id:data.id,
                         alias:data.alias,

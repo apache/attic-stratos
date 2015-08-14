@@ -76,27 +76,27 @@ try {
 
             if("Cluster" == ChartType){
 
-                formSubmit = util.RESTCalls.getClusterMemoryAverageDetails(IdValue, startTime.getTime(), endTime.getTime());
+                formSubmit = util.RESTCalls.getClusterMemoryAverageDetails(IdValue, startTime.getTime(),endTime.getTime());
                 break;
             }
             else{
-                formSubmit = util.RESTCalls.getMemberMemoryAvrageDetails(IdValue, startTime.getTime(), endTime.getTime());
+                formSubmit = util.RESTCalls.getMemberMemoryAvrageDetails(IdValue, startTime.getTime(),endTime.getTime());      
                 break;
             }
             
         case "LoadAverage":
 
             if("Cluster" == ChartType){
-                formSubmit = util.RESTCalls.getClusterLoadAverageDetails(IdValue, startTime.getTime(), endTime.getTime());
+                formSubmit = util.RESTCalls.getClusterLoadAverageDetails(IdValue, startTime.getTime(),endTime.getTime());      
                 break;
             }
             else{
-                formSubmit = util.RESTCalls.getMemberLoadAverageDetails(IdValue, startTime.getTime(), endTime.getTime());
+                formSubmit = util.RESTCalls.getMemberLoadAverageDetails(IdValue, startTime.getTime(),endTime.getTime());      
                 break;
             }
             
         case "InFlight":
-            formSubmit = util.RESTCalls.getFlightRequestDetails(IdValue, startTime.getTime(), endTime.getTime());
+            formSubmit = util.RESTCalls.getFlightRequestDetails(IdValue, startTime.getTime(),endTime.getTime());      
             break;  
                        
         default:

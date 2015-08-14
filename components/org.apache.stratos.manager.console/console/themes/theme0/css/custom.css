@@ -135,7 +135,7 @@ body{ background: url('../images/stratos_background.png')  no-repeat; background
 .lineChart--bubble--label {
   fill: none;
   stroke: #6bb7c7;
-  font-size: 9.7px;
+  font-size: 10.7px;
   font-weight: 100;
 }
 
@@ -373,6 +373,21 @@ svg {
     shape-rendering: crispEdges;
 }
 
+
 .x.axis path {
     display: none;
+}
+
+.line {
+    fill: none;
+    stroke: green;
+    stroke-width: 1.5px;
+}
+
+.area1 {
+    fill: orange;
+}
+
+.area2 {
+    fill: red;
 }

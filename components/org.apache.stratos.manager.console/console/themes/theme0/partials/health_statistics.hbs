@@ -30,25 +30,29 @@
         </div>
 
     </div>
-    <a class="btn btn-default" href="{{url "/applications/"}}{{alias}}/" role="button" style="margin-bottom: 24px;">Back</a>
-  
+
 <div class="container-fluid content" style="padding-bottom:40px">
-    
+    </br>
+        <a class="btn btn-default" href="{{url "/applications/"}}{{alias}}/" role="button" style="margin-bottom: 24px;">Back</a>
+  
     <div class="row">
 
      <!-- Memory Consumption chart panel-->
         <div class="col-md-6">
+
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <h3 class="panel-title" style="color:Black">Memory Consumption Average</h3>
                 </div>
-                <div class="panel-body">
-                    <button class="btn btn-default btn-xs" name="MemoryConsumption" id="30Min" onclick="return DurationOnClick(this)">30 mins</button>
-                    <button class="btn btn-default btn-xs" name="MemoryConsumption" id="1Hour" style="color:Red" onclick="return DurationOnClick(this)">1 hour</button>
-                    <button class="btn btn-default btn-xs" name="MemoryConsumption" id="1Day" onclick="return DurationOnClick(this)">1 day</button>
-                    <button class="btn btn-default btn-xs" name="MemoryConsumption" id="1Week" onclick="return DurationOnClick(this)">1 week</button>
-                    <button class="btn btn-default btn-xs" name="MemoryConsumption" id="1Month" onclick="return DurationOnClick(this)">1 month</button>
+                
+                <div class="panel-body btn-group" >
+                    <button class="btn btn-default btn-xs btn-info"  name="MemoryConsumption" id="30Min" onclick="return DurationOnClick(this)">30 mins</button>
+                    <button class="btn btn-default btn-xs btn-info" autofocus="true"  name="MemoryConsumption" id="1Hour" onclick="return DurationOnClick(this)">1 hour</button>
+                    <button class="btn btn-default btn-xs btn-info" name="MemoryConsumption" id="1Day" onclick="return DurationOnClick(this)">1 day</button>
+                    <button class="btn btn-default btn-xs btn-info" name="MemoryConsumption" id="1Week" onclick="return DurationOnClick(this)">1 week</button>
+                    <button class="btn btn-default btn-xs btn-info" name="MemoryConsumption" id="1Month" onclick="return DurationOnClick(this)">1 month</button>
                     <div class="container content" style="width: 600px;">
+
                         <div class="row text-center" id="chart1">
 
                          <div id="container1">
@@ -74,12 +78,12 @@
                 <div class="panel-heading">
                     <h3 class="panel-title" style="color:Black">Load Average</h3>
                 </div>
-                <div class="panel-body">
-                    <button class="btn btn-default btn-xs" name="LoadAverage" id="30Min" onclick="return DurationOnClick(this)">30 mins</button>
-                    <button class="btn btn-default btn-xs" name="LoadAverage" id="1Hour" style="color:Red" onclick="return DurationOnClick(this)">1 hour</button>
-                    <button class="btn btn-default btn-xs" name="LoadAverage" id="1Day" onclick="return DurationOnClick(this)">1 day</button>
-                    <button class="btn btn-default btn-xs" name="LoadAverage" id="1Week" onclick="return DurationOnClick(this)">1 week</button>
-                    <button class="btn btn-default btn-xs" name="LoadAverage" id="1Month" onclick="return DurationOnClick(this)">1 month</button>
+                <div class="panel-body btn-group">
+                    <button class="btn btn-default btn-xs btn-info" name="LoadAverage" id="30Min" onclick="return DurationOnClick(this)">30 mins</button>
+                    <button class="btn btn-default btn-xs btn-info" autofocus="true" name="LoadAverage" id="1Hour" onclick="return DurationOnClick(this)">1 hour</button>
+                    <button class="btn btn-default btn-xs btn-info" name="LoadAverage" id="1Day" onclick="return DurationOnClick(this)">1 day</button>
+                    <button class="btn btn-default btn-xs btn-info" name="LoadAverage" id="1Week" onclick="return DurationOnClick(this)">1 week</button>
+                    <button class="btn btn-default btn-xs btn-info" name="LoadAverage" id="1Month" onclick="return DurationOnClick(this)">1 month</button>
                     <div class="container content" style="width: 600px;">                        
                         <div class="row text-center" id="chart2">
 
@@ -107,12 +111,12 @@
                     <div class="panel-heading">
                         <h3 class="panel-title" style="color:Black">In Flight Request Count</h3>
                     </div>
-                    <div class="panel-body">
-                        <button class="btn btn-default btn-xs" name="InFlight" id="30Min" onclick="return DurationOnClick(this)">30 mins</button>
-                        <button class="btn btn-default btn-xs" name="InFlight" id="1Hour" style="color:Red" onclick="return DurationOnClick(this)">1 hour</button>
-                        <button class="btn btn-default btn-xs" name="InFlight" id="1Day" onclick="return DurationOnClick(this)">1 day</button>
-                        <button class="btn btn-default btn-xs" name="InFlight" id="1Week" onclick="return DurationOnClick(this)">1 week</button>
-                        <button class="btn btn-default btn-xs" name="InFlight" id="1Month" onclick="return DurationOnClick(this)">1 month</button>
+                    <div class="panel-body btn-group">
+                        <button class="btn btn-default btn-xs btn-info" name="InFlight" id="30Min" onclick="return DurationOnClick(this)">30 mins</button>
+                        <button class="btn btn-default btn-xs btn-info" autofocus="true" name="InFlight" id="1Hour" onclick="return DurationOnClick(this)">1 hour</button>
+                        <button class="btn btn-default btn-xs btn-info" name="InFlight" id="1Day" onclick="return DurationOnClick(this)">1 day</button>
+                        <button class="btn btn-default btn-xs btn-info" name="InFlight" id="1Week" onclick="return DurationOnClick(this)">1 week</button>
+                        <button class="btn btn-default btn-xs btn-info" name="InFlight" id="1Month" onclick="return DurationOnClick(this)">1 month</button>
                         <div class="container content" style="width: 600px;">                            
                          <div class="row text-center" id="chart3">
 

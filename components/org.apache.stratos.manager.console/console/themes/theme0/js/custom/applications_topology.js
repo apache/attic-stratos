@@ -625,12 +625,12 @@ $("a[href='#application']").on('shown.bs.tab', function (e) {
 function showHealthStat(element){
     var currentURL = window.location.href;
     var splitTense = currentURL.split('console');
-    var newURL = splitTense[0] + "console/healthStatistics/";
+    var newURL = splitTense[0] + "console/health_statistics/";
 
     var form = $('<form action="' + newURL + '" method="post">' +
-        '<input type="hidden" name="Id" value="' + element.id + '"></input>' +
-        '<input type="hidden" name="Alias" value="' + alias + '"></input>' +
-        '<input type="hidden" name="Type" value="' + element.name + '"></input>' + '</form>');
+        '<input type="hidden" name="id" value="' + element.id + '"></input>' +
+        '<input type="hidden" name="alias" value="' + alias + '"></input>' +
+        '<input type="hidden" name="type" value="' + element.name + '"></input>' + '</form>');
 
     $('body').append(form);
     $(form).submit();

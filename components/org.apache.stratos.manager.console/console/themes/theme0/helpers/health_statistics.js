@@ -21,8 +21,8 @@
 
 var resources = function (page, meta) {
     return {
-        js: ['bootstrap-switch-3.0.2/bootstrap-switch.min.js', 'custom/script.js', 'd3js-v3/d3.v3.min.js' ,
-            'dagre-v0.7.0/dagre.min.js', 'd3.tip/d3.tip.v0.6.3.js', 'canvg/canvg.js','healthStatistics/healthStatistics.js'],
-        css: ['bootstrap-switch-3.0.2/bootstrap-switch.min.css', 'custom/style.css', 'custom/topology.css']
+        js: ['custom/script.js', 'd3js-v3/d3.v3.min.js' ,
+             'd3.tip-v0.6.3/d3.tip.v0.6.3.js','health_statistics/health_statistics.js'],
+        css: ['bootstrap-switch-3.0.2/bootstrap-switch.min.css', 'custom/style.css']
     };
 };

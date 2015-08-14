@@ -26,22 +26,22 @@ include('/controllers/menu/menu_generator.jag');
 var log = new Log("apacheStratos.appconfig"),
         error = [],
         caramel = require('caramel'),
-        alias = request.getParameter('Alias'), //applicaion name
+        alias = request.getParameter('alias'), //applicaion name
         context = caramel.configs().context,
         util = require('/controllers/rest/rest_calls.jag'),
         menuJson = require('/controllers/menu/menu.json'),
         util = require('/controllers/rest/rest_calls.jag'),
-        id = request.getParameter('Id'),
-        type = request.getParameter('Type'),
+        id = request.getParameter('id'),
+        type = request.getParameter('type'),
         userPermissions = session.get('PERMISSIONS');
 
-//create left menu
-var leftMenu = menuGenerator(context, menuJson.menu, userPermissions);
-var log = new Log();
+ //create left menu
+ var leftMenu = menuGenerator(context, menuJson.menu, userPermissions);
+ var log = new Log();
 
 //rendering the data
 caramel.render({
-    breadcrumbPathLevelOne: 'healthStatistics',
+    breadcrumbPathLevelOne: 'health_statistics',
     id:id,
     type: type,
     alias: alias,

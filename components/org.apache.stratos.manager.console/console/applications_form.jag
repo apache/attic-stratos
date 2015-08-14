@@ -50,7 +50,8 @@ if (!elements) {
         var applicationName = elements.applicationId;
 
         //get application json
-        applicationJSON = util.RESTCalls.getApplicationJSON(applicationName);
+        applicationJSONapplicationJSON = util.RESTCalls.getApplicationJSON(applicationName);
+
         var applicationAlias = applicationJSON.alias;
 
         if(elements.action == 'view'){
@@ -92,6 +93,7 @@ if (!elements) {
 }
 
 var healthStatisticEnable=config.healthStatistics.UI_enable;
+
 var formtype = elements.formtype;
 
 switch (formtype) {
