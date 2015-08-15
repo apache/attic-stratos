@@ -35,24 +35,38 @@
 		select member_id, cluster_id, cluster_instance_id, network_partition_id, health_description, value,
 		stratos:concat(cluster_id, '-' ,cluster_instance_id) as health_curve_finder_cluster_network
 		insert into health_curve_finder_concat;
-	define partition health_curve_finder_cluster_partition  by health_curve_finder_concat.health_curve_finder_cluster_network;
-	from health_curve_finder_concat [health_description == 'memory_consumption']
-		#window.stratos:curveFitting(10 min, value) select cluster_id, cluster_instance_id, network_partition_id, value as curve_finder_memory_consumption
+    define stream health_curve_finder_concat_temp (cluster_id, cluster_instance_id, network_partition_id, health_curve_finder_cluster_network, health_description, value, a double, b double, curve_c double)
+    from health_curve_finder_concat
+        select  cluster_id, cluster_instance_id, network_partition_id, health_curve_finder_cluster_network, health_description, value, 0.0 as a, 0.0 as b, 0.0 as c
+        insert into health_curve_finder_concat_temp
+	define partition health_curve_finder_cluster_partition  by health_curve_finder_concat_temp.health_curve_finder_cluster_network;
+	from health_curve_finder_concat_temp [health_description == 'memory_consumption']
+		#window.stratos:curveFitting(10 min, value, a, b, c)
+		select cluster_id, cluster_instance_id, network_partition_id, value as curve_finder_memory_consumption, a as curve_finder_a, b as curve_finder_b, c as curve_finder_c
 		insert into curve_finder_memory_consumption_stats
 		partition by health_curve_finder_cluster_partition;
-	from health_curve_finder_concat [health_description == 'load_average']
-		#window.stratos:curveFitting(10 min, value) select cluster_id, cluster_instance_id, network_partition_id, value as curve_finder_load_average
+	from health_curve_finder_concat_temp [health_description == 'load_average']
+		#window.stratos:curveFitting(10 min, value, a, b, c)
+		select cluster_id, cluster_instance_id, network_partition_id, value as curve_finder_load_average, a as curve_finder_a, b as curve_finder_b, c as curve_finder_c
 		insert into curve_finder_load_average_stats
 		partition by health_curve_finder_cluster_partition;
-	define partition health_curve_finder_member_partition by health_curve_finder_request.member_id;
-	from health_curve_finder_request [health_description == 'memory_consumption']
-		#window.stratos:curveFitting(10 min, value)
-		select member_id, cluster_id, cluster_instance_id, network_partition_id, value as member_curve_finder_memory_consumption
+	from health_curve_finder_request
+	    select member_id, cluster_id, cluster_instance_id, network_partition_id, health_description, value,
+		stratos:concat(cluster_id, '-' ,cluster_instance_id) as health_curve_finder_cluster_network
+		insert into health_curve_finder_concat_member;
+	define stream member_health_curve_finder_concat_temp (member_id, cluster_id, cluster_instance_id, network_partition_id, health_description, value, a double, b double, c double)
+	from health_curve_finder_concat_member
+	    select  member_id, cluster_id, cluster_instance_id, network_partition_id, health_curve_finder_cluster_network, value, 0.0 as a, 0.0 as b, 0.0 as c
+        insert into member_health_curve_finder_concat_temp
+	define partition health_curve_finder_member_partition by member_health_curve_finder_concat_temp.member_id;
+	from member_health_curve_finder_concat_temp [health_description == 'memory_consumption']
+		#window.stratos:curveFitting(10 min, value, a, b, c)
+		select member_id, cluster_id, cluster_instance_id, network_partition_id, value as member_curve_finder_memory_consumption, a as curve_finder_a, b as curve_finder_b, c as curve_finder_c
 		insert into member_curve_finder_memory_consumption_stats
 		partition by health_curve_finder_member_partition;
-	from health_curve_finder_request [health_description == 'load_average']
+	from member_health_curve_finder_concat_temp [health_description == 'load_average']
 		#window.stratos:curveFitting(10 min, value)
-		select member_id, cluster_id, cluster_instance_id, network_partition_id, value as member_curve_finder_load_average
+		select member_id, cluster_id, cluster_instance_id, network_partition_id, value as member_curve_finder_load_average, a as curve_finder_a, b as curve_finder_b, c as curve_finder_c
 		insert into member_curve_finder_load_average_stats
 		partition by health_curve_finder_member_partition;]]></queryExpressions>
     <exportedStreams>
