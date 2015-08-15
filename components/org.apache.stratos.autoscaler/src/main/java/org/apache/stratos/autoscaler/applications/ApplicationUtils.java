@@ -37,11 +37,11 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 public class ApplicationUtils {
-    private static final Log log = LogFactory.getLog(ApplicationUtils.class);
-
     public static final String TOKEN_PAYLOAD_PARAM_NAME = "TOKEN";
     public static final String DEPLOYMENT = "DEPLOYMENT";
+    private static final String PORT_SEPARATOR="|";
     public static final String PAYLOAD_PARAMETER = "payload_parameter.";
+    private static final Log log = LogFactory.getLog(ApplicationUtils.class);
     public static Pattern ALIAS_PATTERN = Pattern.compile("([a-z0-9]+([-][a-z0-9])*)+");
 
     public static boolean isAliasValid(String alias) {
@@ -76,7 +76,42 @@ public class ApplicationUtils {
         return globalProperties;
     }
 
-    private static String createPortMappingPayloadString(Cartridge cartridge) {
+    /**
+     * This method creates payload string with port numbers in
+     * 'PORTS': '9443|8280|8243' format
+     * @param cartridge
+     * @return String containing ports
+     */
+    private static String createPortsToPayloadString(Cartridge cartridge) {
+
+        // port mappings
+        StringBuilder portMapBuilder = new StringBuilder();
+        PortMapping[] portMappings = cartridge.getPortMappings();
+
+        if (cartridge.getPortMappings()[0] == null) {
+            // first element is null, which means no port mappings.
+            return null;
+        }
+
+        for (PortMapping portMapping : portMappings) {
+            portMapBuilder.append(portMapping.getPort()).append(PORT_SEPARATOR);
+        }
+
+        // remove last "|" character
+        String portMappingString = portMapBuilder.toString().replaceAll("\\|$", "");
+
+        return portMappingString;
+    }
+
+    /**
+     * This method creates payload string with port mappings in following format.
+     * PORT_MAPPINGS='NAME:mgt-console|PROTOCOL:https|PORT:30649|PROXY_PORT:0|TYPE:NodePort;
+     * NAME:pt-http|PROTOCOL:http|PORT:30650|PROXY_PORT:0|TYPE:NodePort;
+     * NAME:pt-https|PROTOCOL:https|PORT:30651|PROXY_PORT:0|TYPE:NodePort
+     * @param cartridge
+     * @return string containing port mapping
+     */
+    private static String createPortMappingsToPayloadString(Cartridge cartridge) {
 
         // port mappings
         StringBuilder portMapBuilder = new StringBuilder();
@@ -89,13 +124,16 @@ public class ApplicationUtils {
 
         for (PortMapping portMapping : portMappings) {
             int port = portMapping.getPort();
-            portMapBuilder.append(port).append("|");
+            //Format : NAME:mgt-console|PROTOCOL:https|PORT:30649|PROXY_PORT:0|TYPE:NodePort;
+            portMapBuilder.append(String.format("NAME:%s|PROTOCOL:%s|PORT:%d|PROXY_PORT:%d|TYPE:%s;",
+                    portMapping.getName(), portMapping.getProtocol(),
+                    portMapping.getPort(), portMapping.getProxyPort(),
+                    portMapping.getKubernetesPortType()));
         }
-
-        // remove last "|" character
-        String portMappingString = portMapBuilder.toString().replaceAll("\\|$", "");
-
+        //remove last ";" character
+        String portMappingString = portMapBuilder.toString().replaceAll(";$", "");
         return portMappingString;
+
     }
 
     public static StringBuilder getTextPayload(String appId, String groupName, String clusterId) {
@@ -139,12 +177,12 @@ public class ApplicationUtils {
     public static PayloadData createPayload(String appId, String groupName, Cartridge cartridge, String subscriptionKey, int tenantId, String clusterId,
                                             String hostName, String repoUrl, String alias, Map<String, String> customPayloadEntries, String[] dependencyAliases,
                                             org.apache.stratos.common.Properties properties, String oauthToken, String[] dependencyClusterIDs,
-                                            String[] exportMetadata, String[] importMetadata,String lvsVirtualIP)
+                                            String[] exportMetadata, String[] importMetadata, String lvsVirtualIP)
             throws ApplicationDefinitionException {
 
         //Create the payload
         BasicPayloadData basicPayloadData = createBasicPayload(appId, groupName, cartridge, subscriptionKey,
-                clusterId, hostName, repoUrl, alias, tenantId, dependencyAliases, dependencyClusterIDs, exportMetadata, importMetadata,lvsVirtualIP);
+                clusterId, hostName, repoUrl, alias, tenantId, dependencyAliases, dependencyClusterIDs, exportMetadata, importMetadata, lvsVirtualIP);
         //Populate the basic payload details
         basicPayloadData.populatePayload();
 
@@ -212,7 +250,7 @@ public class ApplicationUtils {
                                                        String subscriptionKey, String clusterId,
                                                        String hostName, String repoUrl, String alias,
                                                        int tenantId, String[] dependencyAliases, String[] dependencyCLusterIDs,
-                                                       String[] exportMetadata, String[] importMetadata,String lvsVirtualIP) {
+                                                       String[] exportMetadata, String[] importMetadata, String lvsVirtualIP) {
 
         BasicPayloadData basicPayloadData = new BasicPayloadData();
         basicPayloadData.setAppId(appId);
@@ -221,10 +259,11 @@ public class ApplicationUtils {
         basicPayloadData.setSubscriptionKey(subscriptionKey);
         //basicPayloadData.setDeployment("default");//currently hard coded to default
         basicPayloadData.setMultitenant(String.valueOf(cartridge.getMultiTenant()));
-        basicPayloadData.setPortMappings(createPortMappingPayloadString(cartridge));
+        basicPayloadData.setPorts(createPortsToPayloadString(cartridge));
+        basicPayloadData.setPortMappings(createPortMappingsToPayloadString(cartridge));
         basicPayloadData.setServiceName(cartridge.getType());
         basicPayloadData.setProvider(cartridge.getProvider());
-	    basicPayloadData.setLvsVirtualIP(lvsVirtualIP);
+        basicPayloadData.setLvsVirtualIP(lvsVirtualIP);
 
         if (repoUrl != null) {
             basicPayloadData.setGitRepositoryUrl(repoUrl);

@@ -1,0 +1,18 @@
+{
+    "id": "deployment-policy-group-termination-behavior-test",
+    "networkPartitions": [
+        {
+            "id": "network-partition-group-termination-behavior-test-1",
+            "partitionAlgo": "one-after-another",
+            "partitions": [
+                {
+                    "id": "partition-1",
+                    "partitionMax": 4
+                }
+            ]
+        }
+    ]
+}
+
+
+
