@@ -20,25 +20,18 @@ package org.apache.stratos.cep.extension;
 
 import org.apache.log4j.Logger;
 import org.wso2.siddhi.core.config.SiddhiContext;
-import org.wso2.siddhi.core.event.AtomicEvent;
-import org.wso2.siddhi.core.event.ListEvent;
 import org.wso2.siddhi.core.event.StreamEvent;
 import org.wso2.siddhi.core.event.in.InEvent;
 import org.wso2.siddhi.core.event.in.InListEvent;
 import org.wso2.siddhi.core.event.remove.RemoveEvent;
 import org.wso2.siddhi.core.event.remove.RemoveListEvent;
-import org.wso2.siddhi.core.event.remove.RemoveStream;
 import org.wso2.siddhi.core.persistence.ThreadBarrier;
 import org.wso2.siddhi.core.query.QueryPostProcessingElement;
 import org.wso2.siddhi.core.query.processor.window.RunnableWindowProcessor;
 import org.wso2.siddhi.core.query.processor.window.WindowProcessor;
-import org.wso2.siddhi.core.util.EventConverter;
 import org.wso2.siddhi.core.util.collection.queue.scheduler.ISchedulerSiddhiQueue;
 import org.wso2.siddhi.core.util.collection.queue.scheduler.SchedulerSiddhiQueue;
 import org.wso2.siddhi.core.util.collection.queue.scheduler.SchedulerSiddhiQueueGrid;
-import org.wso2.siddhi.core.util.collection.queue.scheduler.timestamp.ISchedulerTimestampSiddhiQueue;
-import org.wso2.siddhi.core.util.collection.queue.scheduler.timestamp.SchedulerTimestampSiddhiQueue;
-import org.wso2.siddhi.core.util.collection.queue.scheduler.timestamp.SchedulerTimestampSiddhiQueueGrid;
 import org.wso2.siddhi.query.api.definition.AbstractDefinition;
 import org.wso2.siddhi.query.api.definition.Attribute;
 import org.wso2.siddhi.query.api.expression.Expression;;
@@ -46,11 +39,8 @@ import org.wso2.siddhi.query.api.expression.Variable;
 import org.wso2.siddhi.query.api.expression.constant.IntConstant;
 import org.wso2.siddhi.query.api.expression.constant.LongConstant;
 import org.wso2.siddhi.query.api.extension.annotation.SiddhiExtension;
-import org.wso2.siddhi.core.event.Event;
-import org.wso2.siddhi.query.api.definition.Attribute;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.RejectedExecutionException;
@@ -77,8 +67,14 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
     private ScheduledFuture<?> lastSchedule = null;
     private long constantSchedulingInterval = -1;
     private ThreadBarrier threadBarrier;
-    private int subjectedAttrIndex;
-    private Attribute.Type subjectedAttrType;
+    private int subjectAttrIndex;
+    private Attribute.Type subjectAttrType;
+    private int coefficientAAttrIndex;
+    private Attribute.Type coefficientAAttrType;
+    private int coefficientBAttrIndex;
+    private Attribute.Type coefficientBAttrType;
+    private int coefficientCAttrIndex;
+    private Attribute.Type coefficientCAttrType;
     private List<InEvent> newEventList;
     private List<RemoveEvent> oldEventList;
     private ISchedulerSiddhiQueue<StreamEvent> window;
@@ -142,6 +138,7 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
                         }
 
                         if (newEventList.size() > 0) {
+                            log.info("new events are here for the calculation");
                             InEvent[] inEvents =
                                     newEventList.toArray(new InEvent[newEventList.size()]);
                             for (InEvent inEvent : inEvents) {
@@ -201,8 +198,14 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
         CurveFitter curveFitter = new CurveFitter(timeStamps, smoothedValues);
         Double[] coefficients = curveFitter.fit();
 
+        Object[] data = newEventList.get(0).getData().clone();
+
+        data[coefficientAAttrIndex] = coefficients[0];
+        data[coefficientBAttrIndex] = coefficients[1];
+        data[coefficientCAttrIndex] = coefficients[2];
+
         InEvent[] inEvents = new InEvent[1];
-        inEvents[0] = new InEvent(newEventList.get(0).getStreamId(),newEventList.get(0).getTimeStamp(), (Object[]) coefficients);
+        inEvents[0] = new InEvent(newEventList.get(0).getStreamId(),newEventList.get(0).getTimeStamp(), data);
         return inEvents;
     }
 
@@ -210,7 +213,7 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
      * need to implement find exponential moving average
      */
     private void findEMA(){
-        Attribute.Type attrType = subjectedAttrType;
+        Attribute.Type attrType = coefficientAAttrType;
 
         timeStamps = new long[newEventList.size()];
         dataValues = new double[newEventList.size()];
@@ -222,15 +225,16 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
             timeStamps[indexOfEvent] = eventToPredict.getTimeStamp();
 
             if (Attribute.Type.DOUBLE.equals(attrType)) {
-                dataValues[indexOfEvent] = (Double)eventToPredict.getData()[subjectedAttrIndex];
+                dataValues[indexOfEvent] = (Double)eventToPredict.getData()[subjectAttrIndex];
             } else if (Attribute.Type.INT.equals(attrType)) {
-                dataValues[indexOfEvent] = (Integer)eventToPredict.getData()[subjectedAttrIndex];
+                dataValues[indexOfEvent] = (Integer)eventToPredict.getData()[subjectAttrIndex];
             } else if (Attribute.Type.LONG.equals(attrType)) {
-                dataValues[indexOfEvent] = (Long)eventToPredict.getData()[subjectedAttrIndex];
+                dataValues[indexOfEvent] = (Long)eventToPredict.getData()[subjectAttrIndex];
             } else if (Attribute.Type.FLOAT.equals(attrType)) {
-                dataValues[indexOfEvent] = (Float)eventToPredict.getData()[subjectedAttrIndex];
+                dataValues[indexOfEvent] = (Float)eventToPredict.getData()[subjectAttrIndex];
             }
 
+            log.info(dataValues[indexOfEvent]);
             indexOfEvent++;
         }
 
@@ -266,8 +270,20 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
         }
 
         String subjectedAttr = ((Variable)parameters[1]).getAttributeName();
-        subjectedAttrIndex = streamDefinition.getAttributePosition(subjectedAttr);
-        subjectedAttrType = streamDefinition.getAttributeType(subjectedAttr);
+        subjectAttrIndex = streamDefinition.getAttributePosition(subjectedAttr);
+        subjectAttrType = streamDefinition.getAttributeType(subjectedAttr);
+
+        subjectedAttr = ((Variable)parameters[2]).getAttributeName();
+        coefficientAAttrIndex = streamDefinition.getAttributePosition(subjectedAttr);
+        coefficientAAttrType = streamDefinition.getAttributeType(subjectedAttr);
+
+        subjectedAttr = ((Variable)parameters[3]).getAttributeName();
+        coefficientBAttrIndex = streamDefinition.getAttributePosition(subjectedAttr);
+        coefficientBAttrType = streamDefinition.getAttributeType(subjectedAttr);
+
+        subjectedAttr = ((Variable)parameters[4]).getAttributeName();
+        coefficientCAttrIndex = streamDefinition.getAttributePosition(subjectedAttr);
+        coefficientCAttrType = streamDefinition.getAttributeType(subjectedAttr);
 
         oldEventList = new ArrayList<RemoveEvent>();
         if (this.siddhiContext.isDistributedProcessingEnabled()) {
