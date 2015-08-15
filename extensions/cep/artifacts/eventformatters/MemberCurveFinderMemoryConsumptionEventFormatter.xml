@@ -20,7 +20,7 @@
 
 -->
 
-<eventFormatter name="MemberGradientMemoryConsumptionEventFormatter"
+<eventFormatter name="MemberCurveFinderMemoryConsumptionEventFormatter"
                 statistics="disable" trace="enable" xmlns="http://wso2.org/carbon/eventformatter">
     <from streamName="member_curve_finder_memory_consumption_stats" version="1.0.0"/>
     <mapping customMapping="enable" type="json">
