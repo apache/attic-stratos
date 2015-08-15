@@ -38,7 +38,7 @@
     define stream health_curve_finder_concat_temp(cluster_id string, cluster_instance_id string, network_partition_id string, health_curve_finder_cluster_network string, health_description double, value double, a double, b double, c double);
     from health_curve_finder_concat
         select  cluster_id, cluster_instance_id, network_partition_id, health_curve_finder_cluster_network, health_description, value, 0.0 as a, 0.0 as b, 0.0 as c
-        insert into health_curve_finder_concat_temp
+        insert into health_curve_finder_concat_temp;
 	define partition health_curve_finder_cluster_partition  by health_curve_finder_concat_temp.health_curve_finder_cluster_network;
 	from health_curve_finder_concat_temp [health_description == 'memory_consumption']
 		#window.stratos:curveFitting(10 min, value, a, b, c)
