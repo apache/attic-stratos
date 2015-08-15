@@ -27,7 +27,7 @@ public class CurveFinderOfRequestsInFlightEvent extends Event {
     private final String clusterId;
     private final String clusterInstanceId;
     private final String networkPartitionId;
-    private final double timeStamp;
+    private final double value;
     /**
      * Curve finder co-efficients
      */
@@ -35,11 +35,11 @@ public class CurveFinderOfRequestsInFlightEvent extends Event {
     private final float b;
     private final float c;
 
-    public CurveFinderOfRequestsInFlightEvent(String clusterId, String clusterInstanceId, String networkPartitionId, double timeStamp, float a, float b, float c) {
+    public CurveFinderOfRequestsInFlightEvent(String clusterId, String clusterInstanceId, String networkPartitionId, double value, float a, float b, float c) {
         this.clusterId = clusterId;
         this.clusterInstanceId = clusterInstanceId;
         this.networkPartitionId = networkPartitionId;
-        this.timeStamp = timeStamp;
+        this.value = value;
         this.a = a;
         this.b = b;
         this.c = c;
@@ -57,8 +57,8 @@ public class CurveFinderOfRequestsInFlightEvent extends Event {
         return clusterInstanceId;
     }
 
-    public double getTimeStamp() {
-        return timeStamp;
+    public double getValue() {
+        return value;
     }
 
     public float getA() {

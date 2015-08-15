@@ -8,7 +8,7 @@ import org.apache.stratos.messaging.event.Event;
 public class MemberCurveFinderOfMemoryConsumptionEvent extends Event {
     private final String clusterInstanceId;
     private final String memberId;
-    private final double timeStamp;
+    private final double value;
     /**
      * Curve finder co-efficients
      */
@@ -17,11 +17,11 @@ public class MemberCurveFinderOfMemoryConsumptionEvent extends Event {
     private final float c;
 
 
-    public MemberCurveFinderOfMemoryConsumptionEvent(String clusterInstanceId, String memberId, double timeStamp, float a, float
+    public MemberCurveFinderOfMemoryConsumptionEvent(String clusterInstanceId, String memberId, double value, float a, float
             b, float c) {
         this.clusterInstanceId = clusterInstanceId;
         this.memberId = memberId;
-        this.timeStamp = timeStamp;
+        this.value = value;
         this.a = a;
         this.b = b;
         this.c = c;
@@ -36,8 +36,8 @@ public class MemberCurveFinderOfMemoryConsumptionEvent extends Event {
         return clusterInstanceId;
     }
 
-    public double getTimeStamp() {
-        return timeStamp;
+    public double getValue() {
+        return value;
     }
 
     public float getA() {

@@ -35,7 +35,7 @@
 		select member_id, cluster_id, cluster_instance_id, network_partition_id, health_description, value,
 		stratos:concat(cluster_id, '-' ,cluster_instance_id) as health_curve_finder_cluster_network
 		insert into health_curve_finder_concat;
-    define stream health_curve_finder_concat_temp (cluster_id, cluster_instance_id, network_partition_id, health_curve_finder_cluster_network, health_description, value, a double, b double, curve_c double)
+    define stream health_curve_finder_concat_temp(cluster_id, cluster_instance_id, network_partition_id, health_curve_finder_cluster_network, health_description, value, a double, b double, c double);
     from health_curve_finder_concat
         select  cluster_id, cluster_instance_id, network_partition_id, health_curve_finder_cluster_network, health_description, value, 0.0 as a, 0.0 as b, 0.0 as c
         insert into health_curve_finder_concat_temp
@@ -54,7 +54,7 @@
 	    select member_id, cluster_id, cluster_instance_id, network_partition_id, health_description, value,
 		stratos:concat(cluster_id, '-' ,cluster_instance_id) as health_curve_finder_cluster_network
 		insert into health_curve_finder_concat_member;
-	define stream member_health_curve_finder_concat_temp (member_id, cluster_id, cluster_instance_id, network_partition_id, health_description, value, a double, b double, c double)
+	define stream member_health_curve_finder_concat_temp(member_id, cluster_id, cluster_instance_id, network_partition_id, health_description, value, a double, b double, c double);
 	from health_curve_finder_concat_member
 	    select  member_id, cluster_id, cluster_instance_id, network_partition_id, health_curve_finder_cluster_network, value, 0.0 as a, 0.0 as b, 0.0 as c
         insert into member_health_curve_finder_concat_temp
@@ -65,7 +65,7 @@
 		insert into member_curve_finder_memory_consumption_stats
 		partition by health_curve_finder_member_partition;
 	from member_health_curve_finder_concat_temp [health_description == 'load_average']
-		#window.stratos:curveFitting(10 min, value)
+		#window.stratos:curveFitting(10 min, value, a, b, c)
 		select member_id, cluster_id, cluster_instance_id, network_partition_id, value as member_curve_finder_load_average, a as curve_finder_a, b as curve_finder_b, c as curve_finder_c
 		insert into member_curve_finder_load_average_stats
 		partition by health_curve_finder_member_partition;]]></queryExpressions>

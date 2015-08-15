@@ -35,7 +35,7 @@
 		select cluster_id, cluster_instance_id, network_partition_id, in_flight_request_count,
 		stratos:concat(cluster_id, '-' ,network_partition_id) as rif_curve_finder_cluster_network
 		insert into rif_curve_finder_concat;
-	define stream rif_curve_finder_concat_temp(cluster_id, cluster_instance_id, network_partition_id,  in_flight_request_count, rif_curve_finder_cluster_network, a double, b double, c double)
+	define stream rif_curve_finder_concat_temp(cluster_id, cluster_instance_id, network_partition_id,  in_flight_request_count, rif_curve_finder_cluster_network, a double, b double, c double);
 	from rif_curve_finder_concat
 	    select cluster_id, cluster_instance_id, network_partition_id, in_flight_request_count, rif_curve_finder_cluster_network, 0.0 as a, 0.0 as b, 0.0 as c
 	    insert into rif_curve_finder_concat_temp;

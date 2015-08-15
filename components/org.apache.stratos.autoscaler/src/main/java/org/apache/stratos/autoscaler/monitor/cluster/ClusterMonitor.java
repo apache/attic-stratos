@@ -972,6 +972,26 @@ public class ClusterMonitor extends Monitor {
         memberStatsContext.setGradientOfMemoryConsumption(value);
     }
 
+    public void handleMemberCurveFinderOfLoadAverageEvent(MemberCurveFinderOfLoadAverageEvent memberCurveFinderOfLoadAverageEvent){
+        String clusterInstanceId = memberCurveFinderOfLoadAverageEvent.getClusterInstanceId();
+        String memberId = memberCurveFinderOfLoadAverageEvent.getMemberId();
+        Member member = getMemberByMemberId(memberId);
+        String networkPartitionId = getNetworkPartitionIdByMemberId(memberId);
+        ClusterInstanceContext networkPartitionCtxt = getClusterInstanceContext(networkPartitionId,
+                clusterInstanceId);
+        ClusterLevelPartitionContext partitionCtxt = networkPartitionCtxt.getPartitionCtxt(
+                member.getPartitionId());
+        MemberStatsContext memberStatsContext = partitionCtxt.getMemberStatsContext(memberId);
+        if (null == memberStatsContext) {
+            if (log.isDebugEnabled()) {
+                log.debug(String.format("Member context is not available for : [member] %s", memberId));
+            }
+            return;
+        }
+        float value = (float)memberCurveFinderOfLoadAverageEvent.getValue();
+        memberStatsContext.setGradientOfMemoryConsumption(value);
+    }
+
     public void handleMemberAverageLoadAverageEvent(
             MemberAverageLoadAverageEvent memberAverageLoadAverageEvent) {
 
@@ -992,6 +1012,26 @@ public class ClusterMonitor extends Monitor {
         }
         float value = memberAverageLoadAverageEvent.getValue();
         memberStatsContext.setAverageLoadAverage(value);
+    }
+
+    public void handleMemberCurveFinderOfMemoryConsumptionEvent(MemberCurveFinderOfMemoryConsumptionEvent memberCurveFinderOfMemoryConsumptionEvent){
+        String clusterInstanceId = memberCurveFinderOfMemoryConsumptionEvent.getClusterInstanceId();
+        String memberId = memberCurveFinderOfMemoryConsumptionEvent.getMemberId();
+        Member member = getMemberByMemberId(memberId);
+        String networkPartitionId = getNetworkPartitionIdByMemberId(memberId);
+        ClusterInstanceContext networkPartitionCtxt = getClusterInstanceContext(networkPartitionId,
+                clusterInstanceId);
+        ClusterLevelPartitionContext partitionCtxt = networkPartitionCtxt.getPartitionCtxt(
+                member.getPartitionId());
+        MemberStatsContext memberStatsContext = partitionCtxt.getMemberStatsContext(memberId);
+        if (null == memberStatsContext) {
+            if (log.isDebugEnabled()) {
+                log.debug(String.format("Member context is not available for : [member] %s", memberId));
+            }
+            return;
+        }
+        float value = (float)memberCurveFinderOfMemoryConsumptionEvent.getValue();
+        memberStatsContext.setGradientOfLoadAverage(value);
     }
 
     public void handleMemberGradientOfLoadAverageEvent(
