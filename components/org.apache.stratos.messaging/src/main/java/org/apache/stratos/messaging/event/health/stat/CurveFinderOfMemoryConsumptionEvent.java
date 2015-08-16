@@ -29,9 +29,9 @@ public class CurveFinderOfMemoryConsumptionEvent extends Event {
     /**
      * Curve finder co-efficients
      */
-    private final float a;
-    private final float b;
-    private final float c;
+    private final double a;
+    private final double b;
+    private final double c;
 
     public CurveFinderOfMemoryConsumptionEvent(String networkPartitionId, String clusterId, String clusterInstanceId, double value, float a, float b, float c) {
         this.networkPartitionId = networkPartitionId;
@@ -57,15 +57,19 @@ public class CurveFinderOfMemoryConsumptionEvent extends Event {
         return clusterInstanceId;
     }
 
-    public float getA() {
+    public double getValue() {
+        return value;
+    }
+
+    public double getA() {
         return a;
     }
 
-    public float getB() {
+    public double getB() {
         return b;
     }
 
-    public float getC() {
+    public double getC() {
         return c;
     }
 }

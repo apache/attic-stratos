@@ -395,7 +395,7 @@ public class RuleTasksDelegator {
 //
 //                double memberPredictedMemoryConsumption = getPredictedValueForNextMinute(memberMemoryConsumptionAverage,
 //                        memberMemoryConsumptionGredient, memberMemoryConsumptionSecondDerivative, 1);
-                log.info(String.format("[member-id] %s [predicted memory consumption] %s ",
+                log.info(String.format("[member-id] %s [predicted memory consumption] %s Pranavan ",
                         memberStatsContext.getMemberId()
                         , memberPredictedMemoryConsumption));
 

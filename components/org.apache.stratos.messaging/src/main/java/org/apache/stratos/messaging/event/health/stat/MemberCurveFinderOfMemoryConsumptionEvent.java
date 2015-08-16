@@ -6,21 +6,25 @@ import org.apache.stratos.messaging.event.Event;
  * Created by pranavan on 8/9/15.
  */
 public class MemberCurveFinderOfMemoryConsumptionEvent extends Event {
-    private final String clusterInstanceId;
     private final String memberId;
+    private final String clusterId;
+    private final String clusterInstanceId;
+    private final String networkPartitionId;
     private final double value;
     /**
      * Curve finder co-efficients
      */
-    private final float a;
-    private final float b;
-    private final float c;
+    private final double a;
+    private final double b;
+    private final double c;
 
 
-    public MemberCurveFinderOfMemoryConsumptionEvent(String clusterInstanceId, String memberId, double value, float a, float
-            b, float c) {
+    public MemberCurveFinderOfMemoryConsumptionEvent(String memberId, String clusterId, String clusterInstanceId, String networkPartitionId, double value, double a, double
+            b, double c) {
+        this.clusterId = clusterId;
         this.clusterInstanceId = clusterInstanceId;
         this.memberId = memberId;
+        this.networkPartitionId = networkPartitionId;
         this.value = value;
         this.a = a;
         this.b = b;
@@ -32,6 +36,14 @@ public class MemberCurveFinderOfMemoryConsumptionEvent extends Event {
         return memberId;
     }
 
+    public String getClusterId() {
+        return clusterId;
+    }
+
+    public String getNetworkPartitionId() {
+        return networkPartitionId;
+    }
+
     public String getClusterInstanceId() {
         return clusterInstanceId;
     }
@@ -40,15 +52,15 @@ public class MemberCurveFinderOfMemoryConsumptionEvent extends Event {
         return value;
     }
 
-    public float getA() {
+    public double getA() {
         return a;
     }
 
-    public float getB() {
+    public double getB() {
         return b;
     }
 
-    public float getC() {
+    public double getC() {
         return c;
     }
 }

@@ -33,9 +33,9 @@ public class LoadAverage implements Serializable {
     /**
      * curve finder coefficients
      */
-    private float a;
-    private float b;
-    private float c;
+    private double a;
+    private double b;
+    private double c;
 
     /**
      * Gets the value of the average property.
@@ -79,27 +79,27 @@ public class LoadAverage implements Serializable {
         this.gradient = value;
     }
 
-    public float getA() {
+    public double getA() {
         return a;
     }
 
-    public float getB() {
+    public double getB() {
         return b;
     }
 
-    public float getC() {
+    public double getC() {
         return c;
     }
 
-    public void setA(float a) {
+    public void setA(double a) {
         this.a = a;
     }
 
-    public void setB(float b) {
+    public void setB(double b) {
         this.b = b;
     }
 
-    public void setC(float c) {
+    public void setC(double c) {
         this.c = c;
     }
 

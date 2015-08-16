@@ -599,9 +599,9 @@ public class ClusterMonitor extends Monitor {
         String clusterId = curveFinderOfLoadAverageEvent.getClusterId();
         String instanceId = curveFinderOfLoadAverageEvent.getClusterInstanceId();
 
-        float a = curveFinderOfLoadAverageEvent.getA();
-        float b = curveFinderOfLoadAverageEvent.getB();
-        float c = curveFinderOfLoadAverageEvent.getC();
+        double a = curveFinderOfLoadAverageEvent.getA();
+        double b = curveFinderOfLoadAverageEvent.getB();
+        double c = curveFinderOfLoadAverageEvent.getC();
 
         if (log.isDebugEnabled()) {
             log.debug(String.format("CurveFinder of load avg event: [cluster] %s [network-partition] %s [a] %s [b] %s [c] %s",
@@ -717,9 +717,9 @@ public class ClusterMonitor extends Monitor {
         String networkPartitionId = curveFinderOfMemoryConsumptionEvent.getNetworkPartitionId();
         String clusterId = curveFinderOfMemoryConsumptionEvent.getClusterId();
         String clusterInstanceId = curveFinderOfMemoryConsumptionEvent.getClusterInstanceId();
-        float a = curveFinderOfMemoryConsumptionEvent.getA();
-        float b = curveFinderOfMemoryConsumptionEvent.getB();
-        float c = curveFinderOfMemoryConsumptionEvent.getC();
+        double a = curveFinderOfMemoryConsumptionEvent.getA();
+        double b = curveFinderOfMemoryConsumptionEvent.getB();
+        double c = curveFinderOfMemoryConsumptionEvent.getC();
 
         if (log.isDebugEnabled()) {
             log.debug(String.format("CurveFinder of Memory Consumption event: [cluster] %s "
