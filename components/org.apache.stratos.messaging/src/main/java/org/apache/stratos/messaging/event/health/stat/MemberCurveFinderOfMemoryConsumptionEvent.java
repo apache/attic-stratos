@@ -21,9 +21,9 @@ public class MemberCurveFinderOfMemoryConsumptionEvent extends Event {
 
     public MemberCurveFinderOfMemoryConsumptionEvent(String memberId, String clusterId, String clusterInstanceId, String networkPartitionId, double value, double a, double
             b, double c) {
+        this.memberId = memberId;
         this.clusterId = clusterId;
         this.clusterInstanceId = clusterInstanceId;
-        this.memberId = memberId;
         this.networkPartitionId = networkPartitionId;
         this.value = value;
         this.a = a;

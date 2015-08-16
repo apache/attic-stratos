@@ -20,7 +20,7 @@ public class MemberCurveFinderOfMemoryConsumptionMessageProcessor extends Messag
 
     @Override
     public boolean process(String type, String message, Object object) {
-        if(MemberCurveFinderOfMemoryConsumptionMessageProcessor.class.getName().equals(type)){
+        if(MemberCurveFinderOfMemoryConsumptionEvent.class.getName().equals(type)){
 
             MemberCurveFinderOfMemoryConsumptionEvent event = (MemberCurveFinderOfMemoryConsumptionEvent) MessagingUtil.jsonToObject(message, MemberCurveFinderOfMemoryConsumptionEvent.class);
             notifyEventListeners(event);
