@@ -54,7 +54,7 @@
 		stratos:concat(cluster_id, '-' ,cluster_instance_id) as health_curve_finder_cluster_network
 		insert into health_curve_finder_concat_member;
 	from health_curve_finder_concat_member
-	    select  member_id, cluster_id, cluster_instance_id, network_partition_id, health_curve_finder_cluster_network, value, 0.0 as a, 0.0 as b, 0.0 as c
+	    select  member_id, cluster_id, cluster_instance_id, network_partition_id, health_description, value, health_curve_finder_cluster_network, 0.0 as a, 0.0 as b, 0.0 as c
         insert into member_health_curve_finder_concat_temp;
 	define partition health_curve_finder_member_partition by member_health_curve_finder_concat_temp.member_id;
 	from member_health_curve_finder_concat_temp [health_description == 'memory_consumption']
