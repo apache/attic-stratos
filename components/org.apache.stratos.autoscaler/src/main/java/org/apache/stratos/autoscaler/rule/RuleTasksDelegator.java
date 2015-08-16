@@ -383,23 +383,13 @@ public class RuleTasksDelegator {
         int totalMemberCount = 0;
         for (ClusterLevelPartitionContext partitionContext : clusterInstanceContext.getPartitionCtxts()) {
             for (MemberStatsContext memberStatsContext : partitionContext.getMemberStatsContexts().values()) {
-                double a = memberStatsContext.getMemoryConsumption().getA();
-                double b = memberStatsContext.getMemoryConsumption().getB();
-                double c = memberStatsContext.getMemoryConsumption().getC();
 
-                double memberPredictedMemoryConsumption = getPredictedValueForNextMin(a,b,c,1);
+                float memberMemoryConsumptionAverage = memberStatsContext.getMemoryConsumption().getAverage();
+                float memberMemoryConsumptionGredient = memberStatsContext.getMemoryConsumption().getGradient();
+                float memberMemoryConsumptionSecondDerivative = memberStatsContext.getMemoryConsumption().getSecondDerivative();
 
-                log.info("a : " + a + " b : " + b + " c : " + c);
-
-//                float memberMemoryConsumptionAverage = memberStatsContext.getMemoryConsumption().getAverage();
-//                float memberMemoryConsumptionGredient = memberStatsContext.getMemoryConsumption().getGradient();
-//                float memberMemoryConsumptionSecondDerivative = memberStatsContext.getMemoryConsumption().getSecondDerivative();
-//
-//                double memberPredictedMemoryConsumption = getPredictedValueForNextMinute(memberMemoryConsumptionAverage,
-//                        memberMemoryConsumptionGredient, memberMemoryConsumptionSecondDerivative, 1);
-                log.info(String.format("[member-id] %s [predicted memory consumption] %s ",
-                        memberStatsContext.getMemberId()
-                        , memberPredictedMemoryConsumption));
+                double memberPredictedMemoryConsumption = getPredictedValueForNextMinute(memberMemoryConsumptionAverage,
+                        memberMemoryConsumptionGredient, memberMemoryConsumptionSecondDerivative, 1);
 
                 if (log.isDebugEnabled()) {
                     log.debug(String.format("[member-id] %s [predicted memory consumption] %s ",

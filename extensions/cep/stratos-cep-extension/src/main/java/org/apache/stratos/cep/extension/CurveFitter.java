@@ -52,8 +52,6 @@ public class CurveFitter {
         final PolynomialCurveFitter polynomialCurveFitter = PolynomialCurveFitter.create(2);
         final double[] coefficients = polynomialCurveFitter.fit(weightedObservedPoints.toList());
 
-        log.info("Coefficients a : " + coefficients[0] + " b : " + coefficients[1] + " c : " + coefficients[2]);
-
         return convertDouble(coefficients);
     }
 
