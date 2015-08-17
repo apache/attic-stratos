@@ -42,13 +42,11 @@
 	from health_curve_finder_concat_temp [health_description == 'memory_consumption']
 		#window.stratos:curveFitting(10 min, value, a, b, c)
 		select cluster_id, cluster_instance_id, network_partition_id, value as curve_finder_memory_consumption, a as curve_finder_a, b as curve_finder_b, c as curve_finder_c
-		output snapshot every 1 min
 		insert into curve_finder_memory_consumption_stats
 		partition by health_curve_finder_cluster_partition;
 	from health_curve_finder_concat_temp [health_description == 'load_average']
 		#window.stratos:curveFitting(10 min, value, a, b, c)
 		select cluster_id, cluster_instance_id, network_partition_id, value as curve_finder_load_average, a as curve_finder_a, b as curve_finder_b, c as curve_finder_c
-		output snapshot every 1 min
 		insert into curve_finder_load_average_stats
 		partition by health_curve_finder_cluster_partition;
 	from health_curve_finder_request
@@ -62,13 +60,11 @@
 	from member_health_curve_finder_concat_temp [health_description == 'memory_consumption']
 		#window.stratos:curveFitting(10 min, value, a, b, c)
 		select member_id, cluster_id, cluster_instance_id, network_partition_id, value as member_curve_finder_memory_consumption, a as curve_finder_a, b as curve_finder_b, c as curve_finder_c
-		output snapshot every 1 min
 		insert into member_curve_finder_memory_consumption_stats
 		partition by health_curve_finder_member_partition;
 	from member_health_curve_finder_concat_temp [health_description == 'load_average']
 		#window.stratos:curveFitting(10 min, value, a, b, c)
 		select member_id, cluster_id, cluster_instance_id, network_partition_id, value as member_curve_finder_load_average, a as curve_finder_a, b as curve_finder_b, c as curve_finder_c
-		output snapshot every 1 min
 		insert into member_curve_finder_load_average_stats
 		partition by health_curve_finder_member_partition;]]></queryExpressions>
     <exportedStreams>
