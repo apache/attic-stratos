@@ -42,8 +42,8 @@ public class CurveFitter {
         WeightedObservedPoints weightedObservedPoints = new WeightedObservedPoints();
 
         for(int i = 0 ; i < timeStampValues.length && i < dataValues.length ; i++){
-            weightedObservedPoints.add(timeStampValues[i], dataValues[i]);
-            log.info("Time stamp : " + timeStampValues[i] + "\tData : " + dataValues[i]);
+            if(timeStampValues[i] != 0 && dataValues[i] != 0)
+                weightedObservedPoints.add(timeStampValues[i], dataValues[i]);
         }
 
         /**
@@ -51,6 +51,8 @@ public class CurveFitter {
          */
         final PolynomialCurveFitter polynomialCurveFitter = PolynomialCurveFitter.create(2);
         final double[] coefficients = polynomialCurveFitter.fit(weightedObservedPoints.toList());
+
+        log.info("Coefficient a : " + coefficients[0] + " Coefficient b : " + coefficients[1]+ " Coefficient c : " + coefficients[2]);
 
         return convertDouble(coefficients);
     }
