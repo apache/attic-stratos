@@ -24,7 +24,7 @@
     <parent>
         <groupId>org.apache.stratos</groupId>
         <artifactId>stratos</artifactId>
-        <version>4.1.1-SNAPSHOT</version>
+        <version>4.1.2-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -118,7 +118,7 @@
                         <emma.home>${basedir}/target/emma</emma.home>
                     </systemProperties>
                     <suiteXmlFiles>
-                        <suiteXmlFile>src/test/resources/strats-testng.xml</suiteXmlFile>
+                        <suiteXmlFile>src/test/resources/stratos-testing.xml</suiteXmlFile>
                     </suiteXmlFiles>
                     <workingDirectory>${basedir}/target</workingDirectory>
                 </configuration>
