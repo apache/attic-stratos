@@ -149,7 +149,7 @@ body{ background: url('../images/stratos_background.png')  no-repeat; background
 .lineChart--circle {
   fill: #6bb7c7;
   stroke: #fff;
-  stroke-width: 3;
+  stroke-width: 1;
 }
 
 .lineChart--circle__highlighted {

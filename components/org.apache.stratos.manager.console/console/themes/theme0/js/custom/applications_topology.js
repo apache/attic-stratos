@@ -625,7 +625,7 @@ $("a[href='#application']").on('shown.bs.tab', function (e) {
 function showHealthStat(element){
     var currentURL = window.location.href;
     var splitTense = currentURL.split('console');
-    var newURL = splitTense[0] + "console/health_statistics/";
+    var newURL = splitTense[0] + "console/healthStatistics/";
 
     var form = $('<form action="' + newURL + '" method="post">' +
         '<input type="hidden" name="id" value="' + element.id + '"></input>' +
