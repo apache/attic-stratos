@@ -107,11 +107,11 @@ public class GCEOperations {
             }
         } catch (GeneralSecurityException e) {
             //Security exception occurred. Cant proceed further
-            log.error("Could not authenticate and build compute object");
+            log.error("Could not authenticate and build compute object", e);
             throw new GeneralSecurityException(e);
         } catch (IOException e) {
             //IO exception occurred. Cant proceed further
-            log.error("Could not authenticate and build compute object");
+            log.error("Could not authenticate and build compute object", e);
             throw new IOException(e);
         }
     }
