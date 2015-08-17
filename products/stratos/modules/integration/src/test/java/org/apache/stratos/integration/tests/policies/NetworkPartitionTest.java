@@ -19,71 +19,147 @@
 
 package org.apache.stratos.integration.tests.policies;
 
+import com.google.gson.reflect.TypeToken;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.stratos.common.beans.partition.NetworkPartitionBean;
+import org.apache.stratos.common.beans.partition.PartitionBean;
 import org.apache.stratos.integration.tests.RestConstants;
 import org.apache.stratos.integration.tests.StratosTestServerManager;
 import org.testng.annotations.Test;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
+
+import static junit.framework.Assert.*;
 
 /**
  * Test to handle Network partition CRUD operations
  */
 public class NetworkPartitionTest extends StratosTestServerManager {
     private static final Log log = LogFactory.getLog(NetworkPartitionTest.class);
-    private static final String TEST_PATH = "/network-partition-test";
+    private static final String RESOURCES_PATH = "/network-partition-test";
 
 
     @Test
     public void testNetworkPartition() {
         try {
-            String networkPartitionId = "network-partition-3";
-            log.info("Started network partition test case**************************************");
+            String networkPartitionId = "network-partition-network-partition-test";
+            log.info("-------------------------Started network partition test case-------------------------");
 
-            boolean added = restClient.addEntity(TEST_PATH + RestConstants.NETWORK_PARTITIONS_PATH + "/" +
+            boolean added = restClient.addEntity(RESOURCES_PATH + RestConstants.NETWORK_PARTITIONS_PATH + "/" +
                             networkPartitionId + ".json",
                     RestConstants.NETWORK_PARTITIONS, RestConstants.NETWORK_PARTITIONS_NAME);
 
-            assertEquals(added, true);
+            assertTrue(added);
             NetworkPartitionBean bean = (NetworkPartitionBean) restClient.
                     getEntity(RestConstants.NETWORK_PARTITIONS, networkPartitionId,
                             NetworkPartitionBean.class, RestConstants.NETWORK_PARTITIONS_NAME);
 
-            assertEquals(bean.getId(), "network-partition-3");
+            PartitionBean p1 = bean.getPartitions().get(0);
+            assertEquals(bean.getId(), "network-partition-network-partition-test");
             assertEquals(bean.getPartitions().size(), 1);
-            assertEquals(bean.getPartitions().get(0).getId(), "partition-1");
-            assertEquals(bean.getPartitions().get(0).getProperty().get(0).getName(), "region");
-            assertEquals(bean.getPartitions().get(0).getProperty().get(0).getValue(), "default");
+            assertEquals(p1.getId(), "partition-1");
+            assertEquals(p1.getProperty().get(0).getName(), "region");
+            assertEquals(p1.getProperty().get(0).getValue(), "default");
 
-            boolean updated = restClient.updateEntity(TEST_PATH + RestConstants.NETWORK_PARTITIONS_PATH + "/" +
+            boolean updated = restClient.updateEntity(RESOURCES_PATH + RestConstants.NETWORK_PARTITIONS_PATH + "/" +
                             networkPartitionId + "-v1.json",
                     RestConstants.NETWORK_PARTITIONS, RestConstants.NETWORK_PARTITIONS_NAME);
 
-            assertEquals(updated, true);
+            assertTrue(updated);
             NetworkPartitionBean updatedBean = (NetworkPartitionBean) restClient.
                     getEntity(RestConstants.NETWORK_PARTITIONS, networkPartitionId,
                             NetworkPartitionBean.class, RestConstants.NETWORK_PARTITIONS_NAME);
-            assertEquals(updatedBean.getId(), "network-partition-3");
+
+            PartitionBean p2 = updatedBean.getPartitions().get(1);
+            assertEquals(updatedBean.getId(), "network-partition-network-partition-test");
             assertEquals(updatedBean.getPartitions().size(), 2);
-            assertEquals(updatedBean.getPartitions().get(1).getId(), "partition-2");
-            assertEquals(updatedBean.getPartitions().get(1).getProperty().get(0).getName(), "region");
-            assertEquals(updatedBean.getPartitions().get(1).getProperty().get(0).getValue(), "default1");
-            assertEquals(updatedBean.getPartitions().get(1).getProperty().get(1).getName(), "zone");
-            assertEquals(updatedBean.getPartitions().get(1).getProperty().get(1).getValue(), "z1");
+            assertEquals(p2.getId(), "partition-2");
+            assertEquals(p2.getProperty().get(0).getName(), "region");
+            assertEquals(p2.getProperty().get(0).getValue(), "default1");
+            assertEquals(p2.getProperty().get(1).getName(), "zone");
+            assertEquals(p2.getProperty().get(1).getValue(), "z1");
 
             boolean removed = restClient.removeEntity(RestConstants.NETWORK_PARTITIONS,
                     networkPartitionId, RestConstants.NETWORK_PARTITIONS_NAME);
-            assertEquals(removed, true);
+            assertTrue(removed);
 
             NetworkPartitionBean beanRemoved = (NetworkPartitionBean) restClient.
                     getEntity(RestConstants.NETWORK_PARTITIONS, networkPartitionId,
                             NetworkPartitionBean.class, RestConstants.NETWORK_PARTITIONS_NAME);
-            assertEquals(beanRemoved, null);
+            assertNull(beanRemoved);
 
-            log.info("Ended network partition test case**************************************");
+            log.info("-------------------------Ended network partition test case-------------------------");
+        } catch (Exception e) {
+            log.error("An error occurred while handling network partitions", e);
+            assertTrue("An error occurred while handling network partitions", false);
+        }
+    }
+
+    @Test
+    public void testNetworkPartitionList() {
+        try {
+            String networkPartitionId1 = "network-partition-network-partition-test-1";
+            String networkPartitionId2 = "network-partition-network-partition-test-2";
+
+            log.info("-------------------------Started network partition list test case-------------------------");
+
+            boolean added = restClient.addEntity(RESOURCES_PATH + RestConstants.NETWORK_PARTITIONS_PATH + "/" +
+                            networkPartitionId1 + ".json",
+                    RestConstants.NETWORK_PARTITIONS, RestConstants.NETWORK_PARTITIONS_NAME);
+            assertTrue(added);
+
+            added = restClient.addEntity(RESOURCES_PATH + RestConstants.NETWORK_PARTITIONS_PATH + "/" +
+                            networkPartitionId2 + ".json",
+                    RestConstants.NETWORK_PARTITIONS, RestConstants.NETWORK_PARTITIONS_NAME);
+            assertTrue(added);
+
+            Type listType = new TypeToken<ArrayList<NetworkPartitionBean>>() {
+            }.getType();
+
+            List<NetworkPartitionBean> cartridgeList = (List<NetworkPartitionBean>) restClient.
+                    listEntity(RestConstants.NETWORK_PARTITIONS,
+                            listType, RestConstants.NETWORK_PARTITIONS_NAME);
+            assertEquals(cartridgeList.size(), 2);
+
+            NetworkPartitionBean bean1 = null;
+            for (NetworkPartitionBean networkPartitionBean : cartridgeList) {
+                if (networkPartitionBean.getId().equals(networkPartitionId1)) {
+                    bean1 = networkPartitionBean;
+                }
+            }
+            assertNotNull(bean1);
+
+            NetworkPartitionBean bean2 = null;
+            for (NetworkPartitionBean networkPartitionBean : cartridgeList) {
+                if (networkPartitionBean.getId().equals(networkPartitionId2)) {
+                    bean2 = networkPartitionBean;
+                }
+            }
+            assertNotNull(bean2);
+
+
+            boolean removed = restClient.removeEntity(RestConstants.NETWORK_PARTITIONS,
+                    networkPartitionId1, RestConstants.NETWORK_PARTITIONS_NAME);
+            assertTrue(removed);
+
+            NetworkPartitionBean beanRemoved = (NetworkPartitionBean) restClient.
+                    getEntity(RestConstants.NETWORK_PARTITIONS, networkPartitionId1,
+                            NetworkPartitionBean.class, RestConstants.NETWORK_PARTITIONS_NAME);
+            assertNull(beanRemoved);
+
+            removed = restClient.removeEntity(RestConstants.NETWORK_PARTITIONS,
+                    networkPartitionId2, RestConstants.NETWORK_PARTITIONS_NAME);
+            assertTrue(removed);
+
+            beanRemoved = (NetworkPartitionBean) restClient.
+                    getEntity(RestConstants.NETWORK_PARTITIONS, networkPartitionId2,
+                            NetworkPartitionBean.class, RestConstants.NETWORK_PARTITIONS_NAME);
+            assertNull(beanRemoved);
+
+            log.info("-------------------------Ended network partition test case-------------------------");
         } catch (Exception e) {
             log.error("An error occurred while handling network partitions", e);
             assertTrue("An error occurred while handling network partitions", false);

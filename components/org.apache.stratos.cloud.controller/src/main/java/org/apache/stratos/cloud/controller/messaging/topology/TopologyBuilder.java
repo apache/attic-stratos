@@ -452,6 +452,16 @@ public class TopologyBuilder {
                         MemberStatus.Initialized);
                 return;
             } else {
+
+                Cluster cluster = service.getCluster(memberContext.getClusterId());
+                String clusterId = cluster.getClusterId();
+                ClusterContext clusterContext = CloudControllerContext.getInstance().getClusterContext(clusterId);
+                List<KubernetesService> kubernetesServices = clusterContext.getKubernetesServices();
+
+                if (kubernetesServices != null) {
+                    cluster.setKubernetesServices(kubernetesServices);
+                }
+
                 member.setStatus(MemberStatus.Initialized);
                 log.info("Member status updated to initialized");
 
@@ -845,11 +855,9 @@ public class TopologyBuilder {
         try {
             TopologyManager.acquireWriteLock();
             List<KubernetesService> kubernetesServices = clusterContext.getKubernetesServices();
-            cluster.setKubernetesServices(kubernetesServices);
 
             if (kubernetesServices != null) {
-                // Set kubernetes services
-                cluster.setKubernetesServices(kubernetesServices);
+               
                 try {
                     // Generate access URLs for kubernetes services
                     for (KubernetesService kubernetesService : kubernetesServices) {

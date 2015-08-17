@@ -107,7 +107,7 @@ public class KubernetesIaas extends Iaas {
             if (parameterArray != null) {
                 for (String parameter : parameterArray) {
                     if (parameter != null) {
-                        String[] nameValueArray = parameter.split(PAYLOAD_PARAMETER_NAME_VALUE_SEPARATOR);
+                        String[] nameValueArray = parameter.split(PAYLOAD_PARAMETER_NAME_VALUE_SEPARATOR, 2);
                         if ((nameValueArray != null) && (nameValueArray.length == 2)) {
                             NameValuePair nameValuePair = new NameValuePair(nameValueArray[0], nameValueArray[1]);
                             payload.add(nameValuePair);
@@ -525,9 +525,18 @@ public class KubernetesIaas extends Iaas {
                 String containerPortName = KubernetesIaasUtil.preparePortNameFromPortMapping(clusterPortMapping);
 
                 try {
-                    // Services need to use minions private IP addresses for creating iptable rules
-                    kubernetesApi.createService(serviceId, serviceLabel, servicePort, serviceType, containerPortName,
-                            containerPort, sessionAffinity);
+                    // If kubernetes service is already created, skip creating a new one
+                    if (kubernetesApi.getService(serviceId) == null) {
+                        // Services need to use minions private IP addresses for creating iptable rules
+                        kubernetesApi.createService(serviceId, serviceLabel, servicePort, serviceType, containerPortName,
+                                containerPort, sessionAffinity);
+                    } else {
+                        if (log.isDebugEnabled()) {
+                            log.debug(String.format("Kubernetes service is already created: [cluster] %s [service] %s " +
+                                            "[protocol] %s [service-port] %d [container-port] %d", clusterId,
+                                    serviceId, clusterPortMapping.getProtocol(), servicePort, containerPort));
+                        }
+                    }
                 } finally {
                     // Persist kubernetes service sequence no
                     CloudControllerContext.getInstance().persist();
@@ -547,6 +556,7 @@ public class KubernetesIaas extends Iaas {
                 String[] minionPublicIPArray = minionPublicIPList.toArray(new String[minionPublicIPList.size()]);
                 kubernetesService.setPublicIPs(minionPublicIPArray);
                 kubernetesService.setProtocol(clusterPortMapping.getProtocol());
+                kubernetesService.setPortName(clusterPortMapping.getName());
 
                 String kubernetesServiceType = service.getSpec().getType();
                 kubernetesService.setServiceType(kubernetesServiceType);
@@ -622,15 +632,25 @@ public class KubernetesIaas extends Iaas {
                     String serviceType = portMapping.getKubernetesPortType();
                     clusterPortMapping.setKubernetesServiceType(serviceType);
 
-                    if (serviceType.equals(KubernetesConstants.NODE_PORT)) {
-                        int nextServicePort = kubernetesClusterContext.getNextServicePort();
-                        if (nextServicePort == -1) {
-                            throw new RuntimeException(String.format("Could not generate service port: [cluster-id] %s " +
-                                    "[port] %d", clusterId, portMapping.getPort()));
+                    //If kubernetes service port is already set, skip setting a new one
+                    if (clusterPortMapping.getKubernetesServicePort() == 0) {
+                        if (serviceType.equals(KubernetesConstants.NODE_PORT)) {
+                            int nextServicePort = kubernetesClusterContext.getNextServicePort();
+                            if (nextServicePort == -1) {
+                                throw new RuntimeException(String.format("Could not generate service port: [cluster-id] %s " +
+                                        "[port] %d", clusterId, portMapping.getPort()));
+                            }
+                            clusterPortMapping.setKubernetesServicePort(nextServicePort);
+                        } else {
+                            clusterPortMapping.setKubernetesServicePort(portMapping.getPort());
                         }
-                        clusterPortMapping.setKubernetesServicePort(nextServicePort);
                     } else {
-                        clusterPortMapping.setKubernetesServicePort(portMapping.getPort());
+                        if (log.isDebugEnabled()) {
+                            log.debug(String.format("Kubernetes service port is already set: [application-id] %s " +
+                                            "[cluster-id] %s [port] %d [service-port] %d",
+                                    applicationId, clusterId, clusterPortMapping.getPort(),
+                                    clusterPortMapping.getKubernetesServicePort()));
+                        }
                     }
 
                     // Add port mappings to payload

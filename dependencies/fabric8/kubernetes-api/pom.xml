@@ -22,14 +22,12 @@
   <parent>
     <groupId>org.apache.stratos</groupId>
     <artifactId>stratos-dependencies-fabric8</artifactId>
-    <version>4.1.1-SNAPSHOT</version>
+    <version>4.1.2-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>kubernetes-api</artifactId>
-  <version>${kubernetes.api.stratos.version}</version>
   <packaging>bundle</packaging>
-
   <name>Fabric8 :: Kubernetes API</name>
   <description>
     This is a wrapper bundle for Fabric8 Kubernetes API for exposing proper bundle import
@@ -141,8 +139,8 @@
           <instructions>
             <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
             <Export-Package>
-              io.fabric8.kubernetes.api.*;version=${kubernetes.api.stratos.version},
-              io.fabric8.kubernetes.api.model.*;version=${kubernetes.api.stratos.version},
+              io.fabric8.kubernetes.api.*;version=${kubernetes.api.version},
+              io.fabric8.kubernetes.api.model.*;version=${kubernetes.api.version},
               io.fabric8.kubernetes.internal.*,
             </Export-Package>
             <Import-Package>

@@ -32,7 +32,7 @@ import java.io.Serializable;
 public class BasicPayloadData implements Serializable {
 
     private static Log log = LogFactory.getLog(BasicPayloadData.class);
-
+    protected StringBuilder payloadBuilder;
     private String appId;
     private String groupName;
     private String serviceName;
@@ -48,6 +48,7 @@ public class BasicPayloadData implements Serializable {
     private String subscriptionKey;
     private String applicationPath;
     private String gitRepositoryUrl;
+    private String ports;
     private String portMappings;
     private String multitenant;
     private String provider;
@@ -56,9 +57,7 @@ public class BasicPayloadData implements Serializable {
     private String[] dependencyClusterIDs;
     private String[] exportMetadataKeys;
     private String[] importMetadataKeys;
-	private String lvsVirtualIP;
-
-    protected StringBuilder payloadBuilder;
+    private String lvsVirtualIP;
 
     public BasicPayloadData() {
 
@@ -96,7 +95,9 @@ public class BasicPayloadData implements Serializable {
         payloadBuilder.append(",");
         payloadBuilder.append("REPO_URL=" + getGitRepositoryUrl());
         payloadBuilder.append(",");
-        payloadBuilder.append("PORTS=" + getPortMappings());
+        payloadBuilder.append("PORTS=" + getPorts());
+        payloadBuilder.append(",");
+        payloadBuilder.append("PORT_MAPPINGS=" + getPortMappings());
         payloadBuilder.append(",");
         payloadBuilder.append("PROVIDER=" + getProvider());
 
@@ -129,10 +130,10 @@ public class BasicPayloadData implements Serializable {
         if (getExportMetadataKeys() != null) {
             payloadBuilder.append("IMPORT_METADATA_KEYS=" + getImportMetadataKeys());
         }
-	    payloadBuilder.append(",");
-	    if(getLvsVirtualIP()!=null && !getLvsVirtualIP().equals("")){
-		    payloadBuilder.append("LVS_VIRTUAL_IP=" +getLvsVirtualIP());
-	    }
+        payloadBuilder.append(",");
+        if (getLvsVirtualIP() != null && !getLvsVirtualIP().equals("")) {
+            payloadBuilder.append("LVS_VIRTUAL_IP=" + getLvsVirtualIP());
+        }
     }
 
     public String getServiceName() {
@@ -228,6 +229,14 @@ public class BasicPayloadData implements Serializable {
         this.gitRepositoryUrl = gitRepositoryUrl;
     }
 
+    public String getPorts() {
+        return ports;
+    }
+
+    public void setPorts(String ports) {
+        this.ports = ports;
+    }
+
     public String getPortMappings() {
         return portMappings;
     }
@@ -235,6 +244,7 @@ public class BasicPayloadData implements Serializable {
     public void setPortMappings(String portMappings) {
         this.portMappings = portMappings;
     }
+
 
     public String getMultitenant() {
         return multitenant;
@@ -394,11 +404,11 @@ public class BasicPayloadData implements Serializable {
         this.importMetadataKeys = importMetadataKeys;
     }
 
-	public String getLvsVirtualIP() {
-		return lvsVirtualIP;
-	}
+    public String getLvsVirtualIP() {
+        return lvsVirtualIP;
+    }
 
-	public void setLvsVirtualIP(String lvsVirtualIP) {
-		this.lvsVirtualIP = lvsVirtualIP;
-	}
+    public void setLvsVirtualIP(String lvsVirtualIP) {
+        this.lvsVirtualIP = lvsVirtualIP;
+    }
 }

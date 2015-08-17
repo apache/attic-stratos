@@ -27,7 +27,9 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.stratos.common.test.TestLogAppender;
 import org.apache.stratos.integration.tests.application.SampleApplicationsTest;
+import org.apache.stratos.integration.tests.rest.IntegrationMockClient;
 import org.apache.stratos.integration.tests.rest.RestClient;
+import org.apache.stratos.mock.iaas.client.MockIaasApiClient;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
 import org.wso2.carbon.integration.framework.TestServerManager;
@@ -49,24 +51,26 @@ public class StratosTestServerManager extends TestServerManager {
     private static final Log log = LogFactory.getLog(StratosTestServerManager.class);
 
     private final static String CARBON_ZIP = SampleApplicationsTest.class.getResource("/").getPath() +
-            "/../../../distribution/target/apache-stratos-4.1.1-SNAPSHOT.zip";
+            "/../../../distribution/target/apache-stratos-4.1.2-SNAPSHOT.zip";
     private final static int PORT_OFFSET = 0;
     private static final String ACTIVEMQ_BIND_ADDRESS = "tcp://localhost:61617";
     private static final String MOCK_IAAS_XML_FILE = "mock-iaas.xml";
     private static final String JNDI_PROPERTIES_FILE = "jndi.properties";
     private static final String JMS_OUTPUT_ADAPTER_FILE = "JMSOutputAdaptor.xml";
     protected RestClient restClient;
-    private String endpoint = "https://localhost:9443";
+    private String endpoint = "http://localhost:9763";
 
     private BrokerService broker = new BrokerService();
     private TestLogAppender testLogAppender = new TestLogAppender();
     private ServerUtils serverUtils;
     private String carbonHome;
+    protected IntegrationMockClient mockIaasApiClient;
 
     public StratosTestServerManager() {
         super(CARBON_ZIP, PORT_OFFSET);
         serverUtils = new ServerUtils();
         restClient = new RestClient(endpoint, "admin", "admin");
+        mockIaasApiClient = new IntegrationMockClient(endpoint + "/mock-iaas/api");
     }
 
     @Override
