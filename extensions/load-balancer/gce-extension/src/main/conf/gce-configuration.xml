@@ -26,7 +26,6 @@
 
     <operationTimeout>10000</operationTimeout>
     <namePrefix>lb</namePrefix>
-
-    <log4jPropertiesFileName>log4j.properties</log4jPropertiesFileName>
+    <gceApiUrl>https://www.googleapis.com/compute/v1/projects/</gceApiUrl>
 
 </gceConfiguration>

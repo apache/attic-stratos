@@ -53,6 +53,8 @@ public class Constants {
     //other properties
     public static final String OPERATION_TIMEOUT = "operationTimeout";
     public static final String NAME_PREFIX = "namePrefix";
+    public static final String GCE_API_URL="gceApiUrl";
+
 
     //PROTOCOL should be TCP or UDP
     public static final String PROTOCOL = "TCP";
@@ -60,4 +62,10 @@ public class Constants {
     public static final String DEFAULT_PORT_RANGE="1-65535";
     //maximum length the name which allowed by GCE API
     public static final int MAX_NAME_LENGTH = 62;
+
+    //the forward slash character
+    public static final String FORWARD_SLASH="/";
+    //strings
+    public static final String ZONES_STR="zones";
+    public static final String INSTANCES_STR="instances";
 }

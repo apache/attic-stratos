@@ -48,6 +48,7 @@ public class GCEContext {
     private String healthCheckIntervalSec;
     private String healthCheckUnhealthyThreshold;
     private String healthCheckHealthyThreshold;
+    private String gceApiUrl;
 
     //other properties
     private String namePrefix;
@@ -84,6 +85,7 @@ public class GCEContext {
         validateProperty(healthCheckHealthyThreshold);
         validateProperty(networkName);
         validateProperty(operationTimeout);
+        validateProperty(gceApiUrl);
 
         if (cepStatsPublisherEnabled) {
             validateProperty(Constants.THRIFT_RECEIVER_IP);
@@ -224,4 +226,8 @@ public class GCEContext {
     public void setThriftReceiverPort(String thriftReceiverPort) {
         this.thriftReceiverPort = thriftReceiverPort;
     }
+
+    public String getGceApiUrl() { return gceApiUrl; }
+
+    public void setGceApiUrl(String gceApiUrl) { this.gceApiUrl = gceApiUrl; }
 }

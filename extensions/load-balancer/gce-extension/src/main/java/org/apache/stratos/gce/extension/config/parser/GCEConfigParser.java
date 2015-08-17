@@ -242,6 +242,7 @@ public class GCEConfigParser {
         OMElement operationTimeoutElement = AxiomXpathParserUtil.getFirstChildElement(documentElement, Constants.
                 OPERATION_TIMEOUT);
         OMElement namePrefixElement = AxiomXpathParserUtil.getFirstChildElement(documentElement, Constants.NAME_PREFIX);
+        OMElement gceApiUrlElement = AxiomXpathParserUtil.getFirstChildElement(documentElement, Constants.GCE_API_URL);
 
         //set extracted properties to gceContext object
         if (operationTimeoutElement != null) {
@@ -255,6 +256,13 @@ public class GCEConfigParser {
             gceContext.setNamePrefix(namePrefixElement.getText());
             if (log.isDebugEnabled()) {
                 log.debug("Name prefix: " + namePrefixElement.getText());
+            }
+        }
+
+        if (gceApiUrlElement != null) {
+            gceContext.setGceApiUrl(gceApiUrlElement.getText());
+            if (log.isDebugEnabled()) {
+                log.debug("GCE API URL: " + gceApiUrlElement.getText());
             }
         }
     }

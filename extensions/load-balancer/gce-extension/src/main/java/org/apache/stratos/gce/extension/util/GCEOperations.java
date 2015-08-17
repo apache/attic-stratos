@@ -29,6 +29,7 @@ import com.google.api.services.compute.ComputeScopes;
 import com.google.api.services.compute.model.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.stratos.gce.extension.config.Constants;
 import org.apache.stratos.gce.extension.config.GCEContext;
 import org.apache.stratos.load.balancer.extension.api.exception.LoadBalancerExtensionException;
 
@@ -65,6 +66,9 @@ public class GCEOperations {
     //a timeout for operation completion
     private static final int OPERATION_TIMEOUT = Integer.parseInt(GCEContext.getInstance().getOperationTimeout());
     static Compute compute;
+
+    //the url of the GCE API
+    private static final String GCE_API_URL = GCEContext.getInstance().getGceApiUrl();
 
     /**
      * Constructor for GCE Operations Class
@@ -116,7 +120,7 @@ public class GCEOperations {
      * Get list of instances in given project and zone which matches the given filter
      *
      * @param zoneName - name of the zone
-     * @param filter - a condition to filter the instances
+     * @param filter   - a condition to filter the instances
      * @return instanceList - list of instances(members in Stratos side)
      */
     public static InstanceList getInstanceList(String zoneName, String filter) {
@@ -226,14 +230,17 @@ public class GCEOperations {
      * @return - the self link of the instance
      */
     private static String createInstanceSelfLink(String instanceId) {
-        return "https://www.googleapis.com/compute/v1/projects/" + PROJECT_ID +
-                "/zones/" + getZoneNameFromInstanceId(instanceId) + "/instances/" + getInstanceNameFromInstanceId(instanceId);
+
+        return GCE_API_URL + PROJECT_ID +
+                Constants.FORWARD_SLASH + Constants.ZONES_STR + Constants.FORWARD_SLASH +
+                getZoneNameFromInstanceId(instanceId) + Constants.FORWARD_SLASH + Constants.INSTANCES_STR +
+                Constants.FORWARD_SLASH + getInstanceNameFromInstanceId(instanceId);
     }
 
     /**
      * Creating a new target pool in IaaS
      *
-     * @param targetPoolName - name of the target pool in IaaS
+     * @param targetPoolName  - name of the target pool in IaaS
      * @param healthCheckName - name of the health check in IaaS
      */
     public void createTargetPool(String targetPoolName, String healthCheckName) {
@@ -390,7 +397,7 @@ public class GCEOperations {
             String instanceUrl = createInstanceSelfLink(instanceId);
             instanceReferenceList.add(new InstanceReference().
                     setInstance(instanceUrl));
-            if (log.isDebugEnabled()){
+            if (log.isDebugEnabled()) {
                 log.debug("Instance " + instanceId + " was added to instance reference list");
             }
         }
@@ -439,7 +446,7 @@ public class GCEOperations {
             if (instanceUrl != null) {
                 instanceReferenceList.add(new InstanceReference().
                         setInstance(instanceUrl));
-                if (log.isDebugEnabled()){
+                if (log.isDebugEnabled()) {
                     log.debug("Instance " + instanceId + " was added to instance reference list");
                 }
             }
@@ -536,7 +543,7 @@ public class GCEOperations {
                 timeout += 1000;
             }
         } catch (Exception e) {
-            log.error("Could not wait for global operation completion " + operationName , e);
+            log.error("Could not wait for global operation completion " + operationName, e);
             throw new LoadBalancerExtensionException(e);
         }
     }
@@ -571,7 +578,7 @@ public class GCEOperations {
                 timeout += 1000;
             }
         } catch (Exception e) {
-            log.error("Could not wait for region operation completion " + operationName , e);
+            log.error("Could not wait for region operation completion " + operationName, e);
             throw new LoadBalancerExtensionException(e);
         }
     }
