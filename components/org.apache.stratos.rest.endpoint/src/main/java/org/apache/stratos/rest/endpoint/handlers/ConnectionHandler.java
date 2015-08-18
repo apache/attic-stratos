@@ -42,27 +42,20 @@ public class ConnectionHandler {
     public Connection getsqlConnection() {
 
         dataSource = null;
-
         try{
 
             if(isJndiLookup) {
-
                 // Obtain the datasource via a JNDI lookup, by passing the jndi config name
                 dataSource = (DataSource) InitialContext.doLookup("jdbc/DataSourcetoPublishHealthStatRDBMS");
-
             } else {
-
                 // Obtain the datasource by passing the data source name
                 dataSource = (DataSource) DataSourceManager.getInstance()
                         .getDataSourceRepository().getDataSource("DataSourcetoPublishHealthStatRDBMS")
                         .getDSObject();
             }
-
             if (dataSource != null) {
                 connection = dataSource.getConnection();
-
             }
-
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("Error " + e.getMessage());
@@ -75,8 +68,6 @@ public class ConnectionHandler {
             connection.close();
             connection = null;
         }
-
     }
-
 }
 

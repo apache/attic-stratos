@@ -3675,11 +3675,9 @@ public class StratosApiV41Utils {
         } catch (SQLException ex) {
             log.error("SQLException: ", ex);
             throw new RestAPIException(ex.getMessage(),ex);
-
         } catch (Exception ex) {
             log.error("Exception: ", ex);
             throw new RestAPIException(ex.getMessage(),ex);
-
         } finally {
             try {
                 connectionHandler.closeConnection();
@@ -3688,9 +3686,7 @@ public class StratosApiV41Utils {
                 throw new RestAPIException(ex.getMessage(),ex);
             }
         }
-
         if (!averageClusterMemoryList.isEmpty()) {
-
             return new Gson().toJson(averageClusterMemoryList);
         } else {
             return null;
@@ -3724,27 +3720,21 @@ public class StratosApiV41Utils {
         } catch (SQLException ex) {
             log.error("SQLException: ", ex);
             throw new RestAPIException(ex.getMessage(),ex);
-
         } catch (Exception ex) {
             log.error("Exception: ", ex);
             throw new RestAPIException(ex.getMessage(),ex);
-
         } finally {
             try {
                 connectionHandler.closeConnection();
             } catch (SQLException ex) {
                 log.error("SQLException: ", ex);
                 throw new RestAPIException(ex.getMessage(),ex);
-
             }
         }
 
         if (!averageMemberLoadList.isEmpty()) {
-
             return new Gson().toJson(averageMemberLoadList);
-
         } else {
-
             return null;
         }
     }
@@ -3775,26 +3765,21 @@ public class StratosApiV41Utils {
         } catch (SQLException ex) {
             log.error("SQLException: ", ex);
             throw new RestAPIException(ex.getMessage(),ex);
-
         } catch (Exception ex) {
             log.error("Exception: ", ex);
             throw new RestAPIException(ex.getMessage(),ex);
-
         } finally {
             try {
                 connectionHandler.closeConnection();
             } catch (SQLException ex) {
                 log.error("SQLException: ", ex);
                 throw new RestAPIException(ex.getMessage(),ex);
-
             }
         }
 
         if (!averageMemberMemoryList.isEmpty()) {
             return new Gson().toJson(averageMemberMemoryList);
-
         } else {
-
             return null;
         }
     }
@@ -3827,27 +3812,22 @@ public class StratosApiV41Utils {
         } catch (SQLException ex) {
             log.error("SQLException: ", ex);
             throw new RestAPIException(ex.getMessage(),ex);
-
         } catch (Exception ex) {
             log.error("Exception: ", ex);
             throw new RestAPIException(ex.getMessage(),ex);
-
         } finally {
             try {
                 connectionHandler.closeConnection();
             } catch (SQLException ex) {
                 log.error("SQLException: ", ex);
                 throw new RestAPIException(ex.getMessage(),ex);
-
             }
         }
 
         if (!averageMemberLoadList.isEmpty()) {
             return new Gson().toJson(averageMemberLoadList);
         } else {
-
             return null;
-
         }
     }
 
@@ -3878,28 +3858,22 @@ public class StratosApiV41Utils {
         } catch (SQLException ex) {
             log.error("SQLException: ", ex);
             throw new RestAPIException(ex.getMessage(),ex);
-
         } catch (Exception ex) {
             log.error("Exception: ", ex);
             throw new RestAPIException(ex.getMessage(),ex);
-
         } finally {
             try {
                 connectionHandler.closeConnection();
             } catch (SQLException ex) {
                 log.error("SQLException: ", ex);
                 throw new RestAPIException(ex.getMessage(),ex);
-
             }
         }
 
         if (!inFlightRequestBeanList.isEmpty()) {
-
             return new Gson().toJson(inFlightRequestBeanList);
         } else {
-
             return null;
-
         }
     }
 
