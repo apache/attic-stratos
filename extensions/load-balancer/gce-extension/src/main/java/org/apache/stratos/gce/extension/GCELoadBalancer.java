@@ -87,7 +87,7 @@ public class GCELoadBalancer implements LoadBalancer {
                             log.debug("Cluster " + cluster.getClusterId() + " has one or more members");
                         }
                         activeClusterIdList.add(cluster.getClusterId());
-                        if (log.isDebugEnabled()){
+                        if (log.isDebugEnabled()) {
                             log.debug("Cluster " + cluster.getClusterId() + " was added to active cluster id list");
                         }
 
@@ -98,10 +98,10 @@ public class GCELoadBalancer implements LoadBalancer {
 
                             if (member.getInstanceId() != null && !gceClusterConfigurationHolder.getMemberList().
                                     contains(member.getInstanceId())) {
-                                    if (log.isDebugEnabled()) {
-                                        log.debug("New member found: " + member.getInstanceId());
-                                    }
-                                    membersToBeAddedToTargetPool.add(member.getInstanceId());
+                                if (log.isDebugEnabled()) {
+                                    log.debug("New member found: " + member.getInstanceId());
+                                }
+                                membersToBeAddedToTargetPool.add(member.getInstanceId());
                             }
                         }
 
@@ -216,12 +216,16 @@ public class GCELoadBalancer implements LoadBalancer {
 
         //if any cluster is removed from the topology or if any cluster does not have at least one member,
         //remove those clusters from map and remove the configuration from GCE too
+        List<String> clustersToBeRemoved = new ArrayList<String>();
         for (String clusterId : clusterToLoadBalancerConfigurationMap.keySet()) {
             if (!activeClusterIdList.contains(clusterId)) {
                 log.info("Removing the configuration for cluster " + clusterId + "...");
-                deleteConfigurationForCluster(clusterId);
-                clusterToLoadBalancerConfigurationMap.remove(clusterId);
+                clustersToBeRemoved.add(clusterId);
             }
+        }
+        for (String clusterId : clustersToBeRemoved) {
+            deleteConfigurationForCluster(clusterId); //remove from GCE
+            clusterToLoadBalancerConfigurationMap.remove(clusterId); //remove from local map
         }
         activeClusterIdList.clear();
         log.info("Load balancer was configured as given topology");
