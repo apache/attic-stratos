@@ -19,15 +19,19 @@
 
 package org.apache.stratos.common.beans.healthStatistics;
 
+/*
+* This bean class may use to create the data transfer objects for Average Memory data of clusters and members.
+* */
 public class AverageMemoryConsumptionBean {
+
     private static final long serialVersionUID = -7788619177798333711L;
 
-    private String clusterId;
-    private Double memberAverageMemoryConsumption;
-    private Long timeStamp;
-    private String memberId;
+    private final String clusterId;
+    private final Double memberAverageMemoryConsumption;
+    private final Long timeStamp;
+    private final String memberId;
 
-    public AverageMemoryConsumptionBean(String clusterId, Double memberAverageMemoryConsumption, Long timeStamp, String memberId) {
+    public AverageMemoryConsumptionBean(final String clusterId,final Double memberAverageMemoryConsumption,final Long timeStamp,final String memberId) {
         this.clusterId = clusterId;
         this.memberAverageMemoryConsumption = memberAverageMemoryConsumption;
         this.timeStamp = timeStamp;
@@ -38,32 +42,16 @@ public class AverageMemoryConsumptionBean {
         return clusterId;
     }
 
-    public void setClusterId(String clusterId) {
-        this.clusterId = clusterId;
-    }
-
     public Double getMemberAverageMemoryConsumption() {
         return memberAverageMemoryConsumption;
-    }
-
-    public void setMemberAverageMemoryConsumption(Double memberAverageMemoryConsumption) {
-        this.memberAverageMemoryConsumption = memberAverageMemoryConsumption;
     }
 
     public Long getTimeStamp() {
         return timeStamp;
     }
 
-    public void setTimeStamp(Long timeStamp) {
-        this.timeStamp = timeStamp;
-    }
-
     public String getMemberId() {
         return memberId;
-    }
-
-    public void setMemberId(String memberId) {
-        this.memberId = memberId;
     }
 
 }

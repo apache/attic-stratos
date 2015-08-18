@@ -19,14 +19,17 @@
 
 package org.apache.stratos.common.beans.healthStatistics;
 
-
+/*
+* This bean class may use to create the data transfer objects for Load Average data of clusters and members.
+* */
 public class AverageLoadAverageBean {
+
     private static final long serialVersionUID = -7788619177798333712L;
 
-    private String clusterId;
-    private Long timeStamp;
-    private Double memberAverageLoadAverage;
-    private String memberId;
+    private final String clusterId;
+    private final Long timeStamp;
+    private final Double memberAverageLoadAverage;
+    private final String memberId;
 
     public AverageLoadAverageBean(String clusterId, Long timeStamp, Double memberAverageLoadAverage, String memberId) {
         this.clusterId = clusterId;
@@ -34,41 +37,21 @@ public class AverageLoadAverageBean {
         this.memberAverageLoadAverage = memberAverageLoadAverage;
         this.memberId = memberId;
     }
-    
-    
 
     public String getClusterId() {
         return clusterId;
     }
 
-    public void setClusterId(String clusterId) {
-        this.clusterId = clusterId;
-    }
-
-
     public Double getMemberAverageLoadAverage() {
         return memberAverageLoadAverage;
-    }
-
-    public void setMemberAverageLoadAverage(Double memberAverageLoadAverage) {
-        this.memberAverageLoadAverage = memberAverageLoadAverage;
     }
 
     public Long getTimeStamp() {
         return timeStamp;
     }
 
-    public void setTimeStamp(Long timeStamp) {
-        this.timeStamp = timeStamp;
-    }
-
     public String getMemberId() {
         return memberId;
     }
-
-    public void setMemberId(String memberId) {
-        this.memberId = memberId;
-    }
-
     
 }

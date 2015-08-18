@@ -19,14 +19,16 @@
 
 package org.apache.stratos.common.beans.healthStatistics;
 
-
+/*
+* This bean class may use to create the data transfer objects for Inflight request data of clusters.
+* */
 public class InFlightRequestBean {
 
     private static final long serialVersionUID = -7788619177798333712L;
 
-    private String clusterId;
-    private Long timeStamp;
-    private Double inFlightRequestCount;
+    private final String clusterId;
+    private final Long timeStamp;
+    private final Double inFlightRequestCount;
 
     public InFlightRequestBean(String clusterId, Long timeStamp, Double inFlightRequestCount) {
         this.clusterId = clusterId;
@@ -34,32 +36,16 @@ public class InFlightRequestBean {
         this.inFlightRequestCount = inFlightRequestCount;
     }
 
-    
-    
-
     public String getClusterId() {
         return clusterId;
-    }
-
-    public void setClusterId(String clusterId) {
-        this.clusterId = clusterId;
     }
 
     public Double getInFlightRequestCount() {
         return inFlightRequestCount;
     }
 
-    public void setInFlightRequestCount(Double inFlightRequestCount) {
-        this.inFlightRequestCount = inFlightRequestCount;
-    }
-
-
     public Long getTimeStamp() {
         return timeStamp;
-    }
-
-    public void setTimeStamp(Long timeStamp) {
-        this.timeStamp = timeStamp;
     }
 
 }
