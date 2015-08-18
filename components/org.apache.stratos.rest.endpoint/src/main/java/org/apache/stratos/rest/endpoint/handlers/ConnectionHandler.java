@@ -28,6 +28,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+
+/*This class creates the connection to the database using the datasource Name DataSourcetoPublishHealthStatRDBMS
+* and closes the connection after quering the data.
+* It will throws the exceptions if occured while creating database connection.
+* */
 public class ConnectionHandler {
 
     Connection connection;
@@ -53,12 +58,10 @@ public class ConnectionHandler {
                         .getDSObject();
             }
 
-
             if (dataSource != null) {
                 connection = dataSource.getConnection();
 
             }
-
 
         } catch (Exception e) {
             e.printStackTrace();
