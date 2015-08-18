@@ -80,6 +80,7 @@ class CLI(Cmd):
         make_option('-e', '--email', type="str", help="Email of the user"),
         make_option('-o', '--profile_name', type="str", help="Profile name of the user")
     ])
+    @auth
     def do_add_user(self, line , opts=None):
         """Add a user."""
         try:
@@ -580,7 +581,7 @@ class CLI(Cmd):
         """Retrieve details of available cartridges."""
         try:
             if not filter_text:
-                print("")
+                print("usage: describe-cartridge-by-filter [filter]")
             else:
                 cartridges = Stratos.list_cartridges_by_filter(filter_text)
                 table = PrintableTable()
