@@ -3658,16 +3658,13 @@ public class StratosApiV41Utils {
      */
     public static String getAverageClusterMemoryByClusterId(String Id, String startTime, String endTime) throws RestAPIException {
 
-
         String averageClusterMemoryQuery = "SELECT value AS MEMBER_AVERAGE_MEMORY_CONSUMPTION,ID,timeStamp FROM HealthStatisticsTable " +
                 "WHERE ID = \"" + Id + "\" AND timeStamp BETWEEN " + startTime + " AND " + endTime + " AND " +
                 "type = \"cluster_average_memory_consumption\" GROUP BY from_unixtime(timeStamp/1000,\"%Y-%m-%d %H:%i\");";
 
-
-
         List<AverageMemoryConsumptionBean> averageClusterMemoryList = new ArrayList<AverageMemoryConsumptionBean>();
-
         ConnectionHandler connectionHandler = new ConnectionHandler();
+
         try {
 
             Statement statement = connectionHandler.getsqlConnection().createStatement();
@@ -3677,19 +3674,20 @@ public class StratosApiV41Utils {
             }
         } catch (SQLException ex) {
             log.error("SQLException: ", ex);
-            throw new RestAPIException(ex.getMessage());
+            throw new RestAPIException(ex.getMessage(),ex);
+
         } catch (Exception ex) {
             log.error("Exception: ", ex);
-            throw new RestAPIException(ex.getMessage());
+            throw new RestAPIException(ex.getMessage(),ex);
+
         } finally {
             try {
                 connectionHandler.closeConnection();
             } catch (SQLException ex) {
                 log.error("SQLException: ", ex);
-                throw new RestAPIException(ex.getMessage());
+                throw new RestAPIException(ex.getMessage(),ex);
             }
         }
-
 
         if (!averageClusterMemoryList.isEmpty()) {
 
@@ -3713,10 +3711,9 @@ public class StratosApiV41Utils {
                 "WHERE ID = \"" + Id + "\" AND timeStamp BETWEEN " + startTime + " AND " + endTime + " AND " +
                 "type = \"cluster_average_load_average\" GROUP BY from_unixtime(timeStamp/1000,\"%Y-%m-%d %H:%i\");";
 
-
         List<AverageLoadAverageBean> averageMemberLoadList = new ArrayList<AverageLoadAverageBean>();
-
         ConnectionHandler connectionHandler = new ConnectionHandler();
+
         try {
 
             Statement statement = connectionHandler.getsqlConnection().createStatement();
@@ -3726,19 +3723,21 @@ public class StratosApiV41Utils {
             }
         } catch (SQLException ex) {
             log.error("SQLException: ", ex);
-            throw new RestAPIException(ex.getMessage());
+            throw new RestAPIException(ex.getMessage(),ex);
+
         } catch (Exception ex) {
             log.error("Exception: ", ex);
-            throw new RestAPIException(ex.getMessage());
+            throw new RestAPIException(ex.getMessage(),ex);
+
         } finally {
             try {
                 connectionHandler.closeConnection();
             } catch (SQLException ex) {
                 log.error("SQLException: ", ex);
-                throw new RestAPIException(ex.getMessage());
+                throw new RestAPIException(ex.getMessage(),ex);
+
             }
         }
-
 
         if (!averageMemberLoadList.isEmpty()) {
 
@@ -3759,12 +3758,9 @@ public class StratosApiV41Utils {
      */
     public static String getAverageMemberMemoryByMemberId(String Id, String startTime, String endTime) throws RestAPIException {
 
-
         String memberIfQueryforMemory = "SELECT value AS MEMBER_AVERAGE_MEMORY_CONSUMPTION,ID,timeStamp FROM HealthStatisticsTable " +
                 "WHERE ID = \"" + Id + "\" AND timeStamp BETWEEN " + startTime + " AND " + endTime + " AND " +
                 "type = \"member_average_memory_consumption\" GROUP BY from_unixtime(timeStamp/1000,\"%Y-%m-%d %H:%i\");";
-
-
 
         List<AverageMemoryConsumptionBean> averageMemberMemoryList = new ArrayList<AverageMemoryConsumptionBean>();
         ConnectionHandler connectionHandler = new ConnectionHandler();
@@ -3778,16 +3774,19 @@ public class StratosApiV41Utils {
             }
         } catch (SQLException ex) {
             log.error("SQLException: ", ex);
-            throw new RestAPIException(ex.getMessage());
+            throw new RestAPIException(ex.getMessage(),ex);
+
         } catch (Exception ex) {
             log.error("Exception: ", ex);
-            throw new RestAPIException(ex.getMessage());
+            throw new RestAPIException(ex.getMessage(),ex);
+
         } finally {
             try {
                 connectionHandler.closeConnection();
             } catch (SQLException ex) {
                 log.error("SQLException: ", ex);
-                throw new RestAPIException(ex.getMessage());
+                throw new RestAPIException(ex.getMessage(),ex);
+
             }
         }
 
@@ -3797,7 +3796,6 @@ public class StratosApiV41Utils {
         } else {
 
             return null;
-
         }
     }
 
@@ -3810,15 +3808,12 @@ public class StratosApiV41Utils {
      */
     public static String getAverageMemberLoadByMemberId(String Id, String startTime, String endTime) throws RestAPIException {
 
-
         String memberLoadAverageQuery = "SELECT value AS MEMBER_AVERAGE_LOAD_AVERAGE,ID,timeStamp FROM HealthStatisticsTable " +
                 "WHERE ID = \"" + Id + "\" AND timeStamp BETWEEN " + startTime + " AND " + endTime + " AND " +
                 "type = \"member_average_load_average\" GROUP BY from_unixtime(timeStamp/1000,\"%Y-%m-%d %H:%i\");";
 
-
         List<AverageLoadAverageBean> averageMemberLoadList = new ArrayList<AverageLoadAverageBean>();
         ConnectionHandler connectionHandler = new ConnectionHandler();
-
 
         try {
 
@@ -3831,16 +3826,19 @@ public class StratosApiV41Utils {
             }
         } catch (SQLException ex) {
             log.error("SQLException: ", ex);
-            throw new RestAPIException(ex.getMessage());
+            throw new RestAPIException(ex.getMessage(),ex);
+
         } catch (Exception ex) {
             log.error("Exception: ", ex);
-            throw new RestAPIException(ex.getMessage());
+            throw new RestAPIException(ex.getMessage(),ex);
+
         } finally {
             try {
                 connectionHandler.closeConnection();
             } catch (SQLException ex) {
                 log.error("SQLException: ", ex);
-                throw new RestAPIException(ex.getMessage());
+                throw new RestAPIException(ex.getMessage(),ex);
+
             }
         }
 
@@ -3862,15 +3860,12 @@ public class StratosApiV41Utils {
      */
     public static String getAverageClusterFlightRequestCountByClusterId(String Id, String startTime, String endTime) throws RestAPIException {
 
-
         String clusterIDQueryforFlightCount = "SELECT value AS FLIGHT_REQUEST_COUNT,ID,timeStamp FROM HealthStatisticsTable " +
                 "WHERE ID = \"" + Id + "\" AND timeStamp BETWEEN " + startTime + " AND " + endTime + " AND " +
                 "type = \"in_flight_request_count\" GROUP BY from_unixtime(timeStamp/1000,\"%Y-%m-%d %H:%i\");";
 
-
         List<InFlightRequestBean> inFlightRequestBeanList = new ArrayList<InFlightRequestBean>();
         ConnectionHandler connectionHandler = new ConnectionHandler();
-
 
         try {
 
@@ -3882,16 +3877,19 @@ public class StratosApiV41Utils {
             }
         } catch (SQLException ex) {
             log.error("SQLException: ", ex);
-            throw new RestAPIException(ex.getMessage());
+            throw new RestAPIException(ex.getMessage(),ex);
+
         } catch (Exception ex) {
             log.error("Exception: ", ex);
-            throw new RestAPIException(ex.getMessage());
+            throw new RestAPIException(ex.getMessage(),ex);
+
         } finally {
             try {
                 connectionHandler.closeConnection();
             } catch (SQLException ex) {
                 log.error("SQLException: ", ex);
-                throw new RestAPIException(ex.getMessage());
+                throw new RestAPIException(ex.getMessage(),ex);
+
             }
         }
 
