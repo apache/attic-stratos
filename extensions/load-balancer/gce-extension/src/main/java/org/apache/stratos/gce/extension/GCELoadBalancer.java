@@ -247,7 +247,6 @@ public class GCELoadBalancer implements LoadBalancer {
         //delete health check from GCE
         gceOperations.deleteHealthCheck(gceClusterConfigurationHolder.getHealthCheckName());
         log.info("Deleted configuration for cluster " + clusterId);
-
     }
 
     /**
@@ -307,7 +306,6 @@ public class GCELoadBalancer implements LoadBalancer {
     public void start() throws LoadBalancerExtensionException {
         //Configuration has completed
         log.info("GCE Load balancer instance started");
-
     }
 
     @Override

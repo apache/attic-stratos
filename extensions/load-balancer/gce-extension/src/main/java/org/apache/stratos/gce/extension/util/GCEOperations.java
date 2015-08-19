@@ -141,7 +141,6 @@ public class GCEOperations {
         }
     }
 
-
     /**
      * Get instance resource URL from given instance name
      *
