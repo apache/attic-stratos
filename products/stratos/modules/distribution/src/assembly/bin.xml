@@ -620,7 +620,8 @@
             <filtered>true</filtered>
             <fileMode>600</fileMode>
         </file>
-        <!--iindentity.xml and application-authentication.xml for oAuth feature -->
+
+        <!--indentity.xml and application-authentication.xml for oAuth feature -->
         <file>
             <source>src/main/conf/identity.xml</source>
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf</outputDirectory>

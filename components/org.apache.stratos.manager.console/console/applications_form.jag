@@ -26,6 +26,7 @@ var log = new Log("apachestratos.applications_form"),
         error = [],
         list_data,
         caramel = require('caramel'),
+        config = require('/config/console.json'),
         context = caramel.configs().context,
         menuJson = require('/controllers/menu/menu.json'),
         util = require('/controllers/rest/rest_calls.jag'),
@@ -49,7 +50,8 @@ if (!elements) {
         var applicationName = elements.applicationId;
 
         //get application json
-        applicationJSON = util.RESTCalls.getApplicationJSON(applicationName);
+        applicationJSONapplicationJSON = util.RESTCalls.getApplicationJSON(applicationName);
+
         var applicationAlias = applicationJSON.alias;
 
         if(elements.action == 'view'){
@@ -90,6 +92,7 @@ if (!elements) {
 
 }
 
+var healthStatisticEnable=config.healthStatistics.UI_enable;
 
 var formtype = elements.formtype;
 
@@ -109,6 +112,7 @@ switch (formtype) {
 var caramelData = {
     breadcrumbPathLevelOne: breadcrumbPathLevelOne,
     breadcrumbPathLevelTwo: '',
+    healthStatisticEnable:healthStatisticEnable,
     left_menu: leftMenu,
     isForm: isForm,
     isEdit: isEdit,

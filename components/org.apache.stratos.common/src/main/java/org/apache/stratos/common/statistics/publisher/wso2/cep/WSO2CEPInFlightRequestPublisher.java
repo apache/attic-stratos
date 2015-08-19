@@ -53,6 +53,7 @@ public class WSO2CEPInFlightRequestPublisher extends WSO2CEPStatisticsPublisher 
             // Set payload definition
             payloadData.add(new Attribute("cluster_id", AttributeType.STRING));
             payloadData.add(new Attribute("cluster_instance_id", AttributeType.STRING));
+            payloadData.add(new Attribute("timeStamp", AttributeType.LONG));
             payloadData.add(new Attribute("network_partition_id", AttributeType.STRING));
             payloadData.add(new Attribute("in_flight_request_count", AttributeType.DOUBLE));
             streamDefinition.setPayloadData(payloadData);
@@ -76,6 +77,7 @@ public class WSO2CEPInFlightRequestPublisher extends WSO2CEPStatisticsPublisher 
         List<Object> payload = new ArrayList<Object>();
         payload.add(clusterId);
         payload.add(clusterInstanceId);
+        payload.add(System.currentTimeMillis());
         payload.add(networkPartitionId);
         payload.add((double) inFlightRequestCount);
 

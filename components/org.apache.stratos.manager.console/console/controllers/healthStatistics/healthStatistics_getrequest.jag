@@ -1,0 +1,117 @@
+<%
+/*
+ *
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ *
+ */
+    var log = new Log("apachestratos.configure_request"),
+            util = require('/controllers/rest/rest_calls.jag'),
+            formtype = request.getParameter('formtype'),
+            ChartType = request.getParameter('chartType'),
+            Duration = request.getParameter('duration'),
+            IdValue = request.getParameter('idValue');
+
+    var formSubmit;
+    var DurationVal;
+
+    //creatingTimeObjects
+    var startTime = new Date();
+    var endTime = new Date();
+
+    //add login validator for pages
+    include('/controllers/login/validator.jag');
+
+    //checking the interval for the required data to check
+    if( "30Min" != Duration){
+
+    switch (Duration) {
+
+        case "1Hour":
+            DurationVal = 1;
+            break;
+        case "1Day":
+            DurationVal = 24;
+            break;
+        case "1Week":
+            DurationVal = 168;
+            break;
+        case "1Month":
+            DurationVal = 672;
+            break;
+    }
+
+    //substratcting hour from current time
+    startTime.setHours(endTime.getHours() - DurationVal);
+
+    } else {
+
+    //substratcting hour from current time
+    startTime.setMinutes(endTime.getMinutes() - 30);
+
+    }
+
+    //switch to trigger the rest call when needs
+    try {
+        switch (formtype) {
+
+            case "MemoryConsumption":
+
+                if("Cluster" == ChartType){
+
+                    formSubmit = util.RESTCalls.getClusterMemoryAverageDetails(IdValue, startTime.getTime(),endTime.getTime());
+                    break;
+                }
+                else{
+                    formSubmit = util.RESTCalls.getMemberMemoryAvrageDetails(IdValue, startTime.getTime(),endTime.getTime());
+                    break;
+                }
+
+            case "LoadAverage":
+
+                if("Cluster" == ChartType){
+                    formSubmit = util.RESTCalls.getClusterLoadAverageDetails(IdValue, startTime.getTime(),endTime.getTime());
+                    break;
+                }
+                else{
+                    formSubmit = util.RESTCalls.getMemberLoadAverageDetails(IdValue, startTime.getTime(),endTime.getTime());
+                    break;
+                }
+
+            case "InFlight":
+                formSubmit = util.RESTCalls.getFlightRequestDetails(IdValue, startTime.getTime(),endTime.getTime());
+                break;
+
+            default:
+                session.put("deploy-status", { "message": "Sorry Endpoint Error", "status": "error" });
+        }
+
+    //vaidating the response and return
+        if (formSubmit == undefined)
+        {
+        print({"status": 'error', "message": "No Data found!"});
+
+        } else {
+            print(formSubmit);
+        }
+
+    } catch (e) {
+        log.warn(e);
+        print({"status": 'error', "message": e.toString()});
+    }
+
+%>

@@ -73,8 +73,8 @@ body{ background: url('../images/stratos_background.png')  no-repeat; background
 .slidewindow .tab-handles .slidewindow-handle, .slidewindow.right .tab-handles .slidewindow-handle { display: block; float: none; }
 
 .slidewindow-content {
-    background-color: white; 
-	font-size:16px;
+    background-color: white;
+    font-size:16px;
     position: relative;
     float: left;
     z-index: 1;
@@ -106,7 +106,84 @@ body{ background: url('../images/stratos_background.png')  no-repeat; background
     position: relative;
     float: left;
     z-index: 0;
-	cursor:pointer;
+    cursor:pointer;
+}
+
+.lineChart--areaLine {
+  fill: none;
+  stroke: #6bb7c7;
+  stroke-width: 3;
+}
+
+.charts--headline {
+  text-align: center;
+  color: #444;
+  background-color: #fff;
+  padding: 1em;
+}
+
+.lineChart--area {
+  fill: url(#lineChart--gradientBackgroundArea);
+}
+
+.lineChart--areaLine {
+  fill: none;
+  stroke: #6bb7c7;
+  stroke-width: 1;
+}
+
+.lineChart--bubble--label {
+  fill: none;
+  stroke: #6bb7c7;
+  font-size: 10.7px;
+  font-weight: 100;
+}
+
+.lineChart--bubble--value {
+  fill: #fff;
+  stroke: #fff;
+  font-size: 15px;
+  font-weight: 100;
+}
+
+.lineChart--circle {
+  fill: #6bb7c7;
+  stroke: #fff;
+  stroke-width: 1;
+}
+
+.lineChart--circle__highlighted {
+  fill: #fff;
+  stroke: #3f94a7;
+}
+
+.lineChart--gradientBackgroundArea--top {
+  stop-color: #6bb7c7;
+  stop-opacity: 0.1;
+}
+
+.lineChart--gradientBackgroundArea--bottom {
+  stop-color: #6bb7c7;
+  stop-opacity: 0.6;
+}
+
+.lineChart--svg {
+  border: 1px solid #eee;
+}
+
+.lineChart--xAxisTicks .domain, .lineChart--xAxis .domain, .lineChart--yAxisTicks .domain {
+  display: none;
+}
+
+.lineChart--xAxis .tick line {
+  display: none;
+}
+
+.lineChart--xAxisTicks .tick line, .lineChart--yAxisTicks .tick line {
+  fill: none;
+  stroke: #b3b3b3;
+  stroke-width: 1;
+  stroke-dasharray: 2,2;
 }
 
 
@@ -233,4 +310,84 @@ div#textform>div>h3 {
 
 h3.panel-title {
     color: #999;
+}
+
+
+svg {
+    font: 10px sans-serif;
+}
+
+.area {
+    fill: #00BFFF;
+    clip-path: url(#clip);
+}
+
+.axis path,
+.axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+}
+
+.d3-tip {
+    line-height: 1;
+    font-weight: bold;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    border-radius: 2px;
+}
+
+/* Creates a small triangle extender for the tooltip */
+.d3-tip:after {
+    box-sizing: border-box;
+    display: inline;
+    font-size: 10px;
+    width: 100%;
+    line-height: 1;
+    color: rgba(0, 0, 0, 0.8);
+    content: "\25BC";
+    position: absolute;
+    text-align: center;
+}
+
+/* Style northward tooltips differently */
+.d3-tip.n:after {
+    margin: -1px 0 0 0;
+    top: 100%;
+    left: 0;
+}
+
+.brush .extent {
+    stroke: #fff;
+    fill-opacity: .125;
+    shape-rendering: crispEdges;
+}
+svg {
+    font: 10px sans-serif;
+}
+
+.brush .extent {
+    stroke: #fff;
+    fill-opacity: .125;
+    shape-rendering: crispEdges;
+}
+
+
+.x.axis path {
+    display: none;
+}
+
+.line {
+    fill: none;
+    stroke: green;
+    stroke-width: 1.5px;
+}
+
+.area1 {
+    fill: orange;
+}
+
+.area2 {
+    fill: red;
 }

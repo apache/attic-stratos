@@ -136,6 +136,7 @@ var render = function (theme, data, meta, require) {
                                 topologyData: data.topologyData,
                                 applicationJSON:data.applicationJSON,
                                 applicationStatus: data.applicationStatus,
+                                healthStatisticEnable:data.healthStatisticEnable,
                                 form_action: data.form_action,
                                 formHtml: data.formHtml,
                                 formData: data.formData,
