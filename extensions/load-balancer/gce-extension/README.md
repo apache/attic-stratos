@@ -12,6 +12,8 @@ the message broker.
 4. Reconfigure the load balancer with the new topology configuration.
 
 ## Installation
-Please refer bellow document for information on the installation process.
+Please refer INSTALL.md for information on a quick installation process.
+
+Please refer bellow document for information on a detailed installation process.
 
 https://docs.google.com/document/d/1a2ZptPScpjuavfpxVu1R1GC7R95jjzHo3L372zL2bRY/edit
