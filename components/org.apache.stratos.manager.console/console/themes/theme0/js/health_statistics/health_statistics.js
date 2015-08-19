@@ -51,9 +51,7 @@
 
         }
 
-        //after user click the option here we are changing the option black to red.
-        $(element).button('toggle');
-
+        //calls the rest caller function to draw the charts
         restCaller(buttonName, idValue, chartType, buttonId);
 
     }
@@ -260,7 +258,7 @@
 
             // Add the line path.
             svg.append('path')
-                .datum(startData)
+                .data(startData)
                 .attr('class', 'lineChart--areaLine')
                 .attr('d', line)
                 .transition()
@@ -273,7 +271,7 @@
 
             // Add the area path.
             svg.append('path')
-                .datum(startData)
+                .data(startData)
                 .attr('class', 'lineChart--area')
                 .attr('d', area)
                 .transition()
@@ -367,7 +365,7 @@
                 );
 
                 details.append('path')
-                    .attr('d', 'm-36.6941,-1c-3.0292,0 -5.4848,1.3422 -5.4848,2.999l0,44.6691c0,1.6562 2.4526,2.999 5.4865,2.999l75.71,0c8.3518,3.7228 0.1055,-0.0614 8.3934,3.8017c8.0794,-3.7725 0.0085,-0.0325 8.2307,-3.8017l75.8633,0c3.03499,0 5.495,-1.3422 5.495,-2.999l0,-44.6691c0,-1.6563 -2.465,-2.999 -5.485,-2.999l-168.209,0l0,0l0,0l0,0l0,0l-0.0001,0zm0,0')
+                    .attr('d', 'm-39.44921,-1c-3.16445,0 -5.72969,1.3422 -5.72969,2.999l0,44.6691c0,1.6562 2.56211,2.999 5.73146,2.999l79.09031,0c8.72469,3.7228 0.11021,-0.0614 8.76815,3.8017c8.44014,-3.7725 0.00888,-0.0325 8.59819,-3.8017l79.25048,0c3.17049,0 5.74033,-1.3422 5.74033,-2.999l0,-44.6691c0,-1.6563 -2.57506,-2.999 -5.72989,-2.999l-175.71924,0l0,0l0,0l0,0l0,0l-0.0001,0zm0,0')
                     .attr('width', detailWidth)
                     .attr('height', detailHeight);
 
@@ -404,6 +402,20 @@
 
         var string = String(timestamp);
         var numb = string.indexOf("(");
+        var timeUTC = string.substring(0, numb);
+
+        return timeUTC;
+    }
+
+    function tween(b, callback) {
+        return function (a) {
+            var i = d3.interpolateArray(a, b);
+
+            return function (t) {
+                return callback(i(t));
+            };
+        };
+    b = string.indexOf("(");
         var timeUTC = string.substring(0, numb);
 
         return timeUTC;
