@@ -32,6 +32,8 @@ public class Member {
     private String clusterId;
     private String memberId;
     private String hostName;
+    //instance id provided by IaaS in order to use in GCE load balancer
+    private String instanceId;
     private Map<Integer, Port> portMap;
 
     public Member(String serviceName, String clusterId, String memberId, String hostName) {
@@ -85,5 +87,13 @@ public class Member {
 
     public String getServiceName() {
         return serviceName;
+    }
+
+    public String getInstanceId() {
+        return instanceId;
+    }
+
+    public void setInstanceId(String instanceId) {
+        this.instanceId = instanceId;
     }
 }

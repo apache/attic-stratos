@@ -74,6 +74,7 @@ public class PythonCartridgeAgentTest {
     private static final String TENANT_ID = "-1234";
     private static final String SERVICE_NAME = "php";
     public static final String SOURCE_PATH = "/tmp/stratos-pca-test-app-path/";
+    private static final String INSTANCE_ID = "instance-1";
 
     private static List<ServerSocket> serverSocketList;
     private static Map<String, Executor> executorList;
@@ -282,8 +283,7 @@ public class PythonCartridgeAgentTest {
                                 // Publish member initialized event
                                 log.info("Publishing member initialized event...");
                                 MemberInitializedEvent memberInitializedEvent = new MemberInitializedEvent(
-                                        SERVICE_NAME, CLUSTER_ID, CLUSTER_INSTANCE_ID, MEMBER_ID, NETWORK_PARTITION_ID,
-                                        PARTITION_ID
+                                        SERVICE_NAME, CLUSTER_ID, CLUSTER_INSTANCE_ID, MEMBER_ID, NETWORK_PARTITION_ID, PARTITION_ID, INSTANCE_ID
                                 );
                                 publishEvent(memberInitializedEvent);
                                 log.info("Member initialized event published");

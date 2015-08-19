@@ -60,6 +60,8 @@ public class Member implements Serializable, LifeCycleStateTransitionBehavior<Me
     // instance id to use if snapshot wise group scaling is enabled
     private LifeCycleStateManager<MemberStatus> memberStateManager;
     private LoadBalancingIPType loadBalancingIPType;
+    //instance id provided by IaaS(In order to use in GCE Load balancer)
+    private String instanceId;
 
     public Member(String serviceName, String clusterId, String memberId, String clusterInstanceId,
                   String networkPartitionId, String partitionId, LoadBalancingIPType loadBalancingIPType,
@@ -207,6 +209,14 @@ public class Member implements Serializable, LifeCycleStateTransitionBehavior<Me
 
     public LoadBalancingIPType getLoadBalancingIPType() {
         return loadBalancingIPType;
+    }
+
+    public String getInstanceId() {
+        return instanceId;
+    }
+
+    public void setInstanceId(String instanceId) {
+        this.instanceId = instanceId;
     }
 
     @Override

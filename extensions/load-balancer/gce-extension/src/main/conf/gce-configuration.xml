@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<gceConfiguration>
+
+    <cepStatsPublisher enable="false">
+        <thriftReceiverIp>127.0.0.1</thriftReceiverIp>
+        <thriftReceiverPort>7615</thriftReceiverPort>
+    </cepStatsPublisher>
+
+    <iaasProperties>
+        <projectName>MyFirstProject</projectName>
+        <projectId>gold-access-xxxx</projectId>
+        <regionName>europe-west1</regionName>
+        <keyFilePath>path-to-key-file/keyfile.p12</keyFilePath>
+        <gceAccountId>xxxxxxxxxxxxx.gserviceaccount.com</gceAccountId>
+        <networkName>default</networkName>
+    </iaasProperties>
+
+    <healthCheckProperties>
+        <healthCheckRequestPath>/</healthCheckRequestPath>
+        <healthCheckPort>80</healthCheckPort>
+        <healthCheckTimeoutSec>2</healthCheckTimeoutSec>
+        <healthCheckIntervalSec>5</healthCheckIntervalSec>
+        <healthCheckUnhealthyThreshold>2</healthCheckUnhealthyThreshold>
+        <healthCheckHealthyThreshold>2</healthCheckHealthyThreshold>
+    </healthCheckProperties>
+
+    <operationTimeout>10000</operationTimeout>
+    <namePrefix>lb</namePrefix>
+    <gceApiUrl>https://www.googleapis.com/compute/v1/projects/</gceApiUrl>
+
+</gceConfiguration>
