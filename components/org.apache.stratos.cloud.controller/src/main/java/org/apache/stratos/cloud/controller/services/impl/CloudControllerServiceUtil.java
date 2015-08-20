@@ -52,7 +52,7 @@ public class CloudControllerServiceUtil {
      * Update the topology, publish statistics to BAM, remove member context
      * and persist cloud controller context.
      *
-     * @param memberContext
+     * @param memberContext MemberContext of the Member
      */
     public static void executeMemberTerminationPostProcess(MemberContext memberContext) {
         if (memberContext == null) {
@@ -76,18 +76,19 @@ public class CloudControllerServiceUtil {
                 null);
 
         // Remove member context
-        CloudControllerContext.getInstance().removeMemberContext(memberContext.getClusterId(), memberContext.getMemberId());
+        CloudControllerContext.getInstance().removeMemberContext(memberContext.getClusterId(),
+                memberContext.getMemberId());
 
         // Persist cloud controller context
         CloudControllerContext.getInstance().persist();
     }
 
     public static boolean isValidIpAddress(String ip) {
-        boolean isValid = InetAddresses.isInetAddress(ip);
-        return isValid;
+        return InetAddresses.isInetAddress(ip);
     }
 
-    public static IaasProvider validatePartitionAndGetIaasProvider(Partition partition, IaasProvider iaasProvider) throws InvalidPartitionException {
+    public static IaasProvider validatePartitionAndGetIaasProvider(Partition partition, IaasProvider iaasProvider)
+            throws InvalidPartitionException {
         if (iaasProvider != null) {
             // if this is a IaaS based partition
             Iaas iaas = iaasProvider.getIaas();
@@ -104,7 +105,8 @@ public class CloudControllerServiceUtil {
         }
     }
 
-    public static boolean validatePartition(Partition partition, IaasProvider iaasProvider) throws InvalidPartitionException {
+    public static boolean validatePartition(Partition partition, IaasProvider iaasProvider)
+            throws InvalidPartitionException {
         validatePartitionAndGetIaasProvider(partition, iaasProvider);
         return true;
     }
