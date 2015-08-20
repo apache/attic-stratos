@@ -81,6 +81,7 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
     private long[] timeStamps;
     private double[] dataValues;
     private double[] smoothedValues;
+    private int count = 0;
 
 
     @Override
@@ -124,12 +125,18 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
     public void run() {
         acquireLock();
         try {
+            count++;
             long scheduledTime = System.currentTimeMillis();
             try {
                 oldEventList.clear();
                 while (true) {
                     threadBarrier.pass();
-                    RemoveEvent removeEvent = (RemoveEvent) window.poll();
+                    RemoveEvent removeEvent = null;
+
+                    if (count % 10 == 0) {
+                        removeEvent = (RemoveEvent) window.poll();
+                        count = 0;
+                    }
                     if (removeEvent == null) {
                         if (oldEventList.size() > 0) {
                             nextProcessor.process(new RemoveListEvent(
@@ -242,7 +249,7 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
         if(timeStamps.length > 2){
             smoothedValues[0] = 0.0D;
             smoothedValues[1] = dataValues[1];
-            for(int i = 2 ; i < window.size() ; i++){
+            for(int i = 2 ; i < timeStamps.length ; i++){
                 smoothedValues[i] = ALPHA * dataValues[i-1] + (1.0 - ALPHA) * smoothedValues[i-1];
             }
         }
@@ -269,6 +276,7 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
         } else {
             timeToKeep = ((LongConstant) parameters[0]).getValue();
         }
+        timeToKeep = timeToKeep/10;
 
         String subjectedAttr = ((Variable)parameters[1]).getAttributeName();
         subjectAttrIndex = streamDefinition.getAttributePosition(subjectedAttr);
