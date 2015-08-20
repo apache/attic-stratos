@@ -20,8 +20,13 @@
 
 package org.apache.stratos.rest.endpoint.handlers;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.stratos.rest.endpoint.exception.RestAPIException;
+import org.wso2.carbon.ndatasource.common.DataSourceException;
 import org.wso2.carbon.ndatasource.core.DataSourceManager;
 import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -35,16 +40,18 @@ import java.sql.Statement;
 * */
 public class ConnectionHandler {
 
-    Connection connection;
-    DataSource dataSource = null;
+    private static final Log log = LogFactory.getLog(ConnectionHandler.class);
+    private Connection connection;
+    private DataSource dataSource = null;
     boolean isJndiLookup = true;
 
-    public Connection getsqlConnection() {
+    //method returns a mysql connection object
+    public Connection getsqlConnection() throws RestAPIException {
 
         dataSource = null;
-        try{
 
-            if(isJndiLookup) {
+        try {
+            if (isJndiLookup) {
                 // Obtain the datasource via a JNDI lookup, by passing the jndi config name
                 dataSource = (DataSource) InitialContext.doLookup("jdbc/DataSourcetoPublishHealthStatRDBMS");
             } else {
@@ -56,13 +63,23 @@ public class ConnectionHandler {
             if (dataSource != null) {
                 connection = dataSource.getConnection();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("Error " + e.getMessage());
+
+        } catch (SQLException ex) {
+            log.error("SQLException: ", ex);
+            throw new RestAPIException(ex.getMessage(),ex);
+        } catch (DataSourceException ex) {
+            log.error("DataSourceException: ", ex);
+            throw new RestAPIException(ex.getMessage(),ex);
+        } catch (NamingException ex) {
+            log.error("DataSourceException: ", ex);
+            throw new RestAPIException(ex.getMessage(),ex);
         }
-        return connection;
+
+            return connection;
+
     }
 
+    //this method closes the mysql connection
     public void closeConnection() throws SQLException {
         if (connection != null) {
             connection.close();

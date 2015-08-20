@@ -2147,12 +2147,14 @@ public class StratosApiV41 extends AbstractApi {
 
         String averageClusterMemoryList;
         try {
+            //querying the dataset on REST request
             averageClusterMemoryList = StratosApiV41Utils.getAverageClusterMemoryByClusterId(Id, startTime, endTime);
 
         } catch (RestAPIException ex) {
             return Response.status(Response.Status.NOT_FOUND).entity(new ResponseMessageBean(
                     ResponseMessageBean.ERROR, "Could Not get Cluster Memory Average Data")).build();
         }
+        //validating the queried data
         if (averageClusterMemoryList == null) {
             return Response.status(Response.Status.NOT_FOUND).entity(new ResponseMessageBean(
                     ResponseMessageBean.ERROR, "Cluster Memory Average is Null!")).build();
@@ -2181,12 +2183,14 @@ public class StratosApiV41 extends AbstractApi {
 
         String averageMemberMemoryList;
         try {
+            //querying the dataset on REST request
             averageMemberMemoryList = StratosApiV41Utils.getAverageMemberMemoryByMemberId(Id, startTime, endTime);
 
         } catch (RestAPIException ex) {
             return Response.status(Response.Status.NOT_FOUND).entity(new ResponseMessageBean(
                     ResponseMessageBean.ERROR, "Could Not get Member Memory Average Data")).build();
         }
+        //validating the queried data
         if (averageMemberMemoryList == null) {
             return Response.status(Response.Status.NOT_FOUND).entity(new ResponseMessageBean(
                     ResponseMessageBean.ERROR, "Member Memory Average Data is Null!")).build();
@@ -2215,13 +2219,14 @@ public class StratosApiV41 extends AbstractApi {
 
         String averageMemberLoadList;
         try {
+            //querying the dataset on REST request
             averageMemberLoadList = StratosApiV41Utils.getAverageMemberLoadByMemberId(Id, startTime, endTime);
 
         } catch (RestAPIException ex) {
             return Response.status(Response.Status.NOT_FOUND).entity(new ResponseMessageBean(
                     ResponseMessageBean.ERROR, "Could Not get Member Load Average Data")).build();
         }
-
+        //validating the queried data
         if (averageMemberLoadList == null) {
             return Response.status(Response.Status.NOT_FOUND).entity(new ResponseMessageBean(
                     ResponseMessageBean.ERROR, "Member Load Average Data is Null!")).build();
@@ -2250,12 +2255,14 @@ public class StratosApiV41 extends AbstractApi {
 
         String averageClusterLoadList;
         try {
+            //querying the dataset on REST request
             averageClusterLoadList = StratosApiV41Utils.getAverageClusterLoadByClusterId(Id, startTime, endTime);
 
         } catch (RestAPIException ex) {
             return Response.status(Response.Status.NOT_FOUND).entity(new ResponseMessageBean(
                     ResponseMessageBean.ERROR, "Could Not get Cluster Load Average Data")).build();
         }
+        //validating the queried data
         if (averageClusterLoadList == null) {
             return Response.status(Response.Status.NOT_FOUND).entity(new ResponseMessageBean(
                     ResponseMessageBean.ERROR, "Cluster Load Average Data is Null!")).build();
@@ -2285,13 +2292,14 @@ public class StratosApiV41 extends AbstractApi {
 
         String averageClusterFlightRequestCount;
         try {
+            //querying the dataset on REST request
             averageClusterFlightRequestCount = StratosApiV41Utils.getAverageClusterFlightRequestCountByClusterId(Id, startTime, endTime);
 
         } catch (RestAPIException ex) {
             return Response.status(Response.Status.NOT_FOUND).entity(new ResponseMessageBean(
                     ResponseMessageBean.ERROR, "Could Not get In Flight Request Data")).build();
         }
-
+        //validating the queried data
         if (averageClusterFlightRequestCount == null) {
             return Response.status(Response.Status.NOT_FOUND).entity(new ResponseMessageBean(
                     ResponseMessageBean.ERROR, "Cluster In Flight Request Data is Null!")).build();
