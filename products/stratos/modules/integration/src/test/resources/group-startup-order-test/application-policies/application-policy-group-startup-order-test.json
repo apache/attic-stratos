@@ -1,0 +1,13 @@
+{
+    "id": "application-policy-group-startup-order-test",
+    "algorithm": "one-after-another",
+    "networkPartitions": [
+        "network-partition-group-startup-order-test-1"
+    ],
+    "properties": [
+        {
+            "name": "key-2",
+            "value": "value-2"
+        }
+    ]
+}

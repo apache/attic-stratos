@@ -26,10 +26,7 @@ import org.apache.stratos.common.beans.policy.deployment.ApplicationPolicyBean;
 import org.apache.stratos.integration.tests.RestConstants;
 import org.apache.stratos.integration.tests.StratosTestServerManager;
 import org.apache.stratos.integration.tests.TopologyHandler;
-import org.apache.stratos.messaging.domain.application.Application;
 import org.apache.stratos.messaging.domain.application.ApplicationStatus;
-import org.apache.stratos.messaging.domain.application.Group;
-import org.apache.stratos.messaging.message.receiver.application.ApplicationManager;
 import org.testng.annotations.Test;
 
 import java.util.ArrayList;
@@ -44,7 +41,7 @@ import static junit.framework.Assert.*;
 public class GroupTerminationBehaviorTest extends StratosTestServerManager {
     private static final Log log = LogFactory.getLog(GroupTerminationBehaviorTest.class);
     private static final String RESOURCES_PATH = "/group-termination-behavior-test";
-    private static final int GROUP_INACTIVE_TIMEOUT = 300000;
+    private static final int GROUP_INACTIVE_TIMEOUT = 180000;
 
     @Test
     public void testTerminationBehavior() {
@@ -89,7 +86,7 @@ public class GroupTerminationBehaviorTest extends StratosTestServerManager {
                             "network-partition-group-termination-behavior-test-1.json",
                     RestConstants.NETWORK_PARTITIONS, RestConstants.NETWORK_PARTITIONS_NAME);
             assertTrue(addedN1);
-            
+
             boolean addedDep = restClient.addEntity(RESOURCES_PATH + RestConstants.DEPLOYMENT_POLICIES_PATH + "/" +
                             "deployment-policy-group-termination-behavior-test.json",
                     RestConstants.DEPLOYMENT_POLICIES, RestConstants.DEPLOYMENT_POLICIES_NAME);
@@ -121,9 +118,6 @@ public class GroupTerminationBehaviorTest extends StratosTestServerManager {
                     RestConstants.APPLICATIONS_NAME);
             assertTrue(deployed);
 
-            //Application active handling
-            topologyHandler.assertApplicationStatus(bean.getApplicationId(),
-                    ApplicationStatus.Active);
             String groupId = topologyHandler.generateId(bean.getApplicationId(),
                     "g-G1-1x0-group-termination-behavior-test", bean.getApplicationId() + "-1");
 
@@ -140,13 +134,24 @@ public class GroupTerminationBehaviorTest extends StratosTestServerManager {
                             "c2-1x0-group-termination-behavior-test");
 
             assertCreationOfNodes(groupId, clusterIdC2);
+
             assertCreationOfNodes(clusterIdC3, clusterIdC4);
+
+            //Application active handling
+            topologyHandler.assertApplicationStatus(bean.getApplicationId(),
+                    ApplicationStatus.Active);
 
             //Group active handling
             topologyHandler.assertGroupActivation(bean.getApplicationId());
 
             //Cluster active handling
             topologyHandler.assertClusterActivation(bean.getApplicationId());
+
+            //Terminate one member in the cluster
+            TopologyHandler.getInstance().terminateMemberFromCluster(
+                    "c3-group-termination-behavior-test",
+                    bean.getApplicationId(),
+                    mockIaasApiClient);
 
             List<String> clusterIds = new ArrayList<String>();
             clusterIds.add(clusterIdC3);
@@ -159,12 +164,13 @@ public class GroupTerminationBehaviorTest extends StratosTestServerManager {
 
             assertTerminationOfNodes(groupId, clusterIds);
 
+            assertCreationOfNodes(groupId, clusterIdC2);
+
+            assertCreationOfNodes(clusterIdC3, clusterIdC4);
+
             //Application active handling
             topologyHandler.assertApplicationStatus(bean.getApplicationId(),
                     ApplicationStatus.Active);
-
-            assertCreationOfNodes(groupId, clusterIdC2);
-            assertCreationOfNodes(clusterIdC3, clusterIdC4);
 
             //Group active handling
             topologyHandler.assertGroupActivation(bean.getApplicationId());
@@ -274,7 +280,7 @@ public class GroupTerminationBehaviorTest extends StratosTestServerManager {
         long startTime = System.currentTimeMillis();
         Map<String, Long> inActiveMap = TopologyHandler.getInstance().getInActiveMembers();
 
-        while(!inActiveMap.containsKey(clusterId)) {
+        while (!inActiveMap.containsKey(clusterId)) {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException ignore) {
@@ -286,7 +292,7 @@ public class GroupTerminationBehaviorTest extends StratosTestServerManager {
         }
         assertTrue(inActiveMap.containsKey(clusterId));
 
-        while(!inActiveMap.containsKey(groupId)) {
+        while (!inActiveMap.containsKey(groupId)) {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException ignore) {
@@ -302,9 +308,9 @@ public class GroupTerminationBehaviorTest extends StratosTestServerManager {
 
     private void assertTerminatingOfNodes(String groupId, List<String> clusterIds) {
         Map<String, Long> terminatingMembers = TopologyHandler.getInstance().getTerminatingMembers();
-        for(String clusterId : clusterIds) {
+        for (String clusterId : clusterIds) {
             long startTime = System.currentTimeMillis();
-            while(!terminatingMembers.containsKey(clusterId)) {
+            while (!terminatingMembers.containsKey(clusterId)) {
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException ignore) {
@@ -317,7 +323,7 @@ public class GroupTerminationBehaviorTest extends StratosTestServerManager {
             assertTrue(terminatingMembers.containsKey(groupId));
         }
         long startTime = System.currentTimeMillis();
-        while(!terminatingMembers.containsKey(groupId)) {
+        while (!terminatingMembers.containsKey(groupId)) {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException ignore) {
@@ -335,8 +341,8 @@ public class GroupTerminationBehaviorTest extends StratosTestServerManager {
         long startTime = System.currentTimeMillis();
         Map<String, Long> terminatedMembers = TopologyHandler.getInstance().getTerminatedMembers();
 
-        for(String clusterId : clusterIds) {
-            while(!terminatedMembers.containsKey(clusterId)) {
+        for (String clusterId : clusterIds) {
+            while (!terminatedMembers.containsKey(clusterId)) {
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException ignore) {
@@ -349,7 +355,7 @@ public class GroupTerminationBehaviorTest extends StratosTestServerManager {
             assertTrue(terminatedMembers.containsKey(clusterId));
         }
 
-        while(!terminatedMembers.containsKey(groupId)) {
+        while (!terminatedMembers.containsKey(groupId)) {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException ignore) {
@@ -365,11 +371,33 @@ public class GroupTerminationBehaviorTest extends StratosTestServerManager {
 
     private void assertCreationOfNodes(String firstNodeId, String secondNodeId) {
         //group1 started first, then cluster started later
-
+        long startTime = System.currentTimeMillis();
         Map<String, Long> activeMembers = TopologyHandler.getInstance().getActivateddMembers();
         Map<String, Long> createdMembers = TopologyHandler.getInstance().getCreatedMembers();
         //Active member should be available at the time cluster is started to create.
+        while(!activeMembers.containsKey(firstNodeId)) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+            }
+            activeMembers = TopologyHandler.getInstance().getActivateddMembers();
+            if ((System.currentTimeMillis() - startTime) > GROUP_INACTIVE_TIMEOUT) {
+                break;
+            }
+        }
         assertTrue(activeMembers.containsKey(firstNodeId));
+
+        while(!createdMembers.containsKey(secondNodeId)) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+            }
+            createdMembers = TopologyHandler.getInstance().getCreatedMembers();
+            if ((System.currentTimeMillis() - startTime) > GROUP_INACTIVE_TIMEOUT) {
+                break;
+            }
+        }
+
         assertTrue(createdMembers.containsKey(secondNodeId));
 
         assertTrue(createdMembers.get(secondNodeId) > activeMembers.get(firstNodeId));
