@@ -49,19 +49,20 @@ public class ThriftStatisticsPublisher implements StatisticsPublisher {
      * Credential information stored inside thrift-client-config.xml file
      * is parsed and assigned into ip,port,username and password fields
      *
-     * @param streamDefinition Thrift Event Stream Definition
+     * @param streamDefinition      Thrift Event Stream Definition
+     * @param thriftClientName      Thrift Client Name
      */
-    public ThriftStatisticsPublisher(StreamDefinition streamDefinition, String statsPublisherEnabled) {
+    public ThriftStatisticsPublisher(StreamDefinition streamDefinition, String thriftClientName) {
         ThriftClientConfig thriftClientConfig = ThriftClientConfig.getInstance();
-        ThriftClientInfo thriftClientInfo = thriftClientConfig.getThriftClientInfo();
+        ThriftClientInfo thriftClientInfo = thriftClientConfig.getThriftClientInfo(thriftClientName);
 
         this.streamDefinition = streamDefinition;
+        this.enabled = thriftClientInfo.isStatsPublisherEnabled();
         this.ip = thriftClientInfo.getIp();
         this.port = thriftClientInfo.getPort();
         this.username = thriftClientInfo.getUsername();
         this.password = thriftClientInfo.getPassword();
 
-        enabled = Boolean.getBoolean(statsPublisherEnabled);
         if (enabled) {
             init();
         }
