@@ -39,7 +39,7 @@ public class WSO2CEPHealthStatisticsPublisher extends ThriftStatisticsPublisher 
 
     private static final String DATA_STREAM_NAME = "cartridge_agent_health_stats";
     private static final String VERSION = "1.0.0";
-    private static final String CEP_THRIFT_CLIENT_NAME = "cep";
+    public static final String CEP_THRIFT_CLIENT_NAME = "cep";
 
     public WSO2CEPHealthStatisticsPublisher() {
         super(createStreamDefinition(), CEP_THRIFT_CLIENT_NAME);
