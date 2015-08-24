@@ -245,9 +245,9 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
         }
 
         if(timeStamps.length > 2){
-            smoothedValues[0] = 0.0D;
-            smoothedValues[1] = dataValues[1];
-            for(int i = 2 ; i < timeStamps.length ; i++){
+//            smoothedValues[0] = 0.0D;
+//            smoothedValues[1] = dataValues[1];
+            for(int i = 0 ; i < timeStamps.length ; i++){
                 //smoothedValues[i] = ALPHA * dataValues[i-1] + (1.0 - ALPHA) * smoothedValues[i-1];
                 smoothedValues[i] = dataValues[i];
             }
