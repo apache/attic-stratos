@@ -19,6 +19,7 @@
 package org.apache.stratos.cep.extension;
 
 
+import org.apache.commons.math3.exception.NotStrictlyPositiveException;
 import org.apache.commons.math3.fitting.PolynomialCurveFitter;
 import org.apache.commons.math3.fitting.WeightedObservedPoints;
 import org.apache.log4j.Logger;
@@ -38,23 +39,32 @@ public class CurveFitter {
      *fit the XValues and dataValues into a second order polynomial
      * @return the coefficient array of the polynomial
      */
-    public Double[] fit(){
+    public Double[] fit() {
         WeightedObservedPoints weightedObservedPoints = new WeightedObservedPoints();
 
         for(int i = 0 ; i < timeStampValues.length && i < dataValues.length ; i++){
-            if(timeStampValues[i] != 0 && dataValues[i] != 0)
+            if(timeStampValues[i] != 0 && dataValues[i] != 0) {
                 weightedObservedPoints.add(timeStampValues[i], dataValues[i]);
+                log.info("T : " + timeStampValues[i] + " D : " + dataValues[i]);
+            }
         }
 
         /**
          * create second degree polynomials from the observed points
          */
-        final PolynomialCurveFitter polynomialCurveFitter = PolynomialCurveFitter.create(2);
-        final double[] coefficients = polynomialCurveFitter.fit(weightedObservedPoints.toList());
+        try {
+            final PolynomialCurveFitter polynomialCurveFitter = PolynomialCurveFitter.create(2);
+            final double[] coefficients = polynomialCurveFitter.fit(weightedObservedPoints.toList());
 
-        log.info("Coefficient a : " + coefficients[0] + " Coefficient b : " + coefficients[1]+ " Coefficient c : " + coefficients[2]);
+            log.info("Coefficient a : " + coefficients[0] + " Coefficient b : " + coefficients[1] + " Coefficient c : " + coefficients[2]);
 
-        return convertDouble(coefficients);
+            return convertDouble(coefficients);
+        }catch (NotStrictlyPositiveException e){
+            final PolynomialCurveFitter polynomialCurveFitter = PolynomialCurveFitter.create(1);
+            final double[] coefficients = polynomialCurveFitter.fit(weightedObservedPoints.toList());
+            final double[] firstOrderCoeffcients = {0.0, coefficients[0], coefficients[1]};
+            return convertDouble(firstOrderCoeffcients);
+        }
     }
 
     /**

@@ -721,7 +721,6 @@ public class ClusterMonitor extends Monitor {
         double b = curveFinderOfMemoryConsumptionEvent.getB();
         double c = curveFinderOfMemoryConsumptionEvent.getC();
 
-        log.info("a : " + a + " b : " + b + " c : " + c);
 
         if (log.isDebugEnabled()) {
             log.debug(String.format("CurveFinder of Memory Consumption event: [cluster] %s "

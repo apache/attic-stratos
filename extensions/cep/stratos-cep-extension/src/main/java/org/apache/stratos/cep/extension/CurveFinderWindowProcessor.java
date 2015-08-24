@@ -145,7 +145,6 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
                         }
 
                         if (newEventList.size() > 0) {
-                            log.info("new events are here for the calculation");
                             InEvent[] inEvents =
                                     newEventList.toArray(new InEvent[newEventList.size()]);
                             for (InEvent inEvent : inEvents) {
@@ -197,7 +196,7 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
         /**
          * to get the smoothed values
          */
-        findEMA();
+        //findEMA();
 
         /**
          * fit the curve and return the coefficients as events
