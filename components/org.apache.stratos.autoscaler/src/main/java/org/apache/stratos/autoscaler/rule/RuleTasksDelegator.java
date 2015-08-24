@@ -55,7 +55,6 @@ public class RuleTasksDelegator {
         }
         predictedValue = average + gradient * timeInterval + 0.5 * secondDerivative * timeInterval * timeInterval;
 
-        log.info("Conventional Predicted Value : " + predictedValue);
 
         return predictedValue;
     }
@@ -70,6 +69,8 @@ public class RuleTasksDelegator {
     public double getPredictedValueForNextMin(double a, double b, double c, long timeInterval) {
         double predictedValue;
 
+        log.info(String.format("Predicting the value, [a]: %s , [b]: %s , [c]: " +
+                ": %s , [time intervals]: %s ", a, b, c, timeInterval));
         // f(t) = a * t * t + b * t + c
         if (log.isDebugEnabled()) {
             log.debug(String.format("Predicting the value, [a]: %s , [b]: %s , [c]: " +
@@ -77,7 +78,7 @@ public class RuleTasksDelegator {
         }
 
         predictedValue = a * timeInterval * timeInterval + b * timeInterval + c;
-        log.info("New Predicted Value : " + predictedValue);
+
         return predictedValue;
     }
 
@@ -387,9 +388,9 @@ public class RuleTasksDelegator {
         for (ClusterLevelPartitionContext partitionContext : clusterInstanceContext.getPartitionCtxts()) {
             for (MemberStatsContext memberStatsContext : partitionContext.getMemberStatsContexts().values()) {
 
-//                float memberMemoryConsumptionAverage = memberStatsContext.getMemoryConsumption().getAverage();
-//                float memberMemoryConsumptionGredient = memberStatsContext.getMemoryConsumption().getGradient();
-//                float memberMemoryConsumptionSecondDerivative = memberStatsContext.getMemoryConsumption().getSecondDerivative();
+                float memberMemoryConsumptionAverage = memberStatsContext.getMemoryConsumption().getAverage();
+                float memberMemoryConsumptionGredient = memberStatsContext.getMemoryConsumption().getGradient();
+                float memberMemoryConsumptionSecondDerivative = memberStatsContext.getMemoryConsumption().getSecondDerivative();
 
                 double a = memberStatsContext.getMemoryConsumption().getA();
                 double b = memberStatsContext.getMemoryConsumption().getB();
@@ -397,7 +398,11 @@ public class RuleTasksDelegator {
 
                 double memberPredictedMemoryConsumption = getPredictedValueForNextMin(a,
                         b, c, System.currentTimeMillis());
+                log.info("New value : " + memberPredictedMemoryConsumption);
 
+                double mem = getPredictedValueForNextMinute(memberMemoryConsumptionAverage, memberMemoryConsumptionGredient, memberMemoryConsumptionSecondDerivative, 1);
+
+                log.info("Predicted value : " + mem);
                 if (log.isDebugEnabled()) {
                     log.debug(String.format("[member-id] %s [predicted memory consumption] %s ",
                             memberStatsContext.getMemberId()

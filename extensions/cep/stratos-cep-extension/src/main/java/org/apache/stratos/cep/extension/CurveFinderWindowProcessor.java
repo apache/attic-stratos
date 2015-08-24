@@ -196,7 +196,7 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
         /**
          * to get the smoothed values
          */
-        //findEMA();
+        findEMA();
 
         /**
          * fit the curve and return the coefficients as events
@@ -221,7 +221,7 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
      * need to implement find exponential moving average
      */
     private void findEMA(){
-        Attribute.Type attrType = coefficientAAttrType;
+        Attribute.Type attrType = subjectAttrType;
 
         timeStamps = new long[newEventList.size()];
         dataValues = new double[newEventList.size()];
@@ -241,15 +241,15 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
             } else if (Attribute.Type.FLOAT.equals(attrType)) {
                 dataValues[indexOfEvent] = (Float)eventToPredict.getData()[subjectAttrIndex];
             }
-
-            indexOfEvent++;
+            
         }
 
         if(timeStamps.length > 2){
             smoothedValues[0] = 0.0D;
             smoothedValues[1] = dataValues[1];
             for(int i = 2 ; i < timeStamps.length ; i++){
-                smoothedValues[i] = ALPHA * dataValues[i-1] + (1.0 - ALPHA) * smoothedValues[i-1];
+                //smoothedValues[i] = ALPHA * dataValues[i-1] + (1.0 - ALPHA) * smoothedValues[i-1];
+                smoothedValues[i] = dataValues[i];
             }
         }
     }

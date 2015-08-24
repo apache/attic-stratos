@@ -62,8 +62,8 @@ public class CurveFitter {
         }catch (NotStrictlyPositiveException e){
             final PolynomialCurveFitter polynomialCurveFitter = PolynomialCurveFitter.create(1);
             final double[] coefficients = polynomialCurveFitter.fit(weightedObservedPoints.toList());
-            final double[] firstOrderCoeffcients = {0.0, coefficients[0], coefficients[1]};
-            return convertDouble(firstOrderCoeffcients);
+            final double[] firstOrderCoefficients = {0.0, coefficients[0], coefficients[1]};
+            return convertDouble(firstOrderCoefficients);
         }
     }
 

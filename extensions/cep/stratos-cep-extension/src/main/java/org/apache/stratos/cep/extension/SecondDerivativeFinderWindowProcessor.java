@@ -191,15 +191,19 @@ public class SecondDerivativeFinderWindowProcessor extends WindowProcessor imple
 		if (Type.DOUBLE.equals(attrType)) {
 			firstVal = (Double) firstInEvent.getData()[subjectedAttrIndex];
 			lastVal = (Double) lastInEvent.getData()[subjectedAttrIndex];
+			log.info(" 1 : " + firstVal + " 2 : " + lastVal);
 		} else if (Type.INT.equals(attrType)) {
 			firstVal = (Integer) firstInEvent.getData()[subjectedAttrIndex];
 			lastVal = (Integer) lastInEvent.getData()[subjectedAttrIndex];
+			log.info(" 1 : " + firstVal + " 2 : " + lastVal);
 		} else if (Type.LONG.equals(attrType)) {
 			firstVal = (Long) firstInEvent.getData()[subjectedAttrIndex];
 			lastVal = (Long) lastInEvent.getData()[subjectedAttrIndex];
+			log.info(" 1 : " + firstVal + " 2 : " + lastVal);
 		} else if (Type.FLOAT.equals(attrType)) {
 			firstVal = (Float) firstInEvent.getData()[subjectedAttrIndex];
 			lastVal = (Float) lastInEvent.getData()[subjectedAttrIndex];
+			log.info(" 1 : " + firstVal + " 2 : " + lastVal);
 		}
 		
 		long t1 = firstInEvent.getTimeStamp();
@@ -210,6 +214,7 @@ public class SecondDerivativeFinderWindowProcessor extends WindowProcessor imple
 		if (tGap > 0) {
 			gradient = ((lastVal - firstVal) * millisecondsForASecond) / tGap;
 		}
+
 		if (log.isDebugEnabled()) {
 		    log.debug("Gradient: " + gradient + " Last val: " + lastVal +
 		            " First val: " + firstVal + " Time Gap: " + tGap + " t1: "+t1+ " t2: "+
