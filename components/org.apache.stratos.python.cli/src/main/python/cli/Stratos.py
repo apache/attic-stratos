@@ -395,12 +395,11 @@ class Stratos:
 
     @staticmethod
     def remove_kubernetes_cluster(kubernetes_cluster_id):
-        return Stratos.delete('kubernetesClusters/'+kubernetes_cluster_id,
-                              )
+        return Stratos.delete('kubernetesClusters/'+kubernetes_cluster_id)
+
     @staticmethod
     def remove_kubernetes_host(kubernetes_cluster_id, host_id):
-        return Stratos.delete('kubernetesClusters/'+kubernetes_cluster_id+"/hosts/"+host_id,
-                              )
+        return Stratos.delete('kubernetesClusters/'+kubernetes_cluster_id+"/hosts/"+host_id)
 
     """
     # Domain Mapping
@@ -420,8 +419,7 @@ class Stratos:
 
     @staticmethod
     def add_domain_mapping(application_id, json):
-        return Stratos.post('applications/'+application_id+'/domainMappings', json,
-                            )
+        return Stratos.post('applications/'+application_id+'/domainMappings', json)
 
     """
     # Utils
