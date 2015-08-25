@@ -24,7 +24,7 @@ def read(file_name):
     return open(os.path.join(os.path.dirname(__file__), file_name)).read()
 
 setup(
-    name="stratos",
+    name="stratos-cli",
     version="1.0",
     author="Apache Stratos",
     author_email="dev@stratos.apache.org",
