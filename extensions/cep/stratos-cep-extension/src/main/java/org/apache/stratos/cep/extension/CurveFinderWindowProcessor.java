@@ -28,7 +28,7 @@ import org.wso2.siddhi.core.event.remove.RemoveListEvent;
 import org.wso2.siddhi.core.query.QueryPostProcessingElement;
 import org.wso2.siddhi.core.query.processor.window.RunnableWindowProcessor;
 import org.wso2.siddhi.core.query.processor.window.WindowProcessor;
-import org.wso2.siddhi.core.snapshot.ThreadBarrier;
+import org.wso2.siddhi.core.persistence.ThreadBarrier;
 import org.wso2.siddhi.core.util.collection.queue.scheduler.ISchedulerSiddhiQueue;
 import org.wso2.siddhi.core.util.collection.queue.scheduler.SchedulerSiddhiQueue;
 import org.wso2.siddhi.core.util.collection.queue.scheduler.SchedulerSiddhiQueueGrid;
