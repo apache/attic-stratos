@@ -44,11 +44,8 @@ public class CurveFitter {
 
         for(int i = 0 ; i < timeStampValues.length && i < dataValues.length ; i++){
             if(timeStampValues[i] != 0 && dataValues[i] != 0) {
-                weightedObservedPoints.add(timeStampValues[i], dataValues[i]);
-                log.info("Hash : "  + System.identityHashCode(this) +" T : " + timeStampValues[i] + " D : " + dataValues[i]);
-            } else {
-                weightedObservedPoints.add(1, dataValues[i]);
-                log.info("T : " + timeStampValues[i] + " D : " + dataValues[i]);
+                weightedObservedPoints.add(i + 1, dataValues[i]);
+                log.info("Hash : "  + System.identityHashCode(this) +" T : " + (i+1) + " D : " + dataValues[i]);
             }
         }
 
