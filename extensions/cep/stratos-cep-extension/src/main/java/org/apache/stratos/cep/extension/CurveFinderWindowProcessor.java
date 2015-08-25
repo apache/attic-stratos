@@ -25,16 +25,16 @@ import org.wso2.siddhi.core.event.in.InEvent;
 import org.wso2.siddhi.core.event.in.InListEvent;
 import org.wso2.siddhi.core.event.remove.RemoveEvent;
 import org.wso2.siddhi.core.event.remove.RemoveListEvent;
-import org.wso2.siddhi.core.persistence.ThreadBarrier;
 import org.wso2.siddhi.core.query.QueryPostProcessingElement;
 import org.wso2.siddhi.core.query.processor.window.RunnableWindowProcessor;
 import org.wso2.siddhi.core.query.processor.window.WindowProcessor;
+import org.wso2.siddhi.core.snapshot.ThreadBarrier;
 import org.wso2.siddhi.core.util.collection.queue.scheduler.ISchedulerSiddhiQueue;
 import org.wso2.siddhi.core.util.collection.queue.scheduler.SchedulerSiddhiQueue;
 import org.wso2.siddhi.core.util.collection.queue.scheduler.SchedulerSiddhiQueueGrid;
 import org.wso2.siddhi.query.api.definition.AbstractDefinition;
 import org.wso2.siddhi.query.api.definition.Attribute;
-import org.wso2.siddhi.query.api.expression.Expression;;
+import org.wso2.siddhi.query.api.expression.Expression;
 import org.wso2.siddhi.query.api.expression.Variable;
 import org.wso2.siddhi.query.api.expression.constant.IntConstant;
 import org.wso2.siddhi.query.api.expression.constant.LongConstant;
@@ -48,6 +48,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+;
+
 /**
  * your task is to finish this Sliding WIndow, Use Gradient and Second Derivative Window processors for example
  * CurveFitter Finished
@@ -55,13 +57,13 @@ import java.util.concurrent.TimeUnit;
  * You have to implement this processor
  */
 @SiddhiExtension(namespace = "stratos", function = "curveFitting")
-public class CurveFinderWindowProcessor extends WindowProcessor implements RunnableWindowProcessor{
+public class CurveFinderWindowProcessor extends WindowProcessor implements RunnableWindowProcessor {
 
-    static final Logger log = Logger.getLogger(CurveFinderWindowProcessor.class);
     /**
      * alpha is used as the smoothing constant in exponential moving average
      */
     public static final double ALPHA = 0.8000;
+    static final Logger log = Logger.getLogger(CurveFinderWindowProcessor.class);
     private ScheduledExecutorService eventRemoverScheduler;
     private long timeToKeep;
     private ScheduledFuture<?> lastSchedule = null;
@@ -106,6 +108,7 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
             releaseLock();
         }
     }
+
     @Override
     public Iterator<StreamEvent> iterator() {
         return window.iterator();
@@ -131,12 +134,9 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
                 oldEventList.clear();
                 while (true) {
                     threadBarrier.pass();
-                    RemoveEvent removeEvent = null;
+                    RemoveEvent removeEvent = (RemoveEvent) window.poll();
 
-                    if (count % 10 == 0) {
-                        removeEvent = (RemoveEvent) window.poll();
-                        count = 0;
-                    }
+
                     if (removeEvent == null) {
                         if (oldEventList.size() > 0) {
                             nextProcessor.process(new RemoveListEvent(
@@ -190,9 +190,10 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
 
     /**
      * Curve predictor method
+     *
      * @return event which contains the curve fitting coefficient
      */
-    public InEvent[] curvePredictor(){
+    public InEvent[] curvePredictor() {
         /**
          * to get the smoothed values
          */
@@ -213,14 +214,14 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
         data[coefficientCAttrIndex] = coefficients[2];
 
         InEvent[] inEvents = new InEvent[1];
-        inEvents[0] = new InEvent(newEventList.get(0).getStreamId(),newEventList.get(0).getTimeStamp(), data);
+        inEvents[0] = new InEvent(newEventList.get(0).getStreamId(), newEventList.get(0).getTimeStamp(), data);
         return inEvents;
     }
 
     /**
      * need to implement find exponential moving average
      */
-    private void findEMA(){
+    private void findEMA() {
         Attribute.Type attrType = subjectAttrType;
 
         timeStamps = new long[newEventList.size()];
@@ -228,27 +229,24 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
         smoothedValues = new double[newEventList.size()];
 
         int indexOfEvent = 0;
-        for(indexOfEvent = 0; indexOfEvent < newEventList.size(); indexOfEvent++){
+        for (indexOfEvent = 0; indexOfEvent < newEventList.size(); indexOfEvent++) {
             InEvent eventToPredict = newEventList.get(indexOfEvent);
             timeStamps[indexOfEvent] = eventToPredict.getTimeStamp();
 
             if (Attribute.Type.DOUBLE.equals(attrType)) {
-                dataValues[indexOfEvent] = (Double)eventToPredict.getData()[subjectAttrIndex];
+                dataValues[indexOfEvent] = (Double) eventToPredict.getData()[subjectAttrIndex];
             } else if (Attribute.Type.INT.equals(attrType)) {
-                dataValues[indexOfEvent] = (Integer)eventToPredict.getData()[subjectAttrIndex];
+                dataValues[indexOfEvent] = (Integer) eventToPredict.getData()[subjectAttrIndex];
             } else if (Attribute.Type.LONG.equals(attrType)) {
-                dataValues[indexOfEvent] = (Long)eventToPredict.getData()[subjectAttrIndex];
+                dataValues[indexOfEvent] = (Long) eventToPredict.getData()[subjectAttrIndex];
             } else if (Attribute.Type.FLOAT.equals(attrType)) {
-                dataValues[indexOfEvent] = (Float)eventToPredict.getData()[subjectAttrIndex];
+                dataValues[indexOfEvent] = (Float) eventToPredict.getData()[subjectAttrIndex];
             }
-            
+
         }
 
-        if(timeStamps.length > 2){
-//            smoothedValues[0] = 0.0D;
-//            smoothedValues[1] = dataValues[1];
-            for(int i = 0 ; i < timeStamps.length ; i++){
-                //smoothedValues[i] = ALPHA * dataValues[i-1] + (1.0 - ALPHA) * smoothedValues[i-1];
+        if (timeStamps.length > 2) {
+            for (int i = 0; i < timeStamps.length; i++) {
                 smoothedValues[i] = dataValues[i];
             }
         }
@@ -275,21 +273,21 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
         } else {
             timeToKeep = ((LongConstant) parameters[0]).getValue();
         }
-        timeToKeep = timeToKeep/10;
 
-        String subjectedAttr = ((Variable)parameters[1]).getAttributeName();
+
+        String subjectedAttr = ((Variable) parameters[1]).getAttributeName();
         subjectAttrIndex = streamDefinition.getAttributePosition(subjectedAttr);
         subjectAttrType = streamDefinition.getAttributeType(subjectedAttr);
 
-        subjectedAttr = ((Variable)parameters[2]).getAttributeName();
+        subjectedAttr = ((Variable) parameters[2]).getAttributeName();
         coefficientAAttrIndex = streamDefinition.getAttributePosition(subjectedAttr);
         coefficientAAttrType = streamDefinition.getAttributeType(subjectedAttr);
 
-        subjectedAttr = ((Variable)parameters[3]).getAttributeName();
+        subjectedAttr = ((Variable) parameters[3]).getAttributeName();
         coefficientBAttrIndex = streamDefinition.getAttributePosition(subjectedAttr);
         coefficientBAttrType = streamDefinition.getAttributeType(subjectedAttr);
 
-        subjectedAttr = ((Variable)parameters[4]).getAttributeName();
+        subjectedAttr = ((Variable) parameters[4]).getAttributeName();
         coefficientCAttrIndex = streamDefinition.getAttributePosition(subjectedAttr);
         coefficientCAttrType = streamDefinition.getAttributeType(subjectedAttr);
 
@@ -335,7 +333,7 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
     }
 
     @Override
-    public void destroy(){
+    public void destroy() {
         oldEventList = null;
         newEventList = null;
         window = null;

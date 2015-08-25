@@ -389,20 +389,20 @@ public class RuleTasksDelegator {
             for (MemberStatsContext memberStatsContext : partitionContext.getMemberStatsContexts().values()) {
 
                 float memberMemoryConsumptionAverage = memberStatsContext.getMemoryConsumption().getAverage();
-                float memberMemoryConsumptionGredient = memberStatsContext.getMemoryConsumption().getGradient();
+                float memberMemoryConsumptionGradient = memberStatsContext.getMemoryConsumption().getGradient();
                 float memberMemoryConsumptionSecondDerivative = memberStatsContext.getMemoryConsumption().getSecondDerivative();
 
                 double a = memberStatsContext.getMemoryConsumption().getA();
                 double b = memberStatsContext.getMemoryConsumption().getB();
                 double c = memberStatsContext.getMemoryConsumption().getC();
-
+                log.info("RulesTasksDelegator a : " + a + " b : " + b + " c : " + c);
                 double memberPredictedMemoryConsumption = getPredictedValueForNextMin(a,
-                        b, c, System.currentTimeMillis());
+                        b, c, 1);
                 log.info("New value : " + memberPredictedMemoryConsumption);
 
-                double mem = getPredictedValueForNextMinute(memberMemoryConsumptionAverage, memberMemoryConsumptionGredient, memberMemoryConsumptionSecondDerivative, 1);
-
-                log.info("Predicted value : " + mem);
+//                double mem = getPredictedValueForNextMinute(memberMemoryConsumptionAverage, memberMemoryConsumptionGradient, memberMemoryConsumptionSecondDerivative, 1);
+//
+//                log.info("Predicted value : " + mem);
                 if (log.isDebugEnabled()) {
                     log.debug(String.format("[member-id] %s [predicted memory consumption] %s ",
                             memberStatsContext.getMemberId()

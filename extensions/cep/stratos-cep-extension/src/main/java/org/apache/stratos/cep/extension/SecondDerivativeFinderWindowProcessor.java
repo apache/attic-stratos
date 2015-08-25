@@ -25,7 +25,7 @@ import org.wso2.siddhi.core.event.in.InEvent;
 import org.wso2.siddhi.core.event.in.InListEvent;
 import org.wso2.siddhi.core.event.remove.RemoveEvent;
 import org.wso2.siddhi.core.event.remove.RemoveListEvent;
-import org.wso2.siddhi.core.persistence.ThreadBarrier;
+import org.wso2.siddhi.core.snapshot.ThreadBarrier;
 import org.wso2.siddhi.core.query.QueryPostProcessingElement;
 import org.wso2.siddhi.core.query.processor.window.RunnableWindowProcessor;
 import org.wso2.siddhi.core.query.processor.window.WindowProcessor;
@@ -191,19 +191,15 @@ public class SecondDerivativeFinderWindowProcessor extends WindowProcessor imple
 		if (Type.DOUBLE.equals(attrType)) {
 			firstVal = (Double) firstInEvent.getData()[subjectedAttrIndex];
 			lastVal = (Double) lastInEvent.getData()[subjectedAttrIndex];
-			log.info(" 1 : " + firstVal + " 2 : " + lastVal);
 		} else if (Type.INT.equals(attrType)) {
 			firstVal = (Integer) firstInEvent.getData()[subjectedAttrIndex];
 			lastVal = (Integer) lastInEvent.getData()[subjectedAttrIndex];
-			log.info(" 1 : " + firstVal + " 2 : " + lastVal);
 		} else if (Type.LONG.equals(attrType)) {
 			firstVal = (Long) firstInEvent.getData()[subjectedAttrIndex];
 			lastVal = (Long) lastInEvent.getData()[subjectedAttrIndex];
-			log.info(" 1 : " + firstVal + " 2 : " + lastVal);
 		} else if (Type.FLOAT.equals(attrType)) {
 			firstVal = (Float) firstInEvent.getData()[subjectedAttrIndex];
 			lastVal = (Float) lastInEvent.getData()[subjectedAttrIndex];
-			log.info(" 1 : " + firstVal + " 2 : " + lastVal);
 		}
 		
 		long t1 = firstInEvent.getTimeStamp();

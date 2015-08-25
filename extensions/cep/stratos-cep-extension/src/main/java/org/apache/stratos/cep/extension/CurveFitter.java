@@ -43,8 +43,11 @@ public class CurveFitter {
         WeightedObservedPoints weightedObservedPoints = new WeightedObservedPoints();
 
         for(int i = 0 ; i < timeStampValues.length && i < dataValues.length ; i++){
-            if(timeStampValues[i] != 0 && dataValues[i] != 0) {
-                weightedObservedPoints.add(timeStampValues[i], dataValues[i]);
+            if(timeStampValues[i]/1000 != 0 && dataValues[i] != 0) {
+                weightedObservedPoints.add(timeStampValues[i]/1000, dataValues[i]);
+                log.info("T : " + timeStampValues[i] + " D : " + dataValues[i]);
+            } else {
+                weightedObservedPoints.add(1, dataValues[i]);
                 log.info("T : " + timeStampValues[i] + " D : " + dataValues[i]);
             }
         }

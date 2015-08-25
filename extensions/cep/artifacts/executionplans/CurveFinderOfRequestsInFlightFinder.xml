@@ -40,7 +40,7 @@
 	    insert into rif_curve_finder_concat_temp;
 	define partition rif_curve_finder_cluster_partition by rif_curve_finder_concat_temp.rif_curve_finder_cluster_network;
 	from rif_curve_finder_concat_temp
-	    #window.stratos:curveFitting(10 min, in_flight_request_count, a, b, c)
+	    #window.stratos:curveFitting(1 min, in_flight_request_count, a, b, c)
 		select cluster_id, cluster_instance_id, network_partition_id,in_flight_request_count as count, a as curve_finder_a, b as curve_finder_b, c as curve_finder_c
 		output snapshot every 1 min
 		insert into curve_finder_in_flight_requests

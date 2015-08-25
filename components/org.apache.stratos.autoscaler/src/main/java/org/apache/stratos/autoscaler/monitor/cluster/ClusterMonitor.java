@@ -989,8 +989,14 @@ public class ClusterMonitor extends Monitor {
             }
             return;
         }
-        float value = (float)memberCurveFinderOfLoadAverageEvent.getValue();
-        memberStatsContext.setGradientOfMemoryConsumption(value);
+
+        double a = memberCurveFinderOfLoadAverageEvent.getA();
+        double b = memberCurveFinderOfLoadAverageEvent.getB();
+        double c = memberCurveFinderOfLoadAverageEvent.getC();
+
+        memberStatsContext.getLoadAverage().setA(a);
+        memberStatsContext.getLoadAverage().setB(b);
+        memberStatsContext.getLoadAverage().setC(c);
     }
 
     public void handleMemberAverageLoadAverageEvent(
@@ -1031,8 +1037,16 @@ public class ClusterMonitor extends Monitor {
             }
             return;
         }
-        float value = (float)memberCurveFinderOfMemoryConsumptionEvent.getValue();
-        memberStatsContext.setGradientOfLoadAverage(value);
+
+
+        double a = memberCurveFinderOfMemoryConsumptionEvent.getA();
+        double b = memberCurveFinderOfMemoryConsumptionEvent.getB();
+        double c = memberCurveFinderOfMemoryConsumptionEvent.getC();
+
+        log.info(" Cluster Monitor a : " + a + " b : " + b + " c : " + c);
+        memberStatsContext.getMemoryConsumption().setA(a);
+        memberStatsContext.getMemoryConsumption().setB(b);
+        memberStatsContext.getMemoryConsumption().setC(c);
     }
 
     public void handleMemberGradientOfLoadAverageEvent(
