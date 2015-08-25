@@ -205,7 +205,7 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
         CurveFitter curveFitter = new CurveFitter(timeStamps, smoothedValues);
         Double[] coefficients = curveFitter.fit();
 
-        log.info("a : " + coefficients[0] + " b : " + coefficients[1] + " c : " + coefficients[2]);
+        log.info("Hash : " + System.identityHashCode(this) + " a : " + coefficients[0] + " b : " + coefficients[1] + " c : " + coefficients[2]);
 
         Object[] data = newEventList.get(0).getData().clone();
 
