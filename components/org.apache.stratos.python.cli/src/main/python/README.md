@@ -18,8 +18,19 @@ instead `install` if developing
 To start the Python CLI issue, 
 
 ```
-$ stratos
+$ stratos-cli
 ```
+
+Install with Pip
+
+```
+pip install stratos
+```
+
+or to install a specific version use
  
+```
+pip install stratos==1.0
+```
  
  
