@@ -397,8 +397,10 @@ public class RuleTasksDelegator {
                 double c = memberStatsContext.getMemoryConsumption().getC();
                 log.info("RulesTasksDelegator a : " + a + " b : " + b + " c : " + c);
                 double memberPredictedMemoryConsumption = getPredictedValueForNextMin(a,
-                        b, c, 1);
+                        b, c, System.currentTimeMillis() + 500);
                 log.info("New value : " + memberPredictedMemoryConsumption);
+
+                log.info(" time stamp : " + System.currentTimeMillis());
 
 //                double mem = getPredictedValueForNextMinute(memberMemoryConsumptionAverage, memberMemoryConsumptionGradient, memberMemoryConsumptionSecondDerivative, 1);
 //
