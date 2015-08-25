@@ -190,7 +190,7 @@ class CLI(Cmd):
                 print("Application not found in : "+application_id)
             else:
                 print("Application : "+application_id)
-                PrintableJSON(application).pprint()
+                PrintableTree(application).print_tree()
         except BadResponseError as e:
             self.perror(str(e))
 
