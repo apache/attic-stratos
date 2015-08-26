@@ -63,6 +63,7 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
      * alpha is used as the smoothing constant in exponential moving average
      */
     public static final double ALPHA = 0.8000;
+    public static final double THRESHHOLD_MEMORY = 20.0;
     static final Logger log = Logger.getLogger(CurveFinderWindowProcessor.class);
     private ScheduledExecutorService eventRemoverScheduler;
     private long timeToKeep;
@@ -82,8 +83,6 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
     private ISchedulerSiddhiQueue<StreamEvent> window;
     private long[] timeStamps;
     private double[] dataValues;
-    private double[] smoothedValues;
-    private int count = 0;
 
 
     @Override
@@ -128,7 +127,6 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
     public void run() {
         acquireLock();
         try {
-            count++;
             long scheduledTime = System.currentTimeMillis();
             try {
                 oldEventList.clear();
@@ -202,7 +200,7 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
         /**
          * fit the curve and return the coefficients as events
          */
-        CurveFitter curveFitter = new CurveFitter(timeStamps, smoothedValues);
+        CurveFitter curveFitter = new CurveFitter(timeStamps, dataValues);
         Double[] coefficients = curveFitter.fit();
 
         log.info("Hash : " + System.identityHashCode(this) + " a : " + coefficients[0] + " b : " + coefficients[1] + " c : " + coefficients[2]);
@@ -226,7 +224,6 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
 
         timeStamps = new long[newEventList.size()];
         dataValues = new double[newEventList.size()];
-        smoothedValues = new double[newEventList.size()];
 
         int indexOfEvent = 0;
         for (indexOfEvent = 0; indexOfEvent < newEventList.size(); indexOfEvent++) {
@@ -245,11 +242,19 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
 
         }
 
-        if (timeStamps.length > 2) {
-            for (int i = 0; i < timeStamps.length; i++) {
-                smoothedValues[i] = dataValues[i];
-            }
+        /**
+         * if there is no events in new event list
+         * Laplacian Correction
+         */
+
+        if(timeStamps.length == 0){
+            timeStamps = new long[1];
+            dataValues = new double[1];
+
+            timeStamps[0] = System.currentTimeMillis();
+            dataValues[0] = THRESHHOLD_MEMORY;
         }
+
     }
 
     @Override

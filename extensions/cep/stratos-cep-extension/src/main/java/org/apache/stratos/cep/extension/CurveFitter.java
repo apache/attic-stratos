@@ -43,7 +43,7 @@ public class CurveFitter {
         WeightedObservedPoints weightedObservedPoints = new WeightedObservedPoints();
 
         for(int i = 0 ; i < timeStampValues.length && i < dataValues.length ; i++){
-            if(timeStampValues[i] != 0 && dataValues[i] != 0) {
+            if(timeStampValues[i] != 0 && dataValues[i] > 0) {
                 weightedObservedPoints.add(i + 1, dataValues[i]);
                 log.info("Hash : "  + System.identityHashCode(this) +" T : " + (i+1) + " D : " + dataValues[i]);
             }
@@ -52,17 +52,10 @@ public class CurveFitter {
         /**
          * create second degree polynomials from the observed points
          */
-        try {
             final PolynomialCurveFitter polynomialCurveFitter = PolynomialCurveFitter.create(2);
             final double[] coefficients = polynomialCurveFitter.fit(weightedObservedPoints.toList());
 
             return convertDouble(coefficients);
-        }catch (NotStrictlyPositiveException e){
-            final PolynomialCurveFitter polynomialCurveFitter = PolynomialCurveFitter.create(1);
-            final double[] coefficients = polynomialCurveFitter.fit(weightedObservedPoints.toList());
-            final double[] firstOrderCoefficients = {0.0, coefficients[0], coefficients[1]};
-            return convertDouble(firstOrderCoefficients);
-        }
     }
 
     /**

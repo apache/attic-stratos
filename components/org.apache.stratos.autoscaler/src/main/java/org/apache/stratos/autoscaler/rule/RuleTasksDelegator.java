@@ -402,7 +402,7 @@ public class RuleTasksDelegator {
                         b, c, 1);
 
                 if(memberPredictedMemoryConsumption == 0.0)
-                    memberMemoryConsumptionAverage = memberStatsContext.getMemoryConsumption().getAverage();
+                    memberPredictedMemoryConsumption = memberStatsContext.getMemoryConsumption().getAverage();
                 log.info("New value : " + memberPredictedMemoryConsumption);
 
 
