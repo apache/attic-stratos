@@ -969,6 +969,8 @@ public class ClusterMonitor extends Monitor {
             }
             return;
         }
+
+        log.info("Gradient : " + memberStatsContext.getMemberId());
         float value = memberGradientOfMemoryConsumptionEvent.getValue();
         memberStatsContext.setGradientOfMemoryConsumption(value);
     }
@@ -1038,6 +1040,7 @@ public class ClusterMonitor extends Monitor {
             return;
         }
 
+        log.info("Curve finder " + memberStatsContext.getMemberId());
 
         double a = memberCurveFinderOfMemoryConsumptionEvent.getA();
         double b = memberCurveFinderOfMemoryConsumptionEvent.getB();
