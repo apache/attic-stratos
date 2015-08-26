@@ -48,13 +48,33 @@ public class RuleTasksDelegator {
 
     public double getPredictedValueForNextMinute(float average, float gradient, float secondDerivative, int timeInterval) {
         double predictedValue;
-//        s = u * t + 0.5 * a * t * t
+        //        s = u * t + 0.5 * a * t * t
         if (log.isDebugEnabled()) {
             log.debug(String.format("Predicting the value, [average]: %s , [gradient]: %s , [second derivative] " +
                     ": %s , [time intervals]: %s ", average, gradient, secondDerivative, timeInterval));
         }
         predictedValue = average + gradient * timeInterval + 0.5 * secondDerivative * timeInterval * timeInterval;
 
+        return predictedValue;
+    }
+
+    /**
+     * @param a            coefficient of t^2 term
+     * @param b            coefficient of t term
+     * @param c            constant term
+     * @param timeInterval
+     * @return predicted value
+     */
+    public double getPredictedValueForNextMin(double a, double b, double c, int timeInterval) {
+        double predictedValue;
+
+        // f(t) = a * t * t + b * t + c
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("Predicting the value, [a]: %s , [b]: %s , [c]: " +
+                    ": %s , [time intervals]: %s ", a, b, c, timeInterval));
+        }
+
+        predictedValue = a * timeInterval * timeInterval + b * timeInterval + c;
         return predictedValue;
     }
 
@@ -350,6 +370,12 @@ public class RuleTasksDelegator {
         } else {
             return 0;
         }
+    }
+
+    public double getLoadAveragePredictedValue() {
+        double loadAveragePredicted = 0.0;
+        int totalMemberCount;
+        return 0;
     }
 
     public double getMemoryConsumptionPredictedValue(ClusterInstanceContext clusterInstanceContext) {

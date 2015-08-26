@@ -45,12 +45,10 @@ import org.apache.stratos.autoscaler.status.processor.cluster.ClusterStatusActiv
 import org.apache.stratos.autoscaler.status.processor.cluster.ClusterStatusInactiveProcessor;
 import org.apache.stratos.autoscaler.status.processor.cluster.ClusterStatusTerminatedProcessor;
 import org.apache.stratos.autoscaler.util.AutoscalerConstants;
-import org.apache.stratos.autoscaler.util.AutoscalerObjectConverter;
 import org.apache.stratos.autoscaler.util.ConfUtil;
 import org.apache.stratos.autoscaler.util.ServiceReferenceHolder;
 import org.apache.stratos.cloud.controller.stub.domain.MemberContext;
 import org.apache.stratos.common.Properties;
-import org.apache.stratos.common.Property;
 import org.apache.stratos.common.client.CloudControllerServiceClient;
 import org.apache.stratos.common.constants.StratosConstants;
 import org.apache.stratos.common.threading.StratosThreadPool;
@@ -596,6 +594,31 @@ public class ClusterMonitor extends Monitor {
         }
     }
 
+    public void handleCurveFinderLoadAverageEvent(CurveFinderOfLoadAverageEvent curveFinderOfLoadAverageEvent){
+        String networkPartitionId = curveFinderOfLoadAverageEvent.getNetworkPartitionId();
+        String clusterId = curveFinderOfLoadAverageEvent.getClusterId();
+        String instanceId = curveFinderOfLoadAverageEvent.getClusterInstanceId();
+
+        double a = curveFinderOfLoadAverageEvent.getA();
+        double b = curveFinderOfLoadAverageEvent.getB();
+        double c = curveFinderOfLoadAverageEvent.getC();
+
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("CurveFinder of load avg event: [cluster] %s [network-partition] %s [a] %s [b] %s [c] %s",
+                    clusterId, networkPartitionId, a, b, c));
+        }
+        ClusterInstanceContext clusterLevelNetworkPartitionContext = getClusterInstanceContext(
+                networkPartitionId, instanceId);
+        if (null != clusterLevelNetworkPartitionContext) {
+            clusterLevelNetworkPartitionContext.setCurveFinderCoefficientsOfLoadAverage(a, b, c);
+        } else {
+            if (log.isDebugEnabled()) {
+                log.debug(String.format("Network partition context is not available for :" +
+                        " [network partition] %s", networkPartitionId));
+            }
+        }
+    }
+
     public void handleSecondDerivativeOfLoadAverageEvent(
             SecondDerivativeOfLoadAverageEvent secondDerivativeOfLoadAverageEvent) {
 
@@ -681,6 +704,33 @@ public class ClusterMonitor extends Monitor {
                 networkPartitionId, clusterInstanceId);
         if (null != clusterLevelNetworkPartitionContext) {
             clusterLevelNetworkPartitionContext.setMemoryConsumptionSecondDerivative(value);
+        } else {
+            if (log.isDebugEnabled()) {
+                log.debug(String.format("Network partition context is not available for :" +
+                        " [network partition] %s", networkPartitionId));
+            }
+        }
+    }
+
+
+    public void handleCurveFinderOfMemoryConsumptionEvent(CurveFinderOfMemoryConsumptionEvent curveFinderOfMemoryConsumptionEvent){
+        String networkPartitionId = curveFinderOfMemoryConsumptionEvent.getNetworkPartitionId();
+        String clusterId = curveFinderOfMemoryConsumptionEvent.getClusterId();
+        String clusterInstanceId = curveFinderOfMemoryConsumptionEvent.getClusterInstanceId();
+        double a = curveFinderOfMemoryConsumptionEvent.getA();
+        double b = curveFinderOfMemoryConsumptionEvent.getB();
+        double c = curveFinderOfMemoryConsumptionEvent.getC();
+
+        log.info("a : " + a + " b : " + b + " c : " + c);
+
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("CurveFinder of Memory Consumption event: [cluster] %s "
+                    + "[network-partition] %s [a] %s [b] %s [c] %s", clusterId, networkPartitionId, a, b, c));
+        }
+        ClusterInstanceContext clusterLevelNetworkPartitionContext = getClusterInstanceContext(
+                networkPartitionId, clusterInstanceId);
+        if (null != clusterLevelNetworkPartitionContext) {
+            clusterLevelNetworkPartitionContext.setCurveFinderCoefficientsOfMemoryConsumption(a, b, c);
         } else {
             if (log.isDebugEnabled()) {
                 log.debug(String.format("Network partition context is not available for :" +
@@ -924,6 +974,26 @@ public class ClusterMonitor extends Monitor {
         memberStatsContext.setGradientOfMemoryConsumption(value);
     }
 
+    public void handleMemberCurveFinderOfLoadAverageEvent(MemberCurveFinderOfLoadAverageEvent memberCurveFinderOfLoadAverageEvent){
+        String clusterInstanceId = memberCurveFinderOfLoadAverageEvent.getClusterInstanceId();
+        String memberId = memberCurveFinderOfLoadAverageEvent.getMemberId();
+        Member member = getMemberByMemberId(memberId);
+        String networkPartitionId = getNetworkPartitionIdByMemberId(memberId);
+        ClusterInstanceContext networkPartitionCtxt = getClusterInstanceContext(networkPartitionId,
+                clusterInstanceId);
+        ClusterLevelPartitionContext partitionCtxt = networkPartitionCtxt.getPartitionCtxt(
+                member.getPartitionId());
+        MemberStatsContext memberStatsContext = partitionCtxt.getMemberStatsContext(memberId);
+        if (null == memberStatsContext) {
+            if (log.isDebugEnabled()) {
+                log.debug(String.format("Member context is not available for : [member] %s", memberId));
+            }
+            return;
+        }
+        float value = (float)memberCurveFinderOfLoadAverageEvent.getValue();
+        memberStatsContext.setGradientOfMemoryConsumption(value);
+    }
+
     public void handleMemberAverageLoadAverageEvent(
             MemberAverageLoadAverageEvent memberAverageLoadAverageEvent) {
 
@@ -944,6 +1014,26 @@ public class ClusterMonitor extends Monitor {
         }
         float value = memberAverageLoadAverageEvent.getValue();
         memberStatsContext.setAverageLoadAverage(value);
+    }
+
+    public void handleMemberCurveFinderOfMemoryConsumptionEvent(MemberCurveFinderOfMemoryConsumptionEvent memberCurveFinderOfMemoryConsumptionEvent){
+        String clusterInstanceId = memberCurveFinderOfMemoryConsumptionEvent.getClusterInstanceId();
+        String memberId = memberCurveFinderOfMemoryConsumptionEvent.getMemberId();
+        Member member = getMemberByMemberId(memberId);
+        String networkPartitionId = getNetworkPartitionIdByMemberId(memberId);
+        ClusterInstanceContext networkPartitionCtxt = getClusterInstanceContext(networkPartitionId,
+                clusterInstanceId);
+        ClusterLevelPartitionContext partitionCtxt = networkPartitionCtxt.getPartitionCtxt(
+                member.getPartitionId());
+        MemberStatsContext memberStatsContext = partitionCtxt.getMemberStatsContext(memberId);
+        if (null == memberStatsContext) {
+            if (log.isDebugEnabled()) {
+                log.debug(String.format("Member context is not available for : [member] %s", memberId));
+            }
+            return;
+        }
+        float value = (float)memberCurveFinderOfMemoryConsumptionEvent.getValue();
+        memberStatsContext.setGradientOfLoadAverage(value);
     }
 
     public void handleMemberGradientOfLoadAverageEvent(

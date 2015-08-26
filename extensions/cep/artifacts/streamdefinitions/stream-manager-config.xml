@@ -306,4 +306,96 @@
          </payloadData>
      </streamDefinition>
 
+    <streamDefinition name="curve_finder_in_flight_requests" version="1.0.0">
+        <description>curve finder of in-flight request count</description>
+        <nickName>curve finder in-flight requests</nickName>
+        <metaData>
+        </metaData>
+        <correlationData>
+        </correlationData>
+        <payloadData>
+            <property name="cluster_id" type="String"/>
+            <property name="cluster_instance_id" type="String"/>
+            <property name="network_partition_id" type="String"/>
+            <property name="count" type="double"/>
+            <property name="curve_finder_a" type="double"/>
+            <property name="curve_finder_b" type="double"/>
+            <property name="curve_finder_c" type="double"/>
+        </payloadData>
+    </streamDefinition>
+
+    <streamDefinition name="curve_finder_memory_consumption_stats" version="1.0.0">
+        <description>curve finder memory consumption stats</description>
+        <nickName>curve finder memory consumption stats</nickName>
+        <metaData>
+        </metaData>
+        <correlationData>
+        </correlationData>
+        <payloadData>
+            <property name="cluster_id" type="String" />
+            <property name="cluster_instance_id" type="String"/>
+            <property name="network_partition_id" type="String"/>
+            <property name="curve_finder_memory_consumption" type="double"/>
+            <property name="curve_finder_a" type="double"/>
+            <property name="curve_finder_b" type="double"/>
+            <property name="curve_finder_c" type="double"/>
+        </payloadData>
+    </streamDefinition>
+
+    <streamDefinition name="curve_finder_load_average_stats" version="1.0.0">
+        <description>curve finder load average stats</description>
+        <nickName>curve finder load average stats</nickName>
+        <metaData>
+        </metaData>
+        <correlationData>
+        </correlationData>
+        <payloadData>
+            <property name="cluster_id" type="String" />
+            <property name="cluster_instance_id" type="String"/>
+            <property name="network_partition_id" type="String"/>
+            <property name="curve_finder_load_average" type="double"/>
+            <property name="curve_finder_a" type="double"/>
+            <property name="curve_finder_b" type="double"/>
+            <property name="curve_finder_c" type="double"/>
+        </payloadData>
+    </streamDefinition>
+
+    <streamDefinition name="member_curve_finder_memory_consumption_stats" version="1.0.0">
+        <description>curve finder memory consumption stats</description>
+        <nickName>curve finder memory consumption stats</nickName>
+        <metaData>
+        </metaData>
+        <correlationData>
+        </correlationData>
+        <payloadData>
+            <property name="member_id" type="String" />
+            <property name="cluster_id" type="String" />
+            <property name="cluster_instance_id" type="String"/>
+            <property name="network_partition_id" type="String"/>
+            <property name="member_curve_finder_memory_consumption" type="double"/>
+            <property name="curve_finder_a" type="double"/>
+            <property name="curve_finder_b" type="double"/>
+            <property name="curve_finder_c" type="double"/>
+        </payloadData>
+    </streamDefinition>
+
+    <streamDefinition name="member_curve_finder_load_average_stats" version="1.0.0">
+        <description>curve finder load average stats</description>
+        <nickName>curve finder load average stats</nickName>
+        <metaData>
+        </metaData>
+        <correlationData>
+        </correlationData>
+        <payloadData>
+            <property name="member_id" type="String" />
+            <property name="cluster_id" type="String" />
+            <property name="cluster_instance_id" type="String"/>
+            <property name="network_partition_id" type="String"/>
+            <property name="member_curve_finder_load_average" type="double"/>
+            <property name="curve_finder_a" type="double"/>
+            <property name="curve_finder_b" type="double"/>
+            <property name="curve_finder_c" type="double"/>
+        </payloadData>
+    </streamDefinition>
+
 </streamManagerConfiguration>

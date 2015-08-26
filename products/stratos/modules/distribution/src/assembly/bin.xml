@@ -510,6 +510,12 @@
         <dependencySet>
             <outputDirectory>${project.artifactId}-${project.version}/repository/components/lib</outputDirectory>
             <includes>
+                <include>org.apache.commons:commons-math3:jar</include>
+            </includes>
+        </dependencySet>
+        <dependencySet>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/components/lib</outputDirectory>
+            <includes>
                 <include>org.apache.stratos:org.apache.stratos.cep.extension:jar</include>
             </includes>
         </dependencySet>

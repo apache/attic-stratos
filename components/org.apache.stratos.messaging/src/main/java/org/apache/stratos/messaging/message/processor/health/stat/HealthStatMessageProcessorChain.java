@@ -45,6 +45,11 @@ public class HealthStatMessageProcessorChain extends MessageProcessorChain {
     private MemberSecondDerivativeOfLoadAverageMessageProcessor memberSecondDerivativeOfLoadAverageMessageProcessor;
     private MemberSecondDerivativeOfMemoryConsumptionMessageProcessor memberSecondDerivativeOfMemoryConsumptionMessageProcessor;
     private AverageRequestsServingCapabilityMessageProcessor averageRequestsServingCapabilityMessageProcessor;
+    private CurveFinderOfLoadAverageMessageProcessor curveFinderOfLoadAverageMessageProcessor;
+    private CurveFinderOfMemoryConsumptionMessageProcessor curveFinderOfMemoryConsumptionMessageProcessor;
+    private CurveFinderOfRequestsInFlightMesaageProcessor curveFinderOfRequestsInFlightMesaageProcessor;
+    private MemberCurveFinderOfLoadAverageMessageProcessor memberCurveFinderOfLoadAverageMessageProcessor;
+    private MemberCurveFinderOfMemoryConsumptionMessageProcessor memberCurveFinderOfMemoryConsumptionMessageProcessor;
 
     private MemberFaultMessageProcessor memberFaultMessageProcessor;
 
@@ -88,6 +93,17 @@ public class HealthStatMessageProcessorChain extends MessageProcessorChain {
         secondDerivativeOfMemoryConsumptionMessageProcessor = new SecondDerivativeOfMemoryConsumptionMessageProcessor();
         add(secondDerivativeOfMemoryConsumptionMessageProcessor);
 
+        curveFinderOfLoadAverageMessageProcessor = new CurveFinderOfLoadAverageMessageProcessor();
+        add(curveFinderOfLoadAverageMessageProcessor);
+        curveFinderOfMemoryConsumptionMessageProcessor = new CurveFinderOfMemoryConsumptionMessageProcessor();
+        add(curveFinderOfMemoryConsumptionMessageProcessor);
+        curveFinderOfRequestsInFlightMesaageProcessor = new CurveFinderOfRequestsInFlightMesaageProcessor();
+        add(curveFinderOfRequestsInFlightMesaageProcessor);
+        memberCurveFinderOfLoadAverageMessageProcessor = new MemberCurveFinderOfLoadAverageMessageProcessor();
+        add(memberCurveFinderOfLoadAverageMessageProcessor);
+        memberCurveFinderOfMemoryConsumptionMessageProcessor = new MemberCurveFinderOfMemoryConsumptionMessageProcessor();
+        add(memberCurveFinderOfMemoryConsumptionMessageProcessor);
+
         memberFaultMessageProcessor = new MemberFaultMessageProcessor();
         add(memberFaultMessageProcessor);
     }
@@ -129,7 +145,16 @@ public class HealthStatMessageProcessorChain extends MessageProcessorChain {
 
         } else if (eventListener instanceof SecondDerivativeOfRequestsInFlightEventListener) {
             secondDerivativeOfRequestsInFlightMessageProcessor.addEventListener(eventListener);
-
+        } else if(eventListener instanceof CurveFinderOfLoadAverageEventListener){
+            curveFinderOfLoadAverageMessageProcessor.addEventListener(eventListener);
+        } else if(eventListener instanceof CurveFinderOfMemoryConsumptionEventListener){
+            curveFinderOfMemoryConsumptionMessageProcessor.addEventListener(eventListener);
+        } else if(eventListener instanceof CurveFinderOfRequestsInfFlightEventListener){
+            curveFinderOfRequestsInFlightMesaageProcessor.addEventListener(eventListener);
+        } else if(eventListener instanceof MemberCurveFinderOfLoadAverageEventListener){
+            memberCurveFinderOfLoadAverageMessageProcessor.addEventListener(eventListener);
+        } else if(eventListener instanceof MemberCurveFinderOfMemoryConsumptionEventListener){
+            memberCurveFinderOfMemoryConsumptionMessageProcessor.addEventListener(eventListener);
         } else {
             throw new RuntimeException("Unknown event listener");
         }
