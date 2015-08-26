@@ -28,7 +28,7 @@ import org.wso2.siddhi.core.event.remove.RemoveListEvent;
 import org.wso2.siddhi.core.query.QueryPostProcessingElement;
 import org.wso2.siddhi.core.query.processor.window.RunnableWindowProcessor;
 import org.wso2.siddhi.core.query.processor.window.WindowProcessor;
-import org.wso2.siddhi.core.snapshot.ThreadBarrier;
+import org.wso2.siddhi.core.persistence.ThreadBarrier;
 import org.wso2.siddhi.core.util.collection.queue.scheduler.ISchedulerSiddhiQueue;
 import org.wso2.siddhi.core.util.collection.queue.scheduler.SchedulerSiddhiQueue;
 import org.wso2.siddhi.core.util.collection.queue.scheduler.SchedulerSiddhiQueueGrid;
@@ -48,14 +48,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-;
-
-/**
- * your task is to finish this Sliding WIndow, Use Gradient and Second Derivative Window processors for example
- * CurveFitter Finished
- * EMA added
- * You have to implement this processor
- */
 @SiddhiExtension(namespace = "stratos", function = "curveFitting")
 public class CurveFinderWindowProcessor extends WindowProcessor implements RunnableWindowProcessor {
 
@@ -63,12 +55,11 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
      * alpha is used as the smoothing constant in exponential moving average
      */
     public static final double ALPHA = 0.8000;
-    public static final double THRESHHOLD_MEMORY = 20.0;
+    public static final double THRESHOLD_MEMORY = 20.0;
     static final Logger log = Logger.getLogger(CurveFinderWindowProcessor.class);
     private ScheduledExecutorService eventRemoverScheduler;
     private long timeToKeep;
     private ScheduledFuture<?> lastSchedule = null;
-    private long constantSchedulingInterval = -1;
     private ThreadBarrier threadBarrier;
     private int subjectAttrIndex;
     private Attribute.Type subjectAttrType;
@@ -244,7 +235,7 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
 
         /**
          * if there is no events in new event list
-         * Laplacian Correction
+         * Laplace Correction
          */
 
         if(timeStamps.length == 0){
@@ -252,7 +243,7 @@ public class CurveFinderWindowProcessor extends WindowProcessor implements Runna
             dataValues = new double[1];
 
             timeStamps[0] = System.currentTimeMillis();
-            dataValues[0] = THRESHHOLD_MEMORY;
+            dataValues[0] = THRESHOLD_MEMORY;
         }
 
     }

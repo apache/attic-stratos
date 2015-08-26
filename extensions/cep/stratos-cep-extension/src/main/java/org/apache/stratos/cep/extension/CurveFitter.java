@@ -18,8 +18,6 @@
  */
 package org.apache.stratos.cep.extension;
 
-
-import org.apache.commons.math3.exception.NotStrictlyPositiveException;
 import org.apache.commons.math3.fitting.PolynomialCurveFitter;
 import org.apache.commons.math3.fitting.WeightedObservedPoints;
 import org.apache.log4j.Logger;
@@ -29,44 +27,45 @@ public class CurveFitter {
     private long[] timeStampValues;
     private double[] dataValues;
 
-    public CurveFitter(long[] timeStampValues, double[] dataValues){
+    public CurveFitter(long[] timeStampValues, double[] dataValues) {
         this.timeStampValues = timeStampValues;
         this.dataValues = dataValues;
     }
 
 
     /**
-     *fit the XValues and dataValues into a second order polynomial
+     * fit the XValues and dataValues into a second order polynomial
+     *
      * @return the coefficient array of the polynomial
      */
     public Double[] fit() {
         WeightedObservedPoints weightedObservedPoints = new WeightedObservedPoints();
 
-        for(int i = 0 ; i < timeStampValues.length && i < dataValues.length ; i++){
-            if(timeStampValues[i] != 0 && dataValues[i] > 0) {
+        for (int i = 0; i < timeStampValues.length && i < dataValues.length; i++) {
+            if (timeStampValues[i] != 0 && dataValues[i] > 0) {
                 weightedObservedPoints.add(i + 1, dataValues[i]);
-                log.info("Hash : "  + System.identityHashCode(this) +" T : " + (i+1) + " D : " + dataValues[i]);
             }
         }
 
         /**
          * create second degree polynomials from the observed points
          */
-            final PolynomialCurveFitter polynomialCurveFitter = PolynomialCurveFitter.create(2);
-            final double[] coefficients = polynomialCurveFitter.fit(weightedObservedPoints.toList());
+        final PolynomialCurveFitter polynomialCurveFitter = PolynomialCurveFitter.create(2);
+        final double[] coefficients = polynomialCurveFitter.fit(weightedObservedPoints.toList());
 
-            return convertDouble(coefficients);
+        return convertDouble(coefficients);
     }
 
     /**
      * To convert a double array to Double array
+     *
      * @param array double array that need to be converted
      * @return Converted Double array
      */
-    public Double[] convertDouble(double[] array){
-        Double[]  converted =  new Double[array.length];
+    public Double[] convertDouble(double[] array) {
+        Double[] converted = new Double[array.length];
 
-        for(int index =  0; index < converted.length; index++){
+        for (int index = 0; index < converted.length; index++) {
             converted[index] = new Double(array[index]);
         }
         return converted;

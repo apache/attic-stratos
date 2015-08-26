@@ -26,7 +26,6 @@ import org.apache.stratos.autoscaler.monitor.cluster.ClusterMonitor;
 import org.apache.stratos.messaging.domain.topology.Cluster;
 import org.apache.stratos.messaging.domain.topology.Member;
 import org.apache.stratos.messaging.domain.topology.Service;
-import org.apache.stratos.messaging.event.Event;
 import org.apache.stratos.messaging.event.health.stat.*;
 import org.apache.stratos.messaging.listener.health.stat.*;
 import org.apache.stratos.messaging.message.receiver.health.stat.HealthStatEventReceiver;
@@ -573,6 +572,26 @@ public class AutoscalerHealthStatEventReceiver {
                     return;
                 }
                 monitor.handleSecondDerivativeOfRequestsInFlightEvent(secondDerivativeOfRequestsInFlightEvent);
+            }
+        });
+
+        healthStatEventReceiver.addEventListener(new CurveFinderOfRequestsInfFlightEventListener(){
+            @Override
+            protected void onEvent(org.apache.stratos.messaging.event.Event event) {
+                CurveFinderOfRequestsInFlightEvent curveFinderOfRequestsInFlightEvent
+                        = (CurveFinderOfRequestsInFlightEvent) event;
+                String clusterId = curveFinderOfRequestsInFlightEvent.getClusterId();
+                AutoscalerContext asCtx = AutoscalerContext.getInstance();
+                ClusterMonitor monitor;
+                monitor = asCtx.getClusterMonitor(clusterId);
+                if (null == monitor) {
+                    if (log.isDebugEnabled()) {
+                        log.debug(String.format("A cluster monitor is not found in autoscaler context "
+                                + "[cluster] %s", clusterId));
+                    }
+                    return;
+                }
+                monitor.handleCurveFinderOfRequestsInFlightEvent(curveFinderOfRequestsInFlightEvent);
             }
         });
     }

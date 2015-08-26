@@ -32,6 +32,12 @@ public class RequestsInFlight implements Serializable {
     private float gradient;
     private float scaleDownMarginOfGradient;
     private float scaleDownMarginOfSecondDerivative;
+    /**
+     * curve finder coefficients
+     */
+    private double a;
+    private double b;
+    private double c;
 
     /**
      * Gets the value of the average property.
@@ -103,4 +109,27 @@ public class RequestsInFlight implements Serializable {
         this.scaleDownMarginOfSecondDerivative = scaleDownMarginOfSecondDerivative;
     }
 
+    public double getA() {
+        return a;
+    }
+
+    public double getB() {
+        return b;
+    }
+
+    public double getC() {
+        return c;
+    }
+
+    public void setA(double a) {
+        this.a = a;
+    }
+
+    public void setB(double b) {
+        this.b = b;
+    }
+
+    public void setC(double c) {
+        this.c = c;
+    }
 }

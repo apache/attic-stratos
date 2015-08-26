@@ -1033,6 +1033,7 @@ public class ClusterMonitor extends Monitor {
         ClusterLevelPartitionContext partitionCtxt = networkPartitionCtxt.getPartitionCtxt(
                 member.getPartitionId());
         MemberStatsContext memberStatsContext = partitionCtxt.getMemberStatsContext(memberId);
+
         if (null == memberStatsContext) {
             if (log.isDebugEnabled()) {
                 log.debug(String.format("Member context is not available for : [member] %s", memberId));
@@ -1040,16 +1041,40 @@ public class ClusterMonitor extends Monitor {
             return;
         }
 
-        log.info("Curve finder " + memberStatsContext.getMemberId());
 
         double a = memberCurveFinderOfMemoryConsumptionEvent.getA();
         double b = memberCurveFinderOfMemoryConsumptionEvent.getB();
         double c = memberCurveFinderOfMemoryConsumptionEvent.getC();
 
-        log.info(" Cluster Monitor a : " + a + " b : " + b + " c : " + c);
         memberStatsContext.getMemoryConsumption().setA(a);
         memberStatsContext.getMemoryConsumption().setB(b);
         memberStatsContext.getMemoryConsumption().setC(c);
+    }
+
+    public void handleCurveFinderOfRequestsInFlightEvent(CurveFinderOfRequestsInFlightEvent curveFinderOfRequestsInFlightEvent){
+        String networkPartitionId = curveFinderOfRequestsInFlightEvent.getNetworkPartitionId();
+        String clusterId = curveFinderOfRequestsInFlightEvent.getClusterId();
+        String clusterInstanceId = curveFinderOfRequestsInFlightEvent.getClusterInstanceId();
+        double a = curveFinderOfRequestsInFlightEvent.getA();
+        double b = curveFinderOfRequestsInFlightEvent.getB();
+        double c = curveFinderOfRequestsInFlightEvent.getC();
+
+
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("CurveFinder of Memory Consumption event: [cluster] %s "
+                    + "[network-partition] %s [a] %s [b] %s [c] %s", clusterId, networkPartitionId, a, b, c));
+        }
+        ClusterInstanceContext clusterLevelNetworkPartitionContext = getClusterInstanceContext(
+                networkPartitionId, clusterInstanceId);
+        if (null != clusterLevelNetworkPartitionContext) {
+            clusterLevelNetworkPartitionContext.setCurveFinderCoefficientsOfMemoryConsumption(a, b, c);
+        } else {
+            if (log.isDebugEnabled()) {
+                log.debug(String.format("Network partition context is not available for :" +
+                        " [network partition] %s", networkPartitionId));
+            }
+        }
+
     }
 
     public void handleMemberGradientOfLoadAverageEvent(

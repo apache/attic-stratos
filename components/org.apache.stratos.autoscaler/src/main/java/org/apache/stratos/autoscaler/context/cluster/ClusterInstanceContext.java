@@ -593,4 +593,10 @@ public class ClusterInstanceContext extends InstanceContext {
         loadAverage.setB(b);
         loadAverage.setC(c);
     }
+
+    public void setCurveFinderCoeffcientsOfRequestsInFlight(double a, double b, double c){
+        requestsInFlight.setA(a);
+        requestsInFlight.setB(b);
+        requestsInFlight.setC(c);
+    }
 }

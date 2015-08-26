@@ -66,7 +66,7 @@ public class RuleTasksDelegator {
      * @param timeInterval
      * @return predicted value
      */
-    public double getPredictedValueForNextMin(double a, double b, double c, long timeInterval) {
+    public double getCurvePredictedValueForNextMinute(double a, double b, double c, long timeInterval) {
         double predictedValue;
 
         log.info(String.format("Predicting the value, [a]: %s , [b]: %s , [c]: " +
@@ -376,6 +376,37 @@ public class RuleTasksDelegator {
         }
     }
 
+    public double getCurveLoadAveragePredictedValue(ClusterInstanceContext clusterInstanceContext) {
+        double loadAveragePredicted = 0.0d;
+        int totalMemberCount = 0;
+        for (ClusterLevelPartitionContext partitionContext : clusterInstanceContext.getPartitionCtxts()) {
+            for (MemberStatsContext memberStatsContext : partitionContext.getMemberStatsContexts().values()) {
+
+                double a = memberStatsContext.getLoadAverage().getA();
+                double b = memberStatsContext.getLoadAverage().getB();
+                double c = memberStatsContext.getLoadAverage().getC();
+
+                double memberPredictedLoadAverage = getCurvePredictedValueForNextMinute(a, b, c, 1);
+
+                if (log.isDebugEnabled()) {
+                    log.debug(String.format("[cluster-instance-id] %s [member-id] %s " +
+                            "[predicted load average] %s "
+                            , clusterInstanceContext.getId(), memberStatsContext.getMemberId()
+                            , memberPredictedLoadAverage));
+                }
+                loadAveragePredicted += memberPredictedLoadAverage;
+                ++totalMemberCount;
+            }
+        }
+
+        if (totalMemberCount > 0) {
+            log.debug("Curve Predicted load average : " + loadAveragePredicted / totalMemberCount);
+            return loadAveragePredicted / totalMemberCount;
+        } else {
+            return 0;
+        }
+    }
+
     public double getLoadAveragePredictedValue() {
         double loadAveragePredicted = 0.0;
         int totalMemberCount;
@@ -394,20 +425,8 @@ public class RuleTasksDelegator {
                 float memberMemoryConsumptionGradient = memberStatsContext.getMemoryConsumption().getGradient();
                 float memberMemoryConsumptionSecondDerivative = memberStatsContext.getMemoryConsumption().getSecondDerivative();
 
-                double a = memberStatsContext.getMemoryConsumption().getA();
-                double b = memberStatsContext.getMemoryConsumption().getB();
-                double c = memberStatsContext.getMemoryConsumption().getC();
+                double memberPredictedMemoryConsumption = getPredictedValueForNextMinute(memberMemoryConsumptionAverage, memberMemoryConsumptionGradient, memberMemoryConsumptionSecondDerivative, 1);
 
-                double memberPredictedMemoryConsumption = getPredictedValueForNextMin(a,
-                        b, c, 1);
-
-                if(memberPredictedMemoryConsumption == 0.0)
-                    memberPredictedMemoryConsumption = memberStatsContext.getMemoryConsumption().getAverage();
-                log.info("New value : " + memberPredictedMemoryConsumption);
-
-
-                double mem = getPredictedValueForNextMinute(memberMemoryConsumptionAverage, memberMemoryConsumptionGradient, memberMemoryConsumptionSecondDerivative, 1);
-                log.info("Old value : " + mem);
                 if (log.isDebugEnabled()) {
                     log.debug(String.format("[member-id] %s [predicted memory consumption] %s ",
                             memberStatsContext.getMemberId()
@@ -420,6 +439,41 @@ public class RuleTasksDelegator {
 
         if (totalMemberCount > 0) {
             log.debug("Predicted memory consumption : " + memoryConsumptionPredicted / totalMemberCount);
+            return memoryConsumptionPredicted / totalMemberCount;
+        } else {
+            return 0;
+        }
+    }
+
+    public double getCurveMemoryConsumptionPredictedValue(ClusterInstanceContext clusterInstanceContext) {
+        double memoryConsumptionPredicted = 0.0d;
+        int totalMemberCount = 0;
+        for (ClusterLevelPartitionContext partitionContext : clusterInstanceContext.getPartitionCtxts()) {
+            for (MemberStatsContext memberStatsContext : partitionContext.getMemberStatsContexts().values()) {
+
+
+                double a = memberStatsContext.getMemoryConsumption().getA();
+                double b = memberStatsContext.getMemoryConsumption().getB();
+                double c = memberStatsContext.getMemoryConsumption().getC();
+
+                double memberPredictedMemoryConsumption = getCurvePredictedValueForNextMinute(a,
+                        b, c, 1);
+
+                if (memberPredictedMemoryConsumption == 0.0)
+                    memberPredictedMemoryConsumption = memberStatsContext.getMemoryConsumption().getAverage();
+
+                if (log.isDebugEnabled()) {
+                    log.debug(String.format("[member-id] %s [predicted memory consumption] %s ",
+                            memberStatsContext.getMemberId()
+                            , memberPredictedMemoryConsumption));
+                }
+                memoryConsumptionPredicted += memberPredictedMemoryConsumption;
+                ++totalMemberCount;
+            }
+        }
+
+        if (totalMemberCount > 0) {
+            log.debug("Curve Predicted memory consumption : " + memoryConsumptionPredicted / totalMemberCount);
             return memoryConsumptionPredicted / totalMemberCount;
         } else {
             return 0;
