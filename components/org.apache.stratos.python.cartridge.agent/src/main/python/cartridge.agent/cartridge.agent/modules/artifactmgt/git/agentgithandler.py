@@ -328,7 +328,7 @@ class AgentGitHandler:
         (init_head, init_errors) = AgentGitHandler.execute_git_command(["rev-parse", "HEAD"], git_repo.local_repo_path)
 
         # check if modified
-        modified, unstaged_files = AgentGitHandler.get_unstaged_files(git_repo.local_repo_path)
+        modified = AgentGitHandler.check_unstaged_files(git_repo.local_repo_path)
 
         AgentGitHandler.log.debug("[Git] Modified: %s" % str(modified))
 
@@ -385,28 +385,14 @@ class AgentGitHandler:
                 "Pushing artifacts to remote repository failed for tenant %s: %s" % (git_repo.tenant_id, e))
 
     @staticmethod
-    def get_unstaged_files(repo_path):
+    def check_unstaged_files(repo_path):
 
         (output, errors) = AgentGitHandler.execute_git_command(["status"], repo_path=repo_path)
-        unstaged_files = {"modified": [], "untracked": []}
 
         if "nothing to commit" in output:
-            return False, unstaged_files
+            return False
 
-        if "Changes not staged for commit" in output:
-            # there are modified files
-            modified_lines = output.split("\n\n")[2].split("\n")
-            for mod_line in modified_lines:
-                file_name = mod_line.split(":")[1].strip()
-                unstaged_files["modified"].append(file_name)
-
-        if "Untracked files" in output:
-            # there are untracked files
-            untracked_files = output.split("Untracked files:")[1].split("\n\n")[1].split("\n")
-            for unt_line in untracked_files:
-                unstaged_files["untracked"].append(unt_line.strip())
-
-        return True, unstaged_files
+        return True
 
     @staticmethod
     def stage_all(repo_path):
