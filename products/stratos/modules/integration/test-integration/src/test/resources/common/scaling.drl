@@ -39,7 +39,7 @@ import org.apache.stratos.autoscaler.rule.AutoscalerRuleEvaluator;
 import org.apache.stratos.cloud.controller.stub.domain.Partition;
 import org.apache.stratos.cloud.controller.stub.domain.MemberContext;
 import org.apache.stratos.autoscaler.context.cluster.ClusterInstanceContext;
-
+import java.util.UUID;
 import org.apache.stratos.autoscaler.pojo.policy.autoscale.LoadAverage
 import org.apache.stratos.autoscaler.pojo.policy.autoscale.MemoryConsumption
 
@@ -163,10 +163,9 @@ dialect "mvel"
 
                     boolean partitionsAvailable = true;
                     int count = 0;
+                    String scalingReason = (numberOfRequiredInstances == numberOfInstancesReuquiredBasedOnRif)?"Scaling up due to RIF":(numberOfRequiredInstances== numberOfInstancesReuquiredBasedOnMemoryConsumption)?"Scaling up due to MC":"Scaling up due to LA";
 
-                    String autoscalingReason = (numberOfRequiredInstances == numberOfInstancesReuquiredBasedOnRif)?"Scaling up due to RIF, [Predicted Value] "+rifPredictedValue+" [Threshold] "+rifThreshold:(numberOfRequiredInstances== numberOfInstancesReuquiredBasedOnMemoryConsumption)?"Scaling up due to MC, [Predicted Value] "+mcPredictedValue+" [Threshold] "+mcThreshold:"Scaling up due to LA, [Predicted Value] "+laPredictedValue+" [Threshold] "+laThreshold;
-                    autoscalingReason += " [Number of required instances] "+numberOfRequiredInstances+" [Cluster Max Members] "+clusterMaxMembers+" [Additional instances to be created] " + additionalInstances;
-
+                    String scalingDecisionId = clusterId+"-"+UUID.randomUUID().toString();
 
                     while(count != additionalInstances && partitionsAvailable){
 
@@ -187,7 +186,7 @@ dialect "mvel"
 
                             log.debug("[scale-up] " + " [partition] " + partitionContext.getPartitionId() + " [cluster] " + clusterId );
                             long scalingTime = System.currentTimeMillis();
-                            delegator.delegateSpawn(partitionContext, clusterId, clusterInstanceContext.getId(), isPrimary,autoscalingReason,scalingTime);
+                            delegator.delegateSpawn(partitionContext, clusterId, clusterInstanceContext.getId(), scalingDecisionId);
                             count++;
                         } else {
 
