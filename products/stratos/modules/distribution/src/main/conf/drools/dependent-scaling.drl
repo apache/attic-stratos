@@ -27,14 +27,16 @@ import org.apache.stratos.autoscaler.pojo.policy.autoscale.RequestsInFlight;
 import org.apache.stratos.autoscaler.pojo.policy.autoscale.LoadThresholds;
 import org.apache.stratos.autoscaler.pojo.policy.autoscale.MemoryConsumption;
 import org.apache.stratos.autoscaler.pojo.policy.autoscale.LoadAverage;
+import java.util.UUID;
+import org.apache.stratos.autoscaler.statistics.publisher.ScalingDecisionPublisher;
+import org.apache.stratos.autoscaler.statistics.publisher.AutoscalerPublisherFactory;
+import org.apache.stratos.common.statistics.publisher.StatisticsPublisherType;
 
 global org.apache.stratos.autoscaler.rule.RuleLog log;
 global java.lang.String clusterId;
 global Integer roundedRequiredInstanceCount;
 global org.apache.stratos.autoscaler.rule.RuleTasksDelegator delegator;
 global java.lang.String algorithmName;
-global java.lang.Boolean isPrimary;
-global java.util.List primaryMembers;
 
 rule "Dependent Scaling Rule"
 dialect "mvel"
@@ -77,6 +79,21 @@ dialect "mvel"
                 " [cluster-instance] " + clusterInstanceContext.getId() + " max member count is: " +
                     clusterMaxMembers + " current member count is: " + nonTerminatedMembers);
 
+                String scalingDecisionId = clusterId+"-"+UUID.randomUUID().toString();
+                long scalingTime = System.currentTimeMillis();
+                String scalingReason = "Dependency scaling";
+                ScalingDecisionPublisher scalingDecisionPublisher = AutoscalerPublisherFactory.createScalingDecisionPublisher(StatisticsPublisherType.WSO2DAS);
+                if (scalingDecisionPublisher.isEnabled()) {
+                    log.debug("Publishing scaling decision to DAS");
+                    scalingDecisionPublisher.publish(scalingTime, scalingDecisionId, clusterId,
+                                             clusterInstanceContext.getMinInstanceCount(), clusterMaxMembers,
+                                             0, 0, 0, 0, 0, 0,0, 0, 0,
+                                             additionalInstances + nonTerminatedMembers,
+                                             0, additionalInstances, scalingReason);
+                } else {
+                    log.warn("Scaling decision publisher is not enabled");
+                }
+
                 while(count != additionalInstances  && partitionsAvailable) {
 
                     ClusterLevelPartitionContext partitionContext =  (ClusterLevelPartitionContext)partitionAlgorithm.getNextScaleUpPartitionContext(clusterInstanceContext.getPartitionCtxtsAsAnArray());
@@ -84,9 +101,7 @@ dialect "mvel"
 
                         log.info("[dependency-scale] [scale-up] Partition available, hence trying to spawn an instance to scale up!" );
                         log.debug("[dependency-scale] [scale-up] " + " [partition] " + partitionContext.getPartitionId() + " [cluster] " + clusterId );
-                        long scalingTime = System.currentTimeMillis();
-                        String scalingReason = "Dependency scaling";
-                        delegator.delegateSpawn(partitionContext, clusterId, clusterInstanceContext.getId(), isPrimary,scalingReason,scalingTime);
+                        delegator.delegateSpawn(partitionContext, clusterId, clusterInstanceContext.getId(), scalingDecisionId);
                         count++;
                     } else {
                         partitionsAvailable = false;
@@ -132,8 +147,6 @@ dialect "mvel"
 
                     for(MemberStatsContext memberStatsContext: partitionContext.getMemberStatsContexts().values()){
 
-						if( !primaryMembers.contains(memberStatsContext.getMemberId()) ) {
-
                             LoadAverage loadAverage = memberStatsContext.getLoadAverage();
                             log.debug("[dependency-scale] [scale-down] " + " [cluster] "
                                 + clusterId + " [member] " + memberStatsContext.getMemberId() + " Load average: " + loadAverage);
@@ -162,9 +175,6 @@ dialect "mvel"
                                 selectedMemberStatsContext = memberStatsContext;
                                 lowestOverallLoad = overallLoad;
                             }
-
-
-					    }
 
                     }
                     if(selectedMemberStatsContext != null) {

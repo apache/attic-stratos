@@ -37,6 +37,10 @@ import org.apache.commons.logging.Log;
 import org.apache.stratos.cloud.controller.stub.domain.Partition;
 import org.apache.stratos.cloud.controller.stub.domain.MemberContext;
 import org.apache.stratos.autoscaler.context.cluster.ClusterInstanceContext;
+import java.util.UUID;
+import org.apache.stratos.autoscaler.statistics.publisher.ScalingDecisionPublisher;
+import org.apache.stratos.autoscaler.statistics.publisher.AutoscalerPublisherFactory;
+import org.apache.stratos.common.statistics.publisher.StatisticsPublisherType;
 
 global org.apache.stratos.autoscaler.rule.RuleLog log;
 global org.apache.stratos.autoscaler.pojo.policy.PolicyManager manager;
@@ -44,8 +48,6 @@ global org.apache.stratos.autoscaler.context.AutoscalerContext context;
 global org.apache.stratos.autoscaler.rule.RuleTasksDelegator delegator;
 global java.util.Map partitionCtxts;
 global java.lang.String clusterId;
-global java.lang.Boolean isPrimary;
-global Integer primaryMemberCount;
 global java.lang.String algorithmName;
 
 rule "Minimum Rule"
@@ -59,23 +61,31 @@ dialect "mvel"
         eval(log.debug("[min-check] [network-partition] " + clusterInstanceContext.getNetworkPartitionId() + " [cluster-instance] " + clusterInstanceContext.getId() + " [cluster] " + clusterId + " Non terminated member count: " + clusterInstanceContext.getNonTerminatedMemberCount()))
         eval(log.debug("[min-check] [network-partition] " + clusterInstanceContext.getNetworkPartitionId() + " [cluster-instance] " + clusterInstanceContext.getId() + " [cluster] " + clusterId + " Minimum member count: " + clusterInstanceContext.getMinInstanceCount()))
 
-        eval ( (isPrimary && (primaryMemberCount < clusterInstanceContext.getMinInstanceCount())) || ( !isPrimary && (clusterInstanceContext.getNonTerminatedMemberCount() < clusterInstanceContext.getMinInstanceCount())) )
+        eval ( (clusterInstanceContext.getNonTerminatedMemberCount() < clusterInstanceContext.getMinInstanceCount()))
 
     then
 
         int additionalInstances = 0;
-        if(isPrimary){
-
-            additionalInstances = clusterInstanceContext.getMinInstanceCount() - primaryMemberCount;
-            log.debug("[min-check] true [primary] true [primary member count] " + primaryMemberCount + " [cluster] " + clusterId);
-        } else {
-
-            additionalInstances = clusterInstanceContext.getMinInstanceCount() - clusterInstanceContext.getNonTerminatedMemberCount();
-            log.debug("[min-check] true [primary] false [non terminated member count] " + clusterInstanceContext.getNonTerminatedMemberCount()+ " [cluster] " + clusterId);
-        }
+        additionalInstances = clusterInstanceContext.getMinInstanceCount() - clusterInstanceContext.getNonTerminatedMemberCount();
+        log.debug("[min-check] true [non terminated member count] " + clusterInstanceContext.getNonTerminatedMemberCount()+ " [cluster] " + clusterId);
 
         int count = 0;
         boolean partitionsAvailable = true;
+        String scalingDecisionId = clusterId+"-"+UUID.randomUUID().toString();
+        long scalingTime = System.currentTimeMillis();
+        String scalingReason = "Scaling up to fulfil minimum count";
+        ScalingDecisionPublisher scalingDecisionPublisher = AutoscalerPublisherFactory.createScalingDecisionPublisher(StatisticsPublisherType.WSO2DAS);
+        if (scalingDecisionPublisher.isEnabled()) {
+        log.debug("Publishing scaling decision to DAS");
+        scalingDecisionPublisher.publish(scalingTime, scalingDecisionId, clusterId,
+                                 clusterInstanceContext.getMinInstanceCount(),
+                                 clusterInstanceContext.getMaxInstanceCount(),
+                                 0, 0, 0, 0, 0, 0,0, 0, 0,
+                                 clusterInstanceContext.getMinInstanceCount(), 0,
+                                 additionalInstances, scalingReason);
+        } else {
+            log.warn("Scaling decision publisher is not enabled");
+        }
         while(count != additionalInstances && partitionsAvailable){
 
             ClusterLevelPartitionContext partitionContext =  (ClusterLevelPartitionContext)partitionAlgorithm.getNextScaleUpPartitionContext(clusterInstanceContext.getPartitionCtxtsAsAnArray());
@@ -84,11 +94,7 @@ dialect "mvel"
 
                 log.info("[min-check] Partition available, hence trying to spawn an instance to fulfil minimum count!" + " [cluster] " + clusterId);
                 log.debug("[min-check] " + " [partition] " + partitionContext.getPartitionId() + " [cluster] " + clusterId);
-                long scalingTime = System.currentTimeMillis();
-                String scalingReason = "Scaling up to fulfil minimum count, [Cluster Min Members] "+clusterInstanceContext.getMinInstanceCount()+" [Additional instances to be created] " + additionalInstances;
-                delegator.delegateSpawn(partitionContext, clusterId, clusterInstanceContext.getId(), isPrimary,scalingReason,scalingTime);
-
-
+                delegator.delegateSpawn(partitionContext, clusterId, clusterInstanceContext.getId(), scalingDecisionId);
                 count++;
             } else {
 

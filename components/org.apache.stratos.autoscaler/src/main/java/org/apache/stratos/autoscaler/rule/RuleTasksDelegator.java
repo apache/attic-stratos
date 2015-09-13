@@ -176,12 +176,10 @@ public class RuleTasksDelegator {
      * @param clusterMonitorPartitionContext Cluster monitor partition context
      * @param clusterId                      Cluster id
      * @param clusterInstanceId              Instance id
-     * @param isPrimary                      Is a primary member
-     * @param autoscalingReason              scaling reason for member
-     * @param scalingTime                    scaling time
+     * @param scalingDecisionId              Scaling Decision id
      */
     public void delegateSpawn(ClusterLevelPartitionContext clusterMonitorPartitionContext, String clusterId,
-                              String clusterInstanceId, boolean isPrimary, String autoscalingReason, long scalingTime) {
+                              String clusterInstanceId, String scalingDecisionId) {
 
         try {
             String nwPartitionId = clusterMonitorPartitionContext.getNetworkPartitionId();
@@ -209,8 +207,7 @@ public class RuleTasksDelegator {
                             .startInstance(clusterMonitorPartitionContext.getPartition(),
                                     clusterId,
                                     clusterInstanceId, clusterMonitorPartitionContext.getNetworkPartitionId(),
-                                    isPrimary,
-                                    minimumCountOfNetworkPartition, autoscalingReason, scalingTime);
+                                    minimumCountOfNetworkPartition, scalingDecisionId);
             if (memberContext != null) {
                 ClusterLevelPartitionContext partitionContext = clusterInstanceContext.
                         getPartitionCtxt(clusterMonitorPartitionContext.getPartitionId());

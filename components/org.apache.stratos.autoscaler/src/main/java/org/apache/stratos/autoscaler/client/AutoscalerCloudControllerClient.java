@@ -83,9 +83,8 @@ public class AutoscalerCloudControllerClient {
 
     public synchronized MemberContext startInstance(PartitionRef partition,
                                                     String clusterId, String clusterInstanceId,
-                                                    String networkPartitionId, boolean isPrimary,
-                                                    int minMemberCount, String autoscalingReason,
-                                                    long scalingTime) throws SpawningException {
+                                                    String networkPartitionId, int minMemberCount,
+                                                    String scalingDecisionId) throws SpawningException {
         try {
             if (log.isInfoEnabled()) {
                 log.info(String.format("Trying to spawn an instance via cloud controller: " +
@@ -108,26 +107,16 @@ public class AutoscalerCloudControllerClient {
             instanceContext.setNetworkPartitionId(networkPartitionId);
 
             Properties memberContextProps = new Properties();
-            Property isPrimaryProp = new Property();
-            isPrimaryProp.setName("PRIMARY");
-            isPrimaryProp.setValue(String.valueOf(isPrimary));
-
             Property minCountProp = new Property();
             minCountProp.setName(StratosConstants.MIN_COUNT);
             minCountProp.setValue(String.valueOf(minMemberCount));
 
-            Property autoscalingReasonProp = new Property();
-            autoscalingReasonProp.setName(StratosConstants.SCALING_REASON);
-            autoscalingReasonProp.setValue(autoscalingReason);
+            Property scalingDecisionIdProp = new Property();
+            scalingDecisionIdProp.setName(StratosConstants.SCALING_DECISION_ID);
+            scalingDecisionIdProp.setValue(String.valueOf(scalingDecisionId));
 
-            Property scalingTimeProp = new Property();
-            scalingTimeProp.setName(StratosConstants.SCALING_TIME);
-            scalingTimeProp.setValue(String.valueOf(scalingTime));
-
-            memberContextProps.addProperty(isPrimaryProp);
             memberContextProps.addProperty(minCountProp);
-            memberContextProps.addProperty(autoscalingReasonProp);
-            memberContextProps.addProperty(scalingTimeProp);
+            memberContextProps.addProperty(scalingDecisionIdProp);
             instanceContext.setProperties(AutoscalerUtil.toStubProperties(memberContextProps));
 
             long startTime = System.currentTimeMillis();
@@ -251,4 +240,4 @@ public class AutoscalerCloudControllerClient {
         }
     }
 
- }
+}
