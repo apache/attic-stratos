@@ -23,17 +23,16 @@
     <parent>
         <artifactId>stratos-extensions</artifactId>
         <groupId>org.apache.stratos</groupId>
-        <version>4.1.0-SNAPSHOT</version>
+        <version>4.2.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.apache.stratos</groupId>
-    <artifactId>strats-das-extension</artifactId>
+    <artifactId>stratos-das-extension</artifactId>
     <packaging>pom</packaging>
     <name>Apache Stratos - DAS Extension</name>
     <description>Apache Stratos extensions for DAS.</description>
     <modules>
-        <module>spark-udf</module>
+        <module>metering-service</module>
     </modules>
 
 

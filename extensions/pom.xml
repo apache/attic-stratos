@@ -34,5 +34,6 @@
     <modules>
         <module>cep</module>
         <module>load-balancer</module>
+        <module>das</module>
     </modules>
 </project>
