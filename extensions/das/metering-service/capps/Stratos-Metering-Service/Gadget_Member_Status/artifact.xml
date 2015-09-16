@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact name="Gadget_Scaling_Details" version="1.0.0" type="dashboards/gadget" serverRole="DataAnalyticsServer">
+    <file>Member_Status</file>
+</artifact>

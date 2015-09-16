@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Analytics>
+    <Name>scaling_details</Name>
+    <Script>
+        CREATE TEMPORARY TABLE scaling_decision
+        USING CarbonAnalytics
+        OPTIONS (tableName "SCALING_DECISION");
+
+        create temporary table scaling_details
+        using CarbonJDBC options (dataSource "WSO2_ANALYTICS_PROCESSED_DATA_STORE_DB", tableName "SCALING_DETAILS");
+
+        INSERT OVERWRITE TABLE scaling_details select time(timestamp),scaling_decision_id, cluster_id,
+        min_instance_count, max_instance_count, rif_predicted, rif_threshold,rif_required_instances, mc_predicted,
+        mc_threshold, mc_required_instances,la_predicted, la_threshold ,la_required_instances,required_instance_count
+        ,active_instance_count, additional_instance_count, scaling_reason from scaling_decision;
+
+    </Script>
+    <CronExpression>29 * * * * ?</CronExpression>
+</Analytics>
