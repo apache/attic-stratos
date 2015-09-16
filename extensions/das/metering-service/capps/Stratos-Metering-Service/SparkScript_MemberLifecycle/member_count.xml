@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Analytics>
+    <Name>httpd_log_analytics</Name>
+    <Script>
+        CREATE TEMPORARY TABLE memberstatus
+        USING CarbonAnalytics
+        OPTIONS (tableName "MEMBER_LIFECYCLE");
+
+        create temporary table member_count
+        using CarbonJDBC options (dataSource "WSO2_ANALYTICS_PROCESSED_DATA_STORE_DB", tableName "MEMBER_COUNT");
+
+        ;WITH MemberCount as
+        (select tenant_id, application_id, cluster_id,
+        count(case when member_status='Created' and timestamp > current_time(null)-60000 and
+        timestamp <= current_time(null) then 1 else NULL end) as created_instance_count,
+        count(case when member_status='Active' and timestamp > current_time(null)-60000 and
+        timestamp <= current_time(null) then 1 else NULL end) as initialized_instance_count,
+        count(case when member_status='Active' and timestamp > current_time(null)-60000 and
+        timestamp <= current_time(null) then 1 else NULL end) as active_instance_count,
+        count(case when member_status='Terminated' and timestamp > current_time(null)-60000 and
+        timestamp <= current_time(null) then 1 else NULL end) as terminated_instance_count
+        from memberstatus group by tenant_id, application_id, cluster_id)
+        INSERT INTO table member_count
+        select current_time(null)-60000, current_time(null), tenant_id, application_id, cluster_id, created_instance_count,initialized_instance_count,active_instance_count,
+        terminated_instance_count from MemberCount;
+
+        create temporary table member_status_new
+        using CarbonJDBC options (dataSource "WSO2_ANALYTICS_PROCESSED_DATA_STORE_DB", tableName "MEMBER_STATUS");
+
+        INSERT OVERWRITE TABLE member_status_new select tenant_id, timestamp, application_id, cluster_id, member_id, member_status from memberstatus;
+    </Script>
+    <CronExpression>59 * * * * ?</CronExpression>
+</Analytics>

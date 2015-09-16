@@ -1,0 +1,206 @@
+{
+  "id": "stratos-metering-dashboard",
+  "title": "Stratos Metering Dashboard",
+  "description": "",
+  "permissions": {
+    "viewers": [],
+    "editors": [
+      "Internal/everyone"
+    ]
+  },
+  "pages": [
+    {
+      "id": "member-status",
+      "title": "Member Status",
+      "layout": {
+        "id": "single-column-new",
+        "title": "Single Column New",
+        "description": "This is a layout generated through single-column-new.io",
+        "thumbnail": "store://layout/single-column-new/index.png",
+        "url": "store://layout/single-column-new/index.hbs",
+        "content": "<div class=\"container\">\n<div class=\"row\">\n    <div id=\"a\" class=\"col-md-12 ues-component-box ues-component-box-new\"></div>\n    <div id=\"b\" class=\"col-md-12 ues-component-box\"></div>\n    <div id=\"c\" class=\"col-md-12 ues-component-box\"></div>\n</div>\n</div>\n"
+      },
+      "content": {
+        "a": [
+          {
+            "id": "uwac7bblwm2c5wmi",
+            "content": {
+              "id": "member-filter",
+              "title": "Member Filter",
+              "type": "widget",
+              "thumbnail": "store://widget/member-filter/index.png",
+              "data": {
+                "url": "store://widget/member-filter/index.xml"
+              },
+              "styles": {
+                "borders": false,
+                "title": false
+              },
+              "notify": {
+                "range-selected": {
+                  "type": "member-range",
+                  "description": "This notifies selected state"
+                }
+              },
+              "options": {}
+            }
+          }
+        ],
+        "b": [
+          {
+            "id": "hky4yu0txvrkke29",
+            "content": {
+              "id": "Member_Count",
+              "title": "Member_Count",
+              "type": "gadget",
+              "thumbnail": "local://store/carbon.super/gadget/usa-business-revenue/index.png",
+              "data": {
+                "url": "local://store/carbon.super/gadget/Member_Count/index.xml"
+              },
+              "listen": {
+                "time-interval-channel": {
+                  "type": "address",
+                  "description": "Used to filter based on state"
+                },
+                "auto-update": {
+                  "type": "boolean",
+                  "description": "Used to filter based on state"
+                }
+              },
+              "styles": {
+                "title": "Member_Count",
+                "borders": true
+              },
+              "options": {
+                "dataSource": {
+                  "type": "STRING",
+                  "title": "Data Source",
+                  "value": "/portal/gadgets/bar-chart/datasource/dataFile4.jag",
+                  "options": [],
+                  "required": false
+                },
+                "updateGraph": {
+                  "type": "STRING",
+                  "title": "Update Interval (s)",
+                  "value": "No",
+                  "options": [],
+                  "required": false
+                }
+              }
+            }
+          }
+        ],
+        "c": [
+          {
+            "id": "bhvnapn63tmx6r",
+            "content": {
+              "id": "Member_Update",
+              "title": "Member Update",
+              "type": "gadget",
+              "thumbnail": "local://store/carbon.super/gadget/usa-business-revenue/index.png",
+              "data": {
+                "url": "local://store/carbon.super/gadget/Member_Status/index.xml"
+              },
+              "styles": {
+                "title": "Member Update",
+                "borders": true
+              },
+              "options": {
+                "dataSource": {
+                  "type": "STRING",
+                  "title": "Data Source",
+                  "value": "/portal/gadgets/bar-chart/datasource/dataFile4.jag",
+                  "options": [],
+                  "required": false
+                },
+                "updateGraph": {
+                  "type": "STRING",
+                  "title": "Update Interval (s)",
+                  "value": "No",
+                  "options": [],
+                  "required": false
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "member-details",
+      "title": "Member Details",
+      "layout": {
+        "id": "single-column",
+        "title": "Single Column",
+        "description": "This is a layout generated through single-column.io",
+        "thumbnail": "store://layout/single-column/index.png",
+        "url": "store://layout/single-column/index.hbs",
+        "content": "<div class=\"container\">\n<div class=\"row\">\n    <div id=\"a\" class=\"col-md-12 ues-component-box\"></div>\n    <div id=\"b\" class=\"col-md-12 ues-component-box\"></div>\n    <div id=\"c\" class=\"col-md-12 ues-component-box\"></div>\n</div>\n</div>\n"
+      },
+      "content": {
+        "a": [
+          {
+            "id": "member-filter",
+            "content": {
+              "title": "Member Filter",
+              "type": "widget",
+              "thumbnail": "store://widget/member-details-filter/index.png",
+              "data": {
+                "url": "store://widget/member-details-filter/index.xml"
+              },
+              "styles": {
+                "borders": false,
+                "title": false
+              },
+              "notify": {
+                "member-details-filter": {
+                  "type": "String",
+                  "description": "This notifies applicationId and clusterId"
+                }
+              },
+              "options": {}
+            }
+          }
+        ],
+        "b": [
+          {
+            "id": "rb7gkqlam3s4te29",
+            "content": {
+              "id": "Member_Details",
+              "title": "Member Details",
+              "type": "gadget",
+              "thumbnail": "local://store/carbon.super/gadget/usa-business-revenue/index.png",
+              "data": {
+                "url": "local://store/carbon.super/gadget/Member_Information/index.xml"
+              },
+              "styles": {
+                "title": "Member Details",
+                "height": "800",
+                "borders": true,
+                "titlePosition": "left"
+              },
+              "options": {
+                "dataSource": {
+                  "type": "STRING",
+                  "title": "Data Source",
+                  "value": "/portal/gadgets/bar-chart/datasource/dataFile4.jag",
+                  "options": [],
+                  "required": false
+                },
+                "updateGraph": {
+                  "type": "STRING",
+                  "title": "Update Interval (s)",
+                  "value": "No",
+                  "options": [],
+                  "required": false
+                }
+              },
+              "settings": {}
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "landing": "member-status"
+}

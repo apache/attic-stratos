@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Analytics>
+    <Name>member_information</Name>
+    <Script>
+        CREATE TEMPORARY TABLE memberinfo
+        USING CarbonAnalytics
+        OPTIONS (tableName "MEMBER_INFO");
+
+        create temporary table member_details
+        using CarbonJDBC options (dataSource "WSO2_ANALYTICS_PROCESSED_DATA_STORE_DB", tableName "MEMBER_INFORMATION");
+
+        INSERT OVERWRITE TABLE member_details select member_id, instance_type, image_id, host_name, private_IP_addresses, public_IP_addresses, hypervisor, cpu, ram, os_name, os_version from memberinfo;
+    </Script>
+    <CronExpression>29 * * * * ?</CronExpression>
+</Analytics>
