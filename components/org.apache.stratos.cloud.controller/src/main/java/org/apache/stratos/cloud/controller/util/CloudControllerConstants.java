@@ -61,6 +61,7 @@ public final class CloudControllerConstants {
     public static final String TENANT_ID_COL = "tenant_id";
     public static final String APPLICATION_ID_COL = "application_id";
     public static final String CLUSTER_ID_COL = "cluster_id";
+    public static final String CLUSTER_ALIAS_COL = "cluster_alias";
     public static final String CLUSTER_INSTANCE_ID_COL = "cluster_instance_id";
     public static final String PARTITION_ID_COL = "partition_id";
     public static final String NETWORK_PARTITION_ID_COL = "network_partition_id";

@@ -346,4 +346,8 @@ public class CloudControllerUtil {
             return LoadBalancingIPType.Private;
         }
     }
+
+    public static String getAliasFromClusterId(String clusterId) {
+        return StringUtils.substringBefore(StringUtils.substringAfter(clusterId, "."), ".");
+    }
 }

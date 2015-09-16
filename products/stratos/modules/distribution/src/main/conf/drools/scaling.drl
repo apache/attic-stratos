@@ -43,6 +43,7 @@ import java.util.UUID;
 import org.apache.stratos.autoscaler.statistics.publisher.ScalingDecisionPublisher;
 import org.apache.stratos.autoscaler.statistics.publisher.AutoscalerPublisherFactory;
 import org.apache.stratos.common.statistics.publisher.StatisticsPublisherType;
+import org.apache.stratos.autoscaler.rule.ScaleUpReason;
 import org.apache.stratos.autoscaler.pojo.policy.autoscale.LoadAverage
 import org.apache.stratos.autoscaler.pojo.policy.autoscale.MemoryConsumption
 
@@ -166,7 +167,7 @@ dialect "mvel"
 
                     boolean partitionsAvailable = true;
                     int count = 0;
-                    String scalingReason = (numberOfRequiredInstances == numberOfInstancesReuquiredBasedOnRif)?"Scaling up due to RIF":(numberOfRequiredInstances== numberOfInstancesReuquiredBasedOnMemoryConsumption)?"Scaling up due to MC":"Scaling up due to LA";
+                    String scalingReason = (numberOfRequiredInstances == numberOfInstancesReuquiredBasedOnRif)?ScaleUpReason.RIF.getValue():(numberOfRequiredInstances== numberOfInstancesReuquiredBasedOnMemoryConsumption)?"Scaling up due to MC":"Scaling up due to LA";
 
                     String scalingDecisionId = clusterId+"-"+UUID.randomUUID().toString();
                     long scalingTime = System.currentTimeMillis();

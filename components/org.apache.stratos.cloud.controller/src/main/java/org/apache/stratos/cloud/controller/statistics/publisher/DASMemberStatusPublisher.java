@@ -61,6 +61,7 @@ public class DASMemberStatusPublisher extends ThriftStatisticsPublisher implemen
             payloadData.add(new Attribute(CloudControllerConstants.TENANT_ID_COL, AttributeType.INT));
             payloadData.add(new Attribute(CloudControllerConstants.APPLICATION_ID_COL, AttributeType.STRING));
             payloadData.add(new Attribute(CloudControllerConstants.CLUSTER_ID_COL, AttributeType.STRING));
+            payloadData.add(new Attribute(CloudControllerConstants.CLUSTER_ALIAS_COL, AttributeType.STRING));
             payloadData.add(new Attribute(CloudControllerConstants.CLUSTER_INSTANCE_ID_COL, AttributeType.STRING));
             payloadData.add(new Attribute(CloudControllerConstants.SERVICE_NAME_COL, AttributeType.STRING));
             payloadData.add(new Attribute(CloudControllerConstants.NETWORK_PARTITION_ID_COL, AttributeType.STRING));
@@ -80,6 +81,7 @@ public class DASMemberStatusPublisher extends ThriftStatisticsPublisher implemen
      * @param timestamp          Status changed time
      * @param applicationId      Application Id
      * @param clusterId          Cluster Id
+     * @param clusterAlias       Cluster Alias
      * @param clusterInstanceId  Cluster Instance Id
      * @param networkPartitionId Network Partition Id
      * @param partitionId        Partition Id
@@ -89,7 +91,8 @@ public class DASMemberStatusPublisher extends ThriftStatisticsPublisher implemen
      * @parm tenantId            Tenant Id
      */
     @Override
-    public void publish(final Long timestamp, final int tenantId, final String applicationId, final String clusterId, final String clusterInstanceId,
+    public void publish(final Long timestamp, final int tenantId, final String applicationId, final String clusterId,
+                        final String clusterAlias, final String clusterInstanceId,
                         final String serviceName, final String networkPartitionId, final String partitionId,
                         final String memberId, final String status) {
 
@@ -98,10 +101,11 @@ public class DASMemberStatusPublisher extends ThriftStatisticsPublisher implemen
             public void run() {
                 if (log.isDebugEnabled()) {
                     log.debug(String.format("Publishing member status: [timestamp] %d [tenant_id] %d " +
-                                    "[application_id] %s [cluster_id] %s [cluster_instance_id] %s [service_name] %s " +
+                                    "[application_id] %s [cluster_id] %s [cluster_alias] %s" +
+                                    "[cluster_instance_id] %s [service_name] %s " +
                                     "[network_partition_id] %s [partition_id] %s " +
                                     "[member_id] %s [member_status] %s ",
-                            timestamp, tenantId, applicationId, clusterId, clusterInstanceId, serviceName,
+                            timestamp, tenantId, applicationId, clusterId, clusterAlias, clusterInstanceId, serviceName,
                             networkPartitionId, partitionId, memberId, status));
                 }
                 //adding payload data
@@ -110,6 +114,7 @@ public class DASMemberStatusPublisher extends ThriftStatisticsPublisher implemen
                 payload.add(Integer.valueOf(tenantId));
                 payload.add(applicationId);
                 payload.add(clusterId);
+                payload.add(clusterAlias);
                 payload.add(clusterInstanceId);
                 payload.add(serviceName);
                 payload.add(networkPartitionId);

@@ -41,6 +41,7 @@ import java.util.UUID;
 import org.apache.stratos.autoscaler.statistics.publisher.ScalingDecisionPublisher;
 import org.apache.stratos.autoscaler.statistics.publisher.AutoscalerPublisherFactory;
 import org.apache.stratos.common.statistics.publisher.StatisticsPublisherType;
+import org.apache.stratos.autoscaler.rule.ScaleUpReason;
 
 global org.apache.stratos.autoscaler.rule.RuleLog log;
 global org.apache.stratos.autoscaler.pojo.policy.PolicyManager manager;
@@ -73,7 +74,7 @@ dialect "mvel"
         boolean partitionsAvailable = true;
         String scalingDecisionId = clusterId+"-"+UUID.randomUUID().toString();
         long scalingTime = System.currentTimeMillis();
-        String scalingReason = "Scaling up to fulfil minimum count";
+        String scalingReason = ScaleUpReason.MIN.getValue();
         ScalingDecisionPublisher scalingDecisionPublisher = AutoscalerPublisherFactory.createScalingDecisionPublisher(StatisticsPublisherType.WSO2DAS);
         if (scalingDecisionPublisher.isEnabled()) {
         log.debug("Publishing scaling decision to DAS");

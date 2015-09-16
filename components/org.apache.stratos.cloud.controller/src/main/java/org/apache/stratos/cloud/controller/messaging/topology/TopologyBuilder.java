@@ -394,6 +394,7 @@ public class TopologyBuilder {
         }
         String applicationId = applicationContext.getApplicationId();
         int tenantId = applicationContext.getTenantId();
+        String clusterAlias = CloudControllerUtil.getAliasFromClusterId(clusterId);
         String memberId = memberContext.getMemberId();
         String clusterInstanceId = memberContext.getClusterInstanceId();
         String networkPartitionId = memberContext.getNetworkPartitionId();
@@ -429,6 +430,7 @@ public class TopologyBuilder {
                         tenantId,
                         applicationId,
                         memberContext.getClusterId(),
+                        clusterAlias,
                         memberContext.getClusterInstanceId(),
                         memberContext.getCartridgeType(),
                         memberContext.getNetworkPartitionId(),
@@ -463,6 +465,7 @@ public class TopologyBuilder {
         }
         String applicationId = applicationContext.getApplicationId();
         int tenantId = applicationContext.getTenantId();
+        String clusterAlias = CloudControllerUtil.getAliasFromClusterId(memberContext.getClusterId());
         if (service == null) {
             log.warn(String.format("Service %s does not exist",
                     memberContext.getCartridgeType()));
@@ -535,6 +538,7 @@ public class TopologyBuilder {
                             tenantId,
                             applicationId,
                             memberContext.getClusterId(),
+                            clusterAlias,
                             memberContext.getClusterInstanceId(),
                             memberContext.getCartridgeType(),
                             memberContext.getNetworkPartitionId(),
@@ -575,6 +579,7 @@ public class TopologyBuilder {
             }
             String applicationId = applicationContext.getApplicationId();
             int tenantId = applicationContext.getTenantId();
+            String clusterAlias = CloudControllerUtil.getAliasFromClusterId(instanceStartedEvent.getClusterId());
             if (service == null) {
                 log.warn(String.format("Service %s does not exist",
                         instanceStartedEvent.getServiceName()));
@@ -623,6 +628,7 @@ public class TopologyBuilder {
                                 tenantId,
                                 applicationId,
                                 instanceStartedEvent.getClusterId(),
+                                clusterAlias,
                                 instanceStartedEvent.getClusterInstanceId(),
                                 instanceStartedEvent.getServiceName(),
                                 instanceStartedEvent.getNetworkPartitionId(),
@@ -657,6 +663,8 @@ public class TopologyBuilder {
         }
         String applicationId = applicationContext.getApplicationId();
         int tenantId = applicationContext.getTenantId();
+        String clusterAlias = CloudControllerUtil.getAliasFromClusterId(instanceActivatedEvent.getClusterId());
+
         if (service == null) {
             log.warn(String.format("Service %s does not exist",
                     instanceActivatedEvent.getServiceName()));
@@ -751,6 +759,7 @@ public class TopologyBuilder {
                             tenantId,
                             applicationId,
                             memberActivatedEvent.getClusterId(),
+                            clusterAlias,
                             memberActivatedEvent.getClusterInstanceId(),
                             memberActivatedEvent.getServiceName(),
                             memberActivatedEvent.getNetworkPartitionId(),
@@ -780,6 +789,7 @@ public class TopologyBuilder {
         }
         String applicationId = applicationContext.getApplicationId();
         int tenantId = applicationContext.getTenantId();
+        String clusterAlias = CloudControllerUtil.getAliasFromClusterId(instanceReadyToShutdownEvent.getClusterId());
 
         //update the status of the member
         if (service == null) {
@@ -839,6 +849,7 @@ public class TopologyBuilder {
                     tenantId,
                     applicationId,
                     instanceReadyToShutdownEvent.getClusterId(),
+                    clusterAlias,
                     instanceReadyToShutdownEvent.getClusterInstanceId(),
                     instanceReadyToShutdownEvent.getServiceName(),
                     instanceReadyToShutdownEvent.getNetworkPartitionId(),

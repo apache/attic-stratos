@@ -78,6 +78,7 @@ public class CloudControllerServiceUtil {
         }
         String applicationId = applicationContext.getApplicationId();
         int tenantId = applicationContext.getTenantId();
+        String clusterAlias = CloudControllerUtil.getAliasFromClusterId(memberContext.getClusterId());
 
         String partitionId = memberContext.getPartition() == null ? null : memberContext.getPartition().getUuid();
 
@@ -98,6 +99,7 @@ public class CloudControllerServiceUtil {
                     tenantId,
                     applicationId,
                     memberContext.getClusterId(),
+                    clusterAlias,
                     memberContext.getClusterInstanceId(),
                     memberContext.getCartridgeType(),
                     memberContext.getNetworkPartitionId(),
