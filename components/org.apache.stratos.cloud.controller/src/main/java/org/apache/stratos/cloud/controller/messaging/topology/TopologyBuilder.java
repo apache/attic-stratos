@@ -389,8 +389,9 @@ public class TopologyBuilder {
         try {
             applicationContext = AutoscalerServiceClient.getInstance().getApplication(cluster.getAppId());
         } catch (RemoteException e) {
-            log.error(String.format("Error while getting the application context for [applicationUuid] %s" +
-                    cluster.getAppId()));
+            String message = String.format("Error while getting the application context for [applicationUuid] %s" +
+                    cluster.getAppId());
+            log.error(message, e);
         }
         String applicationId = applicationContext.getApplicationId();
         int tenantId = applicationContext.getTenantId();
@@ -460,8 +461,9 @@ public class TopologyBuilder {
         try {
             applicationContext = AutoscalerServiceClient.getInstance().getApplication(applicationUuid);
         } catch (RemoteException e) {
-            log.error(String.format("Error while getting the application context for [applicationUuid] %s" +
-                    applicationUuid));
+            String message = String.format("Error while getting the application context for [applicationUuid] %s" +
+                    applicationUuid);
+            log.error(message, e);
         }
         String applicationId = applicationContext.getApplicationId();
         int tenantId = applicationContext.getTenantId();
@@ -574,8 +576,9 @@ public class TopologyBuilder {
             try {
                 applicationContext = AutoscalerServiceClient.getInstance().getApplication(applicationUuid);
             } catch (RemoteException e) {
-                log.error(String.format("Error while getting the application context for [applicationUuid] %s" +
-                        applicationUuid));
+                String message = String.format("Error while getting the application context for [applicationUuid] %s" +
+                        applicationUuid);
+                log.error(message, e);
             }
             String applicationId = applicationContext.getApplicationId();
             int tenantId = applicationContext.getTenantId();
@@ -658,8 +661,9 @@ public class TopologyBuilder {
         try {
             applicationContext = AutoscalerServiceClient.getInstance().getApplication(applicationUuid);
         } catch (RemoteException e) {
-            log.error(String.format("Error while getting the application context for [applicationUuid] %s" +
-                    applicationUuid));
+            String message = String.format("Error while getting the application context for [applicationUuid] %s" +
+                    applicationUuid);
+            log.error(message, e);
         }
         String applicationId = applicationContext.getApplicationId();
         int tenantId = applicationContext.getTenantId();
@@ -784,8 +788,9 @@ public class TopologyBuilder {
         try {
             applicationContext = AutoscalerServiceClient.getInstance().getApplication(applicationUuid);
         } catch (RemoteException e) {
-            log.error(String.format("Error while getting the application context for [applicationUuid] %s" +
-                    applicationUuid));
+            String message = String.format("Error while getting the application context for [applicationUuid] %s" +
+                    applicationUuid);
+            log.error(message, e);
         }
         String applicationId = applicationContext.getApplicationId();
         int tenantId = applicationContext.getTenantId();
