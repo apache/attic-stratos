@@ -1,0 +1,56 @@
+<%
+(function () {
+    var log = new Log();
+    var type = 0;
+    var TYPE = 'type';
+    var APPLICATION = 0;
+    var CLUSTER = 1;
+    var HTTP_INTERNAL_ERROR = 500;
+
+    var type = 0;
+    var typeParam = request.getParameter(TYPE);
+    if (typeParam != null) {
+        type = parseInt(typeParam);
+    }
+
+    var db = new Database("WSO2_ANALYTICS_PROCESSED_DATA_STORE_DB");
+
+    try {
+        switch (type) {
+            case APPLICATION:
+            {
+                log.info("Executing Query");
+                var result = db.query("select distinct ApplicationId from MEMBER_COUNT");
+                break;
+            }
+            case CLUSTER:
+            {
+                log.info("Executing Query");
+                var applicationId = request.getParameter('applicationId');
+                var result = db.query("select distinct ClusterId, ClusterAlias from MEMBER_COUNT where ApplicationId ='" + applicationId+ "'");
+                break;
+            }
+            default:
+            {
+                log.error("operation type is not specified!");
+                response.status = HTTP_INTERNAL_ERROR;
+                print('{ "status": "Failed", "message": "Operation type is not specified" }');
+                return;
+            }
+        }
+
+        if (result != null) {
+            print(result);
+        } else {
+            log.info("NULL");
+        }
+
+    }
+    catch (e) {
+        print(e.toString());
+    }
+    finally {
+        db.close();
+    }
+}());
+%>

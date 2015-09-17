@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact name="Layout" version="1.0.0" type="dashboards/layout" serverRole="DataAnalyticsServer">
+    <file>single-column</file>
+</artifact>

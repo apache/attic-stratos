@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifacts>
+    <artifact name="Stratos-Metering-Service" version="1.0.0" type="carbon/application">
+        <dependency artifact="EventStream_MemberInfo" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
+        <dependency artifact="EventStream_MemberLifecycle" version="1.0.0" include="true"
+                    serverRole="DataAnalyticsServer"/>
+        <dependency artifact="EventStream_ScalingDecision" version="1.0.0" include="true"
+                    serverRole="DataAnalyticsServer"/>
+        <dependency artifact="EventStore_MemberInfo" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
+        <dependency artifact="EventStore_MemberLifecycle" version="1.0.0" include="true"
+                    serverRole="DataAnalyticsServer"/>
+        <dependency artifact="EventStore_ScalingDecision" version="1.0.0" include="true"
+                    serverRole="DataAnalyticsServer"/>
+        <dependency artifact="EventReceiver_MemberInfo" version="1.0.0" include="true"
+                    serverRole="DataAnalyticsServer"/>
+        <dependency artifact="EventReceiver_MemberLifecycle" version="1.0.0" include="true"
+                    serverRole="DataAnalyticsServer"/>
+        <dependency artifact="EventReceiver_ScalingDecision" version="1.0.0" include="true"
+                    serverRole="DataAnalyticsServer"/>
+        <dependency artifact="SparkScript_MemberInfo" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
+        <dependency artifact="SparkScript_MemberLifecycle" version="1.0.0" include="true"
+                    serverRole="DataAnalyticsServer"/>
+        <dependency artifact="SparkScript_ScalingDecision" version="1.0.0" include="true"
+                    serverRole="DataAnalyticsServer"/>
+        <dependency artifact="Gadget_Member_Count" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
+        <dependency artifact="Gadget_Member_Information" version="1.0.0" include="true"
+                    serverRole="DataAnalyticsServer"/>
+        <dependency artifact="Gadget_Member_Status" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
+        <dependency artifact="Widget_Member_Status_Filter" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
+        <dependency artifact="Widget_Member_Details_Filter" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
+        <dependency artifact="Dashboard" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
+    </artifact>
+</artifacts>

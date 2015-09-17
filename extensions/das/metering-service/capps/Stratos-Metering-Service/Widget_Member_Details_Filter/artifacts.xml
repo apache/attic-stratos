@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact name="Widget_Member_Details_Filter" version="1.0.0" type="dashboards/widget" serverRole="DataAnalyticsServer">
+    <file>member-details-filter</file>
+</artifact>

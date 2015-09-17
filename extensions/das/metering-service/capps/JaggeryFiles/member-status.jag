@@ -1,0 +1,99 @@
+<%
+(function () {
+    var log = new Log();
+    var TYPE = "type";
+    var TABLE_NAME = "tableName";
+
+    var HTTP_INTERNAL_ERROR = 500;
+    var TYPE_GET_SCHEMA = 1;
+    var TYPE_GET_BY_RANGE = 2;
+    var TIME_INTERVAL_1 = '30 Min';
+    var TIME_INTERVAL_2 = '1 Hour';
+    var TIME_INTERVAL_3 = '1 Day';
+    var TIME_INTERVAL_4 = '1 Week';
+    var TIME_INTERVAL_5 = '1 Month';
+
+    var carbon = require('carbon');
+    var configs = require('/configs/designer.json');
+
+    var type = 0;
+    var typeParam = request.getParameter(TYPE);
+    if (typeParam != null) {
+        type = parseInt(typeParam);
+    }
+
+    if (type == 0) {
+        log.error("operation type is not specified!");
+        response.status = HTTP_INTERNAL_ERROR;
+        print('{ "status": "Failed", "message": "Operation type is not specified" }');
+        return;
+    }
+
+    var tableName = request.getParameter(TABLE_NAME);
+    if (tableName == null) {
+        log.error("tableName is not provided!");
+        response.status = HTTP_INTERNAL_ERROR;
+        print('{ "status": "Failed", "message": "Table name param is empty" }');
+        return;
+    }
+
+    var content = request.getContent();
+    var contentAsString = null;
+    if (content != '' && content != null) {
+        contentAsString = stringify(content);
+        if (log.isDebugEnabled()) {
+            log.debug("value of content: " + contentAsString);
+        }
+    }
+
+    var db = new Database("WSO2_ANALYTICS_PROCESSED_DATA_STORE_DB");
+
+    try {
+        switch (type) {
+            case TYPE_GET_SCHEMA:
+            {
+                var result = db.query("SELECT COLUMN_NAME,DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='ANALYTICS_PROCESSED_DATA_STORE' AND TABLE_NAME = '" + tableName + "'");
+                if (result != null) {
+                    print(result);
+                } else {
+                    log.info("NULL");
+                }
+                break;
+            }
+
+            case TYPE_GET_BY_RANGE:
+            {
+                var timeInterval = request.getParameter("time");
+                var interval = 1800000;
+                if (timeInterval === TIME_INTERVAL_1) {
+                    interval = 1800000;
+                } else if (timeInterval === TIME_INTERVAL_2) {
+                    interval = 3600000;
+                } else if (timeInterval === TIME_INTERVAL_3) {
+                    interval = 86400000;
+                } else if (timeInterval === TIME_INTERVAL_4) {
+                    interval = 604800000;
+                } else if (timeInterval === TIME_INTERVAL_5) {
+                    interval = 2419200000;
+                }
+                var applicationId = request.getParameter("applicationId");
+                var clusterId = request.getParameter("clusterId");
+
+                if (clusterId == 'All Clusters') {
+                    result = db.query("SELECT FROM_UNIXTIME(Time/1000, '%Y:%m:%d %h:%i') as Time, MemberId, MemberStatus FROM " + tableName + " WHERE ApplicationId='" + applicationId + "' and Time > ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000-'" + interval + "' ) and Time <= ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000)");
+                }else{
+                    result = db.query("SELECT FROM_UNIXTIME(Time/1000, '%Y:%m:%d %h:%i') as Time, MemberId, MemberStatus FROM " + tableName + " WHERE ApplicationId='" + applicationId + "' and ClusterId='"+clusterId+"'and Time > ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000-'" + interval + "' ) and Time <= ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000)");
+                }
+                print(result);
+                break;
+            }
+        }
+    }
+    catch (e) {
+        print(e.toString());
+    }
+    finally {
+        db.close();
+    }
+}());
+%>
