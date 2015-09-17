@@ -22,6 +22,7 @@ package org.apache.stratos.cloud.controller.services.impl;
 import com.google.common.net.InetAddresses;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.stratos.autoscaler.stub.pojo.ApplicationContext;
 import org.apache.stratos.cloud.controller.context.CloudControllerContext;
 import org.apache.stratos.cloud.controller.domain.IaasProvider;
 import org.apache.stratos.cloud.controller.domain.MemberContext;
@@ -31,10 +32,17 @@ import org.apache.stratos.cloud.controller.exception.InvalidPartitionException;
 import org.apache.stratos.cloud.controller.iaases.Iaas;
 import org.apache.stratos.cloud.controller.iaases.PartitionValidator;
 import org.apache.stratos.cloud.controller.messaging.topology.TopologyBuilder;
-import org.apache.stratos.cloud.controller.statistics.publisher.BAMUsageDataPublisher;
+import org.apache.stratos.cloud.controller.messaging.topology.TopologyManager;
+import org.apache.stratos.cloud.controller.statistics.publisher.CloudControllerPublisherFactory;
+import org.apache.stratos.cloud.controller.statistics.publisher.MemberStatusPublisher;
 import org.apache.stratos.cloud.controller.util.CloudControllerUtil;
+import org.apache.stratos.common.client.AutoscalerServiceClient;
+import org.apache.stratos.common.statistics.publisher.StatisticsPublisherType;
 import org.apache.stratos.messaging.domain.topology.MemberStatus;
+import org.apache.stratos.messaging.domain.topology.Service;
+import org.apache.stratos.messaging.domain.topology.Topology;
 
+import java.rmi.RemoteException;
 import java.util.Properties;
 
 /**
@@ -49,7 +57,7 @@ public class CloudControllerServiceUtil {
     }
 
     /**
-     * Update the topology, publish statistics to BAM, remove member context
+     * Update the topology, publish statistics to DAS, remove member context
      * and persist cloud controller context.
      *
      * @param memberContext MemberContext of the Member
@@ -58,6 +66,20 @@ public class CloudControllerServiceUtil {
         if (memberContext == null) {
             return;
         }
+        Topology topology = TopologyManager.getTopology();
+        Service service = topology.getService(memberContext.getCartridgeType());
+        String applicationUuid = service.getCluster(memberContext.getClusterId()).getAppId();
+        ApplicationContext applicationContext = null;
+        try {
+            applicationContext = AutoscalerServiceClient.getInstance().getApplication(applicationUuid);
+        } catch (RemoteException e) {
+            String message = String.format("Error while getting the application context for [applicationUuid] %s" +
+                    applicationUuid);
+            log.error(message, e);
+        }
+        String applicationId = applicationContext.getApplicationId();
+        int tenantId = applicationContext.getTenantId();
+        String clusterAlias = CloudControllerUtil.getAliasFromClusterId(memberContext.getClusterId());
 
         String partitionId = memberContext.getPartition() == null ? null : memberContext.getPartition().getUuid();
 
@@ -66,16 +88,28 @@ public class CloudControllerServiceUtil {
                 memberContext.getClusterId(), memberContext.getNetworkPartitionId(),
                 partitionId, memberContext.getMemberId());
         //member terminated time
-        Long timeStamp = System.currentTimeMillis();
-        // Publish statistics to BAM
-        BAMUsageDataPublisher.publish(memberContext.getMemberId(),
-                partitionId,
-                memberContext.getNetworkPartitionId(),
-                memberContext.getClusterInstanceId(),
-                memberContext.getClusterId(),
-                memberContext.getCartridgeType(),
-                MemberStatus.Terminated.toString(),
-                timeStamp, null, null, null);
+        Long timestamp = System.currentTimeMillis();
+        //publishing member status to DAS.
+        MemberStatusPublisher memStatusPublisher = CloudControllerPublisherFactory.
+                createMemberStatusPublisher(StatisticsPublisherType.WSO2DAS);
+        if (memStatusPublisher.isEnabled()) {
+            if (log.isDebugEnabled()) {
+                log.debug("Publishing Member Status to DAS");
+            }
+            memStatusPublisher.publish(timestamp,
+                    tenantId,
+                    applicationId,
+                    memberContext.getClusterId(),
+                    clusterAlias,
+                    memberContext.getClusterInstanceId(),
+                    memberContext.getCartridgeType(),
+                    memberContext.getNetworkPartitionId(),
+                    memberContext.getPartition().getId(),
+                    memberContext.getMemberId(),
+                    MemberStatus.Terminated.toString());
+        } else {
+            log.warn("Member Status Publisher is not enabled");
+        }
 
         // Remove member context
         CloudControllerContext.getInstance().removeMemberContext(memberContext.getClusterId(),

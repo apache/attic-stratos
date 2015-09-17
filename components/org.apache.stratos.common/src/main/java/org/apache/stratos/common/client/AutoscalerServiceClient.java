@@ -46,8 +46,8 @@ public class AutoscalerServiceClient {
                 StratosConstants.DEFAULT_CLIENT_SOCKET_TIMEOUT :
                 System.getProperty(StratosConstants.AUTOSCALER_CLIENT_SOCKET_TIMEOUT);
 
-        String autosclaerConnectionTimeout = System.getProperty(StratosConstants.AUTOSCALER_CLIENT_CONNECTION_TIMEOUT) == null ?
-                StratosConstants.DEFAULT_CLIENT_CONNECTION_TIMEOUT :
+        String autosclaerConnectionTimeout = System.getProperty(StratosConstants.AUTOSCALER_CLIENT_CONNECTION_TIMEOUT)
+                == null ? StratosConstants.DEFAULT_CLIENT_CONNECTION_TIMEOUT :
                 System.getProperty(StratosConstants.AUTOSCALER_CLIENT_CONNECTION_TIMEOUT);
 
         try {
@@ -90,10 +90,10 @@ public class AutoscalerServiceClient {
         return stub.getAutoscalingPolicy(autoscalingPolicyId);
     }
 
-	public org.apache.stratos.autoscaler.stub.autoscale.policy.AutoscalePolicy getAutoScalePolicyForTenant(
-			String autoscalingPolicyId,int tenantId) throws RemoteException {
-		return stub.getAutoscalingPolicyForTenant(autoscalingPolicyId,tenantId);
-	}
+    public org.apache.stratos.autoscaler.stub.autoscale.policy.AutoscalePolicy getAutoScalePolicyForTenant(
+            String autoscalingPolicyId, int tenantId) throws RemoteException {
+        return stub.getAutoscalingPolicyForTenant(autoscalingPolicyId, tenantId);
+    }
 
     public void addApplication(ApplicationContext applicationContext)
             throws AutoscalerServiceApplicationDefinitionExceptionException,
@@ -109,16 +109,16 @@ public class AutoscalerServiceClient {
         stub.updateApplication(applicationContext);
     }
 
-    public ApplicationContext getApplication(String applicationId) throws RemoteException {
-        return stub.getApplication(applicationId);
+    public ApplicationContext getApplication(String applicationUuid) throws RemoteException {
+        return stub.getApplication(applicationUuid);
     }
 
     public ApplicationContext getApplicationByTenant(String applicationId, int tenantId) throws RemoteException {
         return stub.getApplicationByTenant(applicationId, tenantId);
     }
 
-    public boolean existApplication(String applicationId,int tenantId) throws RemoteException {
-        return stub.existApplication(applicationId,tenantId);
+    public boolean existApplication(String applicationId, int tenantId) throws RemoteException {
+        return stub.existApplication(applicationId, tenantId);
     }
 
     public ApplicationContext[] getApplications() throws RemoteException {
@@ -136,7 +136,8 @@ public class AutoscalerServiceClient {
 
     public void addApplicationPolicy(ApplicationPolicy applicationPolicy)
             throws RemoteException,
-            AutoscalerServiceRemoteExceptionException, AutoscalerServiceInvalidApplicationPolicyExceptionException, AutoscalerServiceApplicationPolicyAlreadyExistsExceptionException {
+            AutoscalerServiceRemoteExceptionException, AutoscalerServiceInvalidApplicationPolicyExceptionException,
+            AutoscalerServiceApplicationPolicyAlreadyExistsExceptionException {
         stub.addApplicationPolicy(applicationPolicy);
     }
 
@@ -168,7 +169,8 @@ public class AutoscalerServiceClient {
     }
 
     public void removeApplicationPolicy(String applicationPolicyId)
-            throws RemoteException, AutoscalerServiceInvalidPolicyExceptionException, AutoscalerServiceUnremovablePolicyExceptionException {
+            throws RemoteException, AutoscalerServiceInvalidPolicyExceptionException,
+            AutoscalerServiceUnremovablePolicyExceptionException {
         stub.removeApplicationPolicy(applicationPolicyId);
     }
 
@@ -197,7 +199,8 @@ public class AutoscalerServiceClient {
     }
 
     public boolean removeAutoscalingPolicy(String autoScalePolicyUuid) throws RemoteException,
-            AutoscalerServicePolicyDoesNotExistExceptionException, AutoscalerServiceUnremovablePolicyExceptionException {
+            AutoscalerServicePolicyDoesNotExistExceptionException,
+            AutoscalerServiceUnremovablePolicyExceptionException {
         return stub.removeAutoScalingPolicy(autoScalePolicyUuid);
     }
 
@@ -205,16 +208,18 @@ public class AutoscalerServiceClient {
         return stub.getServiceGroup(serviceGroupDefinitionName);
     }
 
-	public ServiceGroup getServiceGroupByTenant(String serviceGroupDefinitionName,int tenantId) throws RemoteException {
-		return stub.getServiceGroupByTenant(serviceGroupDefinitionName,tenantId);
-	}
+    public ServiceGroup getServiceGroupByTenant(String serviceGroupDefinitionName, int tenantId)
+            throws RemoteException {
+        return stub.getServiceGroupByTenant(serviceGroupDefinitionName, tenantId);
+    }
 
     public ServiceGroup getOuterServiceGroupByTenant(String serviceGroupDefinitionName,
                                                      int tenantId) throws RemoteException {
         return stub.getOuterServiceGroupByTenant(serviceGroupDefinitionName, tenantId);
     }
 
-    public DeploymentPolicy getDeploymentPolicyByTenant(String deploymentPolicyId,int tenantId) throws RemoteException {
+    public DeploymentPolicy getDeploymentPolicyByTenant(String deploymentPolicyId, int tenantId)
+            throws RemoteException {
         return stub.getDeploymentPolicyByTenant(deploymentPolicyId, tenantId);
     }
 
@@ -231,13 +236,13 @@ public class AutoscalerServiceClient {
         return stub.getServiceGroupsByTenant(tenantId);
     }
 
-    public void addServiceGroup(ServiceGroup serviceGroup) throws AutoscalerServiceInvalidServiceGroupExceptionException,
-            RemoteException {
+    public void addServiceGroup(ServiceGroup serviceGroup)
+            throws AutoscalerServiceInvalidServiceGroupExceptionException, RemoteException {
         stub.addServiceGroup(serviceGroup);
     }
 
-    public void updateServiceGroup(ServiceGroup serviceGroup) throws AutoscalerServiceInvalidServiceGroupExceptionException,
-            RemoteException {
+    public void updateServiceGroup(ServiceGroup serviceGroup)
+            throws AutoscalerServiceInvalidServiceGroupExceptionException, RemoteException {
         stub.updateServiceGroup(serviceGroup);
     }
 
@@ -257,14 +262,16 @@ public class AutoscalerServiceClient {
 
     public void addDeploymentPolicy(DeploymentPolicy deploymentPolicy) throws RemoteException,
             AutoscalerServiceRemoteExceptionException,
-            AutoscalerServiceInvalidDeploymentPolicyExceptionException, AutoscalerServiceDeploymentPolicyAlreadyExistsExceptionException {
+            AutoscalerServiceInvalidDeploymentPolicyExceptionException,
+            AutoscalerServiceDeploymentPolicyAlreadyExistsExceptionException {
         stub.addDeployementPolicy(deploymentPolicy);
     }
 
     public void updateDeploymentPolicy(DeploymentPolicy deploymentPolicy) throws RemoteException,
             AutoscalerServiceDeploymentPolicyNotExistsExceptionException,
             AutoscalerServiceInvalidDeploymentPolicyExceptionException, AutoscalerServiceRemoteExceptionException,
-            AutoscalerServiceInvalidPolicyExceptionException, AutoscalerServiceCloudControllerConnectionExceptionException {
+            AutoscalerServiceInvalidPolicyExceptionException,
+            AutoscalerServiceCloudControllerConnectionExceptionException {
         stub.updateDeploymentPolicy(deploymentPolicy);
     }
 
@@ -278,9 +285,10 @@ public class AutoscalerServiceClient {
         return stub.getDeploymentPolicy(deploymentPolicyId);
     }
 
-	public DeploymentPolicy getDeploymentPolicyForTenant(String deploymentPolicyId,int tenantId) throws RemoteException {
-		return stub.getDeploymentPolicyForTenant(deploymentPolicyId,tenantId);
-	}
+    public DeploymentPolicy getDeploymentPolicyForTenant(String deploymentPolicyId, int tenantId)
+            throws RemoteException {
+        return stub.getDeploymentPolicyForTenant(deploymentPolicyId, tenantId);
+    }
 
     public DeploymentPolicy[] getDeploymentPolicies() throws RemoteException {
         return stub.getDeploymentPolicies();
@@ -290,9 +298,9 @@ public class AutoscalerServiceClient {
         return stub.getAutoScalingPoliciesByTenant(tenantId);
     }
 
-	public boolean validateNetworkPartitionWithApplication(String networkPartitionId, int tenantId)
-			throws RemoteException, AutoscalerServicePartitionValidationExceptionException {
-		return stub.validateNetworkPartitionWithApplication(networkPartitionId,tenantId);
-	}
+    public boolean validateNetworkPartitionWithApplication(String networkPartitionId, int tenantId)
+            throws RemoteException, AutoscalerServicePartitionValidationExceptionException {
+        return stub.validateNetworkPartitionWithApplication(networkPartitionId, tenantId);
+    }
 
 }
