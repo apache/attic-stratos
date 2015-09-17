@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Module>
+    <ModulePrefs title="Member Filter" description="g1" height="250">
+        <!-- This is used to import the pubsub-2 feature -->
+        <Require feature="pubsub-2">
+            <!-- This is used to define the channel that the publisher will use to publish messages.
+            In this case the channel has been named my-channel.
+            publish="true" needs to be set to define the gadget as a publisher gadget. -->
+            <Param name="topics">
+                <![CDATA[
+                    <Topic title="member-details-filter" name="member-details-filter" publish="true"/>
+                ]]>
+            </Param>
+        </Require>
+        <Require feature="dynamic-height"/>
+    </ModulePrefs>
+    <Content type="html">
+        <![CDATA[
+        <head>
+            <meta charset="utf-8">
+            <link rel="stylesheet" href="/portal/css/bootstrap.min.css" type="text/css"/>
+            <script src="/portal/js/jquery-1.10.2.js"></script>
+            <script src="/portal/js/bootstrap.min.js"></script>
+            <script language="javascript" type="text/javascript" src="js/member-details-filter.js"></script>
+        </head>
+        <body >
+          <form id="member-status" method="post" action="#">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-xs-5" id="application">
+                        <label for="application-filter">Application</label>
+                        <select id="application-filter">
+                            <option value="Select Application" disabled>Select Application</option>
+                        </select>
+                    </div>
+                    <div class="col-xs-4" id="cluster">
+                        <label for="cluster-filter">Cluster</label>
+                        <select id="cluster-filter">
+                            <option value="All Clusters" selected>All Clusters</option>
+                        </select>
+                    </div>
+                    <div class="col-xs-3" id="time-interval">
+                        <input type="button" class="button" value="Show" onClick="publish()">
+                    </div
+                </div>
+            </div>
+          </form>
+        </body>
+        ]]>
+    </Content>
+</Module>

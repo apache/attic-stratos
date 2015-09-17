@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact name="EventStore_ScalingDecision" version="1.0.0" type="analytics/eventstore" serverRole="DataAnalyticsServer">
+    <file>scaling_decision.xml</file>
+</artifact>

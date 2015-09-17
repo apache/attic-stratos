@@ -1,0 +1,105 @@
+<%
+(function () {
+    var log = new Log();
+    var TYPE = "type";
+    var TABLE_NAME = "tableName";
+
+    var HTTP_INTERNAL_ERROR = 500;
+    var TYPE_GET_SCHEMA = 1;
+    var TYPE_GET_BY_RANGE = 2;
+    var TIME_INTERVAL_1 = '30 Min';
+    var TIME_INTERVAL_2 = '1 Hour';
+    var TIME_INTERVAL_3 = '1 Day';
+    var TIME_INTERVAL_4 = '1 Week';
+    var TIME_INTERVAL_5 = '1 Month';
+
+    var carbon = require('carbon');
+    var configs = require('/configs/designer.json');
+
+    var type = 0;
+    var typeParam = request.getParameter(TYPE);
+    if (typeParam != null) {
+        type = parseInt(typeParam);
+    }
+
+    if (type == 0) {
+        log.error("operation type is not specified!");
+        response.status = HTTP_INTERNAL_ERROR;
+        print('{ "status": "Failed", "message": "Operation type is not specified" }');
+        return;
+    }
+
+    var tableName = request.getParameter(TABLE_NAME);
+    if (tableName == null) {
+        log.error("tableName is not provided!");
+        response.status = HTTP_INTERNAL_ERROR;
+        print('{ "status": "Failed", "message": "Table name param is empty" }');
+        return;
+    }
+
+    var content = request.getContent();
+    var contentAsString = null;
+    if (content != '' && content != null) {
+        contentAsString = stringify(content);
+        if (log.isDebugEnabled()) {
+            log.debug("value of content: " + contentAsString);
+        }
+    }
+
+    var db = new Database("WSO2_ANALYTICS_PROCESSED_DATA_STORE_DB");
+
+    try {
+        switch (type) {
+            case TYPE_GET_SCHEMA:
+            {
+                var result = db.query("SELECT COLUMN_NAME,DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='ANALYTICS_PROCESSED_DATA_STORE' AND TABLE_NAME = '" + tableName + "'");
+                if (result != null) {
+                    print(result);
+                } else {
+                    log.info("NULL");
+                }
+                break;
+            }
+
+            case TYPE_GET_BY_RANGE:
+            {
+                var timeInterval = request.getParameter("time");
+                var interval = 1800000;
+                var x_axis_interval;
+                if (timeInterval === TIME_INTERVAL_1) {
+                    interval = 1800000;
+                    x_axis_interval = 60;
+                } else if (timeInterval === TIME_INTERVAL_2) {
+                    interval = 3600000;
+                    x_axis_interval = 120;
+                } else if (timeInterval === TIME_INTERVAL_3) {
+                    interval = 86400000;
+                    x_axis_interval = 480;
+                } else if (timeInterval === TIME_INTERVAL_4) {
+                    interval = 604800000;
+                    x_axis_interval = 3360;
+                } else if (timeInterval === TIME_INTERVAL_5) {
+                    interval = 2419200000;
+                    x_axis_interval = 13440;
+                }
+                var applicationId = request.getParameter("applicationId");
+                var clusterId = request.getParameter("clusterId");
+
+                if (clusterId == 'All Clusters') {
+                    result = db.query("SELECT FROM_UNIXTIME(CEILING( EndTime/('" + x_axis_interval + "'*1000)) *'"+x_axis_interval+"', '%Y:%m:%d %h:%i') as Time,sum(CreatedInstanceCount) as CreatedInstanceCount , sum(InitializedInstanceCount) as InitializedInstanceCount , sum(ActiveInstanceCount) as ActiveInstanceCount, sum(TerminatedInstanceCount) as TerminatedInstanceCount FROM " + tableName + " WHERE ApplicationId='" + applicationId + "' and EndTime > ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000-'" + interval + "' ) and EndTime <= ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000) group by FROM_UNIXTIME( CEILING( EndTime/('" + x_axis_interval + "'*1000)) *'"+x_axis_interval+"', '%Y:%m:%d %h:%i'), ApplicationId");
+                }else{
+                    result = db.query("SELECT FROM_UNIXTIME(CEILING( EndTime/('" + x_axis_interval + "'*1000)) *'"+x_axis_interval+"', '%Y:%m:%d %h:%i') as Time,sum(CreatedInstanceCount) as CreatedInstanceCount , sum(InitializedInstanceCount) as InitializedInstanceCount , sum(ActiveInstanceCount) as ActiveInstanceCount, sum(TerminatedInstanceCount) as TerminatedInstanceCount FROM " + tableName + " WHERE ApplicationId='" + applicationId + "' and clusterId='"+clusterId+"' and EndTime > ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000-'" + interval + "' ) and EndTime <= ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000) group by FROM_UNIXTIME( CEILING( EndTime/('" + x_axis_interval + "'*1000)) *'"+x_axis_interval+"', '%Y:%m:%d %h:%i')");
+                }
+                print(result);
+                break;
+            }
+        }
+    }
+    catch (e) {
+        print(e.toString());
+    }
+    finally {
+        db.close();
+    }
+}());
+%>
