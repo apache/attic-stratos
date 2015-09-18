@@ -33,10 +33,12 @@ $(document).ready(function () {
         var e = document.getElementById("application-filter");
         applicationId = e.options[e.selectedIndex].value;
         loadCluster(applicationId);
+        publish(time);
     })
     $('body').on('click', '#cluster-filter', function () {
         var e = document.getElementById("cluster-filter");
         clusterId = e.options[e.selectedIndex].value;
+        publish(time);
     })
 
 

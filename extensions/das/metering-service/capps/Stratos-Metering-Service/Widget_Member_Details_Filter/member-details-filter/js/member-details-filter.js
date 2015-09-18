@@ -1,6 +1,6 @@
 var applicationId;
 var clusterId;
-var time;
+
 $(document).ready(function () {
 
     loadApplication();
@@ -8,11 +8,13 @@ $(document).ready(function () {
     $('body').on('click', '#application-filter', function () {
         var e = document.getElementById("application-filter");
         applicationId = e.options[e.selectedIndex].text;
-        loadCluster(applicationId)
+        loadCluster(applicationId);
+        publish();
     })
     $('body').on('click', '#cluster-filter', function () {
         var e = document.getElementById("cluster-filter");
-        clusterId = e.options[e.selectedIndex].text;
+        clusterId = e.options[e.selectedIndex].value;
+        publish();
     })
 
 });
@@ -76,7 +78,7 @@ function loadCluster(application) {
         }
     });
     var e = document.getElementById("cluster-filter");
-    clusterId = e.options[e.selectedIndex].text;
+    clusterId = e.options[e.selectedIndex].value;
 }
 
 function publish() {

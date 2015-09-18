@@ -39,9 +39,6 @@
                             <option value="All Clusters" selected>All Clusters</option>
                         </select>
                     </div>
-                    <div class="col-xs-3" id="time-interval">
-                        <input type="button" class="button" value="Show" onClick="publish()">
-                    </div
                 </div>
             </div>
           </form>
