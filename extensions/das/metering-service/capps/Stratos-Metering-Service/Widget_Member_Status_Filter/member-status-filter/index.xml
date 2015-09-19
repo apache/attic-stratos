@@ -16,7 +16,6 @@
         <head>
             <meta charset="utf-8">
             <link rel="stylesheet" href="/portal/css/bootstrap.min.css" type="text/css"/>
-            <link rel="stylesheet" href="css/member-filter.css" type="text/css"/>
             <script src="/portal/js/jquery-1.10.2.js"></script>
             <script src="/portal/js/bootstrap.min.js"></script>
             <script language="javascript" type="text/javascript" src="js/member-status-filter.js"></script>

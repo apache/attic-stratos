@@ -19,6 +19,6 @@
  under the License.
 
 -->
-<artifact name="EventReceiver_ScalingDecision" version="1.0.0" type="event/receiver" serverRole="DataAnalyticsServer">
-    <file>ScalingDecisionEventReceiver.xml</file>
+<artifact name="Gadget_Member_Details_Filter" version="1.0.0" type="dashboards/gadget" serverRole="DataAnalyticsServer">
+    <file>Member_Details_Filter</file>
 </artifact>

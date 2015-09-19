@@ -1,3 +1,23 @@
+/*
+ *
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ *
+ */
 var datasource, type, columns, filter, maxUpdateValue;
 
 var REFRESH_INTERVAL = 5000;
@@ -13,42 +33,30 @@ type = gadgetConfig.type;
 var counter = 0;
 maxUpdateValue = gadgetConfig.maxUpdateValue;
 
-//if gadget type is realtime, treat it different!
-if (type === "realtime") {
-    columns = gadgetConfig.columns;
-    //subscribe to websocket
-    subscribe(datasource.split(":")[0], datasource.split(":")[1], '10', gadgetConfig.domain,
-        onRealTimeEventSuccessRecieval, onRealTimeEventErrorRecieval, location.hostname, location.port,
-        'WEBSOCKET', "SECURED");
-} else {
-    //first, fetch datasource schema
-    getColumns(datasource);
+gadgets.HubSettings.onConnect = function () {
+    gadgets.Hub.subscribe('member-status-filter', function (topic, data) {
+        clusterId = data['clusterId'];
+        applicationId = data['applicationId'];
+        timeInterval = data['timeInterval'];
+        console.log("Member Filter Value:" + JSON.stringify(data));
+    });
+};
 
-    //load data immediately
+//first, fetch datasource schema
+getColumns();
+
+//load data immediately
+fetchData(drawChart);
+
+// then start periodic polling
+setInterval(function () {
     fetchData(drawChart);
+}, REFRESH_INTERVAL);
 
-    // then start periodic polling
-    setInterval(function () {
-        fetchData(drawChart);
-    }, REFRESH_INTERVAL);
-}
 
-function getColumns(table) {
+function getColumns() {
     columns = gadgetConfig.columns;
-};
-
-function parseColumns(data) {
-    if (data) {
-        var keys = Object.getOwnPropertyNames(data);
-        var columns = keys.map(function (key, i) {
-            return column = {
-                name: key,
-                type: data.columns[key].type
-            };
-        });
-        return columns;
-    }
-};
+}
 
 function fetchData(callback) {
     //if previous operation is not completed, DO NOT fetch data
@@ -59,11 +67,11 @@ function fetchData(callback) {
 
     var application = applicationId;
     var cluster = clusterId;
-    var time= timeInterval;
+    var time = timeInterval;
 
-    console.log("ApplicationId:"+application);
-    console.log("ClusterId:"+cluster);
-    console.log("Time interval:"+timeInterval);
+    console.log("ApplicationId:" + application);
+    console.log("ClusterId:" + cluster);
+    console.log("Time interval:" + timeInterval);
 
     var request = {
         type: 2,
@@ -84,19 +92,19 @@ function fetchData(callback) {
         }
     });
     dataLoaded = false;   //setting the latch to locked position so that we block data fetching until we receive the response from backend
-};
+}
 
 function makeDataTable(data) {
     var dataTable = new igviz.DataTable();
     if (columns.length > 0) {
-        columns.forEach(function (column, i) {
+        columns.forEach(function (column) {
             var type = "N";
             if (column.DATA_TYPE == "varchar" || column.DATA_TYPE == "VARCHAR") {
                 type = "C";
             } else if (column.DATA_TYPE == "TIME" || column.DATA_TYPE == "time") {
                 type = "T";
             }
-            dataTable.addColumn(column.COLUMN_NAME,type);
+            dataTable.addColumn(column.COLUMN_NAME, type);
         });
     }
     data.forEach(function (row, index) {
@@ -108,19 +116,19 @@ function makeDataTable(data) {
     });
     dataTable.addRows(data);
     return dataTable;
-};
+}
 
 function makeRows(data) {
     var rows = [];
     for (var i = 0; i < data.length; i++) {
         var record = data[i];
-        var row = columns.map(function (column, i) {
+        var row = columns.map(function (column) {
             return record[column.COLUMN_NAME];
         });
         rows.push(row);
     }
     return rows;
-};
+}
 
 function drawChart(data) {
     var dataTable = makeDataTable(data);
@@ -128,6 +136,7 @@ function drawChart(data) {
     gadgetConfig.chartConfig.height = $("#placeholder").height() - 65;
     var chartType = gadgetConfig.chartConfig.chartType;
     var xAxis = gadgetConfig.chartConfig.xAxis;
+    var chart;
     jQuery("#noChart").html("");
     if (chartType === "bar" && dataTable.metadata.types[xAxis] === "N") {
         dataTable.metadata.types[xAxis] = "C";
@@ -135,11 +144,11 @@ function drawChart(data) {
 
     if (gadgetConfig.chartConfig.chartType === "tabular" || gadgetConfig.chartConfig.chartType === "singleNumber") {
         gadgetConfig.chartConfig.height = $("#placeholder").height();
-        var chart = igviz.draw("#placeholder", gadgetConfig.chartConfig, dataTable);
+        chart = igviz.draw("#placeholder", gadgetConfig.chartConfig, dataTable);
         chart.plot(dataTable.data);
 
     } else {
-        var chart = igviz.setUp("#placeholder", gadgetConfig.chartConfig, dataTable);
+        chart = igviz.setUp("#placeholder", gadgetConfig.chartConfig, dataTable);
         chart.setXAxis({
             "labelAngle": -35,
             "labelAlign": "right",
@@ -149,11 +158,11 @@ function drawChart(data) {
         })
             .setYAxis({
                 "titleDy": -30
-            })
+            });
         chart.plot(dataTable.data);
     }
     //releasing the latch so that we can request data again from the backend.
     dataLoaded = true;
-};
+}
 
 

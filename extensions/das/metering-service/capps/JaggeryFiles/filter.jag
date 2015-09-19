@@ -1,4 +1,24 @@
 <%
+/*
+ *
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ *
+ */
 (function () {
     var log = new Log();
     var type = 0;
@@ -6,8 +26,6 @@
     var APPLICATION = 0;
     var CLUSTER = 1;
     var HTTP_INTERNAL_ERROR = 500;
-
-    var type = 0;
     var typeParam = request.getParameter(TYPE);
     if (typeParam != null) {
         type = parseInt(typeParam);
@@ -16,18 +34,19 @@
     var db = new Database("WSO2_ANALYTICS_PROCESSED_DATA_STORE_DB");
 
     try {
+        var result;
         switch (type) {
             case APPLICATION:
             {
                 log.info("Executing Query");
-                var result = db.query("select distinct ApplicationId from MEMBER_COUNT");
+                result = db.query("select distinct ApplicationId from MEMBER_COUNT");
                 break;
             }
             case CLUSTER:
             {
                 log.info("Executing Query");
                 var applicationId = request.getParameter('applicationId');
-                var result = db.query("select distinct ClusterId, ClusterAlias from MEMBER_COUNT where ApplicationId ='" + applicationId+ "'");
+                result = db.query("select distinct ClusterId, ClusterAlias from MEMBER_COUNT where ApplicationId ='" + applicationId + "'");
                 break;
             }
             default:
