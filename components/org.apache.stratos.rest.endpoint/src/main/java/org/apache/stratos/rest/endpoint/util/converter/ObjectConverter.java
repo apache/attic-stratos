@@ -64,8 +64,6 @@ import java.util.*;
 
 public class ObjectConverter {
 
-    private static final String APPLICATION_STATUS_ACTIVE = "Active";
-
     public static Cartridge convertCartridgeBeanToStubCartridgeConfig(
             CartridgeBean cartridgeBean) {
 
@@ -1158,7 +1156,7 @@ public class ObjectConverter {
         applicationDefinition.setMultiTenant(applicationContext.getMultiTenant());
         applicationDefinition.setName(applicationContext.getName());
         applicationDefinition.setDescription(applicationContext.getDescription());
-        if (application.getStatus().name().equals(APPLICATION_STATUS_ACTIVE)) {
+        if (application.getStatus().equals(ApplicationStatus.Active)) {
             applicationDefinition.setStatus(application.getStatus().name());
         } else {
             applicationDefinition.setStatus(applicationContext.getStatus());
