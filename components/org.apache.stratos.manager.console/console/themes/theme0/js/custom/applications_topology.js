@@ -19,7 +19,8 @@
  *
  */
 
-var applicationId;
+var applicationId = '';
+
 //create JSON from topology
 function genTree(data) {
     var rawout = [];
@@ -40,7 +41,6 @@ function genTree(data) {
                     type = 'applicationInstances';
                 rawout.push({"name": cur_name, "parent": parent, "type": type, "status": status});
                 applicationId = items[prop].applicationId;
-
                 clusterInstances(items[prop].clusterInstances, collector, cur_name);
                 groupInstances(items[prop].groupInstances, collector, cur_name)
             }
@@ -247,12 +247,12 @@ function update(source) {
 
             } else if (d.type == 'applicationInstances') {
                 div_html = "<strong>Instance Id: </strong>" + d.name + "<br/>" +
-                    "<strong>Status: </strong>" + d.status +
-                    "<button class='btn btn-info show-usage' id=" + d.name + " name='appUsage' onClick='showApplicationUsage(this.is)'>Show Usage</button>";
+                    "<strong>Status: </strong>" + d.status;
 
             } else {
                 div_html = "<strong>Alias: </strong>" + d.name + "<br/>" +
-                    "<strong>Status: </strong>" + d.status;
+                    "<strong>Status: </strong>" + d.status +
+                    "<button class='btn btn-info show-usage' id=" + d.name + " name='appUsage' onClick='showApplicationUsage(this.id)'>Show Usage</button>";
 
             }
             return div_html;
@@ -612,5 +612,8 @@ function showApplicationUsage(id) {
 
 function showClusterUsage(id, type) {
     var clusterId = id;
-    window.location = 'https://localhost:9444/portal/dashboards/stratos-metering-dashboard?applicationId=' + applicationId + '&clusterId=' + clusterId;
+    window.location = 'https://localhost:9444/portal/dashboards/stratos-metering-dashboard?tenantId=' + tenantId + '&applicationId=' + applicationId + '&clusterId=' + clusterId;
 }
+
+
+
