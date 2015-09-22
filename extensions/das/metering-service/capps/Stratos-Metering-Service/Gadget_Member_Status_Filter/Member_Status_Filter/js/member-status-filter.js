@@ -20,24 +20,53 @@
  */
 var applicationId;
 var clusterId;
-
+var time = '30 Min';
+var tenantId = -1234;
+var vars;
 $(document).ready(function () {
+    var query = parent.window.location.search.substring(1);
+    vars = query.split("&");
+    tenantId = getRequestParam('tenantId');
+    applicationId = getRequestParam('applicationId');
+    clusterId = getRequestParam('clusterId');
+
+    console.log("Tenant Id: " + tenantId);
+    console.log("Application Id: " + applicationId);
+    console.log("Cluster Id: " + clusterId);
 
     loadApplication();
+    if (applicationId != null) {
+        document.getElementById("application-filter").value = applicationId;
+        loadCluster(applicationId);
+        gadgets.HubSettings.onConnect = function () {
+            publish(time);
+        }
+    }
 
     $('body').on('click', '#application-filter', function () {
         var e = document.getElementById("application-filter");
-        applicationId = e.options[e.selectedIndex].text;
+        applicationId = e.options[e.selectedIndex].value;
         loadCluster(applicationId);
-        publish();
+        publish(time);
     })
     $('body').on('click', '#cluster-filter', function () {
         var e = document.getElementById("cluster-filter");
         clusterId = e.options[e.selectedIndex].value;
-        publish();
+        publish(time);
     })
 
+
 });
+
+function getRequestParam(variable) {
+    for (var i = 0; i < vars.length; i++) {
+        var pair = vars[i].split("=");
+        if (pair[0] == variable) {
+            return pair[1];
+        }
+    }
+    return null;
+}
 
 function loadApplication() {
     console.log("Getting Application Ids");
@@ -45,9 +74,10 @@ function loadApplication() {
         url: '/portal/apis/filter?type=0',
         dataType: 'json',
         success: function (result) {
+            console.log(JSON.stringify(result));
             var applicationIds = [];
             var records = JSON.parse(JSON.stringify(result));
-            records.forEach(function (record) {
+            records.forEach(function (record, i) {
                 applicationIds.push(record.ApplicationId);
             });
 
@@ -58,11 +88,9 @@ function loadApplication() {
                 option.value = applicationIds[i];
                 elem.appendChild(option);
             }
-
             document.getElementById('application').appendChild(elem);
         }
     });
-
 }
 
 function loadCluster(application) {
@@ -74,7 +102,7 @@ function loadCluster(application) {
             var clusterIds = [];
             var clusterAlias = [];
             var records = JSON.parse(JSON.stringify(result));
-            records.forEach(function (record) {
+            records.forEach(function (record, i) {
                 clusterIds.push(record.ClusterId);
                 clusterAlias.push(record.ClusterAlias);
             });
@@ -88,7 +116,7 @@ function loadCluster(application) {
 
             var optionList = "";
 
-            optionList+= "<option value= 'All Clusters'>All Clusters</option>";
+            optionList += "<option value= 'All Clusters'>All Clusters</option>";
             for (i = 0; i < clusterIds.length; i = i + 1) {
                 optionList += "<option value='" + clusterIds[i] + "'>" + clusterAlias[i] + "</option>";
             }
@@ -97,17 +125,21 @@ function loadCluster(application) {
             document.getElementById('cluster').appendChild(clusterList);
         }
     });
-    var e = document.getElementById("cluster-filter");
-    clusterId = e.options[e.selectedIndex].value;
+    if (clusterId != null) {
+        document.getElementById("cluster-filter").value = clusterId;
+    } else {
+        var e = document.getElementById("cluster-filter");
+        clusterId = e.options[e.selectedIndex].value;
+    }
 }
 
-function publish() {
+function publish(time) {
+    var tenant = tenantId
     var application = applicationId;
     var cluster = clusterId;
-    var data = {applicationId: application, clusterId: cluster};
-
-    gadgets.Hub.publish("member-details-filter", data);
+    var time = time;
+    var data = {tenantId: tenantId, applicationId: application, clusterId: cluster, timeInterval: time};
+    gadgets.Hub.publish("member-status-filter", data);
     console.log("Publishing filter values: " + JSON.stringify(data));
 }
-
 

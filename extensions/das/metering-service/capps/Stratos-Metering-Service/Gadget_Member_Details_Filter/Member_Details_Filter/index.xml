@@ -38,7 +38,7 @@
         <![CDATA[
         <head>
             <meta charset="utf-8">
-            <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css">
+            <link href="/portal/css/bootstrap.min.css" rel="stylesheet" type="text/css">
             <script src="/portal/js/jquery-1.10.2.js"></script>
             <script language="javascript" type="text/javascript" src="js/member-details-filter.js"></script>
         </head>

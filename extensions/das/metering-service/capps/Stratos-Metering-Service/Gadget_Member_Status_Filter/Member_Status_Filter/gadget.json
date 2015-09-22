@@ -1,10 +1,10 @@
 {
-  "id": "member-status-filter",
+  "id": "Member_Status_Filter",
   "title": "Member Status Filter",
-  "type": "widget",
-  "thumbnail": "store://widget/member-status-filter/index.png",
+  "type": "gadget",
+  "thumbnail": "store://gadget/Member_Status_Filter/index.png",
   "data": {
-    "url": "store://widget/member-status-filter/index.xml"
+    "url": "store://gadget/Member_Status_Filter/index.xml"
   },
   "styles": {
     "borders": false,

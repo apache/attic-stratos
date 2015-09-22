@@ -1,10 +1,10 @@
 {
-  "id": "member-details-filter",
+  "id": "Member_Details_Filter",
   "title": "Member Details Filter",
-  "type": "widget",
-  "thumbnail": "store://widget/member-details-filter/index.png",
+  "type": "gadget",
+  "thumbnail": "store://gadget/Member_Details_Filter/index.png",
   "data": {
-    "url": "store://widget/member-details-filter/index.xml"
+    "url": "store://gadget/Member_Details_Filter/index.xml"
   },
   "styles": {
     "borders": false,

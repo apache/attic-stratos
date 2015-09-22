@@ -19,6 +19,6 @@
  under the License.
 
 -->
-<artifact name="Widget_Member_Status_Filter" version="1.0.0" type="dashboards/widget" serverRole="DataAnalyticsServer">
-    <file>member-status-filter</file>
+<artifact name="Gadget_Member_Status_Filter" version="1.0.0" type="dashboards/gadget" serverRole="DataAnalyticsServer">
+    <file>Member_Status_Filter</file>
 </artifact>

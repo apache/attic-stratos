@@ -23,6 +23,7 @@ var datasource, type, columns, filter, maxUpdateValue;
 var REFRESH_INTERVAL = 5000;
 var dataLoaded = true;
 var timeInterval = '30 Min';
+var tenantId = -1234;
 var applicationId = '';
 var clusterId = '';
 
@@ -35,6 +36,7 @@ maxUpdateValue = gadgetConfig.maxUpdateValue;
 
 gadgets.HubSettings.onConnect = function () {
     gadgets.Hub.subscribe('member-status-filter', function (topic, data) {
+        tenantId = data['tenantId'];
         clusterId = data['clusterId'];
         applicationId = data['applicationId'];
         timeInterval = data['timeInterval'];
@@ -76,6 +78,7 @@ function fetchData(callback) {
     var request = {
         type: 2,
         tableName: datasource,
+        tenantId: tenantId,
         applicationId: application,
         clusterId: cluster,
         time: time
