@@ -32,6 +32,7 @@
     var TIME_INTERVAL_3 = '1 Day';
     var TIME_INTERVAL_4 = '1 Week';
     var TIME_INTERVAL_5 = '1 Month';
+    var ALL_CLUSTERS = 'All Clusters';
 
     var carbon = require('carbon');
     var configs = require('/configs/designer.json');
@@ -43,7 +44,7 @@
     }
 
     if (type == 0) {
-        log.error("operation type is not specified!");
+        log.error("Operation type is not specified!");
         response.status = HTTP_INTERNAL_ERROR;
         print('{ "status": "Failed", "message": "Operation type is not specified" }');
         return;
@@ -51,7 +52,7 @@
 
     var tableName = request.getParameter(TABLE_NAME);
     if (tableName == null) {
-        log.error("tableName is not provided!");
+        log.error("Table name param is not provided!");
         response.status = HTTP_INTERNAL_ERROR;
         print('{ "status": "Failed", "message": "Table name param is empty" }');
         return;
@@ -62,7 +63,7 @@
     if (content != '' && content != null) {
         contentAsString = stringify(content);
         if (log.isDebugEnabled()) {
-            log.debug("value of content: " + contentAsString);
+            log.debug("Value of content: " + contentAsString);
         }
     }
 
@@ -76,8 +77,6 @@
                 result = db.query("SELECT COLUMN_NAME,DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='ANALYTICS_PROCESSED_DATA_STORE' AND TABLE_NAME = '" + tableName + "'");
                 if (result != null) {
                     print(result);
-                } else {
-                    log.info("NULL");
                 }
                 break;
             }
@@ -100,10 +99,10 @@
                 var applicationId = request.getParameter("applicationId");
                 var clusterId = request.getParameter("clusterId");
 
-                if (clusterId == 'All Clusters') {
-                    result = db.query("SELECT FROM_UNIXTIME(Time/1000, '%Y:%m:%d %h:%i') as Time, MemberId, MemberStatus FROM " + tableName + " WHERE ApplicationId='" + applicationId + "' and Time > ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000-'" + interval + "' ) and Time <= ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000)");
+                if (clusterId == ALL_CLUSTERS) {
+                    result = db.query("SELECT FROM_UNIXTIME(Time/1000, '%Y:%m:%d %h:%i') AS Time, MemberId, MemberStatus FROM " + tableName + " WHERE ApplicationId='" + applicationId + "' AND Time > ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000-'" + interval + "' ) AND Time <= ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000)");
                 }else {
-                    result = db.query("SELECT FROM_UNIXTIME(Time/1000, '%Y:%m:%d %h:%i') as Time, MemberId, MemberStatus FROM " + tableName + " WHERE ApplicationId='" + applicationId + "' and ClusterId='"+clusterId+"'and Time > ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000-'" + interval + "' ) and Time <= ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000)");
+                    result = db.query("SELECT FROM_UNIXTIME(Time/1000, '%Y:%m:%d %h:%i') AS Time, MemberId, MemberStatus FROM " + tableName + " WHERE ApplicationId='" + applicationId + "' AND ClusterId='" + clusterId + "' AND Time > ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000-'" + interval + "' ) AND Time <= ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000)");
 
                 }
                 print(result);

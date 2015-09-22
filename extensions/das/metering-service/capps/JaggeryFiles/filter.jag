@@ -38,20 +38,18 @@
         switch (type) {
             case APPLICATION:
             {
-                log.info("Executing Query");
-                result = db.query("select distinct ApplicationId from MEMBER_COUNT");
+                result = db.query("SELECT DISTINCT ApplicationId FROM MEMBER_COUNT");
                 break;
             }
             case CLUSTER:
             {
-                log.info("Executing Query");
                 var applicationId = request.getParameter('applicationId');
-                result = db.query("select distinct ClusterId, ClusterAlias from MEMBER_COUNT where ApplicationId ='" + applicationId + "'");
+                result = db.query("SELECT DISTINCT ClusterAlias, ClusterId FROM MEMBER_COUNT WHERE ApplicationId ='" + applicationId + "'");
                 break;
             }
             default:
             {
-                log.error("operation type is not specified!");
+                log.error("Operation type is not specified!");
                 response.status = HTTP_INTERNAL_ERROR;
                 print('{ "status": "Failed", "message": "Operation type is not specified" }');
                 return;
@@ -60,8 +58,6 @@
 
         if (result != null) {
             print(result);
-        } else {
-            log.info("NULL");
         }
 
     }

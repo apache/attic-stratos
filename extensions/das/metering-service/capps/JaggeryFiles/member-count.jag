@@ -32,6 +32,7 @@
     var TIME_INTERVAL_3 = '1 Day';
     var TIME_INTERVAL_4 = '1 Week';
     var TIME_INTERVAL_5 = '1 Month';
+    var ALL_CLUSTERS = 'All Clusters';
 
     var carbon = require('carbon');
     var configs = require('/configs/designer.json');
@@ -43,7 +44,7 @@
     }
 
     if (type == 0) {
-        log.error("operation type is not specified!");
+        log.error("Operation type is not specified!");
         response.status = HTTP_INTERNAL_ERROR;
         print('{ "status": "Failed", "message": "Operation type is not specified" }');
         return;
@@ -51,7 +52,7 @@
 
     var tableName = request.getParameter(TABLE_NAME);
     if (tableName == null) {
-        log.error("tableName is not provided!");
+        log.error("Table name param is not provided!");
         response.status = HTTP_INTERNAL_ERROR;
         print('{ "status": "Failed", "message": "Table name param is empty" }');
         return;
@@ -62,7 +63,7 @@
     if (content != '' && content != null) {
         contentAsString = stringify(content);
         if (log.isDebugEnabled()) {
-            log.debug("value of content: " + contentAsString);
+            log.debug("Value of content: " + contentAsString);
         }
     }
 
@@ -76,8 +77,6 @@
                 result = db.query("SELECT COLUMN_NAME,DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='ANALYTICS_PROCESSED_DATA_STORE' AND TABLE_NAME = '" + tableName + "'");
                 if (result != null) {
                     print(result);
-                } else {
-                    log.info("NULL");
                 }
                 break;
             }
@@ -103,13 +102,14 @@
                     interval = 2419200000;
                     x_axis_interval = 13440;
                 }
+                var tenantId = request.getParameter("tenantId");
                 var applicationId = request.getParameter("applicationId");
                 var clusterId = request.getParameter("clusterId");
 
-                if (clusterId == 'All Clusters') {
-                    result = db.query("SELECT FROM_UNIXTIME(CEILING( EndTime/('" + x_axis_interval + "'*1000)) *'"+x_axis_interval+"', '%Y:%m:%d %h:%i') as Time,sum(CreatedInstanceCount) as CreatedInstanceCount , sum(InitializedInstanceCount) as InitializedInstanceCount , sum(ActiveInstanceCount) as ActiveInstanceCount, sum(TerminatedInstanceCount) as TerminatedInstanceCount FROM " + tableName + " WHERE ApplicationId='" + applicationId + "' and EndTime > ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000-'" + interval + "' ) and EndTime <= ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000) group by FROM_UNIXTIME( CEILING( EndTime/('" + x_axis_interval + "'*1000)) *'"+x_axis_interval+"', '%Y:%m:%d %h:%i'), ApplicationId");
+                if (clusterId == ALL_CLUSTERS) {
+                    result = db.query("SELECT FROM_UNIXTIME(CEILING( Time/('" + x_axis_interval + "'*1000)) *'" + x_axis_interval + "', '%Y:%m:%d %h:%i') AS Time, SUM(CreatedInstanceCount) AS CreatedInstanceCount , SUM(InitializedInstanceCount) AS InitializedInstanceCount , SUM(ActiveInstanceCount) AS ActiveInstanceCount, SUM(TerminatedInstanceCount) AS TerminatedInstanceCount FROM " + tableName + " WHERE TenantId='" + tenantId + "' AND ApplicationId='" + applicationId + "' AND Time > ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000-'" + interval + "' ) AND Time <= ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000) GROUP BY FROM_UNIXTIME( CEILING( Time/('" + x_axis_interval + "'*1000)) *'"+x_axis_interval+"', '%Y:%m:%d %h:%i'), ApplicationId");
                 }else{
-                    result = db.query("SELECT FROM_UNIXTIME(CEILING( EndTime/('" + x_axis_interval + "'*1000)) *'"+x_axis_interval+"', '%Y:%m:%d %h:%i') as Time,sum(CreatedInstanceCount) as CreatedInstanceCount , sum(InitializedInstanceCount) as InitializedInstanceCount , sum(ActiveInstanceCount) as ActiveInstanceCount, sum(TerminatedInstanceCount) as TerminatedInstanceCount FROM " + tableName + " WHERE ApplicationId='" + applicationId + "' and clusterId='"+clusterId+"' and EndTime > ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000-'" + interval + "' ) and EndTime <= ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000) group by FROM_UNIXTIME( CEILING( EndTime/('" + x_axis_interval + "'*1000)) *'"+x_axis_interval+"', '%Y:%m:%d %h:%i')");
+                    result = db.query("SELECT FROM_UNIXTIME(CEILING( Time/('" + x_axis_interval + "'*1000)) *'"+x_axis_interval+"', '%Y:%m:%d %h:%i') AS Time, SUM(CreatedInstanceCount) AS CreatedInstanceCount , SUM(InitializedInstanceCount) AS InitializedInstanceCount , SUM(ActiveInstanceCount) AS ActiveInstanceCount, SUM(TerminatedInstanceCount) AS TerminatedInstanceCount FROM " + tableName + " WHERE TenantId='" + tenantId + "' AND ApplicationId='" + applicationId + "' AND ClusterId='" + clusterId + "' AND Time > ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000-'" + interval + "' ) AND Time <= ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000) GROUP BY FROM_UNIXTIME( CEILING( Time/('" + x_axis_interval + "'*1000)) *'"+x_axis_interval+"', '%Y:%m:%d %h:%i')");
                 }
                 print(result);
                 break;
