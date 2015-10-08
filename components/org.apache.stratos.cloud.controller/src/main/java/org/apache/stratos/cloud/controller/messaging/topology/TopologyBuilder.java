@@ -173,7 +173,9 @@ public class TopologyBuilder {
             TopologyManager.releaseWriteLock();
         }
 
-        log.debug("Creating cluster port mappings: [appication-id] " + appId);
+        if (log.isDebugEnabled()) {
+            log.debug("Creating cluster port mappings: [appication-id] " + appId);
+        }
         for (Cluster cluster : appClusters) {
             String cartridgeType = cluster.getServiceName();
             Cartridge cartridge = CloudControllerContext.getInstance().getCartridge(cartridgeType);
@@ -189,7 +191,9 @@ public class TopologyBuilder {
                     clusterPortMapping.setKubernetesPortType(portMapping.getKubernetesPortType());
                 }
                 CloudControllerContext.getInstance().addClusterPortMapping(clusterPortMapping);
-                log.debug("Cluster port mapping created: " + clusterPortMapping.toString());
+                if (log.isDebugEnabled()) {
+                    log.debug("Cluster port mapping created: " + clusterPortMapping.toString());
+                }
             }
         }
 
@@ -435,7 +439,9 @@ public class TopologyBuilder {
                         memberContext.getMemberId(),
                         MemberStatus.Created.toString());
             } else {
-                log.debug("Member Status Publisher is not enabled");
+                if (log.isDebugEnabled()) {
+                    log.debug("Member Status Publisher is not enabled");
+                }
             }
 
         } finally {
@@ -528,7 +534,9 @@ public class TopologyBuilder {
                     memInfoPublisher.publish(memberContext.getMemberId(), scalingDecisionId,
                             memberContext.getInstanceMetadata());
                 } else {
-                    log.debug("Member Information Publisher is not enabled");
+                    if (log.isDebugEnabled()) {
+                        log.debug("Member Information Publisher is not enabled");
+                    }
                 }
                 if (memStatusPublisher.isEnabled()) {
                     if (log.isDebugEnabled()) {
@@ -545,7 +553,9 @@ public class TopologyBuilder {
                             memberContext.getMemberId(),
                             MemberStatus.Initialized.toString());
                 } else {
-                    log.debug("Member Status Publisher is not enabled");
+                    if (log.isDebugEnabled()) {
+                        log.debug("Member Status Publisher is not enabled");
+                    }
                 }
             }
         } finally
@@ -628,7 +638,9 @@ public class TopologyBuilder {
                                 instanceStartedEvent.getMemberId(),
                                 MemberStatus.Starting.toString());
                     } else {
-                        log.debug("Member Status Publisher is not enabled");
+                        if (log.isDebugEnabled()) {
+                            log.debug("Member Status Publisher is not enabled");
+                        }
                     }
                 }
             } finally {
@@ -754,7 +766,9 @@ public class TopologyBuilder {
                             memberActivatedEvent.getMemberId(),
                             MemberStatus.Active.toString());
                 } else {
-                    log.debug("Member Status Publisher is not enabled");
+                    if (log.isDebugEnabled()) {
+                        log.debug("Member Status Publisher is not enabled");
+                    }
                 }
             }
         } finally {
@@ -834,7 +848,9 @@ public class TopologyBuilder {
                     instanceReadyToShutdownEvent.getMemberId(),
                     MemberStatus.ReadyToShutDown.toString());
         } else {
-            log.debug("Member Status Publisher is not enabled");
+            if (log.isDebugEnabled()) {
+                log.debug("Member Status Publisher is not enabled");
+            }
         }
         //termination of particular instance will be handled by autoscaler
     }
@@ -965,7 +981,9 @@ public class TopologyBuilder {
                     member.getMemberId(),
                     MemberStatus.Terminated.toString());
         } else {
-            log.debug("Member Status Publisher is not enabled");
+            if (log.isDebugEnabled()) {
+                log.debug("Member Status Publisher is not enabled");
+            }
         }
     }
 
@@ -1030,7 +1048,7 @@ public class TopologyBuilder {
                                         // Using type URI since only http, https, ftp, file, jar protocols are supported in URL
                                         URI accessURL = new URI(kubernetesService.getProtocol(), null, publicIP,
                                                 kubernetesService.getPort(), null, null, null);
-                                        cluster.addAccessUrl(clusterStatusClusterActivatedEvent.getInstanceId(),accessURL.toString());
+                                        cluster.addAccessUrl(clusterStatusClusterActivatedEvent.getInstanceId(), accessURL.toString());
                                         clusterInstanceActivatedEvent.addAccessUrl(accessURL.toString());
                                     } else {
                                         log.error(String.format("Could not create access URL for [Kubernetes-service] %s , " +
