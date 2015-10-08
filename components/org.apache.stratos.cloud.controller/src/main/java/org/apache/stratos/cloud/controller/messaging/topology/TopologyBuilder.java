@@ -375,6 +375,19 @@ public class TopologyBuilder {
     public static void handleMemberCreatedEvent(MemberContext memberContext) {
         Topology topology = TopologyManager.getTopology();
         Service service = topology.getService(memberContext.getCartridgeType());
+
+        if (service == null) {
+            log.warn(String.format("Service %s does not exist",
+                    memberContext.getCartridgeType()));
+            return;
+        }
+        if (!service.clusterExists(memberContext.getClusterId())) {
+            log.warn(String.format("Cluster %s does not exist in service %s",
+                    memberContext.getClusterId(),
+                    memberContext.getCartridgeType()));
+            return;
+        }
+
         String clusterId = memberContext.getClusterId();
         Cluster cluster = service.getCluster(clusterId);
         String applicationId = service.getCluster(memberContext.getClusterId()).getAppId();
@@ -422,7 +435,7 @@ public class TopologyBuilder {
                         memberContext.getMemberId(),
                         MemberStatus.Created.toString());
             } else {
-                log.warn("Member Status Publisher is not enabled");
+                log.debug("Member Status Publisher is not enabled");
             }
 
         } finally {
@@ -515,7 +528,7 @@ public class TopologyBuilder {
                     memInfoPublisher.publish(memberContext.getMemberId(), scalingDecisionId,
                             memberContext.getInstanceMetadata());
                 } else {
-                    log.warn("Member Information Publisher is not enabled");
+                    log.debug("Member Information Publisher is not enabled");
                 }
                 if (memStatusPublisher.isEnabled()) {
                     if (log.isDebugEnabled()) {
@@ -532,7 +545,7 @@ public class TopologyBuilder {
                             memberContext.getMemberId(),
                             MemberStatus.Initialized.toString());
                 } else {
-                    log.warn("Member Status Publisher is not enabled");
+                    log.debug("Member Status Publisher is not enabled");
                 }
             }
         } finally
@@ -615,7 +628,7 @@ public class TopologyBuilder {
                                 instanceStartedEvent.getMemberId(),
                                 MemberStatus.Starting.toString());
                     } else {
-                        log.warn("Member Status Publisher is not enabled");
+                        log.debug("Member Status Publisher is not enabled");
                     }
                 }
             } finally {
@@ -741,7 +754,7 @@ public class TopologyBuilder {
                             memberActivatedEvent.getMemberId(),
                             MemberStatus.Active.toString());
                 } else {
-                    log.warn("Member Status Publisher is not enabled");
+                    log.debug("Member Status Publisher is not enabled");
                 }
             }
         } finally {
@@ -821,7 +834,7 @@ public class TopologyBuilder {
                     instanceReadyToShutdownEvent.getMemberId(),
                     MemberStatus.ReadyToShutDown.toString());
         } else {
-            log.warn("Member Status Publisher is not enabled");
+            log.debug("Member Status Publisher is not enabled");
         }
         //termination of particular instance will be handled by autoscaler
     }
@@ -952,7 +965,7 @@ public class TopologyBuilder {
                     member.getMemberId(),
                     MemberStatus.Terminated.toString());
         } else {
-            log.warn("Member Status Publisher is not enabled");
+            log.debug("Member Status Publisher is not enabled");
         }
     }
 
