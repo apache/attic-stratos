@@ -203,9 +203,20 @@ public class GCELoadBalancer implements LoadBalancer {
                         String forwardingRuleName = forwardingRuleNameCreator(cluster.getClusterId());
                         gceClusterConfigurationHolder.setForwardingRuleName(forwardingRuleName);
 
-                        //set health check name
-                        String healthCheckName = healthCheckNameCreator(cluster.getClusterId());
-                        gceClusterConfigurationHolder.setHealthCheckName(healthCheckName);
+                        //set health check names
+                        if (!ipList.isEmpty()) {
+                            Collections.sort(ipList);
+                            for (int port : ipList) {
+                                String healthCheckName = healthCheckNameCreator(cluster.getClusterId(), port);
+                                gceClusterConfigurationHolder.addHealthCheck(port, healthCheckName);
+                            }
+                        } else {
+                            //the ip list is empty. So creating the default health check name
+                            String healthCheckName = healthCheckNameCreator(cluster.getClusterId(),
+                                    Integer.parseInt(GCEContext.getInstance().getHealthCheckPort()));
+                            gceClusterConfigurationHolder.addHealthCheck(Integer.parseInt(GCEContext.
+                                    getInstance().getHealthCheckPort()), healthCheckName);
+                        }
 
                         clusterToLoadBalancerConfigurationMap.put(cluster.getClusterId(), gceClusterConfigurationHolder);
                         createConfigurationForCluster(cluster.getClusterId());
@@ -244,8 +255,12 @@ public class GCELoadBalancer implements LoadBalancer {
         gceOperations.deleteForwardingRule(gceClusterConfigurationHolder.getForwardingRuleName());
         //delete target pool from GCE
         gceOperations.deleteTargetPool(gceClusterConfigurationHolder.getTargetPoolName());
-        //delete health check from GCE
-        gceOperations.deleteHealthCheck(gceClusterConfigurationHolder.getHealthCheckName());
+
+        //delete health checks from GCE
+        Collection<String> healthCheckNames = gceClusterConfigurationHolder.getHealthCheckNames();
+        for (String healthCheckName : healthCheckNames) {
+            gceOperations.deleteHealthCheck(healthCheckName);
+        }
         log.info("Deleted configuration for cluster " + clusterId);
     }
 
@@ -259,21 +274,11 @@ public class GCELoadBalancer implements LoadBalancer {
 
         GCEClusterConfigurationHolder gceClusterConfigurationHolder = clusterToLoadBalancerConfigurationMap.get(clusterId);
 
-        //create a health check
-        gceOperations.createHealthCheck(gceClusterConfigurationHolder.getHealthCheckName());
-
-        //crate a target pool in GCE
-        gceOperations.createTargetPool(gceClusterConfigurationHolder.getTargetPoolName(),
-                gceClusterConfigurationHolder.getHealthCheckName());
-
-        //add instances to target pool
-        gceOperations.addInstancesToTargetPool(gceClusterConfigurationHolder.getMemberList(),
-                gceClusterConfigurationHolder.getTargetPoolName());
-
-        //create forwarding rules in GCE
         List<Integer> ipList = gceClusterConfigurationHolder.getIpList();
-        //need to create a port range String
+
+        //create a port range String
         String portRange;
+
         //if the ip list is empty
         if (ipList.isEmpty()) {
             log.warn("Ip list is null");
@@ -295,6 +300,22 @@ public class GCELoadBalancer implements LoadBalancer {
         if (log.isDebugEnabled()) {
             log.debug("Port range set as: " + portRange);
         }
+
+        //create all health checks
+        Map healthCheckMap = gceClusterConfigurationHolder.getHealthCheckMap();
+        Iterator iterator = healthCheckMap.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry portMapNamePair = (Map.Entry) iterator.next();
+            gceOperations.createHealthCheck((Integer) portMapNamePair.getKey(), (String) portMapNamePair.getValue());
+        }
+
+        //crate a target pool in GCE
+        gceOperations.createTargetPool(gceClusterConfigurationHolder.getTargetPoolName(),
+                gceClusterConfigurationHolder.getHealthCheckNames());
+
+        //add instances to target pool
+        gceOperations.addInstancesToTargetPool(gceClusterConfigurationHolder.getMemberList(),
+                gceClusterConfigurationHolder.getTargetPoolName());
 
         //create the forwarding rule
         gceOperations.createForwardingRule(gceClusterConfigurationHolder.getForwardingRuleName(),
@@ -373,14 +394,18 @@ public class GCELoadBalancer implements LoadBalancer {
      * @param clusterId - id of the cluster
      * @return - a proper name for health check
      */
-    private String healthCheckNameCreator(String clusterId) {
+    private String healthCheckNameCreator(String clusterId, int port) {
         String healthCheckName = GCEContext.getInstance().getNamePrefix().toLowerCase() + "-" +
                 clusterId.trim().toLowerCase().replace(".", "-");
 
         //length should be less than 62 characters
+        //keep 6 characters to add the port at the end
         if (healthCheckName.length() >= Constants.MAX_NAME_LENGTH) {
-            healthCheckName = healthCheckName.substring(0, Constants.MAX_NAME_LENGTH);
+            healthCheckName = healthCheckName.substring(0, Constants.MAX_NAME_LENGTH - 6);
         }
+
+        //add the port number at the end
+        healthCheckName.concat("-" + Integer.toString(port));
         return healthCheckName;
     }
 }

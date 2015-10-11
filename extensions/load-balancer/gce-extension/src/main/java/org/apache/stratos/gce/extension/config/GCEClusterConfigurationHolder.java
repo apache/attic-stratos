@@ -19,7 +19,10 @@
 
 package org.apache.stratos.gce.extension.config;
 
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Since GCE have separate target pools and forwarding rules, we need
@@ -38,13 +41,15 @@ public class GCEClusterConfigurationHolder {
     private String clusterID;
     private String forwardingRuleName;
     private String targetPoolName;
-    private String healthCheckName;
+    //a map to hold the health check names and corresponding port values
+    private Map<Integer, String> healthCheckMap;
 
     public GCEClusterConfigurationHolder(String clusterID, List<String> memberList,
                                          List<Integer> ipList) {
         this.clusterID = clusterID;
         this.memberList = memberList;
         this.ipList = ipList;
+        healthCheckMap = new HashMap<Integer, String>();
     }
 
     public List<Integer> getIpList() {
@@ -75,12 +80,16 @@ public class GCEClusterConfigurationHolder {
         this.targetPoolName = targetPoolName;
     }
 
-    public String getHealthCheckName() {
-        return healthCheckName;
+    public Map<Integer, String> getHealthCheckMap() {
+        return healthCheckMap;
     }
 
-    public void setHealthCheckName(String healthCheckName) {
-        this.healthCheckName = healthCheckName;
+    public Collection<String> getHealthCheckNames() {
+        return healthCheckMap.values();
+    }
+
+    public void addHealthCheck(int port, String healthCheckName) {
+        this.healthCheckMap.put(port, healthCheckName);
     }
 
     public void addMember(String memberId) {

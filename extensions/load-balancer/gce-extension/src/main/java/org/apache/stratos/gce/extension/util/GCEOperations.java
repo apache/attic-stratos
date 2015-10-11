@@ -37,6 +37,7 @@ import java.io.File;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -57,7 +58,6 @@ public class GCEOperations {
 
     //health check
     private static final String HEALTH_CHECK_REQUEST_PATH = GCEContext.getInstance().getHealthCheckRequestPath();
-    private static final String HEALTH_CHECK_PORT = GCEContext.getInstance().getHealthCheckPort();
     private static final String HEALTH_CHECK_TIME_OUT_SEC = GCEContext.getInstance().getHealthCheckTimeOutSec();
     private static final String HEALTH_CHECK_INTERVAL_SEC = GCEContext.getInstance().getHealthCheckIntervalSec();
     private static final String HEALTH_CHECK_UNHEALTHY_THRESHOLD = GCEContext.getInstance().getHealthCheckUnhealthyThreshold();
@@ -239,16 +239,20 @@ public class GCEOperations {
     /**
      * Creating a new target pool in IaaS
      *
-     * @param targetPoolName  - name of the target pool in IaaS
-     * @param healthCheckName - name of the health check in IaaS
+     * @param targetPoolName   - name of the target pool in IaaS
+     * @param healthCheckNames - names of the health check in IaaS
      */
-    public void createTargetPool(String targetPoolName, String healthCheckName) {
+    public void createTargetPool(String targetPoolName, Collection<String> healthCheckNames) {
 
         log.info("Creating target pool: " + targetPoolName);
         TargetPool targetPool = new TargetPool();
         targetPool.setName(targetPoolName);
         List<String> httpHealthChecks = new ArrayList<String>();
-        httpHealthChecks.add(getHealthCheckURLFromName(healthCheckName));
+
+        //add all health checks to httpHealthChecks ArrayList
+        for (String healthCheckName : healthCheckNames) {
+            httpHealthChecks.add(getHealthCheckURLFromName(healthCheckName));
+        }
         targetPool.setHealthChecks(httpHealthChecks);
 
         try {
@@ -478,14 +482,14 @@ public class GCEOperations {
      *
      * @param healthCheckName - name of the health check to be created
      */
-    public void createHealthCheck(String healthCheckName) {
+    public void createHealthCheck(int port, String healthCheckName) {
 
         log.info("Creating health check: " + healthCheckName);
 
         HttpHealthCheck httpHealthCheck = new HttpHealthCheck();
         httpHealthCheck.setName(healthCheckName);
         httpHealthCheck.setRequestPath(HEALTH_CHECK_REQUEST_PATH);
-        httpHealthCheck.setPort(Integer.parseInt(HEALTH_CHECK_PORT));
+        httpHealthCheck.setPort(port);
         httpHealthCheck.setTimeoutSec(Integer.parseInt(HEALTH_CHECK_TIME_OUT_SEC));
         httpHealthCheck.setCheckIntervalSec(Integer.parseInt(HEALTH_CHECK_INTERVAL_SEC));
         httpHealthCheck.setUnhealthyThreshold(Integer.parseInt(HEALTH_CHECK_UNHEALTHY_THRESHOLD));

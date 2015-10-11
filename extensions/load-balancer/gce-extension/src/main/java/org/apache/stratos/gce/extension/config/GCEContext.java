@@ -43,7 +43,7 @@ public class GCEContext {
 
     //health check properties
     private String healthCheckRequestPath;
-    private String healthCheckPort;
+    private String healthCheckPort; // the default health check port
     private String healthCheckTimeOutSec;
     private String healthCheckIntervalSec;
     private String healthCheckUnhealthyThreshold;
