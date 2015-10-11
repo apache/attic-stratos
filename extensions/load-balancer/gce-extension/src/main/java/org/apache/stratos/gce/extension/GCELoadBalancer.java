@@ -405,7 +405,7 @@ public class GCELoadBalancer implements LoadBalancer {
         }
 
         //add the port number at the end
-        healthCheckName.concat("-" + Integer.toString(port));
+        healthCheckName = healthCheckName.concat("-" + Integer.toString(port));
         return healthCheckName;
     }
 }
