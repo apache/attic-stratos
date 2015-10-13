@@ -1,4 +1,3 @@
-/components/org.apache.stratos.python.cli/src/main/python/tests/scratch/.scripttest-test-dir.txt
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -6,9 +5,9 @@
 # to you under the Apache License, Version 2.0 (the
 # "License"); you may not use this file except in compliance
 # with the License.  You may obtain a copy of the License at
-# 
-#   http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
 # Unless required by applicable law or agreed to in writing,
 # software distributed under the License is distributed on an
 # "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -16,23 +15,17 @@
 # specific language governing permissions and limitations
 # under the License.
 
-target/
+import os
 
-# Eclipse Project Files
-.project
-.classpath
-.settings/
-.metadata
+stratos_prompt = "stratos> "
 
-# IntelliJ IDEA Project Files
-.idea/
-*.iml
-*.ipr
-*.iws
-*.swp
+stratos_dir = "~/.stratos"
+log_file_name = "stratos-cli.log"
 
-#Backup files
-*~
+stratos_dir_path = os.path.expanduser(stratos_dir)
+log_file_path = os.path.join(stratos_dir_path, log_file_name)
 
-#Python binary files
-*.pyc
+stratos_url = os.getenv('STRATOS_URL', "https://localhost:9443/")
+stratos_api_url = stratos_url + "api/"
+stratos_username = os.getenv('STRATOS_USERNAME', "")
+stratos_password = os.getenv('STRATOS_PASSWORD', "")
