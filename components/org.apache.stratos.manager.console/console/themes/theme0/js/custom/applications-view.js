@@ -216,9 +216,6 @@ function addJsplumbGroup(groupJSON, cartridgeCounter){
             }
         }
     }
-
-
-
 }
 
 
