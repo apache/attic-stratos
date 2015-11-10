@@ -26,6 +26,7 @@ import org.apache.stratos.messaging.domain.topology.*;
 import org.apache.stratos.messaging.event.Event;
 import org.apache.stratos.messaging.event.topology.CompleteTopologyEvent;
 import org.apache.stratos.messaging.event.topology.MemberInitializedEvent;
+import org.apache.stratos.messaging.listener.initializer.CompleteTopologyRequestEventListener;
 import org.apache.stratos.messaging.listener.instance.status.InstanceActivatedEventListener;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -74,7 +75,6 @@ public class AgentStartupTestCase extends PythonAgentIntegrationTest {
         startServerSocket(8080);
     }
 
-
     /**
      * TearDown method for test method testPythonCartridgeAgent
      */
@@ -83,8 +83,9 @@ public class AgentStartupTestCase extends PythonAgentIntegrationTest {
         tearDown();
     }
 
-    @Test(timeOut = STARTUP_TIMEOUT, description = "Test PCA initialization, activation, health stat publishing and " +
-            "topology context update", groups = {"smoke"})
+    @Test(timeOut = STARTUP_TIMEOUT,
+          description = "Test PCA initialization, activation, health stat publishing and " + "topology context update",
+          groups = { "smoke" })
     public void testPythonCartridgeAgent() {
         startCommunicatorThread();
         subscribeToThriftDatabridge();
@@ -99,24 +100,6 @@ public class AgentStartupTestCase extends PythonAgentIntegrationTest {
                     List<String> newLines = getNewLines(outputLines, outputStream.toString());
                     if (newLines.size() > 0) {
                         for (String line : newLines) {
-                            if (line.contains("Subscribed to 'topology/#'")) {
-                                sleep(2000);
-                                // Send complete topology event
-                                log.info("Publishing complete topology event...");
-                                CompleteTopologyEvent completeTopologyEvent = new CompleteTopologyEvent(topology);
-                                publishEvent(completeTopologyEvent);
-                                log.info("Complete topology event published");
-
-                                // Publish member initialized event
-                                log.info("Publishing member initialized event...");
-                                MemberInitializedEvent memberInitializedEvent = new MemberInitializedEvent(
-                                        SERVICE_NAME, CLUSTER_ID, CLUSTER_INSTANCE_ID, MEMBER_ID, NETWORK_PARTITION_ID,
-                                        PARTITION_ID, INSTANCE_ID
-                                );
-                                publishEvent(memberInitializedEvent);
-                                log.info("Member initialized event published");
-                            }
-
                             if (line.contains("Published event to thrift stream")) {
                                 startupTestCompleted = true;
                             }
@@ -133,6 +116,24 @@ public class AgentStartupTestCase extends PythonAgentIntegrationTest {
         });
 
         startupTestThread.start();
+
+        initializerEventReceiver.addEventListener(new CompleteTopologyRequestEventListener() {
+            @Override
+            protected void onEvent(Event event) {
+                // Send complete topology event
+                log.info("CompleteTopologyRequestEvent received. Publishing complete topology event...");
+                CompleteTopologyEvent completeTopologyEvent = new CompleteTopologyEvent(topology);
+                publishEvent(completeTopologyEvent);
+                log.info("Complete topology event published");
+
+                // Publish member initialized event
+                log.info("Publishing member initialized event...");
+                MemberInitializedEvent memberInitializedEvent = new MemberInitializedEvent(SERVICE_NAME, CLUSTER_ID,
+                        CLUSTER_INSTANCE_ID, MEMBER_ID, NETWORK_PARTITION_ID, PARTITION_ID, INSTANCE_ID);
+                publishEvent(memberInitializedEvent);
+                log.info("Member initialized event published");
+            }
+        });
 
         instanceStatusEventReceiver.addEventListener(new InstanceActivatedEventListener() {
             @Override
@@ -193,9 +194,8 @@ public class AgentStartupTestCase extends PythonAgentIntegrationTest {
                 AUTOSCALING_POLICY_NAME, APP_ID);
         service.addCluster(cluster);
 
-        Member member = new Member(service.getServiceName(), cluster.getClusterId(), MEMBER_ID,
-                CLUSTER_INSTANCE_ID, NETWORK_PARTITION_ID, PARTITION_ID, LoadBalancingIPType.Private,
-                System.currentTimeMillis());
+        Member member = new Member(service.getServiceName(), cluster.getClusterId(), MEMBER_ID, CLUSTER_INSTANCE_ID,
+                NETWORK_PARTITION_ID, PARTITION_ID, LoadBalancingIPType.Private, System.currentTimeMillis());
 
         member.setDefaultPrivateIP("10.0.0.1");
         member.setDefaultPublicIP("20.0.0.1");

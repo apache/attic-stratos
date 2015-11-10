@@ -17,12 +17,12 @@
 
 import paho.mqtt.publish as publish
 
-from modules.event.instance.status.events import *
-from modules.util.log import *
-from modules.util import cartridgeagentutils
-import healthstats
 import constants
+import healthstats
 from config import Config
+from modules.event.instance.status.events import *
+from modules.util import cartridgeagentutils
+from modules.util.log import *
 
 log = LogFactory().get_log(__name__)
 publishers = {}
@@ -181,6 +181,27 @@ def publish_instance_ready_to_shutdown_event():
         log.info("Instance ReadyToShutDown event published")
     else:
         log.warn("Instance already in a ReadyToShutDown event...")
+
+
+def publish_complete_topology_request_event():
+    complete_topology_request_event = CompleteTopologyRequestEvent()
+    publisher = get_publisher(constants.INITIALIZER_TOPIC + constants.COMPLETE_TOPOLOGY_REQUEST_EVENT)
+    publisher.publish(complete_topology_request_event)
+    log.info("Complete topology request event published")
+
+
+def publish_complete_tenant_request_event():
+    complete_tenant_request_event = CompleteTenantRequestEvent()
+    publisher = get_publisher(constants.INITIALIZER_TOPIC + constants.COMPLETE_TENANT_REQUEST_EVENT)
+    publisher.publish(complete_tenant_request_event)
+    log.info("Complete tenant request event published")
+
+
+def publish_complete_application_signups_request_event():
+    complete_application_signups_request_event = CompleteApplicationSignUpsRequestEvent()
+    publisher = get_publisher(constants.INITIALIZER_TOPIC + constants.COMPLETE_APPLICATION_SIGNUPS_REQUEST_EVENT)
+    publisher.publish(complete_application_signups_request_event)
+    log.info("Complete application signups request event published")
 
 
 def get_publisher(topic):
