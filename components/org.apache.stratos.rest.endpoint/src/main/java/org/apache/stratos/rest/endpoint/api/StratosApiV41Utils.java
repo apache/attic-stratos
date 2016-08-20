@@ -74,6 +74,9 @@ import org.apache.stratos.messaging.domain.application.ApplicationStatus;
 import org.apache.stratos.messaging.domain.application.ClusterDataHolder;
 import org.apache.stratos.messaging.domain.application.Group;
 import org.apache.stratos.messaging.domain.topology.Cluster;
+import org.apache.stratos.messaging.domain.topology.Member;
+import org.apache.stratos.messaging.domain.topology.MemberStatus;
+import org.apache.stratos.messaging.domain.topology.Service;
 import org.apache.stratos.messaging.message.receiver.application.ApplicationManager;
 import org.apache.stratos.messaging.message.receiver.topology.TopologyManager;
 import org.apache.stratos.rest.endpoint.Constants;
@@ -102,12 +105,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
 public class StratosApiV41Utils {
-    private static final Log log = LogFactory.getLog(StratosApiV41Utils.class);
-
     public static final String APPLICATION_STATUS_DEPLOYED = "Deployed";
     public static final String APPLICATION_STATUS_CREATED = "Created";
     public static final String APPLICATION_STATUS_UNDEPLOYING = "Undeploying";
     public static final String KUBERNETES_IAAS_PROVIDER = "kubernetes";
+    private static final Log log = LogFactory.getLog(StratosApiV41Utils.class);
     private static final String METADATA_REG_PATH = "metadata/";
 
     /**
@@ -3715,6 +3717,41 @@ public class StratosApiV41Utils {
             String message = e.getMessage();
             log.error(message);
             throw new RestAPIException(message, e);
+        }
+    }
+
+    public static boolean hasMembersInitialized(String applicationId) throws RestAPIException {
+        try {
+            TopologyManager.acquireReadLock();
+            ApplicationManager.acquireReadLockForApplication(applicationId);
+
+            for (ClusterDataHolder clusterDataHolder : ApplicationManager.getApplications()
+                    .getApplication(applicationId).getClusterDataRecursively()) {
+                String serviceType = clusterDataHolder.getServiceType();
+                String clusterId = clusterDataHolder.getClusterId();
+                Service topologyService = TopologyManager.getTopology().getService(serviceType);
+                Cluster topologyCluster = topologyService.getCluster(clusterId);
+                for (Member member : topologyCluster.getMembers()) {
+                    if (member.getStatus() == MemberStatus.Created) {
+                        if (log.isDebugEnabled()) {
+                            log.debug(String.format(
+                                    "Member is not initialized: [member-id] %s, [cluster-instance-id] %s, [service] %s",
+                                    member.getMemberId(), member.getClusterInstanceId(), member.getServiceName()));
+                        }
+                        return false;
+                    }
+                }
+            }
+            return true;
+        } catch (Exception e) {
+            String msg = String
+                    .format("Error while checking member status for application undeployment: [application-id] %s",
+                            applicationId);
+            log.error(msg, e);
+            throw new RestAPIException(msg, e);
+        } finally {
+            TopologyManager.releaseReadLock();
+            ApplicationManager.releaseReadLockForApplication(applicationId);
         }
     }
 }

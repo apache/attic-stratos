@@ -1275,6 +1275,15 @@ public class StratosApiV41 extends AbstractApi {
                     .entity(new ResponseMessageBean(ResponseMessageBean.ERROR, message)).build();
         }
 
+        if (!StratosApiV41Utils.hasMembersInitialized(applicationId)) {
+            String message = String
+                    .format("Could not undeploy the application since [application-id] %s has members in CREATED status.",
+                            applicationId);
+            log.error(message);
+            return Response.status(Response.Status.CONFLICT)
+                    .entity(new ResponseMessageBean(ResponseMessageBean.ERROR, message)).build();
+        }
+
         StratosApiV41Utils.undeployApplication(applicationId, force);
         return Response.accepted().entity(new ResponseMessageBean(ResponseMessageBean.SUCCESS,
                 String.format("Application undeploy process started successfully: [application-id] %s", applicationId)))
@@ -2063,8 +2072,7 @@ public class StratosApiV41 extends AbstractApi {
         } catch (CloudControllerServiceKubernetesClusterAlreadyUsedExceptionException e) {
             String message = String
                     .format("Could not remove Kubernetes cluster. Kubernetes cluster is being used by a deployed "
-                            + "application: [kub-cluster] %s",
-                            kubernetesClusterId);
+                            + "application: [kub-cluster] %s", kubernetesClusterId);
             log.error(message);
             return Response.status(Response.Status.CONFLICT)
                     .entity(new ResponseMessageBean(ResponseMessageBean.ERROR, message)).build();
