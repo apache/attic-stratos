@@ -24,7 +24,7 @@
 # change the environment variables to reflect your environment
 
 # Set the DOMAIN to the dns domain name you want to use for your Stratos environment
-# The DNS domain name is only used internally by the stratos docker images and should not be exposed publically
+# The DNS domain name is only used internally by the stratos docker images and should not be exposed publicly
 export DOMAIN=example.com
  
 # Set the IP_ADDR to the IP address you use to reach the docker host
