@@ -1,0 +1,9 @@
+{
+    "userName":"UserName",
+    "credential":"Password",
+    "role":"Internal/user",
+    "firstName":"FirstName",
+    "lastName":"LastName",
+    "email":"user@apache.org",
+    "profileName":"profilename"
+}

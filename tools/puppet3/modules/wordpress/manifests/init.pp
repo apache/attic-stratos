@@ -21,9 +21,8 @@ class wordpress (
   $docroot     = '/var/www/html/',
   $wp_password = 'wordpress'
 ) { 
-  
-  require java
-  class {'agent':}
+
+  class {'python_agent':}
 
   $packages = [
     'httpd',
@@ -88,5 +87,5 @@ class wordpress (
   }
  
   # install stratos_base before java before mysql before wordpress before agent
-  Class['stratos_base'] -> Class['java'] -> Class['agent'] -> Class['mysql'] -> Class['wordpress']
+  Class['stratos_base'] -> Class['python_agent'] -> Class['mysql'] -> Class['wordpress']
 }

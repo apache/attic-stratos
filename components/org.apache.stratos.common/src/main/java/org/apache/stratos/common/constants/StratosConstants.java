@@ -155,12 +155,21 @@ public class StratosConstants {
     public static final String ALLOCATED_SERVICE_HOST_PORT = "ALLOCATED_SERVICE_HOST_PORT";
     
     //drools related constants
+    public static final String DROOLS_DIR_NAME = "drools";
     public static final String CONTAINER_SCALE_CHECK_DROOL_FILE = "container-scaling.drl";
     public static final String VM_SCALE_CHECK_DROOL_FILE = "scaling.drl";
     public static final String CONTAINER_MIN_CHECK_DROOL_FILE = "container-mincheck.drl";
     public static final String VM_MIN_CHECK_DROOL_FILE = "mincheck.drl";
+    public static final String CONTAINER_OBSOLETE_CHECK_DROOL_FILE = "container-obsoletecheck.drl";
+    public static final String VM_OBSOLETE_CHECK_DROOL_FILE = "obsoletecheck.drl";
 
     // Policy and definition related constants
     public static final int PUBLIC_DEFINITION = 0;
-
+    
+    // Autoscaler member timeout constants
+    public static final String PENDING_VM_MEMBER_EXPIRY_TIMEOUT = "autoscaler.member.vm.pendingMemberExpiryTimeout";
+    public static final String OBSOLETED_VM_MEMBER_EXPIRY_TIMEOUT = "autoscaler.member.vm.obsoletedMemberExpiryTimeout";
+    public static final String PENDING_CONTAINER_MEMBER_EXPIRY_TIMEOUT = "autoscaler.member.container.pendingMemberExpiryTimeout";
+    public static final String OBSOLETED_CONTAINER_MEMBER_EXPIRY_TIMEOUT = "autoscaler.member.container.obsoletedMemberExpiryTimeout";
 }
+

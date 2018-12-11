@@ -1,0 +1,64 @@
+{
+    "type":"object",
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "id": "root",
+    "title": "Tenant",
+    "name": "Tenant",
+    "options": {
+        "disable_properties": true,
+        "disable_collapse": true
+    },
+    "required":["admin","adminPassword","email", "firstname", "lastname", "tenantDomain"],
+    "properties":{
+        "admin": {
+            "type":"string",
+            "id": "root/admin",
+            "default": "admin",
+            "title": "Admin user name",
+            "name": "Admin user name"
+        },
+        "adminPassword": {
+            "type":"string",
+            "id": "root/adminPassword",
+            "default": "admin123",
+            "title": "Admin user password",
+            "name": "Admin user password"
+        },
+        "email": {
+            "type":"string",
+            "id": "root/email",
+            "default": "foo@bar.com",
+            "title": "Admin email",
+            "name": "Admin email"
+        },
+        "firstname": {
+            "type":"string",
+            "id": "root/firstname",
+            "default": "Frank",
+            "title": "First name",
+            "name": "First name"
+        },
+        "lastname": {
+            "type":"string",
+            "id": "root/lastname",
+            "default": "Myers",
+            "title": "Last name",
+            "name": "Last name"
+        },
+        "tenantDomain": {
+            "type":"string",
+            "id": "root/tenantDomain",
+            "default": "frank.com",
+            "title": "Tenant domain",
+            "name": "Tenant domain"
+        },
+        "active": {
+            "type":"boolean",
+            "id": "root/active",
+            "default": "true",
+            "title": "Active",
+            "name": "Active",
+            "required":false
+        }
+    }
+}

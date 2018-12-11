@@ -23,19 +23,24 @@ package org.apache.stratos.autoscaler.rule;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.stratos.autoscaler.Constants;
-import org.apache.stratos.autoscaler.KubernetesClusterContext;
-import org.apache.stratos.autoscaler.NetworkPartitionLbHolder;
-import org.apache.stratos.autoscaler.PartitionContext;
+import org.apache.stratos.autoscaler.*;
 import org.apache.stratos.autoscaler.algorithm.AutoscaleAlgorithm;
 import org.apache.stratos.autoscaler.algorithm.OneAfterAnother;
 import org.apache.stratos.autoscaler.algorithm.RoundRobin;
-import org.apache.stratos.autoscaler.client.cloud.controller.CloudControllerClient;
-import org.apache.stratos.autoscaler.client.cloud.controller.InstanceNotificationClient;
+import org.apache.stratos.autoscaler.client.CloudControllerClient;
+import org.apache.stratos.autoscaler.client.InstanceNotificationClient;
 import org.apache.stratos.autoscaler.exception.SpawningException;
 import org.apache.stratos.autoscaler.exception.TerminationException;
+import org.apache.stratos.autoscaler.monitor.MonitorStatusEventBuilder;
+import org.apache.stratos.autoscaler.monitor.cluster.AbstractClusterMonitor;
+import org.apache.stratos.autoscaler.monitor.cluster.VMServiceClusterMonitor;
 import org.apache.stratos.autoscaler.partition.PartitionManager;
 import org.apache.stratos.cloud.controller.stub.pojo.MemberContext;
+import org.apache.stratos.messaging.domain.topology.Cluster;
+import org.apache.stratos.messaging.domain.topology.Member;
+import org.apache.stratos.messaging.domain.topology.MemberStatus;
+import org.apache.stratos.messaging.domain.topology.Service;
+import org.apache.stratos.messaging.message.receiver.topology.TopologyManager;
 
 /**
  * This will have utility methods that need to be executed from rule file...
@@ -44,6 +49,7 @@ public class RuleTasksDelegator {
 
     public static final double SCALE_UP_FACTOR = 0.8;   //get from config
     public static final double SCALE_DOWN_FACTOR = 0.2;
+    private static boolean arspiIsSet = false;
 
     private static final Log log = LogFactory.getLog(RuleTasksDelegator.class);
 
@@ -57,6 +63,79 @@ public class RuleTasksDelegator {
         predictedValue = average + gradient * timeInterval + 0.5 * secondDerivative * timeInterval * timeInterval;
 
         return predictedValue;
+    }
+
+
+    public int getNumberOfInstancesRequiredBasedOnRif(float rifPredictedValue , float requestsServedPerInstance , float averageRequestsServedPerInstance , boolean arspiReset){
+
+        float requestsInstanceCanHandle = requestsServedPerInstance;
+
+        if(arspiReset && averageRequestsServedPerInstance != 0){
+            requestsInstanceCanHandle = averageRequestsServedPerInstance;
+           
+        }
+        float numberOfInstances = 0;
+        if(requestsInstanceCanHandle!=0) {
+            numberOfInstances = rifPredictedValue / requestsInstanceCanHandle;
+            arspiReset = true;
+
+        }else{
+            arspiReset = false;
+        }
+        return (int)Math.ceil(numberOfInstances);
+    }
+
+    public int getNumberOfInstancesRequiredBasedOnLoadAndMemoryConsumption(float upperLimit , float lowerLimit ,double predictedValue , int activeMemberCount ){
+
+        double numberOfInstances = (activeMemberCount*predictedValue)/upperLimit;
+
+        return (int)Math.ceil(numberOfInstances);
+    }
+
+    public int getMaxNumberOfInstancesRequired(int numberOfInstancesReuquiredBasedOnRif , int numberOfInstancesReuquiredBasedOnMemoryConsumption , boolean mcReset , int numberOfInstancesReuquiredBasedOnLoadAverage , boolean laReset){
+        int  numberOfInstances = 0;
+
+        int rifBasedRequiredInstances = 0;
+        int mcBasedRequiredInstances  = 0;
+        int laBasedRequiredInstances  = 0;
+        if(arspiIsSet){
+            rifBasedRequiredInstances = numberOfInstancesReuquiredBasedOnRif;
+        }
+        if(mcReset){
+            rifBasedRequiredInstances = numberOfInstancesReuquiredBasedOnMemoryConsumption;
+        }
+        if(laReset){
+            rifBasedRequiredInstances = numberOfInstancesReuquiredBasedOnLoadAverage;
+        }
+        numberOfInstances = Math.max(Math.max(numberOfInstancesReuquiredBasedOnMemoryConsumption,numberOfInstancesReuquiredBasedOnLoadAverage),numberOfInstancesReuquiredBasedOnRif);
+        return  numberOfInstances;
+    }
+
+    public int getMemberCount(String clusterId , int scalingPara ){
+
+        int activeMemberCount = 0;
+        int memberCount = 0;
+       for( Service service : TopologyManager.getTopology().getServices()) {
+           if(service.clusterExists(clusterId)) {
+               Cluster cluster = service.getCluster(clusterId);
+
+               for (Member member : cluster.getMembers()) {
+                   if (member.isActive() || member.getStatus() == MemberStatus.Created || member.getStatus() == MemberStatus.Starting  ) {
+                       memberCount++;
+                       if(member.isActive()) {
+                           activeMemberCount++;
+                       }
+                   }
+               }
+           }
+       }
+        if(scalingPara == 1){
+            return memberCount;
+        }else{
+            return activeMemberCount;
+        }
+
+
     }
 
     public AutoscaleAlgorithm getAutoscaleAlgorithm(String partitionAlgorithm){
@@ -100,6 +179,7 @@ public class RuleTasksDelegator {
                     log.debug(String.format("Pending member added, [member] %s [partition] %s", memberContext.getMemberId(),
                             memberContext.getPartition().getId()));
                 }
+
             } else if(log.isDebugEnabled()){
                 log.debug("Returned member context is null, did not add to pending members");
             }
@@ -109,6 +189,19 @@ public class RuleTasksDelegator {
             log.error(message, e);
             throw new RuntimeException(message, e);
         }
+    }
+
+
+    public void delegateScalingDependencyNotification(String clusterId, String networkPartitionId, float factor) {
+
+        //Notify parent for checking scaling dependencies
+        AbstractClusterMonitor clusterMonitor = AutoscalerContext.getInstance().getClusterMonitor(clusterId);
+        if(clusterMonitor instanceof VMServiceClusterMonitor) {
+
+            VMServiceClusterMonitor vmServiceClusterMonitor = (VMServiceClusterMonitor) clusterMonitor;
+            vmServiceClusterMonitor.sendClusterScalingEvent(networkPartitionId, factor);
+        }
+
     }
 
     // Original method. Assume this is invoked from mincheck.drl
@@ -175,10 +268,29 @@ public class RuleTasksDelegator {
     }
 
     public void delegateTerminate(PartitionContext partitionContext, String memberId) {
+
+        log.info("Starting to terminate Member [ " + memberId + " ], in Partition [ " +
+                partitionContext.getPartitionId() + " ], NW Partition [ " +
+                partitionContext.getNetworkPartitionId() + " ]");
+
         try {
             //calling SM to send the instance notification event.
             InstanceNotificationClient.getInstance().sendMemberCleanupEvent(memberId);
             partitionContext.moveActiveMemberToTerminationPendingMembers(memberId);
+            //CloudControllerClient.getInstance().terminate(memberId);
+        } catch (Throwable e) {
+            log.error("Cannot terminate instance", e);
+        }
+    }
+
+    public void delegateTerminateDependency(PartitionContext partitionContext, String memberId) {
+        try {
+            //calling SM to send the instance notification event.
+        	if (log.isDebugEnabled()) {
+        		log.debug("delegateTerminateDependency:memberId:" + memberId);
+        	}
+            //InstanceNotificationClient.getInstance().sendMemberCleanupEvent(memberId);
+            //partitionContext.moveActiveMemberToTerminationPendingMembers(memberId);
             //CloudControllerClient.getInstance().terminate(memberId);
         } catch (Throwable e) {
             log.error("Cannot terminate instance", e);
@@ -193,10 +305,16 @@ public class RuleTasksDelegator {
         }
     }
 
+    //Grouping
    	public void delegateTerminateAll(String clusterId) {
            try {
-
+        	   if (log.isDebugEnabled()) {
+           		log.debug("delegateTerminateAll - begin");
+        	   }
                CloudControllerClient.getInstance().terminateAllInstances(clusterId);
+               if (log.isDebugEnabled()) {
+              		log.debug("delegateTerminateAll - done");
+           	   }
            } catch (Throwable e) {
                log.error("Cannot terminate instance", e);
            }
@@ -305,5 +423,63 @@ public class RuleTasksDelegator {
         }
         float predictedValue = ((minReplicas / statUpperLimit) * statPredictedValue);
         return (int) Math.ceil(predictedValue);
+    }
+
+    public double getLoadAveragePredictedValue (NetworkPartitionContext networkPartitionContext) {
+        double loadAveragePredicted = 0.0d;
+        int totalMemberCount = 0;
+
+        for (PartitionContext partitionContext : networkPartitionContext.getPartitionCtxts().values()) {
+            for (MemberStatsContext memberStatsContext : partitionContext.getMemberStatsContexts().values()) {
+
+                float memberAverageLoadAverage = memberStatsContext.getLoadAverage().getAverage();
+                float memberGredientLoadAverage = memberStatsContext.getLoadAverage().getGradient();
+                float memberSecondDerivativeLoadAverage = memberStatsContext.getLoadAverage().getSecondDerivative();
+
+                double memberPredictedLoadAverage = getPredictedValueForNextMinute(memberAverageLoadAverage, memberGredientLoadAverage, memberSecondDerivativeLoadAverage, 1);
+
+                log.debug("Member ID : " + memberStatsContext.getMemberId() + " : Predicted Load Average : " + memberPredictedLoadAverage);
+
+                loadAveragePredicted += memberPredictedLoadAverage;
+                ++totalMemberCount;
+            }
+        }
+
+        if (totalMemberCount > 0) {
+            log.debug("Predicted load average : " + loadAveragePredicted / totalMemberCount);
+            return loadAveragePredicted / totalMemberCount;
+        }
+        else {
+            return 0;
+        }
+    }
+
+    public double getMemoryConsumptionPredictedValue(NetworkPartitionContext networkPartitionContext) {
+        double memoryConsumptionPredicted = 0.0d;
+        int totalMemberCount = 0;
+
+        for (PartitionContext partitionContext : networkPartitionContext.getPartitionCtxts().values()) {
+            for (MemberStatsContext memberStatsContext : partitionContext.getMemberStatsContexts().values()) {
+
+                float memberMemoryConsumptionAverage = memberStatsContext.getMemoryConsumption().getAverage();
+                float memberMemoryConsumptionGredient = memberStatsContext.getMemoryConsumption().getGradient();
+                float memberMemoryConsumptionSecondDerivative= memberStatsContext.getMemoryConsumption().getSecondDerivative();
+
+                double memberPredictedMemoryConsumption = getPredictedValueForNextMinute(memberMemoryConsumptionAverage, memberMemoryConsumptionGredient, memberMemoryConsumptionSecondDerivative, 1);
+
+                log.debug("Member ID : " + memberStatsContext.getMemberId() + " : Predicted Memory Consumption : " + memberPredictedMemoryConsumption);
+
+                memoryConsumptionPredicted += memberPredictedMemoryConsumption;
+                ++totalMemberCount;
+            }
+        }
+
+        if (totalMemberCount > 0) {
+            log.debug("Predicted memory consumption : " + memoryConsumptionPredicted / totalMemberCount);
+            return memoryConsumptionPredicted / totalMemberCount;
+        }
+        else {
+            return 0;
+        }
     }
 }

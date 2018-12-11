@@ -19,11 +19,13 @@
 
 package org.apache.stratos.messaging.message.receiver.tenant;
 
+import org.apache.stratos.messaging.domain.Message;
+
 import javax.jms.TextMessage;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Implements a blocking queue for managing tenant event messages.
  */
-class TenantEventMessageQueue extends LinkedBlockingQueue<TextMessage> {
+class TenantEventMessageQueue extends LinkedBlockingQueue<Message> {
 }

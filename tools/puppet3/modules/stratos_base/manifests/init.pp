@@ -41,6 +41,12 @@ class stratos_base(
       $package_ensure = absent      
   }
 
+  exec { 'base-update-apt':
+    path      => ['/bin/', '/sbin/', '/usr/bin/', '/usr/sbin/', '/usr/local/bin/', '/usr/local/sbin/'],
+    command   => 'apt-get update > /dev/null 2>&1',
+    logoutput => on_failure,
+  }
+
   $packages = [
     'nano',       
     'curl',
@@ -50,8 +56,9 @@ class stratos_base(
     'tar']
 
   package { $packages:
-    ensure => $package_ensure,    
-  }  
+    ensure => $package_ensure,
+    require => Exec['base-update-apt'],
+  }
 
   define printPackages{
     notify { $name: 

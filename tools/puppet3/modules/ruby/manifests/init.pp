@@ -17,10 +17,8 @@
 
 class ruby( $target = '/mnt' ) {
 
-  require java
-
   $custom_agent_templates = ['extensions/instance-started.sh']
-  class {'agent':
+  class {'python_agent':
     custom_templates => $custom_agent_templates,
     module=>'ruby'
   }
@@ -67,5 +65,5 @@ class ruby( $target = '/mnt' ) {
   }
 
   # install stratos_base before java before ruby before agent
-  Class['stratos_base'] -> Class['java'] -> Class['agent'] -> Class['ruby']
+  Class['stratos_base'] -> Class['python_agent'] -> Class['ruby']
 }

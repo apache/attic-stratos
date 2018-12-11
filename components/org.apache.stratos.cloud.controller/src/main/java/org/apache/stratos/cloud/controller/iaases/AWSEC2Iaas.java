@@ -74,7 +74,6 @@ public class AWSEC2Iaas extends Iaas {
 
 		// builds and sets Compute Service
 		ComputeServiceBuilderUtil.buildDefaultComputeService(getIaasProvider());
-
 		// builds and sets Template
 		buildTemplate();
 
@@ -94,6 +93,10 @@ public class AWSEC2Iaas extends Iaas {
 
 		// set image id specified
 		templateBuilder.imageId(iaasInfo.getImage());
+
+        if(!(iaasInfo instanceof IaasProvider)) {
+           templateBuilder.locationId(iaasInfo.getType());
+        }
 
         if(iaasInfo.getProperty(CloudControllerConstants.AVAILABILITY_ZONE) != null) {
             Set<? extends Location> locations = iaasInfo.getComputeService().listAssignableLocations();

@@ -17,10 +17,8 @@
 
 class nodejs {
 
-  require java
-
   $custom_agent_templates = ['extensions/start-servers.sh']
-  class {'agent':
+  class {'python_agent':
     custom_templates => $custom_agent_templates,
     module=>'nodejs'
   }
@@ -40,10 +38,6 @@ class nodejs {
 
 
   exec {
-    'update-apt':
-    path      => ['/bin/', '/sbin/', '/usr/bin/', '/usr/sbin/', '/usr/local/bin/', '/usr/local/sbin/'],
-    command   => 'apt-get update > /dev/null 2>&1';
-
     'add-repo':
     path      => ['/bin/', '/sbin/', '/usr/bin/', '/usr/sbin/', '/usr/local/bin/', '/usr/local/sbin/'],
     command   => 'add-apt-repository ppa:chris-lea/node.js > /dev/null 2>&1';
@@ -57,10 +51,8 @@ class nodejs {
       cwd     => "${nodejs_home}",
       command => 'apt-get install -y nodejs',
       require => [
-        Exec['update-apt'], 
         Package['python-software-properties', 'python', 'g++', 'make'],
 	Exec['add-repo'],
-	Exec['update-apt'],
 	Exec['Create nodejs home'],
       ];
 
@@ -75,6 +67,6 @@ class nodejs {
   }
 
   # install stratos_base before java before nodejs before agent
-  Class['stratos_base'] -> Class['java'] -> Class['agent'] -> Class['nodejs']
+  Class['stratos_base'] -> Class['python_agent'] -> Class['nodejs']
 }
 

@@ -26,11 +26,10 @@ import org.apache.stratos.messaging.event.Event;
  * A message header will be used to send the event class name to be used by the
  * subscriber to identify the event.
  */
-public class EventPublisher extends TopicPublisher {
+public class EventPublisher extends Publisher {
 
 	/**
-	 * @param topicName
-	 *            topic name of this publisher instance.
+	 * @param topicName topic name of this publisher instance.
 	 */
 	EventPublisher(String topicName) {
 		super(topicName);
@@ -38,8 +37,7 @@ public class EventPublisher extends TopicPublisher {
 
 	/**
 	 * 
-	 * @param event
-	 *            event to be published
+	 * @param event event to be published
 	 */
 	public void publish(Event event) {
 		publish(event, true);
@@ -47,8 +45,7 @@ public class EventPublisher extends TopicPublisher {
 
 	public void publish(Event event, boolean retry) {
 		synchronized (EventPublisher.class) {
-
 			super.publish(event, retry);
 		}
-	}
+    }
 }

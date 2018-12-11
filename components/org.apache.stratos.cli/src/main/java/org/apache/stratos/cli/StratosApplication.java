@@ -95,12 +95,6 @@ public class StratosApplication extends CommandLineApplication<StratosCommandCon
 
 		command = new ExitCommand();
 		commands.put(command.getName(), command);
-
-		command = new SubscribeCartridgeCommand();
-		commands.put(command.getName(), command);
-
-		command = new UnsubscribeCommand();
-		commands.put(command.getName(), command);
 		
 		command = new ListCartridgesCommand();
 		commands.put(command.getName(), command);
@@ -141,7 +135,10 @@ public class StratosApplication extends CommandLineApplication<StratosCommandCon
         command = new UndeployServiceDefinitionCommand();
         commands.put(command.getName(), command);
 
-        command = new ListDeployServiceCommand();
+        command = new ListApplicationsCommand();
+        commands.put(command.getName(), command);
+
+        command = new ListServicesCommand();
         commands.put(command.getName(), command);
 
         command = new UndeployCartridgeDefinitionCommand();
@@ -149,9 +146,6 @@ public class StratosApplication extends CommandLineApplication<StratosCommandCon
 
         command = new DeployDeploymentPolicyCommand();
         commands.put(command.getName(), command);
-		
-		command = new ListCartridgeSubscriptionsCommand();
-		commands.put(command.getName(), command);
 
         command = new ListPartitionCommand();
         commands.put(command.getName(), command);
@@ -210,7 +204,31 @@ public class StratosApplication extends CommandLineApplication<StratosCommandCon
         command = new UpdateSubscriptionPropertiesCommand();
         commands.put(command.getName(), command);
 
-		if (logger.isDebugEnabled()) {
+        command = new UpdateAutoscalingPolicyCommand();
+        commands.put(command.getName(), command);
+
+        command = new UpdateDeploymentPolicyCommand();
+        commands.put(command.getName(), command);
+
+        command = new DeployServiceGroupCommand();
+        commands.put(command.getName(), command);
+
+        command = new DescribeServiceGroupCommand();
+        commands.put(command.getName(), command);
+
+        command = new UndeployServiceGroupCommand();
+        commands.put(command.getName(), command);
+
+        command = new DeployApplicationCommand();
+        commands.put(command.getName(), command);
+
+        command = new UndeployApplicationCommand();
+        commands.put(command.getName(), command);
+
+        command = new DescribeApplicationCommand();
+        commands.put(command.getName(), command);
+
+        if (logger.isDebugEnabled()) {
 			logger.debug("Created {} commands for the application. {}", commands.size(), commands.keySet());
 		}
 	}
@@ -356,7 +374,7 @@ public class StratosApplication extends CommandLineApplication<StratosCommandCon
 			}
 		} else {
 			if (login(usernameInput, passwordInput, true)) {
-				System.out.println("Successfully Authenticated.");
+				System.out.println("Successfully authenticated");
 			} else {
 				// Exit
 				return CliConstants.ERROR_CODE;
@@ -415,7 +433,7 @@ public class StratosApplication extends CommandLineApplication<StratosCommandCon
 		}
 		if (success) {
 			if (logger.isDebugEnabled()) {
-				logger.debug("Successfully Authenticated.");
+				logger.debug("Successfully authenticated");
 			}
 		} else {
 			if (logger.isDebugEnabled()) {

@@ -30,16 +30,18 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.stratos.autoscaler.policy.model.AutoscalePolicy;
 import org.apache.stratos.autoscaler.policy.model.LoadAverage;
 import org.apache.stratos.autoscaler.policy.model.MemoryConsumption;
 import org.apache.stratos.autoscaler.policy.model.RequestsInFlight;
 import org.apache.stratos.autoscaler.util.ConfUtil;
 import org.apache.stratos.cloud.controller.stub.pojo.MemberContext;
+import org.apache.stratos.common.constants.StratosConstants;
 
 /*
  * It holds the runtime data of a kubernetes service cluster
  */
-public class KubernetesClusterContext implements Serializable {
+public class KubernetesClusterContext extends AbstractClusterContext {
 
     private static final long serialVersionUID = 808741789615481596L;
     private static final Log log = LogFactory.getLog(KubernetesClusterContext.class);
@@ -48,9 +50,12 @@ public class KubernetesClusterContext implements Serializable {
     private String serviceName;
 
     private int minReplicas;
-    private int maxReplicas = 10;
-    private int currentReplicas = 0;
-    
+    private int maxReplicas;
+    private int currentReplicas;
+    private float RequiredReplicas;
+
+    private AutoscalePolicy autoscalePolicy;
+
     // it will tell whether the startContainers() method succeed or not for the 1st time
     // we should call startContainers() only once
     private boolean isServiceClusterCreated = false;
@@ -59,19 +64,19 @@ public class KubernetesClusterContext implements Serializable {
     private Properties properties;
 
     // 15 mints as the default
-    private long expiryTime;
+    private long pendingMemberExpiryTime;
     // pending members
     private List<MemberContext> pendingMembers;
 
     // active members
     private List<MemberContext> activeMembers;
-    
+
     // 1 day as default
     private long obsoltedMemberExpiryTime = 1*24*60*60*1000;
 
     // members to be terminated
     private Map<String, MemberContext> obsoletedMembers;
-    
+
     // termination pending members, member is added to this when Autoscaler send grace fully shut down event
     private List<MemberContext> terminationPendingMembers;
 
@@ -83,9 +88,6 @@ public class KubernetesClusterContext implements Serializable {
     private MemoryConsumption memoryConsumption;
     private LoadAverage loadAverage;
 
-    // cluster id
-    private String clusterId;
-
     //boolean values to keep whether the requests in flight parameters are reset or not
     private boolean rifReset = false, averageRifReset = false,
             gradientRifReset = false, secondDerivativeRifRest = false;
@@ -96,9 +98,13 @@ public class KubernetesClusterContext implements Serializable {
     private boolean loadAverageReset = false, averageLoadAverageReset = false,
             gradientLoadAverageReset = false, secondDerivativeLoadAverageRest = false;
 
-    public KubernetesClusterContext(String kubernetesClusterId, String clusterId) {
+    public KubernetesClusterContext(String kubernetesClusterId, String clusterId, String serviceId, AutoscalePolicy autoscalePolicy,
+                                    int minCount, int maxCount) {
+
+        super(clusterId, serviceId);
         this.kubernetesClusterId = kubernetesClusterId;
-        this.clusterId = clusterId;
+        this.minReplicas = minCount;
+        this.maxReplicas = maxCount;
         this.pendingMembers = new ArrayList<MemberContext>();
         this.activeMembers = new ArrayList<MemberContext>();
         this.terminationPendingMembers = new ArrayList<MemberContext>();
@@ -107,12 +113,15 @@ public class KubernetesClusterContext implements Serializable {
         this.requestsInFlight = new RequestsInFlight();
         this.loadAverage = new LoadAverage();
         this.memoryConsumption = new MemoryConsumption();
+        this.autoscalePolicy = autoscalePolicy;
 
         // check if a different value has been set for expiryTime
         XMLConfiguration conf = ConfUtil.getInstance(null).getConfiguration();
-        expiryTime = conf.getLong("autoscaler.member.expiryTimeout", 300000);
+        pendingMemberExpiryTime = conf.getLong(StratosConstants.PENDING_CONTAINER_MEMBER_EXPIRY_TIMEOUT, 300000);
+        obsoltedMemberExpiryTime = conf.getLong(StratosConstants.OBSOLETED_CONTAINER_MEMBER_EXPIRY_TIMEOUT, 3600000);
         if (log.isDebugEnabled()) {
-            log.debug("Member expiry time is set to: " + expiryTime);
+        	log.debug("Member expiry time is set to: " + pendingMemberExpiryTime);
+        	log.debug("Member obsoleted expiry time is set to: " + obsoltedMemberExpiryTime);
         }
 
         Thread th = new Thread(new PendingMemberWatcher(this));
@@ -225,12 +234,12 @@ public class KubernetesClusterContext implements Serializable {
         this.activeMembers.remove(ctxt);
     }
 
-    public long getExpiryTime() {
-        return expiryTime;
+    public long getPendingMemberExpiryTime() {
+        return pendingMemberExpiryTime;
     }
 
-    public void setExpiryTime(long expiryTime) {
-        this.expiryTime = expiryTime;
+    public void setPendingMemberExpiryTime(long pendingMemberExpiryTime) {
+        this.pendingMemberExpiryTime = pendingMemberExpiryTime;
     }
 
     public Map<String, MemberStatsContext> getMemberStatsContexts() {
@@ -296,6 +305,18 @@ public class KubernetesClusterContext implements Serializable {
         return false;
     }
 
+    public AutoscalePolicy getAutoscalePolicy() {
+        return autoscalePolicy;
+    }
+
+    public float getRequiredReplicas() {
+        return RequiredReplicas;
+    }
+
+    public void setRequiredReplicas(float requiredReplicas) {
+        RequiredReplicas = requiredReplicas;
+    }
+
     private class PendingMemberWatcher implements Runnable {
         private KubernetesClusterContext ctxt;
 
@@ -307,7 +328,7 @@ public class KubernetesClusterContext implements Serializable {
         public void run() {
 
             while (true) {
-                long expiryTime = ctxt.getExpiryTime();
+                long expiryTime = ctxt.getPendingMemberExpiryTime();
                 List<MemberContext> pendingMembers = ctxt.getPendingMembers();
 
                 synchronized (pendingMembers) {
